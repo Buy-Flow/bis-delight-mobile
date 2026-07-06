@@ -22,7 +22,7 @@ export function HighlightCard({
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full scale-[2.2] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.6)]"
+          className="absolute inset-0 h-full w-full scale-[2.6] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.6)]"
         />
       </div>
 
