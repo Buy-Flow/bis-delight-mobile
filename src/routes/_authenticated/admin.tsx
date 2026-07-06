@@ -23,6 +23,18 @@ import {
   ImagePlus,
   ArrowUp,
   ArrowDown,
+  Instagram,
+  Facebook,
+  Music2,
+  Truck,
+  Store,
+  MapPin,
+  Clock,
+  CreditCard,
+  Megaphone,
+  Palette,
+  Phone,
+  Globe,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
