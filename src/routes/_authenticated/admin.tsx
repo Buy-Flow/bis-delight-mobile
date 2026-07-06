@@ -1493,6 +1493,7 @@ function CategoryEditor({
       id,
       name: c.name.trim(),
       emoji: c.emoji || "✨",
+      icon: c.icon ?? null,
       image_url: c.image || null,
       sort_order: isNew ? nextSortOrder : 0,
       active: true,
