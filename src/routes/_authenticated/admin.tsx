@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Toaster, toast } from "sonner";
 import {
@@ -14,6 +14,11 @@ import {
   Loader2,
   Upload,
   Home,
+  Search,
+  GripVertical,
+  Eye,
+  EyeOff,
+  Copy,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -25,6 +30,9 @@ import {
   useUpsertProduct,
   useDeleteProduct,
   useToggleHero,
+  useToggleProductActive,
+  useReorderProducts,
+  useReorderCategories,
   useUpsertCategory,
   useDeleteCategory,
   useUpdateSettings,
