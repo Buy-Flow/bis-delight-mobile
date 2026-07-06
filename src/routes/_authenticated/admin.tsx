@@ -564,38 +564,25 @@ function ProductEditor({
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {tab === "basic" && (
             <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-[1fr_190px]">
-                <div className="space-y-3">
-                  {/* Image dropzone */}
-                  <ImageDropzone
-                    url={p.image}
-                    busy={imageBusy}
-                    onFile={onImage}
-                    onClear={() => setField("image", "")}
-                  />
-                  <input
-                    className={cn(inputCls, "text-xs")}
-                    placeholder="ou cole uma URL da imagem"
-                    value={p.image}
-                    onChange={(e) => setField("image", e.target.value)}
-                  />
-                </div>
-                {/* Live site preview */}
-                <div>
-                  <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/50">
-                    Como aparece no site
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/30 p-2">
-                    <ProductCard product={p} onOpen={() => {}} />
-                  </div>
-                  <div className="mt-1.5 text-[10px] leading-tight text-white/40">
-                    Atualiza ao vivo enquanto você edita.
-                  </div>
-                </div>
+              {/* Image dropzone */}
+              <ImageDropzone
+                url={p.image}
+                busy={imageBusy}
+                onFile={onImage}
+                onClear={() => setField("image", "")}
+              />
+              <input
+                className={cn(inputCls, "text-xs")}
+                placeholder="ou cole uma URL da imagem"
+                value={p.image}
+                onChange={(e) => setField("image", e.target.value)}
+              />
+              <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 px-3 py-2 text-[11px] text-neon-cyan/90">
+                Para reposicionar / dar zoom na foto, abra a aba <b>Foto</b>.
               </div>
 
-
               <Field label="Nome do produto">
+
                 <input
                   className={inputCls}
                   placeholder="Ex.: Açaí Tradicional"
