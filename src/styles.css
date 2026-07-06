@@ -45,6 +45,15 @@
   --color-neon-cyan-glow: var(--neon-cyan-glow);
   --color-neon-yellow: var(--neon-yellow);
   --color-neon-yellow-soft: var(--neon-yellow-soft);
+
+  /* Tropical tokens */
+  --color-palm-900: var(--palm-900);
+  --color-palm-700: var(--palm-700);
+  --color-palm-500: var(--palm-500);
+  --color-palm-300: var(--palm-300);
+  --color-mango: var(--mango);
+  --color-coral: var(--coral);
+  --color-sand: var(--sand);
 }
 
 :root {
