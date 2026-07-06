@@ -1,12 +1,8 @@
-import { BRAND } from "@/data/menu";
-
 import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
-  const waLink = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(
-    "Olá! Quero fazer um pedido na Quero Bis 🍧",
-  )}`;
+
 
   return (
     <section className="relative overflow-hidden px-4 pb-10 pt-2">
