@@ -25,8 +25,8 @@ const items = [
 export function Benefits() {
   return (
     <section className="px-4 pb-6">
-      <div className="rounded-[32px] bg-[#c8b3e0] px-3 py-4 shadow-lg">
-        <div className="grid grid-cols-3 items-center divide-x divide-white/60">
+      <div className="rounded-[32px] border border-white/20 bg-white/10 px-3 py-4 shadow-lg backdrop-blur-xl">
+        <div className="grid grid-cols-3 items-center divide-x divide-white/20">
           {items.map((it) => (
             <div
               key={it.title}
@@ -36,10 +36,11 @@ export function Benefits() {
                 className={`h-7 w-7 shrink-0 ${it.color}`}
                 strokeWidth={2.25}
               />
-              <div className="min-w-0 text-[10px] font-bold leading-tight text-slate-800">
+              <div className="min-w-0 text-[10px] font-bold leading-tight text-white">
                 <div>{it.title}</div>
-                <div className="font-semibold text-slate-700">{it.sub}</div>
+                <div className="font-semibold text-white/70">{it.sub}</div>
               </div>
+
             </div>
           ))}
         </div>
