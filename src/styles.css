@@ -147,6 +147,53 @@
   .border-neon-cyan { border-color: var(--neon-cyan); }
   .border-neon-pink { border-color: var(--neon-pink); }
 
+  .text-palm { color: var(--palm-300); }
+  .text-mango { color: var(--mango); }
+  .text-coral { color: var(--coral); }
+  .bg-palm { background-color: var(--palm-500); }
+  .bg-mango { background-color: var(--mango); }
+  .bg-coral { background-color: var(--coral); }
+  .border-palm { border-color: var(--palm-500); }
+
+  .tropical-chip {
+    background: linear-gradient(135deg, var(--palm-700), var(--palm-500));
+    color: oklch(0.98 0.02 90);
+  }
+  .sunset-chip {
+    background: linear-gradient(135deg, var(--coral), var(--mango));
+    color: oklch(0.18 0.05 40);
+  }
+
+  /* Palm leaf silhouette decorations */
+  .palm-left, .palm-right {
+    position: absolute;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.55;
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.45));
+  }
+  .palm-left {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 260'><g fill='%233ba55d'><path d='M100 250 C 96 180 92 120 88 40 L 92 40 C 96 120 100 180 104 250 Z'/><path d='M92 60 C 40 40 20 60 8 90 C 40 76 68 78 92 96 Z'/><path d='M96 90 C 40 78 14 100 4 138 C 44 118 70 118 100 130 Z'/><path d='M100 120 C 46 118 20 148 16 186 C 54 160 82 156 108 168 Z'/><path d='M108 60 C 160 44 184 66 194 96 C 158 82 130 84 108 100 Z'/><path d='M104 92 C 164 82 190 110 196 146 C 158 122 130 122 100 134 Z'/><path d='M100 124 C 158 128 184 156 188 192 C 152 168 124 164 100 176 Z'/></g></svg>");
+  }
+  .palm-right {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 260'><g fill='%2352c072'><path d='M100 250 C 96 180 92 120 88 40 L 92 40 C 96 120 100 180 104 250 Z'/><path d='M92 60 C 40 40 20 60 8 90 C 40 76 68 78 92 96 Z'/><path d='M96 90 C 40 78 14 100 4 138 C 44 118 70 118 100 130 Z'/><path d='M108 60 C 160 44 184 66 194 96 C 158 82 130 84 108 100 Z'/><path d='M104 92 C 164 82 190 110 196 146 C 158 122 130 122 100 134 Z'/></g></svg>");
+    transform: scaleX(-1);
+  }
+
+  .grass-strip {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'><g fill='%2352c072'><path d='M0 40 L4 18 L8 40 Z'/><path d='M10 40 L14 8 L18 40 Z'/><path d='M20 40 L24 20 L28 40 Z'/><path d='M30 40 L34 12 L38 40 Z'/><path d='M40 40 L44 22 L48 40 Z'/><path d='M50 40 L54 6 L58 40 Z'/><path d='M60 40 L64 18 L68 40 Z'/><path d='M70 40 L74 14 L78 40 Z'/><path d='M80 40 L84 22 L88 40 Z'/><path d='M90 40 L94 10 L98 40 Z'/><path d='M100 40 L104 18 L108 40 Z'/><path d='M110 40 L114 8 L118 40 Z'/><path d='M120 40 L124 20 L128 40 Z'/><path d='M130 40 L134 12 L138 40 Z'/><path d='M140 40 L144 22 L148 40 Z'/><path d='M150 40 L154 6 L158 40 Z'/><path d='M160 40 L164 18 L168 40 Z'/><path d='M170 40 L174 14 L178 40 Z'/><path d='M180 40 L184 22 L188 40 Z'/><path d='M190 40 L194 10 L198 40 Z'/></g></svg>");
+    background-repeat: repeat-x;
+    background-size: 200px 40px;
+  }
+
+  @keyframes sway {
+    0%,100% { transform: rotate(-3deg); }
+    50%     { transform: rotate(3deg); }
+  }
+  .animate-sway { animation: sway 7s ease-in-out infinite; transform-origin: bottom center; }
+  .animate-sway-rev { animation: sway 7s ease-in-out infinite reverse; transform-origin: bottom center; }
+
   .glow-pink {
     box-shadow:
       0 0 0 1px oklch(0.72 0.26 350 / 0.5),
