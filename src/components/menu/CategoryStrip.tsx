@@ -83,6 +83,92 @@ const ACCENTS: Record<string, Accent> = {
 
 
 
+export function CategoryChip({
+  category,
+  active = false,
+  onClick,
+}: {
+  category: { id: string; name: string; image: string; imagePosX?: number; imagePosY?: number; imageScale?: number };
+  active?: boolean;
+  onClick?: () => void;
+}) {
+  const accent = ACCENTS[category.id] ?? ACCENTS.all;
+  const Icon = accent.icon;
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "group relative snap-start shrink-0 w-[72px] h-[104px] rounded-[16px]",
+        "transition active:scale-95",
+        active && `${accent.glow}`,
+      )}
+      style={{
+        boxShadow:
+          "0 8px 16px -8px rgba(0,0,0,0.7), 0 2px 6px -2px rgba(0,0,0,0.5)",
+      }}
+    >
+      <div
+        className={cn(
+          "relative h-full w-full overflow-hidden rounded-[14px]",
+          "bg-[#2a0a5c]",
+          active && `ring-2 ${accent.ring}`,
+        )}
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 50% 30%, oklch(0.28 0.16 305) 0%, #2a0a5c 55%, #1a0538 100%)",
+        }}
+      >
+        <div
+          className="relative h-[68px] w-full overflow-hidden"
+          style={{
+            boxShadow:
+              "inset 0 4px 8px -3px rgba(0,0,0,0.7), inset 0 -3px 8px -3px rgba(0,0,0,0.5)",
+          }}
+        >
+          {category.image && (
+            <img
+              src={category.image}
+              alt={category.name}
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{
+                transform: `translate(${category.imagePosX ?? 0}%, ${category.imagePosY ?? 0}%) scale(${category.imageScale ?? 1})`,
+                transformOrigin: "center",
+              }}
+            />
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
+        </div>
+
+        <div
+          className="absolute left-1/2 top-[68px] grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.35)",
+          }}
+        >
+          <Icon
+            className="h-[12px] w-[12px]"
+            strokeWidth={2.4}
+            style={{ color: "#ffffff" }}
+          />
+        </div>
+
+        <div className="absolute inset-x-0 bottom-1.5 px-1 text-center">
+          <div
+            className="truncate text-[8.5px] font-black uppercase tracking-[0.1em] text-white"
+            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}
+          >
+            {category.name}
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function CategoryStrip({
   active,
   onChange,
@@ -95,83 +181,14 @@ export function CategoryStrip({
   return (
     <section id="categorias" className="pb-2">
       <div className="hide-scrollbar flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-3 pt-1">
-        {CATEGORIES.map((c) => {
-
-          const isActive = active === c.id;
-          const accent = ACCENTS[c.id] ?? ACCENTS.all;
-          const Icon = accent.icon;
-          return (
-            <button
-              key={c.id}
-              onClick={() => onChange(c.id)}
-              aria-pressed={isActive}
-              className={cn(
-                "group relative snap-start shrink-0 w-[72px] h-[104px] rounded-[16px]",
-                "transition active:scale-95",
-                isActive && `${accent.glow}`,
-              )}
-              style={{
-                boxShadow:
-                  "0 8px 16px -8px rgba(0,0,0,0.7), 0 2px 6px -2px rgba(0,0,0,0.5)",
-              }}
-            >
-              <div
-                className={cn(
-                  "relative h-full w-full overflow-hidden rounded-[14px]",
-                  "bg-[#2a0a5c]",
-                  isActive && `ring-2 ${accent.ring}`,
-                )}
-                style={{
-                  backgroundImage:
-                    "radial-gradient(circle at 50% 30%, oklch(0.28 0.16 305) 0%, #2a0a5c 55%, #1a0538 100%)",
-                }}
-              >
-                {/* Top photo area */}
-                <div
-                  className="relative h-[68px] w-full overflow-hidden"
-                  style={{
-                    boxShadow:
-                      "inset 0 4px 8px -3px rgba(0,0,0,0.7), inset 0 -3px 8px -3px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  <img
-                    src={c.image}
-                    alt={c.name}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
-                </div>
-
-                {/* Icon badge */}
-                <div
-                  className="absolute left-1/2 top-[68px] grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.35)",
-                  }}
-                >
-                  <Icon
-                    className="h-[12px] w-[12px]"
-                    strokeWidth={2.4}
-                    style={{ color: "#ffffff" }}
-                  />
-                </div>
-
-                {/* Label */}
-                <div className="absolute inset-x-0 bottom-1.5 px-1 text-center">
-                  <div
-                    className="truncate text-[8.5px] font-black uppercase tracking-[0.1em] text-white"
-                    style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}
-                  >
-                    {c.name}
-                  </div>
-                </div>
-              </div>
-            </button>
-          );
-        })}
+        {CATEGORIES.map((c) => (
+          <CategoryChip
+            key={c.id}
+            category={c}
+            active={active === c.id}
+            onClick={() => onChange(c.id)}
+          />
+        ))}
       </div>
     </section>
   );
