@@ -41,7 +41,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         className="pointer-events-none absolute -right-24 top-16 z-0 h-[600px] w-auto max-w-none opacity-95 select-none drop-shadow-[0_10px_40px_rgba(0,200,255,0.45)]"
       />
 
-      <div className="relative pt-2">
+      <div className="relative z-10 pt-2">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
           <Sparkles className="h-3 w-3" />
           Aberto agora · Delivery {BRAND.hours.split(" ")[0]}
