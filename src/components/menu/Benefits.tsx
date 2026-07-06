@@ -16,9 +16,10 @@ const items = [
   {
     icon: Heart,
     color: "text-neon-yellow",
-    title: "Feito para",
-    sub: "várias com os melhores ingredientes",
+    title: "Feito com amor",
+    sub: "os melhores ingredientes",
   },
+
 ];
 
 export function Benefits() {
