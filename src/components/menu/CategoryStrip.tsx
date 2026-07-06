@@ -99,69 +99,98 @@ export function CategoryStrip({
               onClick={() => onChange(c.id)}
               aria-pressed={isActive}
               className={cn(
-                "group relative snap-start shrink-0 w-[92px] h-[140px] rounded-[20px]",
-                "bg-[#280a66] transition active:scale-95 overflow-hidden",
-                "shadow-[0_12px_22px_-10px_rgba(0,0,0,0.7),0_3px_8px_-3px_rgba(0,0,0,0.5)]",
-                "ring-1 ring-white/5",
-                isActive && `ring-2 ${accent.ring} ${accent.glow}`,
+                "group relative snap-start shrink-0 w-[100px] h-[150px] rounded-[22px] p-[2px]",
+                "transition active:scale-95",
+                isActive && `${accent.glow}`,
               )}
+              style={{
+                background:
+                  "linear-gradient(140deg, #fff2b3 0%, #e8c15a 18%, #a8792a 42%, #5a3a10 60%, #d9ab48 80%, #fff2b3 100%)",
+                boxShadow:
+                  "0 14px 24px -12px rgba(0,0,0,0.75), 0 3px 8px -3px rgba(0,0,0,0.55), inset 0 0 0 0.5px rgba(255,255,255,0.35)",
+              }}
             >
-              {/* Sunken photo area (top 60%) */}
               <div
-                className="relative h-[82px] w-full overflow-hidden"
+                className={cn(
+                  "relative h-full w-full overflow-hidden rounded-[20px]",
+                  "bg-[#2a0a5c]",
+                  isActive && `ring-2 ${accent.ring}`,
+                )}
                 style={{
-                  boxShadow:
-                    "inset 0 8px 14px -6px rgba(0,0,0,0.75), inset 0 -5px 12px -5px rgba(0,0,0,0.55), inset 0 0 18px rgba(0,0,0,0.35)",
+                  backgroundImage:
+                    "radial-gradient(circle at 50% 30%, oklch(0.28 0.16 305) 0%, #2a0a5c 55%, #1a0538 100%)",
                 }}
               >
-                <img
-                  src={c.image}
-                  alt={c.name}
-                  className="absolute inset-0 h-full w-full object-cover drop-shadow-[0_14px_14px_rgba(0,0,0,0.55)]"
-                />
-                {/* soft vignette to reinforce depth */}
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.35)_100%)]" />
-              </div>
-
-              {/* Elevated base platform */}
-              <div
-                className="absolute inset-x-0 bottom-0 h-[58px] rounded-b-[20px]"
-                style={{
-                  background:
-                    "linear-gradient(180deg, #3a1585 0%, #2f0f70 55%, #26095d 100%)",
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.28), inset 0 2px 0 rgba(180,140,255,0.18), 0 -6px 14px -6px rgba(0,0,0,0.55), 0 5px 10px -5px rgba(0,0,0,0.6)",
-                }}
-              >
-                {/* highlighted top rim */}
-                <div className="pointer-events-none absolute inset-x-2 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-              </div>
-
-              {/* Floating icon badge — sits on the elevated platform */}
-              <div
-                className="absolute left-1/2 top-[82px] grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-b from-[#4a22a0] to-[#2f0f70] ring-2 ring-[#8a6bff]/70"
-                style={{
-                  boxShadow:
-                    "0 6px 12px -3px rgba(0,0,0,0.6), 0 2px 5px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25)",
-                }}
-              >
-                <Icon className="h-4 w-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" strokeWidth={2} />
-              </div>
-
-              {/* Engraved label */}
-              <div className="absolute inset-x-0 bottom-2 px-1.5 text-center">
+                {/* Top photo area */}
                 <div
-                  className="truncate text-[9.5px] font-black uppercase tracking-wide text-white/95"
+                  className="relative h-[80px] w-full overflow-hidden"
                   style={{
-                    textShadow:
-                      "0 -1px 0 rgba(20,0,55,0.9), 0 1px 0 rgba(255,255,255,0.28), 0 2px 3px rgba(0,0,0,0.35)",
+                    boxShadow:
+                      "inset 0 6px 12px -5px rgba(0,0,0,0.7), inset 0 -4px 10px -4px rgba(0,0,0,0.5)",
                   }}
                 >
-                  {c.name}
+                  <img
+                    src={c.image}
+                    alt={c.name}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
+                  {/* Bottom fade into card */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
                 </div>
+
+                {/* Gold sparkle badge — centered on card */}
+                <div
+                  className="absolute left-1/2 top-[80px] grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
+                    boxShadow:
+                      "0 4px 10px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,215,120,0.55), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                    <defs>
+                      <linearGradient id={`goldSpark-${c.id}`} x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#fff2b3" />
+                        <stop offset="45%" stopColor="#e8c15a" />
+                        <stop offset="100%" stopColor="#8a5f18" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M12 2 L13.6 10.4 L22 12 L13.6 13.6 L12 22 L10.4 13.6 L2 12 L10.4 10.4 Z"
+                      fill={`url(#goldSpark-${c.id})`}
+                    />
+                    <circle cx="19" cy="5" r="1.4" fill={`url(#goldSpark-${c.id})`} />
+                  </svg>
+                </div>
+
+                {/* Gold metallic label */}
+                <div className="absolute inset-x-0 bottom-3 px-1.5 text-center">
+                  <div
+                    className="truncate text-[10.5px] font-black uppercase tracking-[0.14em]"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(180deg, #fff4bd 0%, #f0cb62 40%, #a87a26 70%, #f7dd7c 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      textShadow: "0 1px 0 rgba(0,0,0,0.35)",
+                      filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.5))",
+                    }}
+                  >
+                    {c.name}
+                  </div>
+                </div>
+
+                {/* Hide unused accent icon (kept import for backwards compat) */}
+                <span className="hidden">
+                  <Icon className="h-0 w-0" />
+                </span>
               </div>
             </button>
           );
+
         })}
       </div>
     </section>
