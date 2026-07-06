@@ -25,18 +25,18 @@ const items = [
 export function Benefits() {
   return (
     <section className="px-4 pb-6">
-      <div className="rounded-[36px] bg-[#c8b3e0] px-4 py-5 shadow-lg">
-        <div className="grid grid-cols-3 items-center divide-x divide-white/50">
+      <div className="rounded-[32px] bg-[#c8b3e0] px-3 py-4 shadow-lg">
+        <div className="grid grid-cols-3 items-center divide-x divide-white/60">
           {items.map((it) => (
             <div
               key={it.title}
-              className="flex items-center gap-2 px-2 first:pl-0 last:pr-0"
+              className="flex items-center gap-1.5 px-1.5 first:pl-0 last:pr-0"
             >
               <it.icon
-                className={`h-9 w-9 shrink-0 ${it.color}`}
+                className={`h-7 w-7 shrink-0 ${it.color}`}
                 strokeWidth={2.25}
               />
-              <div className="min-w-0 text-[11px] font-bold leading-tight text-slate-800">
+              <div className="min-w-0 text-[10px] font-bold leading-tight text-slate-800">
                 <div>{it.title}</div>
                 <div className="font-semibold text-slate-700">{it.sub}</div>
               </div>
@@ -44,6 +44,7 @@ export function Benefits() {
           ))}
         </div>
       </div>
+
     </section>
   );
 }
