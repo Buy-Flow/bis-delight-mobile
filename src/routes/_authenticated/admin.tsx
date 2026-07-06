@@ -19,6 +19,10 @@ import {
   Eye,
   EyeOff,
   Copy,
+  X,
+  ImagePlus,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -427,6 +431,8 @@ function IconBtn({
   );
 }
 
+type EditorTab = "basic" | "sizes" | "extras" | "advanced";
+
 function ProductEditor({
   initial,
   categories,
@@ -441,8 +447,19 @@ function ProductEditor({
   const isNew = !initial.id;
   const [p, setP] = useState<Product>(initial);
   const [imageBusy, setImageBusy] = useState(false);
+  const [tab, setTab] = useState<EditorTab>("basic");
+  const [dirty, setDirty] = useState(false);
 
-  const set = <K extends keyof Product>(k: K, v: Product[K]) => setP((prev) => ({ ...prev, [k]: v }));
+  const setField = <K extends keyof Product>(k: K, v: Product[K]) => {
+    setP((prev) => ({ ...prev, [k]: v }));
+    setDirty(true);
+  };
+
+  const minPrice = useMemo(() => {
+    const deltas = (p.sizes ?? []).map((s) => s.priceDelta);
+    const min = deltas.length ? Math.min(...deltas) : 0;
+    return (Number(p.basePrice) || 0) + min;
+  }, [p.basePrice, p.sizes]);
 
   const save = async () => {
     if (!p.name.trim()) return toast.error("Nome obrigatório");
@@ -462,16 +479,16 @@ function ProductEditor({
       removable: p.removable && p.removable.length ? p.removable : null,
       badge: p.badge ?? null,
       hero: !!p.hero,
-      // On new products default to active + append at end; on edits keep existing values.
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
-    toast.success(isNew ? "Produto criado!" : "Salvo!");
+    toast.success(isNew ? "Produto criado!" : "Alterações salvas!");
+    setDirty(false);
     onClose();
   };
 
   const remove = async () => {
-    if (!confirm(`Remover "${p.name}"?`)) return;
+    if (!confirm(`Remover "${p.name}"? Essa ação não pode ser desfeita.`)) return;
     await del.mutateAsync(p.id);
     toast.success("Produto removido");
     onClose();
@@ -481,7 +498,7 @@ function ProductEditor({
     setImageBusy(true);
     try {
       const url = await uploadProductImage(file);
-      set("image", url);
+      setField("image", url);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao subir imagem");
     } finally {
@@ -489,201 +506,550 @@ function ProductEditor({
     }
   };
 
+  const requestClose = () => {
+    if (dirty && !confirm("Você tem alterações não salvas. Descartar?")) return;
+    onClose();
+  };
+
+  const tabs: { id: EditorTab; label: string }[] = [
+    { id: "basic", label: "Básico" },
+    { id: "sizes", label: "Tamanhos & Sabores" },
+    { id: "extras", label: "Complementos" },
+    { id: "advanced", label: "Extras" },
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/10 bg-[oklch(0.14_0.09_305)] p-5 sm:rounded-3xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-xl font-black">{isNew ? "Novo produto" : "Editar produto"}</h3>
-          <button onClick={onClose} className="text-sm text-white/60 hover:text-white">Fechar</button>
+      <div className="flex max-h-[95vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-[oklch(0.14_0.09_305)] sm:rounded-3xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div className="min-w-0">
+            <h3 className="truncate font-display text-xl font-black">
+              {isNew ? "Novo produto" : p.name || "Editar produto"}
+            </h3>
+            <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/50">
+              <span>a partir de <b className="text-white/80">R$ {minPrice.toFixed(2)}</b></span>
+              {dirty && <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-neon-yellow">não salvo</span>}
+            </div>
+          </div>
+          <button onClick={requestClose} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/10">
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        <div className="space-y-3">
-          <Field label="Nome">
-            <input className={inputCls} value={p.name} onChange={(e) => set("name", e.target.value)} />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Categoria">
-              <select
-                className={inputCls}
-                value={p.category}
-                onChange={(e) => set("category", e.target.value)}
-              >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Preço base (R$)">
-              <input
-                type="number"
-                step="0.01"
-                className={inputCls}
-                value={p.basePrice}
-                onChange={(e) => set("basePrice", Number(e.target.value))}
-              />
-            </Field>
-          </div>
-
-          <Field label="Descrição">
-            <textarea
-              rows={2}
-              className={inputCls}
-              value={p.description}
-              onChange={(e) => set("description", e.target.value)}
-            />
-          </Field>
-
-          <Field label="Imagem">
-            <div className="flex items-center gap-3">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-black/40">
-                {p.image ? <img src={p.image} className="h-full w-full object-cover" /> : null}
-              </div>
-              <label className="flex-1 cursor-pointer rounded-xl border border-dashed border-white/20 px-3 py-2 text-center text-xs text-white/70 hover:bg-white/5">
-                {imageBusy ? "Enviando..." : "Escolher imagem"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) onImage(f);
-                  }}
-                />
-              </label>
-            </div>
-            <input
-              className={cn(inputCls, "mt-2 text-xs")}
-              placeholder="ou cole uma URL da imagem"
-              value={p.image}
-              onChange={(e) => set("image", e.target.value)}
-            />
-          </Field>
-
-          <Field label="Ingredientes (um por linha)">
-            <textarea
-              rows={3}
-              className={inputCls}
-              value={(p.ingredients ?? []).join("\n")}
-              onChange={(e) => set("ingredients", e.target.value.split("\n").map((x) => x.trim()).filter(Boolean))}
-            />
-          </Field>
-
-          <Field label="Tamanhos (label|preço extra) — um por linha">
-            <textarea
-              rows={3}
-              className={inputCls}
-              value={(p.sizes ?? []).map((s) => `${s.label}|${s.priceDelta}`).join("\n")}
-              onChange={(e) =>
-                set(
-                  "sizes",
-                  e.target.value
-                    .split("\n")
-                    .map((line, i) => {
-                      const [label, price] = line.split("|");
-                      if (!label?.trim()) return null;
-                      return {
-                        id: slugify(label) || `s${i}`,
-                        label: label.trim(),
-                        priceDelta: Number(price ?? 0) || 0,
-                      };
-                    })
-                    .filter(Boolean) as Product["sizes"],
-                )
-              }
-            />
-          </Field>
-
-          <Field label="Sabores (um por linha, opcional)">
-            <textarea
-              rows={2}
-              className={inputCls}
-              value={(p.flavors ?? []).join("\n")}
-              onChange={(e) => set("flavors", e.target.value.split("\n").map((x) => x.trim()).filter(Boolean))}
-            />
-          </Field>
-
-          <Field label="Complementos (label|preço) — um por linha">
-            <textarea
-              rows={3}
-              className={inputCls}
-              value={(p.extras ?? []).map((x) => `${x.label}|${x.price}`).join("\n")}
-              onChange={(e) =>
-                set(
-                  "extras",
-                  e.target.value
-                    .split("\n")
-                    .map((line, i) => {
-                      const [label, price] = line.split("|");
-                      if (!label?.trim()) return null;
-                      return {
-                        id: slugify(label) || `e${i}`,
-                        label: label.trim(),
-                        price: Number(price ?? 0) || 0,
-                      };
-                    })
-                    .filter(Boolean) as Product["extras"],
-                )
-              }
-            />
-          </Field>
-
-          <Field label="Ingredientes removíveis (um por linha, opcional)">
-            <textarea
-              rows={2}
-              className={inputCls}
-              value={(p.removable ?? []).join("\n")}
-              onChange={(e) => set("removable", e.target.value.split("\n").map((x) => x.trim()).filter(Boolean))}
-            />
-          </Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Selo">
-              <select
-                className={inputCls}
-                value={p.badge ?? ""}
-                onChange={(e) => set("badge", (e.target.value || undefined) as Product["badge"])}
-              >
-                <option value="">Nenhum</option>
-                <option value="Premium">Premium</option>
-                <option value="Novidade">Novidade</option>
-                <option value="Favorito">Favorito</option>
-              </select>
-            </Field>
-            <Field label="Destaque na home">
-              <label className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3">
-                <input
-                  type="checkbox"
-                  checked={!!p.hero}
-                  onChange={(e) => set("hero", e.target.checked)}
-                />
-                <span className="text-xs">Aparecer em "Nossos Destaques"</span>
-              </label>
-            </Field>
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
+        {/* Tabs */}
+        <div className="flex gap-1 overflow-x-auto border-b border-white/10 px-3 py-2">
+          {tabs.map((t) => (
             <button
-              onClick={save}
-              disabled={upsert.isPending}
-              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink disabled:opacity-60"
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                tab === t.id
+                  ? "bg-neon-pink text-white glow-pink"
+                  : "text-white/60 hover:bg-white/5 hover:text-white",
+              )}
             >
-              {upsert.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Salvar
+              {t.label}
             </button>
-            {!isNew && (
-              <button
-                onClick={remove}
-                className="grid h-12 w-12 place-items-center rounded-2xl border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+          ))}
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          {tab === "basic" && (
+            <div className="space-y-4">
+              {/* Image dropzone */}
+              <ImageDropzone
+                url={p.image}
+                busy={imageBusy}
+                onFile={onImage}
+                onClear={() => setField("image", "")}
+              />
+              <input
+                className={cn(inputCls, "text-xs")}
+                placeholder="ou cole uma URL da imagem"
+                value={p.image}
+                onChange={(e) => setField("image", e.target.value)}
+              />
+
+              <Field label="Nome do produto">
+                <input
+                  className={inputCls}
+                  placeholder="Ex.: Açaí Tradicional"
+                  value={p.name}
+                  onChange={(e) => setField("name", e.target.value)}
+                  maxLength={80}
+                />
+              </Field>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Categoria">
+                  <select
+                    className={inputCls}
+                    value={p.category}
+                    onChange={(e) => setField("category", e.target.value)}
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Preço base (R$)">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className={inputCls}
+                    value={p.basePrice}
+                    onChange={(e) => setField("basePrice", Number(e.target.value))}
+                  />
+                </Field>
+              </div>
+
+              <Field label="Descrição">
+                <textarea
+                  rows={2}
+                  className={inputCls}
+                  placeholder="Uma frase curta que aparece no card e no modal."
+                  value={p.description}
+                  onChange={(e) => setField("description", e.target.value)}
+                  maxLength={200}
+                />
+                <div className="mt-1 text-right text-[10px] text-white/40">
+                  {(p.description || "").length}/200
+                </div>
+              </Field>
+
+              <Field label="Ingredientes principais">
+                <ChipInput
+                  values={p.ingredients ?? []}
+                  onChange={(v) => setField("ingredients", v)}
+                  placeholder="Digite e pressione Enter (ex.: Leite condensado)"
+                />
+              </Field>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Selo">
+                  <select
+                    className={inputCls}
+                    value={p.badge ?? ""}
+                    onChange={(e) => setField("badge", (e.target.value || undefined) as Product["badge"])}
+                  >
+                    <option value="">Nenhum</option>
+                    <option value="Premium">⭐ Premium</option>
+                    <option value="Novidade">✨ Novidade</option>
+                    <option value="Favorito">❤️ Favorito</option>
+                  </select>
+                </Field>
+                <Field label="Destaque na home">
+                  <Toggle
+                    checked={!!p.hero}
+                    onChange={(v) => setField("hero", v)}
+                    label={p.hero ? "Aparece nos destaques" : "Não aparece"}
+                  />
+                </Field>
+              </div>
+            </div>
+          )}
+
+          {tab === "sizes" && (
+            <div className="space-y-5">
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-bold">Tamanhos / porções</div>
+                    <div className="text-[11px] text-white/50">
+                      O preço final é <b>preço base + acréscimo do tamanho</b>.
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      setField("sizes", [
+                        ...(p.sizes ?? []),
+                        { id: `s${Date.now()}`, label: "Novo tamanho", priceDelta: 0 },
+                      ])
+                    }
+                    className="inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Adicionar
+                  </button>
+                </div>
+                <RowList
+                  items={p.sizes ?? []}
+                  onChange={(v) => setField("sizes", v)}
+                  render={(row, upd) => (
+                    <>
+                      <input
+                        className={cn(inputCls, "flex-1")}
+                        placeholder="Ex.: 400ml"
+                        value={row.label}
+                        onChange={(e) => upd({ ...row, label: e.target.value })}
+                      />
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] text-white/50">+R$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          className={cn(inputCls, "w-20")}
+                          value={row.priceDelta}
+                          onChange={(e) => upd({ ...row, priceDelta: Number(e.target.value) })}
+                        />
+                      </div>
+                    </>
+                  )}
+                  emptyLabel="Nenhum tamanho — o cliente verá apenas o preço base."
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 text-sm font-bold">Sabores disponíveis</div>
+                <ChipInput
+                  values={p.flavors ?? []}
+                  onChange={(v) => setField("flavors", v)}
+                  placeholder="Ex.: Morango, Chocolate, Baunilha..."
+                />
+                <div className="mt-1 text-[11px] text-white/40">
+                  Deixe vazio se o produto não tem escolha de sabor.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === "extras" && (
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-bold">Complementos pagos</div>
+                  <div className="text-[11px] text-white/50">
+                    Adicionais que o cliente pode escolher, com preço unitário.
+                  </div>
+                </div>
+                <button
+                  onClick={() =>
+                    setField("extras", [
+                      ...(p.extras ?? []),
+                      { id: `e${Date.now()}`, label: "Novo complemento", price: 0 },
+                    ])
+                  }
+                  className="inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Adicionar
+                </button>
+              </div>
+              <RowList
+                items={p.extras ?? []}
+                onChange={(v) => setField("extras", v)}
+                render={(row, upd) => (
+                  <>
+                    <input
+                      className={cn(inputCls, "flex-1")}
+                      placeholder="Ex.: Leite Ninho"
+                      value={row.label}
+                      onChange={(e) => upd({ ...row, label: e.target.value })}
+                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] text-white/50">R$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className={cn(inputCls, "w-20")}
+                        value={row.price}
+                        onChange={(e) => upd({ ...row, price: Number(e.target.value) })}
+                      />
+                    </div>
+                  </>
+                )}
+                emptyLabel="Nenhum complemento cadastrado."
+              />
+            </div>
+          )}
+
+          {tab === "advanced" && (
+            <div className="space-y-4">
+              <Field label="Ingredientes removíveis pelo cliente">
+                <ChipInput
+                  values={p.removable ?? []}
+                  onChange={(v) => setField("removable", v)}
+                  placeholder="Ex.: Granola, Leite condensado..."
+                />
+                <div className="mt-1 text-[11px] text-white/40">
+                  O cliente pode desmarcar esses itens ao montar o produto.
+                </div>
+              </Field>
+
+              <Field label="ID técnico (slug)">
+                <input
+                  className={cn(inputCls, "font-mono text-xs")}
+                  value={p.id}
+                  disabled={!isNew}
+                  onChange={(e) => setField("id", e.target.value)}
+                  placeholder={isNew ? "Gerado a partir do nome" : ""}
+                />
+                <div className="mt-1 text-[11px] text-white/40">
+                  {isNew ? "Deixe vazio para gerar automaticamente." : "Não pode ser alterado após criado."}
+                </div>
+              </Field>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center gap-2 border-t border-white/10 bg-black/20 px-5 py-3">
+          {!isNew && (
+            <button
+              onClick={remove}
+              className="grid h-11 w-11 place-items-center rounded-2xl border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+              title="Excluir produto"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={requestClose}
+            className="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/70 hover:bg-white/5"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={save}
+            disabled={upsert.isPending || !dirty}
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink disabled:opacity-40"
+          >
+            {upsert.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {isNew ? "Criar produto" : "Salvar alterações"}
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
+/* ============================= Editor helpers ============================= */
+
+function ImageDropzone({
+  url,
+  busy,
+  onFile,
+  onClear,
+}: {
+  url: string;
+  busy: boolean;
+  onFile: (f: File) => void;
+  onClear: () => void;
+}) {
+  const [over, setOver] = useState(false);
+  return (
+    <label
+      onDragOver={(e) => {
+        e.preventDefault();
+        setOver(true);
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setOver(false);
+        const f = e.dataTransfer.files?.[0];
+        if (f) onFile(f);
+      }}
+      className={cn(
+        "relative flex aspect-[16/10] w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition",
+        over ? "border-neon-cyan bg-neon-cyan/10" : "border-white/15 bg-white/5 hover:bg-white/10",
+      )}
+    >
+      {url ? (
+        <>
+          <img src={url} alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/80 to-transparent p-3">
+            <span className="text-[11px] text-white/70">Clique ou solte uma nova imagem</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onClear();
+              }}
+              className="rounded-full bg-black/60 px-2 py-1 text-[11px] text-white/80 hover:bg-black/80"
+            >
+              Remover
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col items-center gap-2 text-white/60">
+          <ImagePlus className="h-8 w-8" />
+          <div className="text-sm font-semibold">Adicionar foto do produto</div>
+          <div className="text-[11px]">clique ou arraste um arquivo aqui</div>
+        </div>
+      )}
+      {busy && (
+        <div className="absolute inset-0 grid place-items-center bg-black/60">
+          <Loader2 className="h-6 w-6 animate-spin text-white" />
+        </div>
+      )}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+        }}
+      />
+    </label>
+  );
+}
+
+function ChipInput({
+  values,
+  onChange,
+  placeholder,
+}: {
+  values: string[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+}) {
+  const [text, setText] = useState("");
+  const add = () => {
+    const v = text.trim();
+    if (!v) return;
+    if (values.includes(v)) {
+      setText("");
+      return;
+    }
+    onChange([...values, v]);
+    setText("");
+  };
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-2">
+      {values.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {values.map((v, i) => (
+            <span
+              key={`${v}-${i}`}
+              className="inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2.5 py-1 text-xs text-neon-cyan"
+            >
+              {v}
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((_, idx) => idx !== i))}
+                className="grid h-4 w-4 place-items-center rounded-full hover:bg-neon-cyan/30"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <input
+        className="w-full bg-transparent px-1 py-1 text-sm text-white placeholder:text-white/40 outline-none"
+        placeholder={placeholder}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            add();
+          } else if (e.key === "Backspace" && !text && values.length) {
+            onChange(values.slice(0, -1));
+          }
+        }}
+        onBlur={add}
+      />
+    </div>
+  );
+}
+
+function RowList<T extends { id: string }>({
+  items,
+  onChange,
+  render,
+  emptyLabel,
+}: {
+  items: T[];
+  onChange: (v: T[]) => void;
+  render: (row: T, upd: (next: T) => void) => React.ReactNode;
+  emptyLabel: string;
+}) {
+  if (items.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-white/10 p-4 text-center text-xs text-white/50">
+        {emptyLabel}
+      </div>
+    );
+  }
+  const move = (idx: number, dir: -1 | 1) => {
+    const next = [...items];
+    const to = idx + dir;
+    if (to < 0 || to >= next.length) return;
+    [next[idx], next[to]] = [next[to], next[idx]];
+    onChange(next);
+  };
+  return (
+    <div className="space-y-1.5">
+      {items.map((row, i) => (
+        <div key={row.id} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2">
+          <div className="flex flex-col">
+            <button
+              onClick={() => move(i, -1)}
+              disabled={i === 0}
+              className="grid h-4 w-5 place-items-center text-white/40 hover:text-white disabled:opacity-20"
+            >
+              <ArrowUp className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => move(i, 1)}
+              disabled={i === items.length - 1}
+              className="grid h-4 w-5 place-items-center text-white/40 hover:text-white disabled:opacity-20"
+            >
+              <ArrowDown className="h-3 w-3" />
+            </button>
+          </div>
+          {render(row, (next) => onChange(items.map((x, idx) => (idx === i ? next : x))))}
+          <button
+            onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+            className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "flex h-10 w-full items-center gap-2 rounded-xl border px-3 text-left text-xs transition",
+        checked
+          ? "border-neon-yellow/50 bg-neon-yellow/10 text-neon-yellow"
+          : "border-white/10 bg-white/5 text-white/60",
+      )}
+    >
+      <span
+        className={cn(
+          "grid h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition",
+          checked ? "bg-neon-yellow/40 justify-items-end" : "bg-white/10 justify-items-start",
+        )}
+      >
+        <span className={cn("h-4 w-4 rounded-full", checked ? "bg-neon-yellow" : "bg-white/60")} />
+      </span>
+      <span className="truncate">{label}</span>
+    </button>
+  );
+}
+
 
 /* ============================= Categories ============================= */
 function CategoriesTab() {
