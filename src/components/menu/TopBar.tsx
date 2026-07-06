@@ -11,10 +11,11 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
         <button
           onClick={onOpenCategories}
           aria-label="Categorias"
-          className="grid h-11 w-11 place-items-center rounded-2xl card-acai active:scale-95 transition"
+          className="grid h-11 w-11 place-items-center rounded-2xl bg-neon-pink text-white glow-pink active:scale-95 transition"
         >
-          <Menu className="h-5 w-5 text-neon-cyan" />
+          <Menu className="h-5 w-5" />
         </button>
+
 
         <div className="flex items-center gap-2">
           <img
