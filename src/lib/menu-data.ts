@@ -400,7 +400,8 @@ export function useUpdateSettings() {
   const invalidate = useInvalidateMenu();
   return useMutation({
     mutationFn: async (s: SiteSettings) => {
-      const { error } = await supabase.from("site_settings").update({
+      const { error } = await supabase.from("site_settings").upsert({
+        id: 1,
         name: s.name,
         tagline: s.tagline,
         city: s.city,
@@ -413,7 +414,20 @@ export function useUpdateSettings() {
         delivery_fee: s.deliveryFee,
         logo_url: s.logo,
         texture_url: s.texture,
-      }).eq("id", 1);
+        instagram: s.instagram,
+        facebook: s.facebook,
+        tiktok: s.tiktok,
+        announcement_text: s.announcementText,
+        announcement_active: s.announcementActive,
+        pix_key: s.pixKey,
+        payment_methods: s.paymentMethods,
+        free_delivery_threshold: s.freeDeliveryThreshold,
+        min_order: s.minOrder,
+        accepts_delivery: s.acceptsDelivery,
+        accepts_pickup: s.acceptsPickup,
+        open_override: s.openOverride,
+        hours_json: s.hoursJson,
+      }, { onConflict: "id" });
       if (error) throw error;
     },
     onSuccess: invalidate,
