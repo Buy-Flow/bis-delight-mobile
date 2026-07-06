@@ -25,6 +25,7 @@ export const BRAND = {
     "https://www.google.com/maps?q=Av.+Daniel+Comboni+esquina+JK+Ouro+Preto+do+Oeste+RO&output=embed",
   deliveryFee: 5,
   texture: texturePurple.url,
+  logo: logoAsset.url,
 };
 
 export type Category = {
