@@ -1,12 +1,8 @@
-import { BRAND } from "@/data/menu";
-
 import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
-  const waLink = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(
-    "Olá! Quero fazer um pedido na Quero Bis 🍧",
-  )}`;
+
 
   return (
     <section className="relative overflow-hidden px-4 pb-10 pt-2">
@@ -53,51 +49,52 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             fontWeight: 900,
           }}
         >
-          <span className="inline-block -rotate-[4deg]">Sorvete</span>
+          <span className="inline-block -rotate-[5deg]">Sorvete</span>
           <br />
-          <span className="inline-block rotate-[3deg]">Favorito</span>
+          <span className="inline-block -rotate-[5deg]">Favorito</span>
         </h1>
 
-        {/* Elegant ribbon banner — twin ribbon tails + soft gradient */}
-        <div className="relative mt-6 w-full max-w-[290px] -rotate-[1.5deg]">
+
+        {/* Hand-painted pink brush blob sticker */}
+        <div className="relative mt-6 w-full max-w-[280px] -rotate-[3deg]">
           <svg
-            viewBox="0 0 400 110"
-            className="absolute inset-0 h-full w-full drop-shadow-[0_12px_20px_-8px_rgba(236,64,122,0.65)]"
+            viewBox="0 0 400 130"
+            className="absolute inset-0 h-full w-full drop-shadow-[0_10px_18px_-6px_rgba(236,64,122,0.55)]"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
-            <defs>
-              <linearGradient id="ribbonGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="oklch(0.78 0.24 350)" />
-                <stop offset="50%" stopColor="oklch(0.68 0.28 350)" />
-                <stop offset="100%" stopColor="oklch(0.58 0.26 350)" />
-              </linearGradient>
-            </defs>
-            {/* Left tail */}
-            <path d="M0,78 L22,58 L44,72 L28,88 Z" fill="oklch(0.48 0.22 350)" />
-            {/* Right tail */}
-            <path d="M400,78 L378,58 L356,72 L372,88 Z" fill="oklch(0.48 0.22 350)" />
-            {/* Main ribbon body */}
+            {/* Organic wobbly brush shape */}
             <path
-              d="M20,30 Q200,10 380,30 L380,80 Q200,100 20,80 Z"
-              fill="url(#ribbonGrad)"
+              d="M18,58
+                 C 8,26 60,10 118,14
+                 C 176,18 226,4 296,12
+                 C 348,18 396,26 388,58
+                 C 380,86 348,110 286,112
+                 C 214,114 154,124 96,116
+                 C 38,108 -4,96 18,58 Z"
+              fill="oklch(0.68 0.27 350)"
             />
-            {/* Inner highlight stitch */}
+            {/* Soft inner highlight */}
             <path
-              d="M32,38 Q200,22 368,38"
+              d="M46,42 C 130,26 260,26 350,40"
               stroke="rgba(255,255,255,0.35)"
-              strokeWidth="1"
+              strokeWidth="3"
+              strokeLinecap="round"
               fill="none"
-              strokeDasharray="3 4"
             />
           </svg>
           <span
-            className="relative block px-8 py-4 text-[16px] leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-            style={{ fontFamily: "'Caveat', cursive", fontWeight: 700 }}
+            className="relative block px-8 py-5 text-center text-[19px] leading-[1.05] text-white"
+            style={{
+              fontFamily: "'Caveat', cursive",
+              fontWeight: 700,
+              textShadow: "0 2px 3px rgba(0,0,0,0.25)",
+            }}
           >
             A felicidade cabe em cada colher!
           </span>
         </div>
+
 
         {/* Subtitle */}
         <p
@@ -112,73 +109,12 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           <span className="font-bold text-neon-yellow">mais feliz!</span>
         </p>
 
-        {/* WhatsApp CTA — sculpted 3D pill with gradient + glow ring */}
-        <a
-          href={waLink}
-          target="_blank"
-          rel="noreferrer"
-          className="group relative mt-7 inline-flex items-center gap-3 rounded-full px-7 py-3.5 text-black active:scale-[.97] transition"
-          style={{
-            background:
-              "linear-gradient(180deg, #FFF089 0%, #FFDA3D 45%, #F0B400 100%)",
-            boxShadow:
-              "0 0 0 3px rgba(255,215,60,0.18), 0 14px 28px -8px rgba(255,180,0,0.55), inset 0 2px 0 rgba(255,255,255,0.75), inset 0 -3px 0 rgba(160,90,0,0.35)",
-          }}
-        >
-          {/* Glossy top highlight */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-4 top-1 h-2 rounded-full opacity-70"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0))",
-            }}
-          />
-          <span
-            className="relative grid h-9 w-9 place-items-center rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 35% 30%, #2ee56b 0%, #0aa84a 70%, #067a35 100%)",
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.5), 0 3px 6px rgba(0,0,0,0.35)",
-            }}
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20.5 3.5A11 11 0 0 0 3.6 17.2L2 22l4.9-1.6a11 11 0 0 0 5.3 1.4h.1a11 11 0 0 0 8.2-18.3z" />
-              <path d="M8.2 7.6a1 1 0 0 1 .9-.5h.6c.2 0 .4 0 .6.4.3.5.9 2 .9 2.1s.1.3 0 .5c-.5 1-1.1 1-.8 1.5a7.4 7.4 0 0 0 3.7 3.2c.3.2.5.1.6 0 .1-.1.6-.7.8-1s.4-.3.6-.2 1.6.8 1.9.9c.3.1.5.2.6.3a1.7 1.7 0 0 1-.1 1.4c-.3.7-1.5 1.3-2 1.4s-1.1.1-1.8-.1a15.8 15.8 0 0 1-1.6-.6c-2.8-1.2-4.6-4.1-4.8-4.3s-1.1-1.5-1.1-2.8a3 3 0 0 1 1-2.2z" />
-            </svg>
-          </span>
-          <span className="relative flex flex-col items-start leading-[1]">
-            <span
-              className="text-[17px] uppercase tracking-wide"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900 }}
-            >
-              Pedir agora
-            </span>
-            <span
-              className="mt-1 text-[9.5px] tracking-[0.24em] text-black/70"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
-            >
-              PELO WHATSAPP
-            </span>
-          </span>
-        </a>
+
+
 
         {/* Bottom caption — thinner "Rápido, prático e" with "delicioso!" underlined below */}
-        <div className="relative mt-5 flex flex-col items-center">
-          <svg
-            viewBox="0 0 60 70"
-            className="absolute -left-12 -top-14 h-16 w-12"
-            fill="none"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M8 64 C 6 44, 14 24, 44 10" />
-            <path d="M36 6 L46 8 L44 18" />
-          </svg>
+        <div className="relative mt-6 flex flex-col items-center">
+
           <button
             onClick={onScrollMenu}
             className="flex flex-col items-center leading-tight text-white"
