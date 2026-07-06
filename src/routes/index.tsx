@@ -135,8 +135,8 @@ function Content() {
         </button>
       </section>
 
-      {/* Categories right above menu */}
-      <CategoryStrip active={activeCat} onChange={setActiveCat} />
+
+
 
       {/* Product list */}
       <section ref={menuRef} className="px-4 pb-6">
