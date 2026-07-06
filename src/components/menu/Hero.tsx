@@ -5,19 +5,31 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
   return (
-    <section className="relative overflow-visible px-4 pb-40 pt-8">
+    <section className="relative overflow-hidden px-4 pb-24 pt-2">
       {/* Side ice cream illustrations */}
-      <img
-        src={heroBgLeft.url}
-        alt=""
+      <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1 top-14 z-0 h-auto w-[112px] select-none object-contain"
+        className="pointer-events-none absolute left-0 top-16 z-0 select-none"
+        style={{
+          width: "128px",
+          height: "360px",
+          backgroundImage: `url(${heroBgLeft.url})`,
+          backgroundSize: "440px auto",
+          backgroundPosition: "-10px -140px",
+          backgroundRepeat: "no-repeat",
+        }}
       />
-      <img
-        src={heroBgRight.url}
-        alt=""
+      <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-1 top-14 z-0 h-auto w-[112px] select-none object-contain"
+        className="pointer-events-none absolute right-0 top-24 z-0 select-none"
+        style={{
+          width: "128px",
+          height: "360px",
+          backgroundImage: `url(${heroBgRight.url})`,
+          backgroundSize: "410px auto",
+          backgroundPosition: "-278px -150px",
+          backgroundRepeat: "no-repeat",
+        }}
       />
 
       <div className="relative z-20 mx-auto flex w-[220px] max-w-full flex-col items-center text-center">
@@ -73,26 +85,18 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Offer chips */}
         <div
-          className="mt-5 flex flex-col items-center gap-1.5"
+          className="mt-5 flex flex-wrap items-center justify-center gap-1.5"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          <div className="flex items-center justify-center gap-1.5">
-            {["Açaí", "Shakes"].map((chip) => (
-              <span
-                key={chip}
-                className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
-              >
-                {chip}
-              </span>
-            ))}
-          </div>
-          <span
-            className="rounded-full border border-white/25 bg-white/15 px-4 py-[5px] text-[13px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm"
-          >
-            Sorvetes
-          </span>
+          {["Açaí", "Sorvetes", "Shakes"].map((chip) => (
+            <span
+              key={chip}
+              className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
+            >
+              {chip}
+            </span>
+          ))}
         </div>
-
 
         <p
           className="mt-3 text-[12px] leading-snug text-white/75"
@@ -133,7 +137,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         </div>
 
         {/* Space for side illustrations */}
-        <div className="h-40" />
+        <div className="h-28" />
       </div>
 
     </section>
