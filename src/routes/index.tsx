@@ -123,7 +123,7 @@ function Content() {
       <section className="px-4 py-6">
         <button
           onClick={openAcai}
-          className="shine-strip group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.35_0.24_310)] via-[oklch(0.28_0.20_320)] to-[oklch(0.20_0.15_305)] p-4 text-left ring-1 ring-neon-cyan/30 active:scale-[.99]"
+          className="shine-strip group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
         >
           <div className="relative z-10">
             <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
