@@ -92,7 +92,7 @@ export function ProductCard({
 
       {/* Price tag sticker — diagonal, sits on the wave */}
       <div
-        className="absolute right-3 top-[182px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none"
+        className="absolute right-3 top-[147px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none"
         style={{
           background:
             "linear-gradient(180deg, oklch(0.94 0.19 100) 0%, oklch(0.82 0.22 90) 100%)",
