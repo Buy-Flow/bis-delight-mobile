@@ -28,7 +28,7 @@ export function ProductCard({
       }}
     >
       {/* Full-bleed product image top */}
-      <div className="relative h-[210px] w-full overflow-hidden rounded-t-[22px]">
+      <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px]">
         {/* Diagonal neon streaks */}
         <div
           className="absolute inset-0"
