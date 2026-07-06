@@ -55,46 +55,46 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         </h1>
 
 
-        {/* Elegant ribbon banner — twin ribbon tails + soft gradient */}
-        <div className="relative mt-6 w-full max-w-[290px] -rotate-[1.5deg]">
+        {/* Hand-painted pink brush blob sticker */}
+        <div className="relative mt-6 w-full max-w-[280px] -rotate-[3deg]">
           <svg
-            viewBox="0 0 400 110"
-            className="absolute inset-0 h-full w-full drop-shadow-[0_12px_20px_-8px_rgba(236,64,122,0.65)]"
+            viewBox="0 0 400 130"
+            className="absolute inset-0 h-full w-full drop-shadow-[0_10px_18px_-6px_rgba(236,64,122,0.55)]"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
-            <defs>
-              <linearGradient id="ribbonGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="oklch(0.78 0.24 350)" />
-                <stop offset="50%" stopColor="oklch(0.68 0.28 350)" />
-                <stop offset="100%" stopColor="oklch(0.58 0.26 350)" />
-              </linearGradient>
-            </defs>
-            {/* Left tail */}
-            <path d="M0,78 L22,58 L44,72 L28,88 Z" fill="oklch(0.48 0.22 350)" />
-            {/* Right tail */}
-            <path d="M400,78 L378,58 L356,72 L372,88 Z" fill="oklch(0.48 0.22 350)" />
-            {/* Main ribbon body */}
+            {/* Organic wobbly brush shape */}
             <path
-              d="M20,30 Q200,10 380,30 L380,80 Q200,100 20,80 Z"
-              fill="url(#ribbonGrad)"
+              d="M18,58
+                 C 8,26 60,10 118,14
+                 C 176,18 226,4 296,12
+                 C 348,18 396,26 388,58
+                 C 380,86 348,110 286,112
+                 C 214,114 154,124 96,116
+                 C 38,108 -4,96 18,58 Z"
+              fill="oklch(0.68 0.27 350)"
             />
-            {/* Inner highlight stitch */}
+            {/* Soft inner highlight */}
             <path
-              d="M32,38 Q200,22 368,38"
+              d="M46,42 C 130,26 260,26 350,40"
               stroke="rgba(255,255,255,0.35)"
-              strokeWidth="1"
+              strokeWidth="3"
+              strokeLinecap="round"
               fill="none"
-              strokeDasharray="3 4"
             />
           </svg>
           <span
-            className="relative block px-8 py-4 text-[16px] leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-            style={{ fontFamily: "'Caveat', cursive", fontWeight: 700 }}
+            className="relative block px-8 py-5 text-center text-[19px] leading-[1.05] text-white"
+            style={{
+              fontFamily: "'Caveat', cursive",
+              fontWeight: 700,
+              textShadow: "0 2px 3px rgba(0,0,0,0.25)",
+            }}
           >
             A felicidade cabe em cada colher!
           </span>
         </div>
+
 
         {/* Subtitle */}
         <p
