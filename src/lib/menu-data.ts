@@ -242,8 +242,8 @@ export type ProductInput = {
   removable: string[] | null;
   badge: string | null;
   hero: boolean;
-  active: boolean;
-  sort_order: number;
+  active?: boolean;
+  sort_order?: number;
 };
 
 export function useUpsertProduct() {
