@@ -211,7 +211,7 @@ function HighlightsCarousel({
         className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-3"
       >
         {highlights.map((p) => (
-          <div key={p.id} className="w-[180px] shrink-0 snap-start">
+          <div key={p.id} className="w-[88%] shrink-0 snap-start">
             <HighlightCard product={p} onOpen={onOpen} />
           </div>
         ))}
