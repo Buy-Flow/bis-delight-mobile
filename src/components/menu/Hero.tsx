@@ -86,7 +86,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           className="mt-5 flex flex-wrap items-center justify-center gap-1.5"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          {["Açaí", "Sorvetes", "Milkshakes", "+ Muito mais"].map((chip) => (
+          {["Açaí", "Sorvetes", "Shakes"].map((chip) => (
             <span
               key={chip}
               className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm"
