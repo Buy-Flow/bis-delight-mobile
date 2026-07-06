@@ -110,20 +110,17 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Beautiful tagline strip */}
         <div className="mt-5 flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2">
-            <span className="h-px w-6 bg-gradient-to-r from-transparent to-neon-yellow/70" />
-            <span
-              className="text-[22px] italic leading-none text-neon-yellow drop-shadow-[0_2px_6px_rgba(255,215,60,0.35)]"
-              style={{
-                fontFamily: "'Caveat', cursive",
-                fontWeight: 700,
-                letterSpacing: "0.01em",
-              }}
-            >
-              Quero Bis
-            </span>
-            <span className="h-px w-6 bg-gradient-to-l from-transparent to-neon-yellow/70" />
-          </div>
+          <span
+            className="text-[26px] leading-none text-neon-yellow"
+            style={{
+              fontFamily: "'Fredoka', 'Nunito', sans-serif",
+              fontWeight: 700,
+              letterSpacing: "0.01em",
+            }}
+          >
+            Quero Bis
+          </span>
+
 
           <div
             className="flex flex-col items-center gap-0 -rotate-[4deg] text-white/85"
