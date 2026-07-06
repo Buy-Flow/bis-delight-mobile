@@ -105,7 +105,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         </button>
 
         {/* Space for side illustrations */}
-        <div className="h-20" />
+        <div className="h-40" />
       </div>
     </section>
   );
