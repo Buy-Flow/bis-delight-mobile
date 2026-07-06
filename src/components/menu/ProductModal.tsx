@@ -1,9 +1,70 @@
 import { useMemo, useState } from "react";
 import { Minus, Plus, X, Check } from "lucide-react";
-import type { Product } from "@/data/menu";
+import type { ExtraOption, Product } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+/* Default customization pools by category — used when a product doesn't
+   define its own extras/removable so every item has a rich "Personalizar" flow. */
+const DEFAULT_EXTRAS_ACAI: ExtraOption[] = [
+  { id: "d-leite-condensado", label: "Leite Condensado", price: 2 },
+  { id: "d-creme-ninho", label: "Creme de Ninho", price: 3 },
+  { id: "d-nutella", label: "Nutella", price: 4 },
+  { id: "d-ovomaltine", label: "Ovomaltine", price: 3 },
+  { id: "d-morango", label: "Morango fresco", price: 3 },
+  { id: "d-banana", label: "Banana", price: 2 },
+  { id: "d-granola", label: "Granola", price: 2 },
+  { id: "d-pacoca", label: "Paçoca", price: 2 },
+  { id: "d-chocoball", label: "Chocoball", price: 3 },
+  { id: "d-leite-po", label: "Leite em Pó", price: 2 },
+];
+
+const DEFAULT_EXTRAS_TACA: ExtraOption[] = [
+  { id: "t-chantilly-extra", label: "Chantilly extra", price: 3 },
+  { id: "t-calda-quente", label: "Calda Quente", price: 3 },
+  { id: "t-nutella", label: "Nutella", price: 4 },
+  { id: "t-bombom", label: "Bombom extra", price: 5 },
+  { id: "t-cereja", label: "Cereja", price: 2 },
+  { id: "t-granulado", label: "Granulado", price: 2 },
+  { id: "t-raspas-choc", label: "Raspas de Chocolate", price: 3 },
+];
+
+const DEFAULT_EXTRAS_SHAKE: ExtraOption[] = [
+  { id: "s-chantilly", label: "Chantilly no topo", price: 3 },
+  { id: "s-calda-choc", label: "Calda de Chocolate", price: 3 },
+  { id: "s-calda-morango", label: "Calda de Morango", price: 3 },
+  { id: "s-oreo", label: "Oreo triturado", price: 4 },
+  { id: "s-nutella", label: "Nutella", price: 4 },
+  { id: "s-canudo-gigante", label: "Canudo gigante", price: 1 },
+];
+
+const DEFAULT_EXTRAS_MIX: ExtraOption[] = [
+  { id: "m-chantilly", label: "Chantilly", price: 3 },
+  { id: "m-nutella", label: "Nutella", price: 4 },
+  { id: "m-ninho", label: "Creme de Ninho", price: 3 },
+  { id: "m-morango", label: "Morango fresco", price: 3 },
+  { id: "m-pacoca", label: "Paçoca", price: 2 },
+];
+
+function getDefaultExtras(category: string): ExtraOption[] {
+  switch (category) {
+    case "acai":
+    case "copos":
+      return DEFAULT_EXTRAS_ACAI;
+    case "tacas":
+      return DEFAULT_EXTRAS_TACA;
+    case "shakes":
+      return DEFAULT_EXTRAS_SHAKE;
+    case "mix":
+    case "kids":
+    case "casquinhas":
+      return DEFAULT_EXTRAS_MIX;
+    default:
+      return DEFAULT_EXTRAS_MIX;
+  }
+}
+
 
 export function ProductModal({
   product,
@@ -33,12 +94,28 @@ export function ProductModal({
 
   if (!product) return null;
 
+  // Rich customization pools with sensible fallbacks per category
+  const availableExtras: ExtraOption[] =
+    product.extras && product.extras.length > 0
+      ? product.extras
+      : getDefaultExtras(product.category);
+  const removableList: string[] =
+    product.removable && product.removable.length > 0
+      ? product.removable
+      : product.ingredients.filter((i) => i.toLowerCase() !== "açaí");
+  const flavorList: string[] | undefined =
+    product.flavors && product.flavors.length > 0
+      ? product.flavors
+      : product.category === "shakes" || product.category === "casquinhas" || product.category === "tacas"
+        ? ["Chocolate", "Morango", "Baunilha", "Ninho", "Flocos", "Ovomaltine", "Doce de Leite"]
+        : undefined;
+
   const size = product.sizes.find((s) => s.id === sizeId) ?? product.sizes[0];
-  const extrasSelected =
-    product.extras?.filter((e) => extras.includes(e.id)) ?? [];
+  const extrasSelected = availableExtras.filter((e) => extras.includes(e.id));
   const extrasPrice = extrasSelected.reduce((s, e) => s + e.price, 0);
   const unit = product.basePrice + size.priceDelta + extrasPrice;
   const total = unit * qty;
+
 
   const toggleExtra = (id: string) =>
     setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -112,10 +189,10 @@ export function ProductModal({
             </div>
           </Section>
 
-          {product.flavors && (
+          {flavorList && (
             <Section title="Sabor">
               <div className="flex flex-wrap gap-2">
-                {product.flavors.map((f) => (
+                {flavorList.map((f) => (
                   <Chip
                     key={f}
                     small
@@ -129,13 +206,13 @@ export function ProductModal({
             </Section>
           )}
 
-          {product.extras && (
+          {availableExtras.length > 0 && (
             <Section
               title="Complementos"
               hint={`Adicione o que quiser`}
             >
               <div className="space-y-2">
-                {product.extras.map((e) => {
+                {availableExtras.map((e) => {
                   const on = extras.includes(e.id);
                   return (
                     <button
@@ -164,7 +241,7 @@ export function ProductModal({
                         </span>
                       </div>
                       <span className="text-sm font-bold text-neon-yellow">
-                        + {brl(e.price)}
+                        {e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
                       </span>
                     </button>
                   );
@@ -173,10 +250,10 @@ export function ProductModal({
             </Section>
           )}
 
-          {product.removable && product.removable.length > 0 && (
+          {removableList.length > 0 && (
             <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
               <div className="flex flex-wrap gap-2">
-                {product.removable.map((r) => {
+                {removableList.map((r) => {
                   const off = removed.includes(r);
                   return (
                     <Chip
@@ -193,6 +270,7 @@ export function ProductModal({
               </div>
             </Section>
           )}
+
 
           <Section title="Observação">
             <textarea
