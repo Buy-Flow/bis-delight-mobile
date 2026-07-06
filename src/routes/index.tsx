@@ -18,7 +18,7 @@ import { BRAND, type Product } from "@/data/menu";
 import { useProducts, useSiteSettings } from "@/lib/menu-data";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
-import { Search, Sparkles, X } from "lucide-react";
+import { Search, Sparkles, X, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
