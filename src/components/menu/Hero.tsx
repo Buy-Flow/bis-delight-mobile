@@ -76,21 +76,6 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Floating products */}
         <div className="relative mt-6 h-64">
-          <img
-            src={hero1.image}
-            alt={hero1.name}
-            className="absolute left-1/2 top-0 h-64 -translate-x-1/2 animate-float-slow"
-          />
-          <img
-            src={hero2.image}
-            alt={hero2.name}
-            className="absolute -left-4 bottom-0 h-28 animate-float-med"
-          />
-          <img
-            src={hero3.image}
-            alt={hero3.name}
-            className="absolute -right-2 bottom-2 h-32 animate-float-slow"
-          />
           <button
             onClick={openCart}
             className="absolute right-0 top-2 rounded-full bg-neon-cyan/20 px-3 py-1 text-[11px] font-semibold text-neon-cyan ring-1 ring-neon-cyan/60"
@@ -98,6 +83,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             Ver carrinho
           </button>
         </div>
+
       </div>
     </section>
   );
