@@ -192,14 +192,84 @@ function SeedButton() {
 function ProductsTab() {
   const { data: products = [] } = useAllProducts();
   const { data: categories = [] } = useCategories();
+  const reorder = useReorderProducts();
+  const toggleActive = useToggleProductActive();
+  const upsert = useUpsertProduct();
   const [editing, setEditing] = useState<Product | null>(null);
+  const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [localOrder, setLocalOrder] = useState<Product[] | null>(null);
+
+  const catList = categories.filter((c) => c.id !== "all");
+
+  // Live list (local drag state wins until saved)
+  const source = localOrder ?? products;
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return source.filter((p) => {
+      if (filter !== "all" && p.category !== filter) return false;
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [source, filter, search]);
+
+  const onDragStart = (id: string) => setDragId(id);
+  const onDragOver = (e: React.DragEvent, overId: string) => {
+    e.preventDefault();
+    if (!dragId || dragId === overId) return;
+    const list = [...(localOrder ?? products)];
+    const from = list.findIndex((p) => p.id === dragId);
+    const to = list.findIndex((p) => p.id === overId);
+    if (from < 0 || to < 0) return;
+    const [moved] = list.splice(from, 1);
+    list.splice(to, 0, moved);
+    setLocalOrder(list);
+  };
+  const onDragEnd = async () => {
+    setDragId(null);
+    if (!localOrder) return;
+    const items = localOrder.map((p, i) => ({ id: p.id, sort_order: i }));
+    try {
+      await reorder.mutateAsync(items);
+      toast.success("Ordem salva");
+    } catch {
+      toast.error("Falha ao salvar ordem");
+    } finally {
+      setLocalOrder(null);
+    }
+  };
+
+  const duplicate = async (p: Product) => {
+    const newId = `${p.id}-copia-${Date.now().toString(36)}`;
+    await upsert.mutateAsync({
+      id: newId,
+      name: `${p.name} (cópia)`,
+      category: p.category,
+      image_url: p.image || null,
+      description: p.description,
+      ingredients: p.ingredients ?? [],
+      base_price: p.basePrice,
+      sizes: p.sizes ?? [],
+      flavors: p.flavors ?? null,
+      extras: p.extras ?? null,
+      removable: p.removable ?? null,
+      badge: p.badge ?? null,
+      hero: false,
+      active: true,
+      sort_order: products.length,
+    });
+    toast.success("Produto duplicado");
+  };
 
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="font-display text-2xl font-black">Produtos</h2>
-          <p className="text-xs text-white/50">{products.length} cadastrados</p>
+          <p className="text-xs text-white/50">
+            {visible.length} de {products.length} · arraste para reordenar
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SeedButton />
@@ -208,7 +278,7 @@ function ProductsTab() {
               setEditing({
                 id: "",
                 name: "",
-                category: categories.find((c) => c.id !== "all")?.id ?? "acai",
+                category: catList[0]?.id ?? "acai",
                 image: "",
                 description: "",
                 ingredients: [],
@@ -223,35 +293,137 @@ function ProductsTab() {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2">
-        {products.map((p) => (
-          <button
+      <div className="mb-3 space-y-2">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            className={cn(inputCls, "pl-9")}
+            placeholder="Buscar produto por nome..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-1 overflow-x-auto pb-1">
+          <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
+            Tudo <span className="opacity-60">({products.length})</span>
+          </FilterChip>
+          {catList.map((c) => {
+            const count = products.filter((p) => p.category === c.id).length;
+            return (
+              <FilterChip key={c.id} active={filter === c.id} onClick={() => setFilter(c.id)}>
+                <span>{c.emoji}</span> {c.name} <span className="opacity-60">({count})</span>
+              </FilterChip>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        {visible.map((p) => (
+          <div
             key={p.id}
-            onClick={() => setEditing(p)}
-            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2 text-left transition hover:bg-white/10"
+            draggable
+            onDragStart={() => onDragStart(p.id)}
+            onDragOver={(e) => onDragOver(e, p.id)}
+            onDragEnd={onDragEnd}
+            className={cn(
+              "group flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 transition",
+              dragId === p.id && "opacity-40",
+              !p.active && "opacity-60",
+            )}
           >
-            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-black/30">
-              {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
+            <div className="grid h-8 w-6 shrink-0 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
+              <GripVertical className="h-4 w-4" />
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-bold">{p.name}</div>
-              <div className="text-[11px] text-white/50">
-                {p.category} · R$ {p.basePrice.toFixed(2)}
+            <button
+              onClick={() => setEditing(p)}
+              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+            >
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+                {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
               </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-bold">{p.name}</span>
+                  {p.hero && <Star className="h-3.5 w-3.5 shrink-0 fill-neon-yellow text-neon-yellow" />}
+                </div>
+                <div className="text-[11px] text-white/50">
+                  {p.category} · R$ {p.basePrice.toFixed(2)}
+                </div>
+              </div>
+            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              <IconBtn
+                title={p.active ? "Ocultar do cardápio" : "Mostrar no cardápio"}
+                onClick={() => toggleActive.mutate({ id: p.id, active: !p.active })}
+              >
+                {p.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-white/40" />}
+              </IconBtn>
+              <IconBtn title="Duplicar" onClick={() => duplicate(p)}>
+                <Copy className="h-4 w-4" />
+              </IconBtn>
             </div>
-            {p.hero && <Star className="h-4 w-4 fill-neon-yellow text-neon-yellow" />}
-          </button>
+          </div>
         ))}
+        {visible.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
+            Nenhum produto encontrado.
+          </div>
+        )}
       </div>
 
       {editing && (
         <ProductEditor
           initial={editing}
-          categories={categories.filter((c) => c.id !== "all")}
+          categories={catList}
           onClose={() => setEditing(null)}
         />
       )}
     </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+        active
+          ? "bg-neon-cyan text-[oklch(0.18_0.11_305)]"
+          : "border border-white/10 text-white/70 hover:text-white",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function IconBtn({
+  title,
+  onClick,
+  children,
+}: {
+  title: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      title={title}
+      onClick={onClick}
+      className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+    >
+      {children}
+    </button>
   );
 }
 
