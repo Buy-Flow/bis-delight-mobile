@@ -16,6 +16,7 @@ import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
 import heroTexture from "@/assets/purple-crumpled-soft.jpg.asset.json";
+import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -117,8 +118,11 @@ function Content() {
             </div>
           </div>
           <img
-            src={PRODUCTS.find((p) => p.id === "acai-mix-monte")?.image ?? PRODUCTS[0]?.image}
+            src={monteAcaiImg.url}
             alt="Monte seu açaí"
+            loading="lazy"
+            width={1024}
+            height={1024}
             className="ml-auto h-32 w-32 shrink-0 object-contain drop-shadow-[0_15px_20px_rgba(0,0,0,0.5)] animate-float-slow"
           />
         </button>
