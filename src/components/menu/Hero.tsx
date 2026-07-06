@@ -32,7 +32,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         }}
       />
 
-      <div className="relative z-20 mx-auto flex max-w-[280px] flex-col items-center px-2 text-center">
+      <div className="relative z-20 mx-auto flex w-[210px] max-w-full flex-col items-center text-center">
         {/* Eyebrow */}
         <div
           className="text-[20px] italic leading-none text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
@@ -43,7 +43,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Headline */}
         <h1
-          className="mt-1 text-[46px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
+          className="mt-1 text-[38px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
           style={{
             fontFamily: "'Barlow Condensed', 'Anton', sans-serif",
             fontWeight: 900,
@@ -51,6 +51,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         >
           <span className="inline-block -rotate-[3deg]">Transforma</span>
         </h1>
+
 
         {/* Underline swash */}
         <svg
@@ -85,10 +86,10 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           className="mt-5 flex flex-wrap items-center justify-center gap-1.5"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          {["Açaí", "Sorvetes", "Milkshakes", "+ Muito mais"].map((chip) => (
+          {["Açaí", "Sorvetes", "Shakes"].map((chip) => (
             <span
               key={chip}
-              className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm"
+              className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
             >
               {chip}
             </span>
