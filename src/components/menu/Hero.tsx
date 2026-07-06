@@ -114,37 +114,29 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         </p>
 
 
-        {/* Subtle tagline — carimbo discreto */}
-        <div className="mt-6 flex items-center justify-center gap-1.5 opacity-70">
-          <span className="inline-block h-[3px] w-[3px] rounded-full bg-neon-pink/70" />
-          <span
-            className="text-[9px] uppercase tracking-[0.28em] text-white/60"
-            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
+        {/* Beautiful tagline strip */}
+        <div className="mt-5 flex flex-col items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-cyan shadow-[0_0_8px_rgba(0,229,255,0.8)]" />
+            <span className="h-px w-5 bg-linear-to-r from-transparent via-neon-pink/60 to-neon-pink" />
+            <span
+              className="rounded-full border border-neon-pink/40 bg-neon-pink/10 px-2.5 py-[3px] text-[9.5px] uppercase tracking-[0.35em] text-neon-pink shadow-[0_0_14px_rgba(255,60,170,0.35)] backdrop-blur-sm"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
+            >
+              Quero Bis
+            </span>
+            <span className="h-px w-5 bg-linear-to-l from-transparent via-neon-pink/60 to-neon-pink" />
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
+          </div>
+          <div
+            className="flex flex-col items-center gap-0 -rotate-[4deg] text-white/85"
+            style={{ fontFamily: "'Caveat', cursive", fontWeight: 600, fontSize: "14px", lineHeight: 1 }}
           >
-            Quero Bis
-          </span>
-          <span className="text-white/30">·</span>
-          <span
-            className="text-[9px] uppercase tracking-[0.28em] text-white/60"
-            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
-          >
-            rápido
-          </span>
-          <span className="text-white/30">·</span>
-          <span
-            className="text-[9px] uppercase tracking-[0.28em] text-white/60"
-            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
-          >
-            prático
-          </span>
-          <span className="text-white/30">·</span>
-          <span
-            className="text-[11px] text-neon-yellow/85 -rotate-[3deg] inline-block"
-            style={{ fontFamily: "'Caveat', cursive", fontWeight: 600 }}
-          >
-            extraordinário
-          </span>
-          <span className="inline-block h-[3px] w-[3px] rounded-full bg-neon-yellow/70" />
+            <span>Rápido</span>
+            <span>Prático</span>
+            <span className="text-white">&amp;</span>
+            <span className="text-neon-yellow">extraordinário</span>
+          </div>
         </div>
 
         {/* Space for side illustrations */}
