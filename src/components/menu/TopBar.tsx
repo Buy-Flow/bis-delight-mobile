@@ -6,8 +6,7 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
   const { count, openCart } = useCart();
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl">
-      <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.14_0.09_305)]/95 to-[oklch(0.14_0.09_305)]/70 border-b border-white/5" />
+    <header className="sticky top-0 z-40 bg-transparent">
       <div className="relative flex items-center justify-between px-4 py-3">
         <button
           onClick={onOpenCategories}
