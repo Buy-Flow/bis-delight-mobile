@@ -17,6 +17,7 @@ type Accent = {
   bg: string; // solid bg for icon circle
   ring: string; // active ring color
   glow: string; // active shadow color
+  hex: string; // personalized accent color for badge/glow
 };
 
 const ACCENTS: Record<string, Accent> = {
@@ -25,50 +26,60 @@ const ACCENTS: Record<string, Accent> = {
     bg: "bg-white/15",
     ring: "ring-white/70",
     glow: "shadow-[0_0_18px_rgba(255,255,255,0.25)]",
+    hex: "#ffffff",
   },
   acai: {
     icon: Cherry,
     bg: "bg-[oklch(0.55_0.18_305)]",
     ring: "ring-neon-cyan",
     glow: "shadow-[0_0_18px_oklch(0.86_0.18_200/0.4)]",
+    hex: "#b46bff",
   },
   tacas: {
     icon: IceCream2,
     bg: "bg-neon-pink",
     ring: "ring-neon-pink",
     glow: "shadow-[0_0_18px_oklch(0.72_0.26_350/0.5)]",
+    hex: "#ff4fb0",
   },
   mix: {
     icon: IceCream,
     bg: "bg-neon-cyan",
     ring: "ring-neon-cyan",
     glow: "shadow-[0_0_18px_oklch(0.86_0.18_200/0.5)]",
+    hex: "#5ee7ff",
   },
   kids: {
     icon: Baby,
     bg: "bg-neon-pink",
     ring: "ring-neon-pink",
     glow: "shadow-[0_0_18px_oklch(0.72_0.26_350/0.5)]",
+    hex: "#ff8ad0",
   },
   casquinhas: {
     icon: Cookie,
     bg: "bg-neon-yellow",
     ring: "ring-neon-yellow",
     glow: "shadow-[0_0_18px_oklch(0.92_0.20_100/0.5)]",
+    hex: "#ffd94a",
   },
   shakes: {
     icon: GlassWater,
     bg: "bg-neon-cyan",
     ring: "ring-neon-cyan",
     glow: "shadow-[0_0_18px_oklch(0.86_0.18_200/0.5)]",
+    hex: "#7de3ff",
   },
   copos: {
     icon: CupSoda,
     bg: "bg-neon-pink",
     ring: "ring-neon-pink",
     glow: "shadow-[0_0_18px_oklch(0.72_0.26_350/0.5)]",
+    hex: "#ff6dbf",
   },
 };
+
+
 
 export function CategoryStrip({
   active,
