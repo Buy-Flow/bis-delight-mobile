@@ -83,10 +83,11 @@ function Content() {
       className="relative mx-auto min-h-screen w-full max-w-[520px] pb-32"
       style={{
         backgroundColor: "#0d0322",
-        backgroundImage: `url(${heroTexture.url})`,
+        backgroundImage: `linear-gradient(rgba(13,3,34,0.55), rgba(13,3,34,0.55)), url(${heroTexture.url})`,
         backgroundSize: "cover",
         backgroundRepeat: "repeat",
         backgroundAttachment: "scroll",
+        backgroundBlendMode: "normal",
       }}
     >
 
