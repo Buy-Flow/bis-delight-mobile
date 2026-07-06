@@ -53,6 +53,7 @@ function rowToCategory(row: Record<string, unknown>): Category {
     name: String(row.name),
     emoji: String(row.emoji ?? "✨"),
     image: (row.image_url as string) || "",
+    icon: (row.icon as string | null) ?? null,
     imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
     imageScale: row.image_scale !== undefined && row.image_scale !== null ? Number(row.image_scale) : 1,
