@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { CartProvider, useCart } from "@/lib/cart-context";
@@ -7,6 +7,7 @@ import { Hero } from "@/components/menu/Hero";
 import { Benefits } from "@/components/menu/Benefits";
 import { CategoryStrip } from "@/components/menu/CategoryStrip";
 import { ProductCard } from "@/components/menu/ProductCard";
+import { HighlightCard } from "@/components/menu/HighlightCard";
 import { ProductModal } from "@/components/menu/ProductModal";
 import { AcaiBuilder } from "@/components/menu/AcaiBuilder";
 import { CartSheet } from "@/components/menu/CartSheet";
@@ -15,7 +16,10 @@ import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
 import heroTexture from "@/assets/bg-purple-dark.png.asset.json";
-import { Sparkles, Flame } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -89,23 +93,8 @@ function Content() {
       <CategoryStrip active={activeCat} onChange={setActiveCat} />
 
       {/* Highlights */}
-      <section className="px-4 pb-2">
-        <div className="mb-3 flex items-end justify-between">
-          <h2 className="font-display text-xl font-extrabold text-white flex items-center gap-2">
-            <Flame className="h-5 w-5 text-neon-pink" /> Destaques
-          </h2>
-          <span className="text-[11px] uppercase tracking-widest text-neon-cyan">
-            Mais pedidos
-          </span>
-        </div>
-        <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
-          {highlights.map((p) => (
-            <div key={p.id} className="w-[70%] shrink-0 snap-start">
-              <ProductCard product={p} onOpen={setModalProduct} />
-            </div>
-          ))}
-        </div>
-      </section>
+      <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
+
 
       {/* Monte seu açaí banner */}
       <section className="px-4 py-6">
@@ -179,3 +168,71 @@ function Content() {
     </div>
   );
 }
+
+function HighlightsCarousel({
+  highlights,
+  onOpen,
+}: {
+  highlights: Product[];
+  onOpen: (p: Product) => void;
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const idx = Math.round(el.scrollLeft / (el.clientWidth * 0.88));
+      setActiveIdx(Math.min(highlights.length - 1, Math.max(0, idx)));
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [highlights.length]);
+
+  const scrollTo = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth * 0.88, behavior: "smooth" });
+  };
+
+  return (
+    <section className="pb-4 pt-2">
+      <div className="mb-3 flex items-center justify-center gap-3 px-4">
+        <span className="text-neon-pink">›</span>
+        <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.2em] text-white">
+          Nossos Destaques
+        </h2>
+        <span className="text-neon-pink rotate-180">›</span>
+      </div>
+
+      <div
+        ref={scrollerRef}
+        className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-3"
+      >
+        {highlights.map((p) => (
+          <div key={p.id} className="w-[88%] shrink-0 snap-start">
+            <HighlightCard product={p} onOpen={onOpen} />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-1 flex items-center justify-center gap-1.5">
+        {highlights.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => scrollTo(i)}
+            aria-label={`Ir para destaque ${i + 1}`}
+            className={cn(
+              "h-1.5 rounded-full transition-all",
+              i === activeIdx
+                ? "w-5 bg-neon-pink"
+                : "w-1.5 bg-white/30",
+            )}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
