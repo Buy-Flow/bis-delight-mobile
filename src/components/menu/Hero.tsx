@@ -5,7 +5,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
   return (
-    <section className="relative overflow-hidden px-4 pb-24 pt-2">
+    <section className="relative overflow-hidden px-4 pb-6 pt-2">
       {/* Side ice cream illustrations */}
       <div
         aria-hidden="true"
