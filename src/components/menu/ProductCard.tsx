@@ -53,7 +53,7 @@ export function ProductCard({
           loading="lazy"
           className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)] transition-transform duration-500 group-hover:rotate-3"
           style={{
-            transform: `translate(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%) scale(${product.imageScale ?? 1.1})`,
+            transform: `translate(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%) scale(${product.imageScale ?? 1.5})`,
             transformOrigin: "center",
           }}
         />
