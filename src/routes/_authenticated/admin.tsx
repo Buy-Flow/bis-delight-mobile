@@ -480,6 +480,9 @@ function ProductEditor({
       removable: p.removable && p.removable.length ? p.removable : null,
       badge: p.badge ?? null,
       hero: !!p.hero,
+      image_pos_x: Number(p.imagePosX ?? 0),
+      image_pos_y: Number(p.imagePosY ?? 0),
+      image_scale: Number(p.imageScale ?? 1.1),
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
