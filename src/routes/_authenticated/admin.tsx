@@ -1973,18 +1973,6 @@ function HighlightsTab() {
 }
 
 /* ============================= Settings ============================= */
-function SettingsTab() {
-  const { data } = useSiteSettings();
-  const update = useUpdateSettings();
-  const [s, setS] = useState<SiteSettings | null>(null);
-
-  useEffect(() => {
-    if (data && !s) setS(data);
-  }, [data, s]);
-
-  if (!s) return <Loader2 className="h-6 w-6 animate-spin" />;
-
-/* ============================= Settings ============================= */
 type SettingsSection =
   | "identity"
   | "contact"
