@@ -108,7 +108,7 @@
       radial-gradient(900px 500px at -10% 20%, oklch(0.30 0.20 350 / 0.35), transparent 60%),
       radial-gradient(700px 400px at 50% 100%, oklch(0.25 0.18 200 / 0.25), transparent 60%),
       linear-gradient(180deg, oklch(0.16 0.10 305), oklch(0.10 0.07 305));
-    background-attachment: fixed;
+    background-attachment: scroll;
     min-height: 100vh;
     font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
   }
