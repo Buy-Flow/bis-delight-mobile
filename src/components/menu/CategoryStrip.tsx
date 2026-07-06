@@ -151,32 +151,27 @@ export function CategoryStrip({
 
                 {/* Unified icon badge — same white color for all categories */}
                 <div
-                  className="absolute left-1/2 top-[108px] grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
+                  className="absolute left-1/2 top-[108px] grid h-8 w-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
                   style={{
                     background:
                       "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
-                    boxShadow: `0 4px 10px rgba(0,0,0,0.55), inset 0 0 0 1.5px rgba(255,255,255,0.65), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 10px rgba(255,255,255,0.25)`,
+                    boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.35)",
                   }}
                 >
                   <Icon
-                    className="h-[18px] w-[18px]"
+                    className="h-[16px] w-[16px]"
                     strokeWidth={2.4}
-                    style={{
-                      color: "#ffffff",
-                      filter: `drop-shadow(0 0 3px rgba(255,255,255,0.6))`,
-                    }}
+                    style={{ color: "#ffffff" }}
                   />
                 </div>
 
 
 
                 {/* White label */}
-                <div className="absolute inset-x-0 bottom-3 px-1.5 text-center">
+                <div className="absolute inset-x-0 bottom-2 px-1.5 text-center">
                   <div
                     className="truncate text-[10.5px] font-black uppercase tracking-[0.14em] text-white"
-                    style={{
-                      textShadow: "0 1px 2px rgba(0,0,0,0.6)",
-                    }}
+                    style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}
                   >
                     {c.name}
                   </div>
