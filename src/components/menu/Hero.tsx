@@ -62,26 +62,15 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           Favorito
         </h1>
 
-        {/* Torn paper / brush stroke pink banner */}
-        <div className="relative mt-5 w-full max-w-[320px] -rotate-[2deg]">
-          <svg
-            viewBox="0 0 320 64"
-            className="absolute inset-0 h-full w-full drop-shadow-[0_10px_18px_-6px_rgba(236,64,122,0.7)]"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M6 18 L20 10 L46 16 L78 8 L112 14 L150 6 L188 14 L224 8 L262 16 L292 10 L312 20 L316 34 L308 46 L286 54 L252 48 L216 56 L180 50 L142 58 L108 50 L74 56 L42 48 L18 54 L8 44 L4 30 Z"
-              fill="oklch(0.72 0.26 350)"
-            />
-          </svg>
-          <span
-            className="relative block px-6 py-3 text-[19px] leading-tight text-white"
-            style={{ fontFamily: "'Caveat', cursive", fontWeight: 700 }}
-          >
-            A felicidade cabe em cada colher!
-          </span>
+        {/* Brush stroke pink banner (image with text baked in) */}
+        <div className="mt-5 w-full max-w-[300px]">
+          <img
+            src={brushHappiness.url}
+            alt="A felicidade cabe em cada colher!"
+            className="mx-auto h-auto w-full drop-shadow-[0_10px_16px_-6px_rgba(236,64,122,0.55)]"
+          />
         </div>
+
 
         {/* Subtitle */}
         <p
