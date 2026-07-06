@@ -23,18 +23,12 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         }}
       />
       <div className="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-neon-pink/30 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 top-20 h-64 w-64 rounded-full bg-mango/25 blur-3xl" />
-
-      {/* Tropical palms */}
-      <div className="palm-left animate-sway pointer-events-none -left-16 top-2 h-72 w-56" />
-      <div className="palm-right animate-sway-rev pointer-events-none -right-20 top-24 h-64 w-52" />
-      {/* Grass strip at the bottom of the hero */}
-      <div className="grass-strip pointer-events-none absolute inset-x-0 -bottom-1 h-6 opacity-80" />
+      <div className="pointer-events-none absolute -right-24 top-20 h-64 w-64 rounded-full bg-neon-cyan/25 blur-3xl" />
 
       <div className="relative pt-2">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full tropical-chip px-3 py-1 text-[11px] uppercase tracking-widest">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
           <Sparkles className="h-3 w-3" />
-          Açaí fresquinho · Delivery {BRAND.hours.split(" ")[0]}
+          Aberto agora · Delivery {BRAND.hours.split(" ")[0]}
         </div>
 
         <h1 className="font-display text-[42px] leading-[1] font-extrabold text-neon-yellow glow-yellow-text">
@@ -60,7 +54,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           </a>
           <button
             onClick={onScrollMenu}
-            className="rounded-full border border-palm-500/70 bg-palm-500/10 px-5 py-3 text-sm font-semibold text-palm-300"
+            className="rounded-full border border-neon-cyan/60 px-5 py-3 text-sm font-semibold text-neon-cyan"
           >
             Ver cardápio
           </button>
