@@ -17,6 +17,7 @@ type Accent = {
   bg: string; // solid bg for icon circle
   ring: string; // active ring color
   glow: string; // active shadow color
+  hex: string; // personalized accent color for badge/glow
 };
 
 const ACCENTS: Record<string, Accent> = {
@@ -25,50 +26,60 @@ const ACCENTS: Record<string, Accent> = {
     bg: "bg-white/15",
     ring: "ring-white/70",
     glow: "shadow-[0_0_18px_rgba(255,255,255,0.25)]",
+    hex: "#ffffff",
   },
   acai: {
     icon: Cherry,
     bg: "bg-[oklch(0.55_0.18_305)]",
     ring: "ring-neon-cyan",
     glow: "shadow-[0_0_18px_oklch(0.86_0.18_200/0.4)]",
+    hex: "#b46bff",
   },
   tacas: {
     icon: IceCream2,
     bg: "bg-neon-pink",
     ring: "ring-neon-pink",
     glow: "shadow-[0_0_18px_oklch(0.72_0.26_350/0.5)]",
+    hex: "#ff4fb0",
   },
   mix: {
     icon: IceCream,
     bg: "bg-neon-cyan",
     ring: "ring-neon-cyan",
     glow: "shadow-[0_0_18px_oklch(0.86_0.18_200/0.5)]",
+    hex: "#5ee7ff",
   },
   kids: {
     icon: Baby,
     bg: "bg-neon-pink",
     ring: "ring-neon-pink",
     glow: "shadow-[0_0_18px_oklch(0.72_0.26_350/0.5)]",
+    hex: "#ff8ad0",
   },
   casquinhas: {
     icon: Cookie,
     bg: "bg-neon-yellow",
     ring: "ring-neon-yellow",
     glow: "shadow-[0_0_18px_oklch(0.92_0.20_100/0.5)]",
+    hex: "#ffd94a",
   },
   shakes: {
     icon: GlassWater,
     bg: "bg-neon-cyan",
     ring: "ring-neon-cyan",
     glow: "shadow-[0_0_18px_oklch(0.86_0.18_200/0.5)]",
+    hex: "#7de3ff",
   },
   copos: {
     icon: CupSoda,
     bg: "bg-neon-pink",
     ring: "ring-neon-pink",
     glow: "shadow-[0_0_18px_oklch(0.72_0.26_350/0.5)]",
+    hex: "#ff6dbf",
   },
 };
+
+
 
 export function CategoryStrip({
   active,
@@ -138,54 +149,36 @@ export function CategoryStrip({
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
                 </div>
 
-                {/* Gold sparkle badge — centered on card */}
+                {/* Personalized icon badge — uses category's Lucide icon + hex color */}
                 <div
                   className="absolute left-1/2 top-[80px] grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
                   style={{
                     background:
                       "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
-                    boxShadow:
-                      "0 4px 10px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,215,120,0.55), inset 0 1px 0 rgba(255,255,255,0.15)",
+                    boxShadow: `0 4px 10px rgba(0,0,0,0.55), inset 0 0 0 1.5px ${accent.hex}aa, inset 0 1px 0 rgba(255,255,255,0.15), 0 0 12px ${accent.hex}55`,
                   }}
                 >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                    <defs>
-                      <linearGradient id={`goldSpark-${c.id}`} x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#fff2b3" />
-                        <stop offset="45%" stopColor="#e8c15a" />
-                        <stop offset="100%" stopColor="#8a5f18" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M12 2 L13.6 10.4 L22 12 L13.6 13.6 L12 22 L10.4 13.6 L2 12 L10.4 10.4 Z"
-                      fill={`url(#goldSpark-${c.id})`}
-                    />
-                    <circle cx="19" cy="5" r="1.4" fill={`url(#goldSpark-${c.id})`} />
-                  </svg>
+                  <Icon
+                    className="h-5 w-5"
+                    strokeWidth={2.4}
+                    style={{
+                      color: accent.hex,
+                      filter: `drop-shadow(0 0 4px ${accent.hex}88)`,
+                    }}
+                  />
                 </div>
 
-                {/* Gold metallic label */}
+                {/* White label */}
                 <div className="absolute inset-x-0 bottom-3 px-1.5 text-center">
                   <div
-                    className="truncate text-[10.5px] font-black uppercase tracking-[0.14em]"
+                    className="truncate text-[10.5px] font-black uppercase tracking-[0.14em] text-white"
                     style={{
-                      backgroundImage:
-                        "linear-gradient(180deg, #fff4bd 0%, #f0cb62 40%, #a87a26 70%, #f7dd7c 100%)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      textShadow: "0 1px 0 rgba(0,0,0,0.35)",
-                      filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.5))",
+                      textShadow: "0 1px 2px rgba(0,0,0,0.6)",
                     }}
                   >
                     {c.name}
                   </div>
                 </div>
-
-                {/* Hide unused accent icon (kept import for backwards compat) */}
-                <span className="hidden">
-                  <Icon className="h-0 w-0" />
-                </span>
               </div>
             </button>
           );
@@ -195,3 +188,4 @@ export function CategoryStrip({
     </section>
   );
 }
+
