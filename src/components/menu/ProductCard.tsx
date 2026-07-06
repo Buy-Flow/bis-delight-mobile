@@ -28,7 +28,7 @@ export function ProductCard({
       }}
     >
       {/* Full-bleed product image top */}
-      <div className="relative h-[150px] w-full overflow-hidden rounded-t-[22px]">
+      <div className="relative h-[210px] w-full overflow-hidden rounded-t-[22px]">
         {/* Diagonal neon streaks */}
         <div
           className="absolute inset-0"
@@ -53,7 +53,7 @@ export function ProductCard({
           loading="lazy"
           className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)] transition-transform duration-500 group-hover:rotate-3"
           style={{
-            transform: `translate(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%) scale(${product.imageScale ?? 1.1})`,
+            transform: `translate(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%) scale(${product.imageScale ?? 1.5})`,
             transformOrigin: "center",
           }}
         />
@@ -92,7 +92,7 @@ export function ProductCard({
 
       {/* Price tag sticker — diagonal, sits on the wave */}
       <div
-        className="absolute right-3 top-[122px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none"
+        className="absolute right-3 top-[182px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none"
         style={{
           background:
             "linear-gradient(180deg, oklch(0.94 0.19 100) 0%, oklch(0.82 0.22 90) 100%)",
