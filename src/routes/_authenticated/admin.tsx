@@ -49,6 +49,7 @@ import {
 import type { Product, Category } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
+import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -1450,7 +1451,14 @@ function CategoryListRow({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-sm font-bold">
-            <span className="text-lg leading-none">{category.emoji}</span>
+            {(() => {
+              const Ico = getCategoryIcon(category.icon);
+              return Ico ? (
+                <Ico className="h-4 w-4 shrink-0 text-neon-cyan" />
+              ) : (
+                <span className="text-lg leading-none">{category.emoji}</span>
+              );
+            })()}
             <span className="truncate">{category.name}</span>
           </div>
           <div className="mt-0.5 font-mono text-[10px] text-white/40">{category.id}</div>
@@ -1493,6 +1501,7 @@ function CategoryEditor({
       id,
       name: c.name.trim(),
       emoji: c.emoji || "✨",
+      icon: c.icon ?? null,
       image_url: c.image || null,
       sort_order: isNew ? nextSortOrder : 0,
       active: true,
@@ -1592,25 +1601,22 @@ function CategoryEditor({
                   Para reposicionar / dar zoom na foto, abra a aba <b>Foto</b>.
                 </div>
 
-                <div className="grid grid-cols-[80px_1fr] gap-3">
-                  <Field label="Emoji">
-                    <input
-                      className={cn(inputCls, "text-center text-2xl")}
-                      value={c.emoji}
-                      onChange={(e) => setField("emoji", e.target.value)}
-                      maxLength={4}
-                    />
-                  </Field>
-                  <Field label="Nome da categoria">
-                    <input
-                      className={inputCls}
-                      placeholder="Ex.: Açaí"
-                      value={c.name}
-                      onChange={(e) => setField("name", e.target.value)}
-                      maxLength={40}
-                    />
-                  </Field>
-                </div>
+                <Field label="Nome da categoria">
+                  <input
+                    className={inputCls}
+                    placeholder="Ex.: Açaí"
+                    value={c.name}
+                    onChange={(e) => setField("name", e.target.value)}
+                    maxLength={40}
+                  />
+                </Field>
+
+                <Field label="Ícone">
+                  <IconPicker
+                    value={c.icon ?? null}
+                    onChange={(name) => setField("icon", name)}
+                  />
+                </Field>
 
                 <Field label="ID técnico (slug)">
                   <input
@@ -2044,6 +2050,85 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">{label}</div>
       {children}
     </label>
+  );
+}
+
+function IconPicker({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (name: string | null) => void;
+}) {
+  const [q, setQ] = useState("");
+  const list = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return CATEGORY_ICON_LIST;
+    return CATEGORY_ICON_LIST.filter((i) => i.name.toLowerCase().includes(s));
+  }, [q]);
+
+  const Current = getCategoryIcon(value);
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-2">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-black/40 text-neon-cyan">
+          {Current ? <Current className="h-5 w-5" /> : <Sparkles className="h-5 w-5 text-white/30" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-xs font-semibold text-white/80">
+            {value ?? "Nenhum ícone selecionado"}
+          </div>
+          <div className="text-[10px] text-white/40">Escolha um ícone da biblioteca abaixo.</div>
+        </div>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="rounded-lg border border-white/10 px-2 py-1 text-[10px] text-white/60 hover:bg-white/10"
+          >
+            Remover
+          </button>
+        )}
+      </div>
+
+      <div className="relative mb-2">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+        <input
+          className={cn(inputCls, "pl-8 py-1.5 text-xs")}
+          placeholder="Buscar ícone (ex.: cream, cherry, cup)"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+
+      <div className="grid max-h-56 grid-cols-8 gap-1 overflow-y-auto rounded-lg bg-black/20 p-1.5">
+        {list.map(({ name, Icon }) => {
+          const selected = name === value;
+          return (
+            <button
+              key={name}
+              type="button"
+              title={name}
+              onClick={() => onChange(name)}
+              className={cn(
+                "grid aspect-square place-items-center rounded-md border transition",
+                selected
+                  ? "border-neon-pink bg-neon-pink/20 text-neon-pink"
+                  : "border-transparent text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+            </button>
+          );
+        })}
+        {list.length === 0 && (
+          <div className="col-span-8 py-4 text-center text-[11px] text-white/40">
+            Nenhum ícone encontrado.
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

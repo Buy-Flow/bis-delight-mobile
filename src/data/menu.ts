@@ -40,6 +40,7 @@ export type Category = {
   name: string;
   emoji: string;
   image: string;
+  icon?: string | null;
   imagePosX?: number;
   imagePosY?: number;
   imageScale?: number;

@@ -53,6 +53,7 @@ function rowToCategory(row: Record<string, unknown>): Category {
     name: String(row.name),
     emoji: String(row.emoji ?? "✨"),
     image: (row.image_url as string) || "",
+    icon: (row.icon as string | null) ?? null,
     imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
     imageScale: row.image_scale !== undefined && row.image_scale !== null ? Number(row.image_scale) : 1,
@@ -301,6 +302,7 @@ export function useUpsertCategory() {
       image_pos_x?: number;
       image_pos_y?: number;
       image_scale?: number;
+      icon?: string | null;
     }) => {
       const { error } = await supabase.from("categories").upsert(c, { onConflict: "id" });
       if (error) throw error;
