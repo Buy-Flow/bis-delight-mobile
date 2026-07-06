@@ -32,7 +32,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         }}
       />
 
-      <div className="relative z-20 mx-auto flex max-w-[280px] flex-col items-center px-2 text-center">
+      <div className="relative z-20 mx-auto flex w-[210px] max-w-full flex-col items-center text-center">
         {/* Eyebrow */}
         <div
           className="text-[20px] italic leading-none text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
