@@ -82,12 +82,12 @@ function Content() {
     <div
       className="relative mx-auto min-h-screen w-full max-w-[520px] pb-32"
       style={{
-        backgroundColor: "#0d0322",
-        backgroundImage: `linear-gradient(rgba(13,3,34,0.55), rgba(13,3,34,0.55)), url(${heroTexture.url})`,
+        backgroundColor: "#2a0a5c",
+        backgroundImage: `url(${heroTexture.url})`,
         backgroundSize: "cover",
         backgroundRepeat: "repeat",
         backgroundAttachment: "scroll",
-        backgroundBlendMode: "normal",
+        backgroundBlendMode: "multiply",
       }}
     >
 
