@@ -71,6 +71,9 @@ export type Product = {
   badge?: "Premium" | "Novidade" | "Favorito";
   hero?: boolean;
   active?: boolean;
+  imagePosX?: number;
+  imagePosY?: number;
+  imageScale?: number;
 };
 
 /* Reusable size presets */

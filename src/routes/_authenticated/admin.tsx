@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Toaster, toast } from "sonner";
 import {
@@ -432,7 +432,7 @@ function IconBtn({
   );
 }
 
-type EditorTab = "basic" | "sizes" | "extras" | "advanced";
+type EditorTab = "basic" | "photo" | "sizes" | "extras" | "advanced";
 
 function ProductEditor({
   initial,
@@ -480,6 +480,9 @@ function ProductEditor({
       removable: p.removable && p.removable.length ? p.removable : null,
       badge: p.badge ?? null,
       hero: !!p.hero,
+      image_pos_x: Number(p.imagePosX ?? 0),
+      image_pos_y: Number(p.imagePosY ?? 0),
+      image_scale: Number(p.imageScale ?? 1.1),
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
@@ -514,6 +517,7 @@ function ProductEditor({
 
   const tabs: { id: EditorTab; label: string }[] = [
     { id: "basic", label: "Básico" },
+    { id: "photo", label: "Foto" },
     { id: "sizes", label: "Tamanhos & Sabores" },
     { id: "extras", label: "Complementos" },
     { id: "advanced", label: "Extras" },
@@ -560,38 +564,25 @@ function ProductEditor({
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {tab === "basic" && (
             <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-[1fr_190px]">
-                <div className="space-y-3">
-                  {/* Image dropzone */}
-                  <ImageDropzone
-                    url={p.image}
-                    busy={imageBusy}
-                    onFile={onImage}
-                    onClear={() => setField("image", "")}
-                  />
-                  <input
-                    className={cn(inputCls, "text-xs")}
-                    placeholder="ou cole uma URL da imagem"
-                    value={p.image}
-                    onChange={(e) => setField("image", e.target.value)}
-                  />
-                </div>
-                {/* Live site preview */}
-                <div>
-                  <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/50">
-                    Como aparece no site
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/30 p-2">
-                    <ProductCard product={p} onOpen={() => {}} />
-                  </div>
-                  <div className="mt-1.5 text-[10px] leading-tight text-white/40">
-                    Atualiza ao vivo enquanto você edita.
-                  </div>
-                </div>
+              {/* Image dropzone */}
+              <ImageDropzone
+                url={p.image}
+                busy={imageBusy}
+                onFile={onImage}
+                onClear={() => setField("image", "")}
+              />
+              <input
+                className={cn(inputCls, "text-xs")}
+                placeholder="ou cole uma URL da imagem"
+                value={p.image}
+                onChange={(e) => setField("image", e.target.value)}
+              />
+              <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 px-3 py-2 text-[11px] text-neon-cyan/90">
+                Para reposicionar / dar zoom na foto, abra a aba <b>Foto</b>.
               </div>
 
-
               <Field label="Nome do produto">
+
                 <input
                   className={inputCls}
                   placeholder="Ex.: Açaí Tradicional"
@@ -666,6 +657,18 @@ function ProductEditor({
               </div>
             </div>
           )}
+
+          {tab === "photo" && (
+            <PhotoTab
+              product={p}
+              onChange={(patch) => {
+                setP((prev) => ({ ...prev, ...patch }));
+                setDirty(true);
+              }}
+            />
+          )}
+
+
 
           {tab === "sizes" && (
             <div className="space-y-5">
@@ -840,6 +843,203 @@ function ProductEditor({
 }
 
 /* ============================= Editor helpers ============================= */
+
+function PhotoTab({
+  product,
+  onChange,
+}: {
+  product: Product;
+  onChange: (patch: Partial<Product>) => void;
+}) {
+  const posX = product.imagePosX ?? 0;
+  const posY = product.imagePosY ?? 0;
+  const scale = product.imageScale ?? 1.1;
+
+  // The site's product card image area is 150px tall; use a matching real-size preview.
+  const CARD_W = 220;
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, posX, posY };
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    // Convert px delta to % of the image container (approx CARD_W × 150).
+    const dx = ((e.clientX - d.startX) / CARD_W) * 100;
+    const dy = ((e.clientY - d.startY) / 150) * 100;
+    onChange({
+      imagePosX: clamp(d.posX + dx, -80, 80),
+      imagePosY: clamp(d.posY + dy, -80, 80),
+    });
+  };
+  const onPointerUp = () => {
+    dragRef.current = null;
+  };
+
+  const reset = () =>
+    onChange({ imagePosX: 0, imagePosY: 0, imageScale: 1.1 });
+
+  const nudge = (dx: number, dy: number) =>
+    onChange({
+      imagePosX: clamp(posX + dx, -80, 80),
+      imagePosY: clamp(posY + dy, -80, 80),
+    });
+
+  if (!product.image) {
+    return (
+      <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/60">
+        Adicione uma foto na aba <b className="text-white">Básico</b> primeiro.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          Preview real — tamanho do card no site
+        </div>
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
+          <div style={{ width: CARD_W }}>
+            <ProductCard product={product} onOpen={() => {}} />
+          </div>
+          <div className="text-[10px] text-white/40">Arraste a foto no card ou use os controles abaixo.</div>
+        </div>
+      </div>
+
+      {/* Dedicated drag surface — same dimensions as the card image area, for precise handling */}
+      <div>
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          Área de ajuste (arraste)
+        </div>
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[oklch(0.14_0.09_305)] cursor-grab active:cursor-grabbing"
+          style={{ width: CARD_W, height: 150 }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
+            }}
+          />
+          <img
+            src={product.image}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
+            style={{
+              transform: `translate(${posX}%, ${posY}%) scale(${scale})`,
+              transformOrigin: "center",
+            }}
+          />
+          {/* Center crosshair */}
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="h-full w-px bg-white/10" />
+          </div>
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="h-px w-full bg-white/10" />
+          </div>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+        <div>
+          <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+            <span>Zoom</span>
+            <span className="text-white/50">{scale.toFixed(2)}×</span>
+          </div>
+          <input
+            type="range"
+            min={0.5}
+            max={2.5}
+            step={0.05}
+            value={scale}
+            onChange={(e) => onChange({ imageScale: Number(e.target.value) })}
+            className="w-full accent-neon-cyan"
+          />
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+              <span>Horizontal</span>
+              <span className="text-white/50">{posX.toFixed(0)}%</span>
+            </div>
+            <input
+              type="range"
+              min={-80}
+              max={80}
+              step={1}
+              value={posX}
+              onChange={(e) => onChange({ imagePosX: Number(e.target.value) })}
+              className="w-full accent-neon-cyan"
+            />
+          </div>
+          <div>
+            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+              <span>Vertical</span>
+              <span className="text-white/50">{posY.toFixed(0)}%</span>
+            </div>
+            <input
+              type="range"
+              min={-80}
+              max={80}
+              step={1}
+              value={posY}
+              onChange={(e) => onChange({ imagePosY: Number(e.target.value) })}
+              className="w-full accent-neon-cyan"
+            />
+          </div>
+          <div className="flex flex-col items-stretch justify-end gap-1">
+            <div className="grid grid-cols-3 gap-1">
+              <div />
+              <NudgeBtn onClick={() => nudge(0, -3)}>↑</NudgeBtn>
+              <div />
+              <NudgeBtn onClick={() => nudge(-3, 0)}>←</NudgeBtn>
+              <NudgeBtn onClick={reset}>◎</NudgeBtn>
+              <NudgeBtn onClick={() => nudge(3, 0)}>→</NudgeBtn>
+              <div />
+              <NudgeBtn onClick={() => nudge(0, 3)}>↓</NudgeBtn>
+              <div />
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={reset}
+          className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
+        >
+          Resetar posição e zoom
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function NudgeBtn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className="grid h-7 place-items-center rounded-md border border-white/10 bg-white/5 text-sm text-white/80 hover:bg-white/10"
+    >
+      {children}
+    </button>
+  );
+}
+
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v));
+}
+
+
 
 function ImageDropzone({
   url,
