@@ -1,5 +1,6 @@
 import { ShoppingBag, Menu, MapPin } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { BRAND } from "@/data/menu";
 
 export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
   const { count, openCart } = useCart();
@@ -17,12 +18,11 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="font-display text-2xl font-bold leading-none text-neon-yellow glow-yellow-text">
-            Quero<span className="text-neon-pink">Bis</span>
-          </div>
-          <span className="hidden text-[10px] uppercase tracking-widest text-white/60 sm:inline">
-            Sorveteria & Açaí
-          </span>
+          <img
+            src={BRAND.logo}
+            alt="Quero Bis — Sorveteria e Açaí"
+            className="h-11 w-auto drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+          />
         </div>
 
         <div className="flex items-center gap-2">
