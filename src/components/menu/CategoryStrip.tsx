@@ -168,12 +168,10 @@ export function CategoryStrip({
 
 
                 {/* White label */}
-                <div className="absolute inset-x-0 bottom-3 px-1.5 text-center">
+                <div className="absolute inset-x-0 bottom-2 px-1.5 text-center">
                   <div
                     className="truncate text-[10.5px] font-black uppercase tracking-[0.14em] text-white"
-                    style={{
-                      textShadow: "0 1px 2px rgba(0,0,0,0.6)",
-                    }}
+                    style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}
                   >
                     {c.name}
                   </div>
