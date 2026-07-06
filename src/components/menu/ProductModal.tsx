@@ -189,10 +189,10 @@ export function ProductModal({
             </div>
           </Section>
 
-          {product.flavors && (
+          {flavorList && (
             <Section title="Sabor">
               <div className="flex flex-wrap gap-2">
-                {product.flavors.map((f) => (
+                {flavorList.map((f) => (
                   <Chip
                     key={f}
                     small
@@ -206,13 +206,13 @@ export function ProductModal({
             </Section>
           )}
 
-          {product.extras && (
+          {availableExtras.length > 0 && (
             <Section
               title="Complementos"
               hint={`Adicione o que quiser`}
             >
               <div className="space-y-2">
-                {product.extras.map((e) => {
+                {availableExtras.map((e) => {
                   const on = extras.includes(e.id);
                   return (
                     <button
@@ -241,7 +241,7 @@ export function ProductModal({
                         </span>
                       </div>
                       <span className="text-sm font-bold text-neon-yellow">
-                        + {brl(e.price)}
+                        {e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
                       </span>
                     </button>
                   );
@@ -250,10 +250,10 @@ export function ProductModal({
             </Section>
           )}
 
-          {product.removable && product.removable.length > 0 && (
+          {removableList.length > 0 && (
             <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
               <div className="flex flex-wrap gap-2">
-                {product.removable.map((r) => {
+                {removableList.map((r) => {
                   const off = removed.includes(r);
                   return (
                     <Chip
@@ -270,6 +270,7 @@ export function ProductModal({
               </div>
             </Section>
           )}
+
 
           <Section title="Observação">
             <textarea
