@@ -148,7 +148,7 @@ export function ProductModal({
       <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
         {/* Header w/ product */}
         <div
-          className="relative h-[360px] shrink-0 overflow-hidden"
+          className="relative h-[280px] shrink-0 overflow-hidden"
           style={{
             background:
               "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.24 0.18 305) 45%, oklch(0.14 0.10 300) 100%)",
