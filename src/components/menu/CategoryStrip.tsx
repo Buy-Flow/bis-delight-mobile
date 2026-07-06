@@ -99,7 +99,7 @@ export function CategoryStrip({
               onClick={() => onChange(c.id)}
               aria-pressed={isActive}
               className={cn(
-                "group relative snap-start shrink-0 w-[150px] h-[230px] rounded-[32px]",
+                "group relative snap-start shrink-0 w-[112px] h-[172px] rounded-[24px]",
                 "bg-[#280a66] transition active:scale-95 overflow-hidden",
                 "shadow-[0_14px_28px_-10px_rgba(0,0,0,0.7),0_4px_10px_-4px_rgba(0,0,0,0.5)]",
                 "ring-1 ring-white/5",
