@@ -91,23 +91,8 @@ function Content() {
       <CategoryStrip active={activeCat} onChange={setActiveCat} />
 
       {/* Highlights */}
-      <section className="px-4 pb-2">
-        <div className="mb-3 flex items-end justify-between">
-          <h2 className="font-display text-xl font-extrabold text-white flex items-center gap-2">
-            <Flame className="h-5 w-5 text-neon-pink" /> Destaques
-          </h2>
-          <span className="text-[11px] uppercase tracking-widest text-neon-cyan">
-            Mais pedidos
-          </span>
-        </div>
-        <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
-          {highlights.map((p) => (
-            <div key={p.id} className="w-[70%] shrink-0 snap-start">
-              <ProductCard product={p} onOpen={setModalProduct} />
-            </div>
-          ))}
-        </div>
-      </section>
+      <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
+
 
       {/* Monte seu açaí banner */}
       <section className="px-4 py-6">
