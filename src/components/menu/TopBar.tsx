@@ -21,7 +21,7 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
           <img
             src={BRAND.logo}
             alt="Quero Bis — Sorveteria e Açaí"
-            className="h-11 w-auto drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+            className="h-14 w-auto drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
           />
         </div>
 
