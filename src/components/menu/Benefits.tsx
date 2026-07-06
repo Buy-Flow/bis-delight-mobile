@@ -26,7 +26,7 @@ export function Benefits() {
   return (
     <section className="px-4 pb-6">
       <div className="rounded-[32px] border border-white/20 bg-white/10 px-3 py-4 shadow-lg backdrop-blur-xl">
-        <div className="grid grid-cols-3 items-center divide-x divide-white/60">
+        <div className="grid grid-cols-3 items-center divide-x divide-white/20">
           {items.map((it) => (
             <div
               key={it.title}
