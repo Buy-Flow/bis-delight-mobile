@@ -19,7 +19,7 @@ export function CategoryStrip({
         </span>
       </div>
 
-      <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2">
+      <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-visible scroll-px-4 px-4 py-4">
         {CATEGORIES.map((c) => {
           const isActive = active === c.id;
           return (
