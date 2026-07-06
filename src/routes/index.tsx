@@ -17,7 +17,7 @@ import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
-import { Sparkles } from "lucide-react";
+import { Search, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
