@@ -1,4 +1,6 @@
-import { CATEGORIES } from "@/data/menu";
+import { CATEGORIES as STATIC_CATEGORIES } from "@/data/menu";
+import { useCategories } from "@/lib/menu-data";
+
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -88,10 +90,13 @@ export function CategoryStrip({
   active: string;
   onChange: (id: string) => void;
 }) {
+  const { data } = useCategories();
+  const CATEGORIES = data && data.length > 0 ? data : STATIC_CATEGORIES;
   return (
     <section id="categorias" className="pb-2">
       <div className="hide-scrollbar flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-3 pt-1">
         {CATEGORIES.map((c) => {
+
           const isActive = active === c.id;
           const accent = ACCENTS[c.id] ?? ACCENTS.all;
           const Icon = accent.icon;
