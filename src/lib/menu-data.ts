@@ -41,6 +41,9 @@ function rowToProduct(row: Record<string, unknown>): Product {
     badge: (row.badge as Product["badge"]) ?? undefined,
     hero: Boolean(row.hero),
     active: row.active === undefined ? true : Boolean(row.active),
+    imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
+    imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
+    imageScale: row.image_scale !== undefined && row.image_scale !== null ? Number(row.image_scale) : 1.1,
   };
 }
 
