@@ -1330,34 +1330,13 @@ function CategoryPicker({
 /* ============================= Categories ============================= */
 function CategoriesTab() {
   const { data: categories = [] } = useCategories();
-  const upsert = useUpsertCategory();
-  const del = useDeleteCategory();
   const reorder = useReorderCategories();
   const base = categories.filter((c) => c.id !== "all");
   const [localOrder, setLocalOrder] = useState<Category[] | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const list = localOrder ?? base;
-  const [draft, setDraft] = useState<{ id: string; name: string; emoji: string; image_url: string }>({
-    id: "",
-    name: "",
-    emoji: "✨",
-    image_url: "",
-  });
-
-  const add = async () => {
-    const id = (draft.id || slugify(draft.name)).trim();
-    if (!id || !draft.name.trim()) return toast.error("Preencha nome");
-    await upsert.mutateAsync({
-      id,
-      name: draft.name.trim(),
-      emoji: draft.emoji || "✨",
-      image_url: draft.image_url || null,
-      sort_order: list.length,
-      active: true,
-    });
-    toast.success("Categoria criada");
-    setDraft({ id: "", name: "", emoji: "✨", image_url: "" });
-  };
+  const [editing, setEditing] = useState<Category | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const onDragOver = (e: React.DragEvent, overId: string) => {
     e.preventDefault();
@@ -1385,79 +1364,68 @@ function CategoriesTab() {
 
   return (
     <div>
-      <h2 className="mb-1 font-display text-2xl font-black">Categorias</h2>
-      <p className="mb-4 text-xs text-white/50">Arraste para reordenar como aparecem no cardápio.</p>
-
-      <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-3">
-        <div className="mb-2 text-xs font-semibold text-white/70">Nova categoria</div>
-        <div className="grid grid-cols-[60px_1fr_auto] gap-2">
-          <input
-            className={inputCls}
-            placeholder="🍇"
-            value={draft.emoji}
-            onChange={(e) => setDraft({ ...draft, emoji: e.target.value })}
-          />
-          <input
-            className={inputCls}
-            placeholder="Nome (ex.: Açaí)"
-            value={draft.name}
-            onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-          />
-          <button onClick={add} className="rounded-xl bg-neon-cyan px-3 text-xs font-bold text-[oklch(0.18_0.11_305)]">
-            <Plus className="h-4 w-4" />
-          </button>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <div>
+          <h2 className="font-display text-2xl font-black">Categorias</h2>
+          <p className="text-xs text-white/50">
+            Arraste para reordenar. Toque em uma categoria para editar foto, nome e ajustes.
+          </p>
         </div>
-        <input
-          className={cn(inputCls, "mt-2 text-xs")}
-          placeholder="URL da imagem (opcional)"
-          value={draft.image_url}
-          onChange={(e) => setDraft({ ...draft, image_url: e.target.value })}
-        />
+        <button
+          onClick={() => setCreating(true)}
+          className="inline-flex items-center gap-1 rounded-2xl bg-neon-pink px-3 py-2 text-xs font-extrabold text-white glow-pink"
+        >
+          <Plus className="h-4 w-4" /> Nova
+        </button>
       </div>
 
-      <div className="space-y-2">
-        {list.map((c, i) => (
-          <CategoryRow
+      <div className="grid gap-2 sm:grid-cols-2">
+        {list.map((c) => (
+          <CategoryListRow
             key={c.id}
             category={c}
-            index={i}
             dragging={dragId === c.id}
             onDragStart={() => setDragId(c.id)}
             onDragOver={(e) => onDragOver(e, c.id)}
             onDragEnd={onDragEnd}
-            onDelete={() => del.mutate(c.id)}
-            onSave={(u) => upsert.mutate(u)}
+            onClick={() => setEditing(c)}
           />
         ))}
       </div>
+
+      {editing && (
+        <CategoryEditor
+          initial={editing}
+          onClose={() => setEditing(null)}
+          nextSortOrder={list.length}
+        />
+      )}
+      {creating && (
+        <CategoryEditor
+          initial={{ id: "", name: "", emoji: "✨", image: "", imagePosX: 0, imagePosY: 0, imageScale: 1 }}
+          onClose={() => setCreating(false)}
+          nextSortOrder={list.length}
+        />
+      )}
     </div>
   );
 }
 
-function CategoryRow({
+function CategoryListRow({
   category,
-  index,
   dragging,
   onDragStart,
   onDragOver,
   onDragEnd,
-  onDelete,
-  onSave,
+  onClick,
 }: {
   category: Category;
-  index: number;
   dragging: boolean;
   onDragStart: () => void;
   onDragOver: (e: React.DragEvent) => void;
   onDragEnd: () => void;
-  onDelete: () => void;
-  onSave: (u: { id: string; name: string; emoji: string; image_url: string | null; sort_order: number; active: boolean }) => void;
+  onClick: () => void;
 }) {
-  const [name, setName] = useState(category.name);
-  const [emoji, setEmoji] = useState(category.emoji);
-  const [image, setImage] = useState(category.image);
-  const dirty = name !== category.name || emoji !== category.emoji || image !== category.image;
-
   return (
     <div
       draggable
@@ -1465,49 +1433,428 @@ function CategoryRow({
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
       className={cn(
-        "flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 transition",
+        "flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2 transition hover:bg-white/10",
         dragging && "opacity-40",
       )}
     >
-      <div className="grid h-8 w-6 shrink-0 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
+      <div className="grid h-full w-6 shrink-0 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
         <GripVertical className="h-4 w-4" />
       </div>
-      <input className={cn(inputCls, "w-14 text-center")} value={emoji} onChange={(e) => setEmoji(e.target.value)} />
-      <input className={cn(inputCls, "flex-1")} value={name} onChange={(e) => setName(e.target.value)} />
-      <input
-        className={cn(inputCls, "hidden w-40 text-xs sm:block")}
-        placeholder="URL imagem"
-        value={image}
-        onChange={(e) => setImage(e.target.value)}
-      />
-      {dirty && (
-        <button
-          onClick={() =>
-            onSave({
-              id: category.id,
-              name,
-              emoji,
-              image_url: image || null,
-              sort_order: index,
-              active: true,
-            })
-          }
-          className="grid h-9 w-9 place-items-center rounded-xl bg-neon-cyan text-[oklch(0.18_0.11_305)]"
-        >
-          <Save className="h-4 w-4" />
-        </button>
-      )}
       <button
-        onClick={() => {
-          if (confirm(`Remover categoria "${category.name}"?`)) onDelete();
-        }}
-        className="grid h-9 w-9 place-items-center rounded-xl border border-red-500/40 bg-red-500/10 text-red-300"
+        onClick={onClick}
+        className="flex flex-1 items-center gap-3 text-left"
       >
-        <Trash2 className="h-4 w-4" />
+        <div className="shrink-0">
+          <CategoryChip category={category} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 text-sm font-bold">
+            <span className="text-lg leading-none">{category.emoji}</span>
+            <span className="truncate">{category.name}</span>
+          </div>
+          <div className="mt-0.5 font-mono text-[10px] text-white/40">{category.id}</div>
+          <div className="mt-1 text-[10px] text-neon-cyan/80">Toque para editar →</div>
+        </div>
       </button>
     </div>
   );
 }
+
+type CategoryEditorTab = "basic" | "photo";
+
+function CategoryEditor({
+  initial,
+  onClose,
+  nextSortOrder,
+}: {
+  initial: Category;
+  onClose: () => void;
+  nextSortOrder: number;
+}) {
+  const upsert = useUpsertCategory();
+  const del = useDeleteCategory();
+  const isNew = !initial.id;
+  const [c, setC] = useState<Category>(initial);
+  const [tab, setTab] = useState<CategoryEditorTab>("basic");
+  const [imageBusy, setImageBusy] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  const setField = <K extends keyof Category>(k: K, v: Category[K]) => {
+    setC((prev) => ({ ...prev, [k]: v }));
+    setDirty(true);
+  };
+
+  const save = async () => {
+    if (!c.name.trim()) return toast.error("Nome obrigatório");
+    const id = (c.id || slugify(c.name)).trim();
+    if (!id) return toast.error("ID inválido");
+    await upsert.mutateAsync({
+      id,
+      name: c.name.trim(),
+      emoji: c.emoji || "✨",
+      image_url: c.image || null,
+      sort_order: isNew ? nextSortOrder : 0,
+      active: true,
+      image_pos_x: Number(c.imagePosX ?? 0),
+      image_pos_y: Number(c.imagePosY ?? 0),
+      image_scale: Number(c.imageScale ?? 1),
+    });
+    toast.success(isNew ? "Categoria criada!" : "Alterações salvas!");
+    setDirty(false);
+    onClose();
+  };
+
+  const remove = async () => {
+    if (!confirm(`Remover categoria "${c.name}"?`)) return;
+    await del.mutateAsync(c.id);
+    toast.success("Categoria removida");
+    onClose();
+  };
+
+  const onImage = async (file: File) => {
+    setImageBusy(true);
+    try {
+      const url = await uploadProductImage(file);
+      setField("image", url);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao subir imagem");
+    } finally {
+      setImageBusy(false);
+    }
+  };
+
+  const requestClose = () => {
+    if (dirty && !confirm("Você tem alterações não salvas. Descartar?")) return;
+    onClose();
+  };
+
+  const tabs: { id: CategoryEditorTab; label: string }[] = [
+    { id: "basic", label: "Básico" },
+    { id: "photo", label: "Foto" },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center">
+      <div className="flex max-h-[95vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-[oklch(0.14_0.09_305)] sm:rounded-3xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div className="min-w-0">
+            <h3 className="truncate font-display text-xl font-black">
+              {isNew ? "Nova categoria" : c.name || "Editar categoria"}
+            </h3>
+            <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/50">
+              <span>{c.emoji} {c.id || "novo-id"}</span>
+              {dirty && <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-neon-yellow">não salvo</span>}
+            </div>
+          </div>
+          <button onClick={requestClose} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/10">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 overflow-x-auto border-b border-white/10 px-3 py-2">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                tab === t.id
+                  ? "bg-neon-pink text-white glow-pink"
+                  : "text-white/60 hover:bg-white/5 hover:text-white",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          {tab === "basic" && (
+            <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+              <div className="space-y-4">
+                <ImageDropzone
+                  url={c.image}
+                  busy={imageBusy}
+                  onFile={onImage}
+                  onClear={() => setField("image", "")}
+                />
+                <input
+                  className={cn(inputCls, "text-xs")}
+                  placeholder="ou cole uma URL da imagem"
+                  value={c.image}
+                  onChange={(e) => setField("image", e.target.value)}
+                />
+                <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 px-3 py-2 text-[11px] text-neon-cyan/90">
+                  Para reposicionar / dar zoom na foto, abra a aba <b>Foto</b>.
+                </div>
+
+                <div className="grid grid-cols-[80px_1fr] gap-3">
+                  <Field label="Emoji">
+                    <input
+                      className={cn(inputCls, "text-center text-2xl")}
+                      value={c.emoji}
+                      onChange={(e) => setField("emoji", e.target.value)}
+                      maxLength={4}
+                    />
+                  </Field>
+                  <Field label="Nome da categoria">
+                    <input
+                      className={inputCls}
+                      placeholder="Ex.: Açaí"
+                      value={c.name}
+                      onChange={(e) => setField("name", e.target.value)}
+                      maxLength={40}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="ID técnico (slug)">
+                  <input
+                    className={cn(inputCls, "font-mono text-xs")}
+                    value={c.id}
+                    disabled={!isNew}
+                    onChange={(e) => setField("id", e.target.value)}
+                    placeholder={isNew ? "Gerado a partir do nome" : ""}
+                  />
+                  <div className="mt-1 text-[11px] text-white/40">
+                    {isNew ? "Deixe vazio para gerar automaticamente." : "Não pode ser alterado após criado."}
+                  </div>
+                </Field>
+              </div>
+
+              <div>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                  Preview
+                </div>
+                <div className="grid place-items-center rounded-2xl border border-white/10 bg-black/30 p-3">
+                  <CategoryChip category={c} active />
+                </div>
+                <div className="mt-2 text-center text-[10px] text-white/40">
+                  Tamanho real no cardápio
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === "photo" && (
+            <CategoryPhotoTab
+              category={c}
+              onChange={(patch) => {
+                setC((prev) => ({ ...prev, ...patch }));
+                setDirty(true);
+              }}
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center gap-2 border-t border-white/10 bg-black/20 px-5 py-3">
+          {!isNew && (
+            <button
+              onClick={remove}
+              className="grid h-11 w-11 place-items-center rounded-2xl border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+              title="Excluir categoria"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={requestClose}
+            className="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/70 hover:bg-white/5"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={save}
+            disabled={upsert.isPending || !dirty}
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink disabled:opacity-40"
+          >
+            {upsert.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {isNew ? "Criar categoria" : "Salvar alterações"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CategoryPhotoTab({
+  category,
+  onChange,
+}: {
+  category: Category;
+  onChange: (patch: Partial<Category>) => void;
+}) {
+  const posX = category.imagePosX ?? 0;
+  const posY = category.imagePosY ?? 0;
+  const scale = category.imageScale ?? 1;
+
+  // The site's category chip photo area is 72×68.
+  const AREA_W = 72;
+  const AREA_H = 68;
+  // Zoomed drag surface: 4× to make handling easier while preserving proportions.
+  const SURFACE_W = AREA_W * 4;
+  const SURFACE_H = AREA_H * 4;
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, posX, posY };
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dx = ((e.clientX - d.startX) / SURFACE_W) * 100;
+    const dy = ((e.clientY - d.startY) / SURFACE_H) * 100;
+    onChange({
+      imagePosX: clamp(d.posX + dx, -80, 80),
+      imagePosY: clamp(d.posY + dy, -80, 80),
+    });
+  };
+  const onPointerUp = () => {
+    dragRef.current = null;
+  };
+
+  const reset = () => onChange({ imagePosX: 0, imagePosY: 0, imageScale: 1 });
+  const nudge = (dx: number, dy: number) =>
+    onChange({
+      imagePosX: clamp(posX + dx, -80, 80),
+      imagePosY: clamp(posY + dy, -80, 80),
+    });
+
+  if (!category.image) {
+    return (
+      <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/60">
+        Adicione uma foto na aba <b className="text-white">Básico</b> primeiro.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          Preview real — tamanho do card no cardápio
+        </div>
+        <div className="grid place-items-center rounded-2xl border border-white/10 bg-black/40 p-4">
+          <CategoryChip category={category} active />
+          <div className="mt-2 text-[10px] text-white/40">Arraste na área abaixo ou use os controles.</div>
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          Área de ajuste (arraste)
+        </div>
+        <div
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[#2a0a5c] cursor-grab active:cursor-grabbing"
+          style={{
+            width: SURFACE_W,
+            height: SURFACE_H,
+            backgroundImage:
+              "radial-gradient(circle at 50% 30%, oklch(0.28 0.16 305) 0%, #2a0a5c 55%, #1a0538 100%)",
+          }}
+        >
+          <img
+            src={category.image}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+            style={{
+              transform: `translate(${posX}%, ${posY}%) scale(${scale})`,
+              transformOrigin: "center",
+            }}
+          />
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="h-full w-px bg-white/10" />
+          </div>
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <div className="h-px w-full bg-white/10" />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+        <div>
+          <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+            <span>Zoom</span>
+            <span className="text-white/50">{scale.toFixed(2)}×</span>
+          </div>
+          <input
+            type="range"
+            min={0.5}
+            max={2.5}
+            step={0.05}
+            value={scale}
+            onChange={(e) => onChange({ imageScale: Number(e.target.value) })}
+            className="w-full accent-neon-cyan"
+          />
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+              <span>Horizontal</span>
+              <span className="text-white/50">{posX.toFixed(0)}%</span>
+            </div>
+            <input
+              type="range"
+              min={-80}
+              max={80}
+              step={1}
+              value={posX}
+              onChange={(e) => onChange({ imagePosX: Number(e.target.value) })}
+              className="w-full accent-neon-cyan"
+            />
+          </div>
+          <div>
+            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+              <span>Vertical</span>
+              <span className="text-white/50">{posY.toFixed(0)}%</span>
+            </div>
+            <input
+              type="range"
+              min={-80}
+              max={80}
+              step={1}
+              value={posY}
+              onChange={(e) => onChange({ imagePosY: Number(e.target.value) })}
+              className="w-full accent-neon-cyan"
+            />
+          </div>
+          <div className="flex flex-col items-stretch justify-end gap-1">
+            <div className="grid grid-cols-3 gap-1">
+              <div />
+              <NudgeBtn onClick={() => nudge(0, -3)}>↑</NudgeBtn>
+              <div />
+              <NudgeBtn onClick={() => nudge(-3, 0)}>←</NudgeBtn>
+              <NudgeBtn onClick={reset}>◎</NudgeBtn>
+              <NudgeBtn onClick={() => nudge(3, 0)}>→</NudgeBtn>
+              <div />
+              <NudgeBtn onClick={() => nudge(0, 3)}>↓</NudgeBtn>
+              <div />
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={reset}
+          className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
+        >
+          Resetar posição e zoom
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 /* ============================= Highlights ============================= */
 function HighlightsTab() {
