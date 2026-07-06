@@ -30,16 +30,17 @@ export function HighlightCard({
       )}
 
       {/* Left image */}
-      <div className="relative w-[44%] shrink-0 overflow-hidden">
+      <div className="relative w-[52%] shrink-0 overflow-hidden">
         <div className="absolute inset-0 noise-purple opacity-90" />
         <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_55%,oklch(0.86_0.18_200_/_0.20),transparent_65%)]" />
         <img
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_18px_18px_rgba(0,0,0,0.5)]"
+          className="absolute inset-0 h-full w-full scale-110 object-contain p-1 drop-shadow-[0_18px_18px_rgba(0,0,0,0.5)]"
         />
       </div>
+
 
       {/* Right content */}
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-4">
