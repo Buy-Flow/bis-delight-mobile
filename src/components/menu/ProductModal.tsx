@@ -164,8 +164,9 @@ export function ProductModal({
           <img
             src={product.image}
             alt={product.name}
-            className="absolute inset-0 mx-auto h-full w-full object-contain p-4 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
+            className="absolute left-1/2 top-2 h-[210px] w-[92%] max-w-[360px] -translate-x-1/2 object-contain drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
           />
+
           <button
             onClick={onClose}
             aria-label="Fechar"
