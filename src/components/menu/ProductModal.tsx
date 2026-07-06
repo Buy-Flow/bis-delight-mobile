@@ -315,36 +315,33 @@ export function ProductModal({
 
         {/* Sticky footer */}
         <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1">
+          <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white active:scale-95"
+                aria-label="Diminuir"
+                className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white active:scale-95"
               >
                 <Minus className="h-4 w-4" />
               </button>
-              <div className="w-8 text-center text-lg font-bold text-white">{qty}</div>
+              <div className="w-6 text-center text-base font-bold text-white">{qty}</div>
               <button
                 onClick={() => setQty(qty + 1)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] active:scale-95"
+                aria-label="Aumentar"
+                className="grid h-10 w-10 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] active:scale-95"
               >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
-            <div className="text-right">
-              <div className="text-[10px] uppercase tracking-widest text-white/50">Total</div>
-              <div className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text leading-none">
-                {brl(total)}
-              </div>
-            </div>
+            <button
+              onClick={submit}
+              className="flex-1 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
+            >
+              Adicionar ao carrinho · {brl(total)}
+            </button>
           </div>
-          <button
-            onClick={submit}
-            className="w-full rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
-          >
-            Adicionar ao carrinho · {brl(total)}
-          </button>
         </div>
+
       </div>
     </div>
   );
