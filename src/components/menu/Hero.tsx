@@ -23,19 +23,33 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         }}
       />
 
-      {/* Side background images */}
-      <img
-        src={heroBgLeft.url}
-        alt=""
+      {/* Side ice cream illustrations (cropped to visible product) */}
+      <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-4 top-10 z-0 h-[760px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute left-0 bottom-2 z-0 opacity-95 select-none"
+        style={{
+          width: "110px",
+          height: "321px",
+          backgroundImage: `url(${heroBgLeft.url})`,
+          backgroundSize: "389px auto",
+          backgroundPosition: "-6px -127px",
+          backgroundRepeat: "no-repeat",
+        }}
       />
-      <img
-        src={heroBgRight.url}
-        alt=""
+      <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-4 -top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute right-0 bottom-2 z-0 opacity-95 select-none"
+        style={{
+          width: "110px",
+          height: "330px",
+          backgroundImage: `url(${heroBgRight.url})`,
+          backgroundSize: "359px auto",
+          backgroundPosition: "-244px -135px",
+          backgroundRepeat: "no-repeat",
+        }}
       />
+
+
 
       <div className="relative z-10 pt-2 mx-auto flex max-w-md flex-col items-center text-center">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
@@ -74,16 +88,17 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
         {/* Floating products */}
-        <div className="relative mt-6 h-64">
+        <div className="relative mt-6 flex h-64 items-center justify-center">
           <button
             onClick={openCart}
-            className="absolute right-0 top-2 rounded-full bg-neon-cyan/20 px-3 py-1 text-[11px] font-semibold text-neon-cyan ring-1 ring-neon-cyan/60"
+            className="rounded-full bg-neon-cyan/20 px-4 py-2 text-[11px] font-semibold text-neon-cyan ring-1 ring-neon-cyan/60"
           >
             Ver carrinho
           </button>
         </div>
 
       </div>
+
     </section>
   );
 }
