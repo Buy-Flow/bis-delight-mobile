@@ -43,7 +43,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Headline */}
         <h1
-          className="mt-1 text-[38px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
+          className="mt-1 text-[30px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
           style={{
             fontFamily: "'Barlow Condensed', 'Anton', sans-serif",
             fontWeight: 900,
@@ -57,7 +57,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         <svg
           aria-hidden="true"
           viewBox="0 0 160 14"
-          className="mt-1 h-3 w-[150px]"
+          className="mt-1 h-3 w-[120px]"
           fill="none"
         >
           <path
@@ -70,16 +70,18 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Sub headline in script */}
         <div
-          className="mt-3 -rotate-[2deg] text-[22px] leading-none text-white"
+          className="mt-3 -rotate-[2deg] text-[16px] leading-tight text-white"
           style={{
             fontFamily: "'Caveat', cursive",
             fontWeight: 700,
             textShadow: "0 2px 8px rgba(0,0,0,0.5)",
           }}
         >
-          A felicidade em cada{" "}
-          <span className="text-neon-yellow">colher.</span>
+          A felicidade em
+          <br />
+          cada <span className="text-neon-yellow">colher.</span>
         </div>
+
 
         {/* Offer chips */}
         <div
