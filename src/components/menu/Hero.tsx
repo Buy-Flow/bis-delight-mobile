@@ -109,57 +109,8 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           <span className="font-bold text-neon-yellow">mais feliz!</span>
         </p>
 
-        {/* WhatsApp CTA — sculpted 3D pill with gradient + glow ring */}
-        <a
-          href={waLink}
-          target="_blank"
-          rel="noreferrer"
-          className="group relative mt-7 inline-flex items-center gap-3 rounded-full px-7 py-3.5 text-black active:scale-[.97] transition"
-          style={{
-            background:
-              "linear-gradient(180deg, #FFF089 0%, #FFDA3D 45%, #F0B400 100%)",
-            boxShadow:
-              "0 0 0 3px rgba(255,215,60,0.18), 0 14px 28px -8px rgba(255,180,0,0.55), inset 0 2px 0 rgba(255,255,255,0.75), inset 0 -3px 0 rgba(160,90,0,0.35)",
-          }}
-        >
-          {/* Glossy top highlight */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-4 top-1 h-2 rounded-full opacity-70"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0))",
-            }}
-          />
-          <span
-            className="relative grid h-9 w-9 place-items-center rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 35% 30%, #2ee56b 0%, #0aa84a 70%, #067a35 100%)",
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.5), 0 3px 6px rgba(0,0,0,0.35)",
-            }}
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20.5 3.5A11 11 0 0 0 3.6 17.2L2 22l4.9-1.6a11 11 0 0 0 5.3 1.4h.1a11 11 0 0 0 8.2-18.3z" />
-              <path d="M8.2 7.6a1 1 0 0 1 .9-.5h.6c.2 0 .4 0 .6.4.3.5.9 2 .9 2.1s.1.3 0 .5c-.5 1-1.1 1-.8 1.5a7.4 7.4 0 0 0 3.7 3.2c.3.2.5.1.6 0 .1-.1.6-.7.8-1s.4-.3.6-.2 1.6.8 1.9.9c.3.1.5.2.6.3a1.7 1.7 0 0 1-.1 1.4c-.3.7-1.5 1.3-2 1.4s-1.1.1-1.8-.1a15.8 15.8 0 0 1-1.6-.6c-2.8-1.2-4.6-4.1-4.8-4.3s-1.1-1.5-1.1-2.8a3 3 0 0 1 1-2.2z" />
-            </svg>
-          </span>
-          <span className="relative flex flex-col items-start leading-[1]">
-            <span
-              className="text-[17px] uppercase tracking-wide"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900 }}
-            >
-              Pedir agora
-            </span>
-            <span
-              className="mt-1 text-[9.5px] tracking-[0.24em] text-black/70"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}
-            >
-              PELO WHATSAPP
-            </span>
-          </span>
-        </a>
+
+
 
         {/* Bottom caption — thinner "Rápido, prático e" with "delicioso!" underlined below */}
         <div className="relative mt-5 flex flex-col items-center">
