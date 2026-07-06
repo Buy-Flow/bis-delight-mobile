@@ -28,13 +28,13 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         src={heroBgLeft.url}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute -left-4 top-10 z-0 h-[760px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute -left-10 bottom-0 z-0 h-[300px] w-auto max-w-none opacity-90 select-none"
       />
       <img
         src={heroBgRight.url}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute -right-4 -top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute -right-10 bottom-0 z-0 h-[320px] w-auto max-w-none opacity-90 select-none"
       />
 
       <div className="relative z-10 pt-2 mx-auto flex max-w-md flex-col items-center text-center">
@@ -74,16 +74,17 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
         {/* Floating products */}
-        <div className="relative mt-6 h-64">
+        <div className="relative mt-6 flex h-64 items-center justify-center">
           <button
             onClick={openCart}
-            className="absolute right-0 top-2 rounded-full bg-neon-cyan/20 px-3 py-1 text-[11px] font-semibold text-neon-cyan ring-1 ring-neon-cyan/60"
+            className="rounded-full bg-neon-cyan/20 px-4 py-2 text-[11px] font-semibold text-neon-cyan ring-1 ring-neon-cyan/60"
           >
             Ver carrinho
           </button>
         </div>
 
       </div>
+
     </section>
   );
 }
