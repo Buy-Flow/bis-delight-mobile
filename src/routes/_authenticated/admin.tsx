@@ -47,6 +47,7 @@ import {
   type ProductInput,
 } from "@/lib/menu-data";
 import type { Product, Category } from "@/data/menu";
+import { ProductCard } from "@/components/menu/ProductCard";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
