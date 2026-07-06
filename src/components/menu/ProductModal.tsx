@@ -158,14 +158,15 @@ export function ProductModal({
       />
       <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
         {/* Header — mesmo estilo do "Monte seu açaí" */}
-        <div className="relative h-[260px] shrink-0 overflow-hidden">
+        <div className="relative h-[320px] shrink-0 overflow-hidden">
           <div className="absolute inset-0 noise-purple" />
-          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_60%,oklch(0.86_0.18_200_/_0.3),transparent_65%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_55%,oklch(0.86_0.18_200_/_0.35),transparent_65%)]" />
           <img
             src={product.image}
             alt={product.name}
-            className="absolute left-1/2 top-2 h-[210px] w-[92%] max-w-[360px] -translate-x-1/2 object-contain drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
+            className="absolute left-1/2 top-0 h-[290px] w-[110%] max-w-none -translate-x-1/2 object-contain drop-shadow-[0_28px_28px_rgba(0,0,0,0.55)] animate-float-slow"
           />
+
 
           <button
             onClick={onClose}
