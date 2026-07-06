@@ -32,141 +32,97 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         }}
       />
 
-      <div className="relative z-20 mx-auto flex max-w-[300px] flex-col items-center px-6 text-center">
+      <div className="relative z-20 mx-auto flex max-w-[280px] flex-col items-center px-2 text-center">
         {/* Eyebrow */}
         <div
-          className="mb-1 text-[22px] italic leading-none text-white/95 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
-          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
+          className="text-[20px] italic leading-none text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
+          style={{ fontFamily: "'Caveat', cursive", fontWeight: 600 }}
         >
           Sabor que
         </div>
 
-        {/* Big yellow headline */}
+        {/* Headline */}
         <h1
-          className="mt-1 text-[60px] uppercase leading-[0.88] tracking-[0.01em] text-neon-yellow"
+          className="mt-1 text-[46px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
           style={{
             fontFamily: "'Barlow Condensed', 'Anton', sans-serif",
             fontWeight: 900,
           }}
         >
-          <span className="inline-block -rotate-[5deg]">Transforma!</span>
-          <span className="ml-1 inline-block text-[42px]">🍦</span>
+          <span className="inline-block -rotate-[3deg]">Transforma</span>
         </h1>
 
-        {/* Decorative typographic phrase */}
-        <div className="relative mt-6 w-full max-w-[300px] text-center">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 300 130"
-            className="pointer-events-none absolute inset-0 h-full w-full"
-          >
-            <g transform="translate(18 22)" fill="oklch(0.92 0.20 100)">
-              <path d="M6 0 L7.5 4.5 L12 6 L7.5 7.5 L6 12 L4.5 7.5 L0 6 L4.5 4.5 Z" />
-            </g>
-            <g transform="translate(268 14)" fill="oklch(0.72 0.26 350)">
-              <path d="M5 0 L6.2 3.8 L10 5 L6.2 6.2 L5 10 L3.8 6.2 L0 5 L3.8 3.8 Z" />
-            </g>
-            <circle cx="286" cy="70" r="2" fill="oklch(0.86 0.18 200)" />
-            <circle cx="10" cy="72" r="2" fill="oklch(0.92 0.20 100)" />
-            <circle cx="30" cy="100" r="1.5" fill="rgba(255,255,255,0.7)" />
-            <circle cx="272" cy="106" r="1.5" fill="rgba(255,255,255,0.7)" />
-          </svg>
+        {/* Underline swash */}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 160 14"
+          className="mt-1 h-3 w-[150px]"
+          fill="none"
+        >
+          <path
+            d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
+            stroke="oklch(0.72 0.26 350)"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </svg>
 
-          <div
-            className="-rotate-[3deg] text-[28px] leading-none text-white"
-            style={{
-              fontFamily: "'Caveat', cursive",
-              fontWeight: 700,
-              textShadow: "0 2px 8px rgba(0,0,0,0.45)",
-            }}
-          >
-            A felicidade
-          </div>
-
-          <div
-            className="mt-1.5 text-[11px] uppercase tracking-[0.32em] text-white/70"
-            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
-          >
-            em cada
-          </div>
-
-          <div className="relative mt-1 inline-block">
-            <span
-              className="relative z-10 inline-block rotate-[2deg] text-[34px] leading-none text-neon-yellow"
-              style={{
-                fontFamily: "'Caveat', cursive",
-                fontWeight: 700,
-                textShadow: "0 3px 10px rgba(255,215,60,0.35), 0 2px 3px rgba(0,0,0,0.35)",
-              }}
-            >
-              colher.
-            </span>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 140 22"
-              className="absolute -bottom-2 left-1/2 h-4 w-[120px] -translate-x-1/2"
-              fill="none"
-            >
-              <path
-                d="M4 12 C 30 2, 70 22, 110 6 C 122 2, 132 6, 136 12"
-                stroke="oklch(0.72 0.26 350)"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
+        {/* Sub headline in script */}
+        <div
+          className="mt-3 -rotate-[2deg] text-[22px] leading-none text-white"
+          style={{
+            fontFamily: "'Caveat', cursive",
+            fontWeight: 700,
+            textShadow: "0 2px 8px rgba(0,0,0,0.5)",
+          }}
+        >
+          A felicidade em cada{" "}
+          <span className="text-neon-yellow">colher.</span>
         </div>
 
-        {/* Offer list */}
+        {/* Offer chips */}
+        <div
+          className="mt-5 flex flex-wrap items-center justify-center gap-1.5"
+          style={{ fontFamily: "'Poppins', sans-serif" }}
+        >
+          {["Açaí", "Sorvetes", "Milkshakes", "+ Muito mais"].map((chip) => (
+            <span
+              key={chip}
+              className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm"
+            >
+              {chip}
+            </span>
+          ))}
+        </div>
+
         <p
-          className="mt-6 text-[13.5px] leading-snug text-white/90"
+          className="mt-3 text-[12px] leading-snug text-white/75"
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400 }}
         >
-          Açaí, Sorvetes Premium,
-          <br />
-          Milkshakes e muito mais.
-          <br />
           Qualidade{" "}
           <span className="font-bold text-neon-yellow">irresistível</span>{" "}
           para o seu dia.
         </p>
 
-        {/* CTA */}
-        <div className="relative mt-6 flex flex-col items-center">
-          <button
-            onClick={onScrollMenu}
-            className="flex flex-col items-center leading-tight text-white"
-          >
-            <span
-              className="text-[13px] tracking-wide text-white/90"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
-            >
-              Peça o seu agora! 🚀
-            </span>
-            <span
-              className="relative mt-1 -rotate-[4deg] inline-block text-neon-pink"
-              style={{ fontFamily: "'Caveat', cursive", fontWeight: 700, fontSize: "26px" }}
-            >
-              extraordinário!
-              <span
-                aria-hidden="true"
-                className="absolute -bottom-1 left-1 right-1 h-[3px] rounded-full bg-neon-pink"
-                style={{
-                  boxShadow: "0 0 8px rgba(236,64,122,0.6)",
-                }}
-              />
-            </span>
-            <span
-              className="mt-1 text-[11px] tracking-wide text-white/70"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300 }}
-            >
-              Rápido e prático
-            </span>
-          </button>
-        </div>
+        {/* CTA button */}
+        <button
+          onClick={onScrollMenu}
+          className="mt-5 group relative inline-flex items-center gap-2 rounded-full bg-neon-pink px-5 py-2.5 text-[13px] font-extrabold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_-8px_rgba(236,64,122,0.85)] ring-2 ring-white/20 transition active:scale-[0.97]"
+          style={{ fontFamily: "'Poppins', sans-serif" }}
+        >
+          <span>Peça agora</span>
+          <span aria-hidden="true" className="text-[14px]">🚀</span>
+        </button>
+
+        <span
+          className="mt-2 text-[10.5px] uppercase tracking-[0.3em] text-white/55"
+          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
+        >
+          Rápido · Prático · Extraordinário
+        </span>
 
         {/* Space for side illustrations */}
-        <div className="h-32" />
+        <div className="h-28" />
       </div>
 
     </section>
