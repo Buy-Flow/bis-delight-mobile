@@ -208,3 +208,9 @@
 a[href*="lovable.dev"][target="_blank"] {
   display: none !important;
 }
+
+/* Native <select> options — ensure legible on dark theme */
+select option {
+  background-color: oklch(0.16 0.09 305);
+  color: white;
+}
