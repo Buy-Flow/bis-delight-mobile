@@ -107,12 +107,6 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           para o seu dia.
         </p>
 
-        <span
-          className="mt-4 text-[10.5px] uppercase tracking-[0.3em] text-white/55"
-          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
-        >
-          Rápido · Prático · Extraordinário
-        </span>
 
 
         {/* Space for side illustrations */}
