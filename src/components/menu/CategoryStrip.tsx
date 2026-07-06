@@ -149,24 +149,25 @@ export function CategoryStrip({
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
                 </div>
 
-                {/* Personalized icon badge — uses category's Lucide icon + hex color */}
+                {/* Unified icon badge — same white color for all categories */}
                 <div
-                  className="absolute left-1/2 top-[80px] grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
+                  className="absolute left-1/2 top-[112px] grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
                   style={{
                     background:
                       "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
-                    boxShadow: `0 4px 10px rgba(0,0,0,0.55), inset 0 0 0 1.5px ${accent.hex}aa, inset 0 1px 0 rgba(255,255,255,0.15), 0 0 12px ${accent.hex}55`,
+                    boxShadow: `0 4px 10px rgba(0,0,0,0.55), inset 0 0 0 1.5px rgba(255,255,255,0.65), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 10px rgba(255,255,255,0.25)`,
                   }}
                 >
                   <Icon
-                    className="h-5 w-5"
+                    className="h-[18px] w-[18px]"
                     strokeWidth={2.4}
                     style={{
-                      color: accent.hex,
-                      filter: `drop-shadow(0 0 4px ${accent.hex}88)`,
+                      color: "#ffffff",
+                      filter: `drop-shadow(0 0 3px rgba(255,255,255,0.6))`,
                     }}
                   />
                 </div>
+
 
                 {/* White label */}
                 <div className="absolute inset-x-0 bottom-3 px-1.5 text-center">
