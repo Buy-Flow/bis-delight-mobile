@@ -111,10 +111,17 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
             <span className="h-px w-5 bg-linear-to-r from-transparent via-neon-yellow/60 to-neon-yellow" />
             <span
-              className="rounded-full border border-neon-yellow/50 bg-neon-yellow/10 px-2.5 py-[3px] text-[9.5px] uppercase tracking-[0.35em] text-neon-yellow shadow-[0_0_14px_rgba(255,215,60,0.4)] backdrop-blur-sm"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
+              className="px-1 text-[18px] leading-none text-neon-yellow"
+              style={{
+                fontFamily: "'Titan One', 'Bowlby One', 'Fredoka', sans-serif",
+                fontWeight: 400,
+                letterSpacing: "0.02em",
+                WebkitTextStroke: "1.5px #1a0b2e",
+                textShadow:
+                  "0 2px 0 #1a0b2e, 0 3px 6px rgba(0,0,0,0.55), 0 0 14px rgba(255,215,60,0.45)",
+              }}
             >
-              Quero Bis
+              QueroBis
             </span>
             <span className="h-px w-5 bg-linear-to-l from-transparent via-neon-yellow/60 to-neon-yellow" />
             <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
