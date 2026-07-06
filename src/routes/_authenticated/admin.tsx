@@ -1860,15 +1860,65 @@ function CategoryPhotoTab({
 /* ============================= Highlights ============================= */
 function HighlightsTab() {
   const { data: products = [] } = useAllProducts();
+  const { data: categories = [] } = useCategories();
   const toggle = useToggleHero();
+  const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+
+  const catList = categories.filter((c) => c.id !== "all");
+  const heroCount = products.filter((p) => p.hero).length;
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (filter === "hero" && !p.hero) return false;
+      else if (filter !== "all" && filter !== "hero" && p.category !== filter) return false;
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [products, filter, search]);
+
   return (
     <div>
-      <h2 className="mb-2 font-display text-2xl font-black">Nossos Destaques</h2>
-      <p className="mb-4 text-xs text-white/50">
-        Marque os produtos que devem aparecer no carrossel de destaques da home.
-      </p>
+      <div className="mb-4">
+        <h2 className="font-display text-2xl font-black">Nossos Destaques</h2>
+        <p className="text-xs text-white/50">
+          Marque os produtos que devem aparecer no carrossel de destaques da home.{" "}
+          <b className="text-neon-yellow">{heroCount}</b> em destaque.
+        </p>
+      </div>
+
+      <div className="mb-3 space-y-2">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            className={cn(inputCls, "pl-9")}
+            placeholder="Buscar produto por nome..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-1 overflow-x-auto pb-1">
+          <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
+            Tudo <span className="opacity-60">({products.length})</span>
+          </FilterChip>
+          <FilterChip active={filter === "hero"} onClick={() => setFilter("hero")}>
+            <Star className="h-3 w-3 fill-neon-yellow text-neon-yellow" /> Em destaque{" "}
+            <span className="opacity-60">({heroCount})</span>
+          </FilterChip>
+          {catList.map((c) => {
+            const count = products.filter((p) => p.category === c.id).length;
+            return (
+              <FilterChip key={c.id} active={filter === c.id} onClick={() => setFilter(c.id)}>
+                <span>{c.emoji}</span> {c.name} <span className="opacity-60">({count})</span>
+              </FilterChip>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="grid gap-2 sm:grid-cols-2">
-        {products.map((p) => (
+        {visible.map((p) => (
           <label
             key={p.id}
             className={cn(
@@ -1891,6 +1941,11 @@ function HighlightsTab() {
             />
           </label>
         ))}
+        {visible.length === 0 && (
+          <div className="sm:col-span-2 rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
+            Nenhum produto encontrado.
+          </div>
+        )}
       </div>
     </div>
   );
