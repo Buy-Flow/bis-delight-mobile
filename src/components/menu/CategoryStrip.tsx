@@ -110,7 +110,7 @@ export function CategoryStrip({
                 <img
                   src={c.image}
                   alt={c.name}
-                  className="absolute left-1/2 top-1/2 h-[190%] w-[190%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
+                  className="absolute left-1/2 top-[45%] h-[136%] w-[136%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
                 />
                 {/* fade to card bg */}
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-[oklch(0.20_0.12_305)]" />
