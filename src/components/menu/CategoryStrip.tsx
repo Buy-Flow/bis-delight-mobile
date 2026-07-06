@@ -125,7 +125,7 @@ export function CategoryStrip({
 
               {/* Elevated base platform */}
               <div
-                className="absolute inset-x-0 bottom-0 h-[92px] rounded-b-[32px]"
+                className="absolute inset-x-0 bottom-0 h-[70px] rounded-b-[24px]"
                 style={{
                   background:
                     "linear-gradient(180deg, #3a1585 0%, #2f0f70 55%, #26095d 100%)",
@@ -134,24 +134,24 @@ export function CategoryStrip({
                 }}
               >
                 {/* highlighted top rim */}
-                <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
               </div>
 
               {/* Floating icon badge — sits on the elevated platform */}
               <div
-                className="absolute left-1/2 top-[138px] grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-b from-[#4a22a0] to-[#2f0f70] ring-2 ring-[#8a6bff]/70"
+                className="absolute left-1/2 top-[102px] grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-b from-[#4a22a0] to-[#2f0f70] ring-2 ring-[#8a6bff]/70"
                 style={{
                   boxShadow:
                     "0 8px 16px -4px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25)",
                 }}
               >
-                <Icon className="h-6 w-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" strokeWidth={2} />
+                <Icon className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" strokeWidth={2} />
               </div>
 
               {/* Engraved label */}
-              <div className="absolute inset-x-0 bottom-5 px-3 text-center">
+              <div className="absolute inset-x-0 bottom-3 px-2 text-center">
                 <div
-                  className="truncate text-[15px] font-black uppercase tracking-wide text-white/95"
+                  className="truncate text-[11px] font-black uppercase tracking-wide text-white/95"
                   style={{
                     textShadow:
                       "0 -1px 0 rgba(20,0,55,0.9), 0 1px 0 rgba(255,255,255,0.28), 0 2px 3px rgba(0,0,0,0.35)",
