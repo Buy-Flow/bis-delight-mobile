@@ -7,30 +7,19 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
   return (
     <section className="relative overflow-hidden px-4 pb-0 pt-2">
       {/* Side ice cream illustrations */}
-      <div
+      <img
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 top-16 z-0 select-none"
-        style={{
-          width: "128px",
-          height: "360px",
-          backgroundImage: `url(${heroBgLeft.url})`,
-          backgroundSize: "440px auto",
-          backgroundPosition: "-10px -140px",
-          backgroundRepeat: "no-repeat",
-        }}
+        src={heroBgLeft.url}
+        alt=""
+        className="pointer-events-none absolute left-0 top-8 z-0 h-[300px] w-auto select-none object-contain object-left"
       />
-      <div
+      <img
         aria-hidden="true"
-        className="pointer-events-none absolute right-0 top-24 z-0 select-none"
-        style={{
-          width: "128px",
-          height: "360px",
-          backgroundImage: `url(${heroBgRight.url})`,
-          backgroundSize: "410px auto",
-          backgroundPosition: "-278px -150px",
-          backgroundRepeat: "no-repeat",
-        }}
+        src={heroBgRight.url}
+        alt=""
+        className="pointer-events-none absolute right-0 top-16 z-0 h-[300px] w-auto select-none object-contain object-right"
       />
+
 
       <div className="relative z-20 mx-auto flex w-[220px] max-w-full flex-col items-center text-center">
         {/* Eyebrow */}
