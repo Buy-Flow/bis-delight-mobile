@@ -143,24 +143,24 @@ export function ProductCard({
             className="flex items-center justify-between gap-2 rounded-full pl-3.5 pr-1 py-1"
             style={{
               background:
-                "linear-gradient(90deg, oklch(0.96 0.19 100) 0%, oklch(0.84 0.22 90) 100%)",
+                "linear-gradient(90deg, oklch(0.28 0.18 305) 0%, oklch(0.20 0.14 305) 100%)",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.5), 0 6px 14px -4px oklch(0.84 0.22 90 / 0.55)",
+                "inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 0 1px rgba(255,255,255,0.08)",
             }}
           >
             <span
-              className="text-[10px] font-black uppercase tracking-[0.16em] text-[oklch(0.18_0.11_305)]"
+              className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/85"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              Quero Bis
+              Adicionar
             </span>
             <span
-              className="grid h-8 w-8 place-items-center rounded-full text-[oklch(0.18_0.11_305)] transition group-hover:rotate-90"
+              className="grid h-8 w-8 place-items-center rounded-full text-white transition group-hover:rotate-90"
               style={{
                 background:
-                  "linear-gradient(180deg, #fff 0%, oklch(0.94 0.14 100) 100%)",
+                  "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.60 0.28 350) 100%)",
                 boxShadow:
-                  "0 4px 10px -2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.8)",
+                  "0 6px 14px -3px oklch(0.60 0.28 350 / 0.7), inset 0 1px 0 rgba(255,255,255,0.35)",
               }}
             >
               <Plus className="h-4 w-4" strokeWidth={3.2} />
