@@ -99,17 +99,16 @@ export function CategoryStrip({
               onClick={() => onChange(c.id)}
               aria-pressed={isActive}
               className={cn(
-                "group relative snap-start shrink-0 w-[100px] h-[150px] rounded-[22px] p-[2px]",
+                "group relative snap-start shrink-0 w-[100px] h-[150px] rounded-[22px]",
                 "transition active:scale-95",
                 isActive && `${accent.glow}`,
               )}
               style={{
-                background:
-                  "linear-gradient(140deg, #fff2b3 0%, #e8c15a 18%, #a8792a 42%, #5a3a10 60%, #d9ab48 80%, #fff2b3 100%)",
                 boxShadow:
-                  "0 14px 24px -12px rgba(0,0,0,0.75), 0 3px 8px -3px rgba(0,0,0,0.55), inset 0 0 0 0.5px rgba(255,255,255,0.35)",
+                  "0 14px 24px -12px rgba(0,0,0,0.75), 0 3px 8px -3px rgba(0,0,0,0.55)",
               }}
             >
+
               <div
                 className={cn(
                   "relative h-full w-full overflow-hidden rounded-[20px]",
