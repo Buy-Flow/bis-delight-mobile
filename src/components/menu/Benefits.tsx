@@ -1,31 +1,47 @@
-import { Truck, Snowflake, Heart } from "lucide-react";
+import { Timer, GlassWater, Heart } from "lucide-react";
 
 const items = [
-  { icon: Truck, title: "Entrega rápida", sub: "Chegou quentinho — quer dizer, geladinho." },
-  { icon: Snowflake, title: "Sempre fresco", sub: "Batido na hora, servido no ponto." },
-  { icon: Heart, title: "Feito pra você", sub: "Personalize cada colher do seu jeito." },
+  {
+    icon: Timer,
+    color: "text-neon-pink",
+    title: "Entrega rápida",
+    sub: "em toda região",
+  },
+  {
+    icon: GlassWater,
+    color: "text-neon-cyan",
+    title: "Produtos",
+    sub: "preparados com amor",
+  },
+  {
+    icon: Heart,
+    color: "text-neon-yellow",
+    title: "Feito para",
+    sub: "várias com os melhores ingredientes",
+  },
 ];
 
 export function Benefits() {
   return (
     <section className="px-4 pb-6">
-      <div className="grid grid-cols-3 gap-2">
-        {items.map((it) => (
-          <div
-            key={it.title}
-            className="card-acai rounded-2xl p-3 text-center"
-          >
-            <div className="mx-auto mb-2 grid h-9 w-9 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan ring-1 ring-neon-cyan/40">
-              <it.icon className="h-4 w-4" />
+      <div className="rounded-[36px] bg-[#c8b3e0] px-4 py-5 shadow-lg">
+        <div className="grid grid-cols-3 items-center divide-x divide-white/50">
+          {items.map((it) => (
+            <div
+              key={it.title}
+              className="flex items-center gap-2 px-2 first:pl-0 last:pr-0"
+            >
+              <it.icon
+                className={`h-9 w-9 shrink-0 ${it.color}`}
+                strokeWidth={2.25}
+              />
+              <div className="min-w-0 text-[11px] font-bold leading-tight text-slate-800">
+                <div>{it.title}</div>
+                <div className="font-semibold text-slate-700">{it.sub}</div>
+              </div>
             </div>
-            <div className="text-[12px] font-bold leading-tight text-white">
-              {it.title}
-            </div>
-            <div className="mt-1 text-[10px] leading-tight text-white/60">
-              {it.sub}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
