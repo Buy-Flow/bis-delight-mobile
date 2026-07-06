@@ -147,28 +147,56 @@ export function ProductModal({
       />
       <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
         {/* Header w/ product */}
-        <div className="relative h-[240px] shrink-0 overflow-hidden">
-          <div className="absolute inset-0 noise-purple" />
-          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_60%,oklch(0.86_0.18_200_/_0.25),transparent_65%)]" />
+        <div
+          className="relative h-[260px] shrink-0 overflow-hidden"
+          style={{
+            background:
+              "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.24 0.18 305) 45%, oklch(0.14 0.10 300) 100%)",
+          }}
+        >
+          {/* Ambient blobs */}
+          <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-neon-pink/30 blur-3xl" />
+          <div className="pointer-events-none absolute -right-20 -bottom-24 h-64 w-64 rounded-full bg-neon-cyan/25 blur-3xl" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon-yellow/15 blur-3xl" />
+
+          {/* Sparkle dots */}
+          <div className="pointer-events-none absolute left-[18%] top-8 h-1 w-1 rounded-full bg-white/80" />
+          <div className="pointer-events-none absolute right-[22%] top-14 h-[3px] w-[3px] rounded-full bg-neon-yellow/90" />
+          <div className="pointer-events-none absolute left-[30%] bottom-16 h-[3px] w-[3px] rounded-full bg-neon-cyan/80" />
+          <div className="pointer-events-none absolute right-[28%] bottom-24 h-1 w-1 rounded-full bg-white/70" />
+          <div className="pointer-events-none absolute left-[70%] top-20 h-1 w-1 rounded-full bg-neon-pink/80" />
+
+          {/* Product image with halo + floor shadow */}
+          <div
+            className="pointer-events-none absolute left-1/2 top-[52%] h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 45%, oklch(1 0 0 / 0.28) 0%, oklch(0.86 0.20 340 / 0.18) 40%, transparent 70%)",
+            }}
+          />
+          <div className="pointer-events-none absolute inset-x-[28%] bottom-14 h-3 rounded-full bg-black/45 blur-md" />
+
           <img
             src={product.image}
             alt={product.name}
-            className="absolute inset-0 mx-auto h-full w-full object-contain p-5 drop-shadow-[0_25px_25px_rgba(0,0,0,0.55)]"
+            className="absolute inset-0 mx-auto h-full w-full object-contain p-6 drop-shadow-[0_28px_28px_rgba(0,0,0,0.55)]"
           />
+
           <button
             onClick={onClose}
             aria-label="Fechar"
-            className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white active:scale-95"
+            className="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-sm active:scale-95"
           >
             <X className="h-5 w-5" />
           </button>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] to-transparent p-4">
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/80 to-transparent p-4 pt-10">
             <h3 className="font-display text-2xl font-extrabold leading-tight text-white">
               {product.name}
             </h3>
             <p className="text-[12px] text-white/70">{product.description}</p>
           </div>
         </div>
+
 
         {/* Scroll body */}
         <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
