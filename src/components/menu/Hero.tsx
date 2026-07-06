@@ -122,13 +122,11 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             <span className="h-px w-6 bg-linear-to-l from-transparent to-neon-pink/70" />
           </div>
           <div
-            className="flex items-center gap-2 text-[10px] uppercase text-white/85"
+            className="flex flex-col items-center gap-1 text-[10px] uppercase text-white/85"
             style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, letterSpacing: "0.18em" }}
           >
             <span>Rápido</span>
-            <span className="inline-block h-1 w-1 rotate-45 bg-neon-yellow" />
             <span>Prático</span>
-            <span className="inline-block h-1 w-1 rotate-45 bg-neon-cyan" />
             <span
               className="text-neon-yellow"
               style={{ fontFamily: "'Caveat', cursive", fontWeight: 700, fontSize: "16px", letterSpacing: "0", textTransform: "none" }}
