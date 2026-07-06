@@ -8,7 +8,7 @@ export function FloatingActions() {
   const wa = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent("Olá! Vim pelo cardápio digital 🍦")}`;
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3">
+    <div className="fixed inset-x-4 bottom-4 z-30 flex flex-row-reverse items-center gap-3">
       <a
         href={wa}
         target="_blank"
