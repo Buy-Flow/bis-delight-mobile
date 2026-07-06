@@ -249,16 +249,99 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      storefront_settings: {
+        Row: {
+          accepts_delivery: boolean | null
+          accepts_pickup: boolean | null
+          address: string | null
+          announcement_active: boolean | null
+          announcement_text: string | null
+          city: string | null
+          delivery_fee: number | null
+          facebook: string | null
+          free_delivery_threshold: number | null
+          hours: string | null
+          hours_json: Json | null
+          id: number | null
+          instagram: string | null
+          logo_url: string | null
+          map_embed: string | null
+          maps_url: string | null
+          min_order: number | null
+          name: string | null
+          open_override: string | null
+          payment_methods: Json | null
+          pix_key: string | null
+          tagline: string | null
+          texture_url: string | null
+          tiktok: string | null
+          updated_at: string | null
+          whatsapp: string | null
+          whatsapp_display: string | null
+        }
+        Insert: {
+          accepts_delivery?: boolean | null
+          accepts_pickup?: boolean | null
+          address?: string | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
+          city?: string | null
+          delivery_fee?: number | null
+          facebook?: string | null
+          free_delivery_threshold?: number | null
+          hours?: string | null
+          hours_json?: Json | null
+          id?: number | null
+          instagram?: string | null
+          logo_url?: string | null
+          map_embed?: string | null
+          maps_url?: string | null
+          min_order?: number | null
+          name?: string | null
+          open_override?: string | null
+          payment_methods?: Json | null
+          pix_key?: string | null
+          tagline?: string | null
+          texture_url?: string | null
+          tiktok?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+          whatsapp_display?: string | null
+        }
+        Update: {
+          accepts_delivery?: boolean | null
+          accepts_pickup?: boolean | null
+          address?: string | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
+          city?: string | null
+          delivery_fee?: number | null
+          facebook?: string | null
+          free_delivery_threshold?: number | null
+          hours?: string | null
+          hours_json?: Json | null
+          id?: number | null
+          instagram?: string | null
+          logo_url?: string | null
+          map_embed?: string | null
+          maps_url?: string | null
+          min_order?: number | null
+          name?: string | null
+          open_override?: string | null
+          payment_methods?: Json | null
+          pix_key?: string | null
+          tagline?: string | null
+          texture_url?: string | null
+          tiktok?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+          whatsapp_display?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       app_role: "admin" | "user"
