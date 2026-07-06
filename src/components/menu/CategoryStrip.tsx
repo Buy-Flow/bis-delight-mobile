@@ -99,45 +99,37 @@ export function CategoryStrip({
               onClick={() => onChange(c.id)}
               aria-pressed={isActive}
               className={cn(
-                "group relative snap-start shrink-0 w-[146px] h-[218px] rounded-[26px]",
-                "bg-[oklch(0.20_0.12_305)] transition active:scale-95 overflow-hidden",
-                "ring-1 ring-white/10",
+                "group relative snap-start shrink-0 w-[150px] h-[230px] rounded-[32px]",
+                "bg-[#280a66] transition active:scale-95 overflow-hidden",
+                "shadow-[0_10px_24px_-8px_rgba(0,0,0,0.55)]",
+                "ring-1 ring-white/5",
                 isActive && `ring-2 ${accent.ring} ${accent.glow}`,
               )}
             >
-              {/* Photo top area */}
-              <div className="relative h-[158px] w-full overflow-hidden">
+              {/* Photo top area (60%) */}
+              <div className="relative h-[138px] w-full overflow-hidden">
                 <img
                   src={c.image}
                   alt={c.name}
-                  className="absolute left-1/2 top-[45%] h-[136%] w-[136%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
+                  className="absolute left-1/2 top-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
                 />
                 {/* fade to card bg */}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-[oklch(0.20_0.12_305)]" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-b from-transparent to-[#280a66]" />
               </div>
 
-              {/* Icon circle overlapping */}
+              {/* Icon circle overlapping the seam */}
               <div
-                className={cn(
-                  "absolute left-1/2 top-[138px] grid h-12 w-12 -translate-x-1/2 place-items-center rounded-full",
-                  accent.bg,
-                  "ring-4 ring-[oklch(0.20_0.12_305)]",
-                )}
+                className="absolute left-1/2 top-[138px] grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#3d1a8a] ring-2 ring-[#7c5fd6]/70 shadow-[0_0_14px_rgba(124,95,214,0.35)]"
               >
                 <Icon
-                  className={cn(
-                    "h-5 w-5",
-                    accent.bg === "bg-neon-yellow"
-                      ? "text-[oklch(0.18_0.11_305)]"
-                      : "text-white",
-                  )}
-                  strokeWidth={2.2}
+                  className="h-6 w-6 text-white"
+                  strokeWidth={2}
                 />
               </div>
 
               {/* Label */}
-              <div className="absolute inset-x-0 bottom-4 px-2 text-center">
-                <div className="truncate text-[13px] font-extrabold uppercase tracking-wider text-white">
+              <div className="absolute inset-x-0 bottom-5 px-3 text-center">
+                <div className="truncate text-[15px] font-black uppercase tracking-wide text-white">
                   {c.name}
                 </div>
               </div>
