@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 
@@ -9,72 +9,126 @@ export function HighlightCard({
   product: Product;
   onOpen: (p: Product) => void;
 }) {
-  return (
-    <div className="relative flex h-full overflow-hidden rounded-[28px] border border-white/10 bg-[oklch(0.16_0.10_305)] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.6)]">
-      {/* Decorative glows */}
-      <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-neon-pink/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-6 right-4 h-20 w-20 rounded-full bg-neon-cyan/15 blur-2xl" />
+  const chips = product.ingredients.slice(0, 3);
 
-      {/* Left image — same container, zoomed image */}
-      <div className="relative w-[42%] shrink-0 overflow-hidden bg-gradient-to-br from-[oklch(0.22_0.14_305)]/60 to-transparent">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_55%,oklch(0.72_0.26_350_/_0.18),transparent_70%)]" />
+  return (
+    <div
+      className="relative flex h-full overflow-hidden rounded-[26px]"
+      style={{
+        background:
+          "linear-gradient(155deg, oklch(0.24 0.17 305) 0%, oklch(0.14 0.10 305) 55%, oklch(0.10 0.06 300) 100%)",
+        boxShadow:
+          "0 22px 44px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.06)",
+      }}
+    >
+      {/* Neon border tint */}
+      <div className="pointer-events-none absolute inset-0 rounded-[26px] ring-1 ring-inset ring-neon-pink/20" />
+      {/* Corner glows */}
+      <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-neon-pink/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-8 -left-6 h-24 w-24 rounded-full bg-neon-cyan/20 blur-2xl" />
+      {/* Sparkle dots */}
+      <div className="pointer-events-none absolute right-3 top-3 h-1 w-1 rounded-full bg-white/70" />
+      <div className="pointer-events-none absolute right-8 top-6 h-[3px] w-[3px] rounded-full bg-neon-yellow/80" />
+      <div className="pointer-events-none absolute left-[38%] top-4 h-1 w-1 rounded-full bg-neon-cyan/70" />
+
+      {/* Left image with spotlight halo */}
+      <div className="relative w-[44%] shrink-0 overflow-hidden">
+        {/* Halo */}
+        <div
+          className="absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, oklch(0.72 0.26 350 / 0.35) 0%, transparent 60%)",
+          }}
+        />
+        {/* Floor shine */}
+        <div className="absolute inset-x-4 bottom-3 h-2 rounded-full bg-white/10 blur-md" />
         <img
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full scale-[2.6] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.6)]"
+          className="absolute inset-0 h-full w-full scale-[2.6] object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
         />
+
+        {/* TOP badge */}
+        <div
+          className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-[3px]"
+          style={{
+            background: "linear-gradient(180deg, #FFF089 0%, #FFDA3D 100%)",
+            boxShadow:
+              "0 4px 10px -2px rgba(255,180,0,0.55), inset 0 1px 0 rgba(255,255,255,0.6)",
+          }}
+        >
+          <Star className="h-[10px] w-[10px] fill-black text-black" strokeWidth={2.5} />
+          <span
+            className="text-[9px] font-black uppercase tracking-wider text-black"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            Top
+          </span>
+        </div>
       </div>
-
-
 
       {/* Right content */}
       <div className="relative flex min-w-0 flex-1 flex-col p-3.5">
-        <h3 className="font-display text-[20px] font-extrabold leading-[1.05] text-white line-clamp-2">
+        <h3
+          className="text-[19px] font-black leading-[1.02] text-white line-clamp-2"
+          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
+        >
           {product.name}
         </h3>
 
-        <p className="mt-1.5 text-[11.5px] leading-snug text-white/70 line-clamp-3">
-          {product.ingredients.join(", ")}.
-        </p>
-
-        {/* Footer: cloud price + plus button */}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
-          {/* Cloud/splash price tag */}
-          <div className="relative shrink-0">
-            <svg
-              viewBox="0 0 140 90"
-              className="h-[68px] w-[104px] drop-shadow-[0_6px_10px_rgba(0,0,0,0.45)]"
-              aria-hidden="true"
+        {/* Ingredient chips */}
+        <div className="mt-2 flex flex-wrap gap-1">
+          {chips.map((c) => (
+            <span
+              key={c}
+              className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-[2px] text-[9.5px] font-medium text-white/80"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              <defs>
-                <radialGradient id="cloudGrad" cx="50%" cy="40%" r="65%">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="70%" stopColor="#f2f2f5" />
-                  <stop offset="100%" stopColor="#cfcfd6" />
-                </radialGradient>
-              </defs>
-              <path
-                fill="url(#cloudGrad)"
-                d="M22 44c-8-2-14-8-12-16 2-9 12-12 20-9 3-8 12-13 22-11 6 1 11 5 14 10 6-4 14-4 20 1 7 5 8 14 3 20 6 2 10 8 8 15-2 8-11 12-19 10-3 6-10 10-18 10-6 0-12-2-16-6-5 5-13 7-20 4-9-4-13-14-9-22-5-1-9-4-11-9-2-6 1-12 6-13z"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <div className="text-[8.5px] font-semibold uppercase tracking-wide text-[#3a1a6a]">
-                A partir de
-              </div>
-              <div className="font-display text-[16px] font-black leading-none text-[#1a0838]">
-                {brl(product.basePrice)}
-              </div>
-            </div>
+              {c}
+            </span>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+          <div className="flex flex-col leading-none">
+            <span
+              className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-white/50"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              A partir de
+            </span>
+            <span
+              className="mt-1 text-[22px] font-black leading-none text-neon-yellow"
+              style={{
+                fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
+                textShadow: "0 2px 10px rgba(255,215,60,0.35)",
+              }}
+            >
+              {brl(product.basePrice)}
+            </span>
           </div>
 
           <button
             onClick={() => onOpen(product)}
             aria-label={`Personalizar ${product.name}`}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-neon-pink text-white shadow-[0_8px_20px_-4px_oklch(0.72_0.26_350/0.6)] transition active:scale-95"
+            className="group relative inline-flex h-11 items-center gap-1.5 rounded-full pl-3 pr-3.5 text-white active:scale-95 transition"
+            style={{
+              background:
+                "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.62 0.28 350) 100%)",
+              boxShadow:
+                "0 10px 22px -6px oklch(0.62 0.28 350 / 0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
+            }}
           >
-            <Plus className="h-5 w-5" strokeWidth={3.2} />
+            <Plus className="h-4 w-4" strokeWidth={3.4} />
+            <span
+              className="text-[12px] font-extrabold uppercase tracking-wide"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              Pedir
+            </span>
           </button>
         </div>
       </div>
