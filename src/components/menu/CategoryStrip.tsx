@@ -89,12 +89,13 @@ export function CategoryChip({
   active = false,
   onClick,
 }: {
-  category: { id: string; name: string; image: string; imagePosX?: number; imagePosY?: number; imageScale?: number };
+  category: { id: string; name: string; image: string; icon?: string | null; imagePosX?: number; imagePosY?: number; imageScale?: number };
   active?: boolean;
   onClick?: () => void;
 }) {
   const accent = ACCENTS[category.id] ?? ACCENTS.all;
-  const Icon = accent.icon;
+  const CustomIcon = getCategoryIcon(category.icon);
+  const Icon = CustomIcon ?? accent.icon;
   return (
     <button
       onClick={onClick}
