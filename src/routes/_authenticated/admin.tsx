@@ -432,7 +432,7 @@ function IconBtn({
   );
 }
 
-type EditorTab = "basic" | "sizes" | "extras" | "advanced";
+type EditorTab = "basic" | "photo" | "sizes" | "extras" | "advanced";
 
 function ProductEditor({
   initial,
