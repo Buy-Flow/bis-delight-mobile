@@ -1,4 +1,4 @@
-import { MessageCircle, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
