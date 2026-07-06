@@ -14,7 +14,7 @@ import { CheckoutSheet } from "@/components/menu/CheckoutSheet";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
-import heroTexture from "@/assets/hero-texture.jpg.asset.json";
+import heroTexture from "@/assets/bg-purple-dark.png.asset.json";
 import { Sparkles, Flame } from "lucide-react";
 
 export const Route = createFileRoute("/")({
