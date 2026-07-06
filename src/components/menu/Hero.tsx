@@ -5,7 +5,7 @@ import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
-  const { openCart } = useCart();
+  
 
 
   const waLink = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(
