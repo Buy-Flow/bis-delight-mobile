@@ -107,26 +107,21 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
         {/* Beautiful tagline strip */}
-        <div className="mt-5 flex flex-col items-center gap-1.5">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
-            <span className="h-px w-5 bg-linear-to-r from-transparent via-neon-yellow/60 to-neon-yellow" />
-            <span
-              className="px-1 text-[18px] leading-none text-neon-yellow"
-              style={{
-                fontFamily: "'Titan One', 'Bowlby One', 'Fredoka', sans-serif",
-                fontWeight: 400,
-                letterSpacing: "0.02em",
-                WebkitTextStroke: "1.5px #1a0b2e",
-                textShadow:
-                  "0 2px 0 #1a0b2e, 0 3px 6px rgba(0,0,0,0.55), 0 0 14px rgba(255,215,60,0.45)",
-              }}
-            >
-              QueroBis
-            </span>
-            <span className="h-px w-5 bg-linear-to-l from-transparent via-neon-yellow/60 to-neon-yellow" />
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
-          </div>
+        <div className="mt-5 flex flex-col items-center gap-2">
+          <span
+            className="-rotate-[3deg] px-1 text-[34px] leading-none text-neon-yellow"
+            style={{
+              fontFamily: "'Titan One', 'Bowlby One', 'Fredoka', sans-serif",
+              fontWeight: 400,
+              letterSpacing: "0.01em",
+              WebkitTextStroke: "2.5px #1a0b2e",
+              paintOrder: "stroke fill",
+              textShadow:
+                "0 3px 0 #1a0b2e, 0 5px 0 #1a0b2e, 0 7px 14px rgba(0,0,0,0.55), 0 0 22px rgba(255,215,60,0.55)",
+            }}
+          >
+            Quero Bis
+          </span>
           <div
             className="flex flex-col items-center gap-0 -rotate-[4deg] text-white/85"
             style={{ fontFamily: "'Caveat', cursive", fontWeight: 600, fontSize: "14px", lineHeight: 1 }}
@@ -137,6 +132,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             <span className="text-neon-yellow">extraordinário</span>
           </div>
         </div>
+
 
         {/* Space for side illustrations */}
         <div className="h-28" />
