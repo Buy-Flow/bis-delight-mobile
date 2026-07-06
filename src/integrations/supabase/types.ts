@@ -59,6 +59,9 @@ export type Database = {
           flavors: Json | null
           hero: boolean
           id: string
+          image_pos_x: number
+          image_pos_y: number
+          image_scale: number
           image_url: string | null
           ingredients: Json
           name: string
@@ -78,6 +81,9 @@ export type Database = {
           flavors?: Json | null
           hero?: boolean
           id: string
+          image_pos_x?: number
+          image_pos_y?: number
+          image_scale?: number
           image_url?: string | null
           ingredients?: Json
           name: string
@@ -97,6 +103,9 @@ export type Database = {
           flavors?: Json | null
           hero?: boolean
           id?: string
+          image_pos_x?: number
+          image_pos_y?: number
+          image_scale?: number
           image_url?: string | null
           ingredients?: Json
           name?: string
