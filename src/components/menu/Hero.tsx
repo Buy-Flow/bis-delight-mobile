@@ -60,7 +60,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           </a>
           <button
             onClick={onScrollMenu}
-            className="rounded-full border border-palm/70 bg-palm/10 px-5 py-3 text-sm font-semibold text-palm"
+            className="rounded-full border border-palm-500/70 bg-palm-500/10 px-5 py-3 text-sm font-semibold text-palm-300"
           >
             Ver cardápio
           </button>
