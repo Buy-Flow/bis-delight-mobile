@@ -33,15 +33,15 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
       />
 
       <div className="relative z-20 mx-auto flex max-w-[300px] flex-col items-center px-6 text-center">
-        {/* "Peça seu" — sans-serif, subtly handwritten italic */}
+        {/* Eyebrow */}
         <div
           className="mb-1 text-[22px] italic leading-none text-white/95 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]"
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
         >
-          Peça seu
+          Sabor que
         </div>
 
-        {/* Big yellow headline — slight playful twist */}
+        {/* Big yellow headline */}
         <h1
           className="mt-1 text-[60px] uppercase leading-[0.88] tracking-[0.01em] text-neon-yellow"
           style={{
@@ -49,15 +49,12 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             fontWeight: 900,
           }}
         >
-          <span className="inline-block -rotate-[5deg]">Sorvete</span>
-          <br />
-          <span className="inline-block -rotate-[5deg]">Favorito</span>
+          <span className="inline-block -rotate-[5deg]">Transforma!</span>
+          <span className="ml-1 inline-block text-[42px]">🍦</span>
         </h1>
 
-
-        {/* Decorative typographic phrase — no background, sparkles + swash */}
+        {/* Decorative typographic phrase */}
         <div className="relative mt-6 w-full max-w-[300px] text-center">
-          {/* Floating decorations */}
           <svg
             aria-hidden="true"
             viewBox="0 0 300 130"
@@ -90,7 +87,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             className="mt-1.5 text-[11px] uppercase tracking-[0.32em] text-white/70"
             style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
           >
-            cabe em cada
+            em cada
           </div>
 
           <div className="relative mt-1 inline-block">
@@ -102,7 +99,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
                 textShadow: "0 3px 10px rgba(255,215,60,0.35), 0 2px 3px rgba(0,0,0,0.35)",
               }}
             >
-              colher!
+              colher.
             </span>
             <svg
               aria-hidden="true"
@@ -120,42 +117,37 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           </div>
         </div>
 
-
-
-        {/* Subtitle */}
+        {/* Offer list */}
         <p
-          className="mt-5 text-[13.5px] leading-snug text-white/90"
+          className="mt-6 text-[13.5px] leading-snug text-white/90"
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400 }}
         >
-          Açaí, sorvetes, milk shakes
+          Açaí, Sorvetes Premium,
           <br />
-          e muito mais para deixar
+          Milkshakes e muito mais.
           <br />
-          seu dia{" "}
-          <span className="font-bold text-neon-yellow">mais feliz!</span>
+          Qualidade{" "}
+          <span className="font-bold text-neon-yellow">irresistível</span>{" "}
+          para o seu dia.
         </p>
 
-
-
-
-        {/* Bottom caption — thinner "Rápido, prático e" with "delicioso!" underlined below */}
+        {/* CTA */}
         <div className="relative mt-6 flex flex-col items-center">
-
           <button
             onClick={onScrollMenu}
             className="flex flex-col items-center leading-tight text-white"
           >
             <span
-              className="text-[12px] tracking-wide text-white/85"
-              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300 }}
+              className="text-[13px] tracking-wide text-white/90"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
             >
-              Rápido, prático e
+              Peça o seu agora! 🚀
             </span>
             <span
               className="relative mt-1 -rotate-[4deg] inline-block text-neon-pink"
               style={{ fontFamily: "'Caveat', cursive", fontWeight: 700, fontSize: "26px" }}
             >
-              delicioso!
+              extraordinário!
               <span
                 aria-hidden="true"
                 className="absolute -bottom-1 left-1 right-1 h-[3px] rounded-full bg-neon-pink"
@@ -164,9 +156,14 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
                 }}
               />
             </span>
+            <span
+              className="mt-1 text-[11px] tracking-wide text-white/70"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300 }}
+            >
+              Rápido e prático
+            </span>
           </button>
         </div>
-
 
         {/* Space for side illustrations */}
         <div className="h-32" />
