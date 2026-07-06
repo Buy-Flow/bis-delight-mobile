@@ -1,9 +1,20 @@
 import { useMemo, useState } from "react";
-import { Minus, Plus, X, Check } from "lucide-react";
+import { Minus, Plus, X, Check, Sparkles } from "lucide-react";
 import type { ExtraOption, Product } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+const CATEGORY_LABEL: Record<string, string> = {
+  acai: "Açaí artesanal",
+  copos: "Copo especial",
+  tacas: "Taça premium",
+  shakes: "Shake cremoso",
+  mix: "Mix da casa",
+  kids: "Linha kids",
+  casquinhas: "Casquinha",
+};
+
 
 /* Default customization pools by category — used when a product doesn't
    define its own extras/removable so every item has a rich "Personalizar" flow. */
@@ -146,48 +157,15 @@ export function ProductModal({
         onClick={onClose}
       />
       <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
-        {/* Header w/ product */}
-        <div
-          className="relative h-[280px] shrink-0 overflow-hidden"
-          style={{
-            background:
-              "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.24 0.18 305) 45%, oklch(0.14 0.10 300) 100%)",
-          }}
-        >
-          {/* Ambient blobs */}
-          <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-neon-pink/30 blur-3xl" />
-          <div className="pointer-events-none absolute -right-20 -bottom-24 h-64 w-64 rounded-full bg-neon-cyan/25 blur-3xl" />
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon-yellow/15 blur-3xl" />
-
-          {/* Sparkle dots */}
-          <div className="pointer-events-none absolute left-[18%] top-8 h-1 w-1 rounded-full bg-white/80" />
-          <div className="pointer-events-none absolute right-[22%] top-14 h-[3px] w-[3px] rounded-full bg-neon-yellow/90" />
-          <div className="pointer-events-none absolute left-[14%] bottom-24 h-[3px] w-[3px] rounded-full bg-neon-cyan/80" />
-          <div className="pointer-events-none absolute right-[16%] bottom-32 h-1 w-1 rounded-full bg-white/70" />
-          <div className="pointer-events-none absolute left-[78%] top-20 h-1 w-1 rounded-full bg-neon-pink/80" />
-
-          {/* Halo behind product */}
-          <div
-            className="pointer-events-none absolute left-1/2 top-[38%] h-[240px] w-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 45%, oklch(1 0 0 / 0.28) 0%, oklch(0.86 0.20 340 / 0.18) 40%, transparent 70%)",
-            }}
+        {/* Header — mesmo estilo do "Monte seu açaí" */}
+        <div className="relative h-[260px] shrink-0 overflow-hidden">
+          <div className="absolute inset-0 noise-purple" />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_60%,oklch(0.86_0.18_200_/_0.3),transparent_65%)]" />
+          <img
+            src={product.image}
+            alt={product.name}
+            className="absolute inset-0 mx-auto h-full w-full object-contain p-4 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
           />
-          {/* Floor shadow */}
-          <div className="pointer-events-none absolute inset-x-[26%] bottom-24 h-3 rounded-full bg-black/45 blur-md" />
-
-          {/* Product image — centered, compact */}
-          <div className="absolute inset-x-0 top-2 flex justify-center pb-2">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="h-[220px] w-[220px] max-w-[72%] object-contain drop-shadow-[0_24px_24px_rgba(0,0,0,0.6)]"
-            />
-          </div>
-
-
-
           <button
             onClick={onClose}
             aria-label="Fechar"
@@ -195,13 +173,18 @@ export function ProductModal({
           >
             <X className="h-5 w-5" />
           </button>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/80 to-transparent p-4 pt-10">
-            <h3 className="font-display text-2xl font-extrabold leading-tight text-white">
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/70 to-transparent px-4 pb-4 pt-8">
+            <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
+              <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize o seu"}
+            </div>
+            <h2 className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text leading-none">
               {product.name}
-            </h3>
-            <p className="text-[12px] text-white/70">{product.description}</p>
+            </h2>
+            <p className="mt-1 text-[12px] text-white/70">{product.description}</p>
           </div>
         </div>
+
+
 
 
         {/* Scroll body */}
