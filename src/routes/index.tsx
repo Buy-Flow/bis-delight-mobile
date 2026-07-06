@@ -309,13 +309,33 @@ function HighlightsCarousel({
 
   return (
     <section className="pb-4 pt-2">
-      <div className="mb-3 flex items-center justify-center gap-3 px-4">
-        <span className="text-neon-pink">›</span>
-        <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.2em] text-white">
-          Nossos Destaques
+      <div className="mb-3 px-4 text-center">
+        <h2
+          className="font-display text-[34px] font-black uppercase leading-[0.95] text-white"
+          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
+        >
+          Nossos{" "}
+          <span className="relative inline-block">
+            <span className="relative z-10 text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.45)]">
+              Destaques
+            </span>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 160 14"
+              className="absolute -bottom-1 left-0 h-3 w-full"
+              fill="none"
+            >
+              <path
+                d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
+                stroke="oklch(0.72 0.26 350)"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
         </h2>
-        <span className="text-neon-pink rotate-180">›</span>
       </div>
+
 
       <div
         ref={scrollerRef}
