@@ -18,7 +18,7 @@ import { BRAND, type Product } from "@/data/menu";
 import { useProducts, useSiteSettings } from "@/lib/menu-data";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
-import { Search, Sparkles, X } from "lucide-react";
+import { Search, Sparkles, X, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
@@ -102,6 +102,13 @@ function Content() {
         backgroundAttachment: "scroll",
       }}
     >
+
+      {settings?.announcementActive && settings?.announcementText && (
+        <div className="flex items-center justify-center gap-2 bg-neon-yellow px-4 py-2 text-center text-[12px] font-bold text-[oklch(0.15_0.10_305)]">
+          <Megaphone className="h-3.5 w-3.5 shrink-0" />
+          <span>{settings.announcementText}</span>
+        </div>
+      )}
 
       <TopBar onOpenCategories={scrollToMenu} />
       <Hero onScrollMenu={scrollToMenu} />

@@ -10,6 +10,9 @@ import {
   type ExtraOption,
 } from "@/data/menu";
 
+export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export type DayHours = { day: WeekDay; closed: boolean; open: string; close: string };
+
 export type SiteSettings = {
   name: string;
   tagline: string;
@@ -23,6 +26,19 @@ export type SiteSettings = {
   deliveryFee: number;
   logo: string;
   texture: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  announcementText: string;
+  announcementActive: boolean;
+  pixKey: string;
+  paymentMethods: string[];
+  freeDeliveryThreshold: number;
+  minOrder: number;
+  acceptsDelivery: boolean;
+  acceptsPickup: boolean;
+  openOverride: "auto" | "open" | "closed";
+  hoursJson: DayHours[];
 };
 
 function rowToProduct(row: Record<string, unknown>): Product {
@@ -114,6 +130,47 @@ export function useCategories() {
   });
 }
 
+export const DEFAULT_HOURS: DayHours[] = [
+  { day: "mon", closed: false, open: "14:00", close: "22:00" },
+  { day: "tue", closed: false, open: "14:00", close: "22:00" },
+  { day: "wed", closed: false, open: "14:00", close: "22:00" },
+  { day: "thu", closed: false, open: "14:00", close: "22:00" },
+  { day: "fri", closed: false, open: "14:00", close: "23:00" },
+  { day: "sat", closed: false, open: "14:00", close: "23:00" },
+  { day: "sun", closed: false, open: "14:00", close: "22:00" },
+];
+
+const DEFAULT_EXTRA: Pick<
+  SiteSettings,
+  | "instagram"
+  | "facebook"
+  | "tiktok"
+  | "announcementText"
+  | "announcementActive"
+  | "pixKey"
+  | "paymentMethods"
+  | "freeDeliveryThreshold"
+  | "minOrder"
+  | "acceptsDelivery"
+  | "acceptsPickup"
+  | "openOverride"
+  | "hoursJson"
+> = {
+  instagram: "",
+  facebook: "",
+  tiktok: "",
+  announcementText: "",
+  announcementActive: false,
+  pixKey: "",
+  paymentMethods: ["Dinheiro", "Pix", "Cartão"],
+  freeDeliveryThreshold: 0,
+  minOrder: 0,
+  acceptsDelivery: true,
+  acceptsPickup: true,
+  openOverride: "auto",
+  hoursJson: DEFAULT_HOURS,
+};
+
 export function useSiteSettings() {
   return useQuery({
     queryKey: ["site_settings"],
@@ -133,8 +190,12 @@ export function useSiteSettings() {
           deliveryFee: STATIC_BRAND.deliveryFee,
           logo: STATIC_BRAND.logo,
           texture: STATIC_BRAND.texture,
+          ...DEFAULT_EXTRA,
         };
       }
+      const rawHours = (data.hours_json as unknown) as DayHours[] | null;
+      const rawMethods = (data.payment_methods as unknown) as string[] | null;
+      const rawOverride = String(data.open_override ?? "auto");
       return {
         name: data.name || STATIC_BRAND.name,
         tagline: data.tagline || STATIC_BRAND.tagline,
@@ -148,6 +209,19 @@ export function useSiteSettings() {
         deliveryFee: Number(data.delivery_fee ?? STATIC_BRAND.deliveryFee),
         logo: data.logo_url || STATIC_BRAND.logo,
         texture: data.texture_url || STATIC_BRAND.texture,
+        instagram: String(data.instagram ?? ""),
+        facebook: String(data.facebook ?? ""),
+        tiktok: String(data.tiktok ?? ""),
+        announcementText: String(data.announcement_text ?? ""),
+        announcementActive: Boolean(data.announcement_active ?? false),
+        pixKey: String(data.pix_key ?? ""),
+        paymentMethods: Array.isArray(rawMethods) && rawMethods.length ? rawMethods : ["Dinheiro", "Pix", "Cartão"],
+        freeDeliveryThreshold: Number(data.free_delivery_threshold ?? 0),
+        minOrder: Number(data.min_order ?? 0),
+        acceptsDelivery: Boolean(data.accepts_delivery ?? true),
+        acceptsPickup: Boolean(data.accepts_pickup ?? true),
+        openOverride: rawOverride === "open" || rawOverride === "closed" ? rawOverride : "auto",
+        hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
       };
     },
   });
@@ -326,7 +400,8 @@ export function useUpdateSettings() {
   const invalidate = useInvalidateMenu();
   return useMutation({
     mutationFn: async (s: SiteSettings) => {
-      const { error } = await supabase.from("site_settings").update({
+      const { error } = await supabase.from("site_settings").upsert({
+        id: 1,
         name: s.name,
         tagline: s.tagline,
         city: s.city,
@@ -339,7 +414,20 @@ export function useUpdateSettings() {
         delivery_fee: s.deliveryFee,
         logo_url: s.logo,
         texture_url: s.texture,
-      }).eq("id", 1);
+        instagram: s.instagram,
+        facebook: s.facebook,
+        tiktok: s.tiktok,
+        announcement_text: s.announcementText,
+        announcement_active: s.announcementActive,
+        pix_key: s.pixKey,
+        payment_methods: s.paymentMethods,
+        free_delivery_threshold: s.freeDeliveryThreshold,
+        min_order: s.minOrder,
+        accepts_delivery: s.acceptsDelivery,
+        accepts_pickup: s.acceptsPickup,
+        open_override: s.openOverride,
+        hours_json: s.hoursJson,
+      }, { onConflict: "id" });
       if (error) throw error;
     },
     onSuccess: invalidate,

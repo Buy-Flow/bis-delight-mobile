@@ -138,49 +138,88 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          accepts_delivery: boolean
+          accepts_pickup: boolean
           address: string
+          announcement_active: boolean
+          announcement_text: string
           city: string
           delivery_fee: number
+          facebook: string
+          free_delivery_threshold: number
           hours: string
+          hours_json: Json
           id: number
+          instagram: string
           logo_url: string | null
           map_embed: string
           maps_url: string
+          min_order: number
           name: string
+          open_override: string
+          payment_methods: Json
+          pix_key: string
           tagline: string
           texture_url: string | null
+          tiktok: string
           updated_at: string
           whatsapp: string
           whatsapp_display: string
         }
         Insert: {
+          accepts_delivery?: boolean
+          accepts_pickup?: boolean
           address?: string
+          announcement_active?: boolean
+          announcement_text?: string
           city?: string
           delivery_fee?: number
+          facebook?: string
+          free_delivery_threshold?: number
           hours?: string
+          hours_json?: Json
           id?: number
+          instagram?: string
           logo_url?: string | null
           map_embed?: string
           maps_url?: string
+          min_order?: number
           name?: string
+          open_override?: string
+          payment_methods?: Json
+          pix_key?: string
           tagline?: string
           texture_url?: string | null
+          tiktok?: string
           updated_at?: string
           whatsapp?: string
           whatsapp_display?: string
         }
         Update: {
+          accepts_delivery?: boolean
+          accepts_pickup?: boolean
           address?: string
+          announcement_active?: boolean
+          announcement_text?: string
           city?: string
           delivery_fee?: number
+          facebook?: string
+          free_delivery_threshold?: number
           hours?: string
+          hours_json?: Json
           id?: number
+          instagram?: string
           logo_url?: string | null
           map_embed?: string
           maps_url?: string
+          min_order?: number
           name?: string
+          open_override?: string
+          payment_methods?: Json
+          pix_key?: string
           tagline?: string
           texture_url?: string | null
+          tiktok?: string
           updated_at?: string
           whatsapp?: string
           whatsapp_display?: string
