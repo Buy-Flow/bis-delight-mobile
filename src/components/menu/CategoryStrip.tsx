@@ -39,9 +39,6 @@ export function CategoryStrip({
                   alt={c.name}
                   className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_8px_10px_rgba(0,0,0,0.4)]"
                 />
-                <div className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-neon-yellow text-[13px] font-bold text-[oklch(0.18_0.11_305)] shadow">
-                  {c.emoji}
-                </div>
               </div>
               <div className="px-3 py-2 text-left">
                 <div className="truncate text-[13px] font-bold text-white">
