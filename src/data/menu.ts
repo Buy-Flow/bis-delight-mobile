@@ -40,6 +40,9 @@ export type Category = {
   name: string;
   emoji: string;
   image: string;
+  imagePosX?: number;
+  imagePosY?: number;
+  imageScale?: number;
 };
 
 export const CATEGORIES: Category[] = [
