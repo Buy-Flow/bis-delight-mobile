@@ -148,7 +148,7 @@ export function ProductModal({
       <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
         {/* Header w/ product */}
         <div
-          className="relative h-[360px] shrink-0 overflow-hidden"
+          className="relative h-[280px] shrink-0 overflow-hidden"
           style={{
             background:
               "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.24 0.18 305) 45%, oklch(0.14 0.10 300) 100%)",
@@ -168,23 +168,24 @@ export function ProductModal({
 
           {/* Halo behind product */}
           <div
-            className="pointer-events-none absolute left-1/2 top-[46%] h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="pointer-events-none absolute left-1/2 top-[38%] h-[240px] w-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full"
             style={{
               background:
                 "radial-gradient(circle at 50% 45%, oklch(1 0 0 / 0.28) 0%, oklch(0.86 0.20 340 / 0.18) 40%, transparent 70%)",
             }}
           />
           {/* Floor shadow */}
-          <div className="pointer-events-none absolute inset-x-[22%] bottom-20 h-4 rounded-full bg-black/45 blur-md" />
+          <div className="pointer-events-none absolute inset-x-[26%] bottom-24 h-3 rounded-full bg-black/45 blur-md" />
 
-          {/* Product image — big and centered */}
-          <div className="absolute inset-0 flex items-center justify-center pb-14">
+          {/* Product image — centered, compact */}
+          <div className="absolute inset-x-0 top-2 flex justify-center pb-2">
             <img
               src={product.image}
               alt={product.name}
-              className="h-[300px] w-[300px] max-w-[80%] object-contain drop-shadow-[0_30px_30px_rgba(0,0,0,0.6)]"
+              className="h-[220px] w-[220px] max-w-[72%] object-contain drop-shadow-[0_24px_24px_rgba(0,0,0,0.6)]"
             />
           </div>
+
 
 
           <button
