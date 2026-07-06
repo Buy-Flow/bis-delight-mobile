@@ -113,20 +113,8 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
         {/* Bottom caption — thinner "Rápido, prático e" with "delicioso!" underlined below */}
-        <div className="relative mt-5 flex flex-col items-center">
-          <svg
-            viewBox="0 0 60 70"
-            className="absolute -left-12 -top-14 h-16 w-12"
-            fill="none"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M8 64 C 6 44, 14 24, 44 10" />
-            <path d="M36 6 L46 8 L44 18" />
-          </svg>
+        <div className="relative mt-6 flex flex-col items-center">
+
           <button
             onClick={onScrollMenu}
             className="flex flex-col items-center leading-tight text-white"
