@@ -1451,7 +1451,14 @@ function CategoryListRow({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-sm font-bold">
-            <span className="text-lg leading-none">{category.emoji}</span>
+            {(() => {
+              const Ico = getCategoryIcon(category.icon);
+              return Ico ? (
+                <Ico className="h-4 w-4 shrink-0 text-neon-cyan" />
+              ) : (
+                <span className="text-lg leading-none">{category.emoji}</span>
+              );
+            })()}
             <span className="truncate">{category.name}</span>
           </div>
           <div className="mt-0.5 font-mono text-[10px] text-white/40">{category.id}</div>
