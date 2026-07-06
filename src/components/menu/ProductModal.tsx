@@ -94,12 +94,28 @@ export function ProductModal({
 
   if (!product) return null;
 
+  // Rich customization pools with sensible fallbacks per category
+  const availableExtras: ExtraOption[] =
+    product.extras && product.extras.length > 0
+      ? product.extras
+      : getDefaultExtras(product.category);
+  const removableList: string[] =
+    product.removable && product.removable.length > 0
+      ? product.removable
+      : product.ingredients.filter((i) => i.toLowerCase() !== "açaí");
+  const flavorList: string[] | undefined =
+    product.flavors && product.flavors.length > 0
+      ? product.flavors
+      : product.category === "shakes" || product.category === "casquinhas" || product.category === "tacas"
+        ? ["Chocolate", "Morango", "Baunilha", "Ninho", "Flocos", "Ovomaltine", "Doce de Leite"]
+        : undefined;
+
   const size = product.sizes.find((s) => s.id === sizeId) ?? product.sizes[0];
-  const extrasSelected =
-    product.extras?.filter((e) => extras.includes(e.id)) ?? [];
+  const extrasSelected = availableExtras.filter((e) => extras.includes(e.id));
   const extrasPrice = extrasSelected.reduce((s, e) => s + e.price, 0);
   const unit = product.basePrice + size.priceDelta + extrasPrice;
   const total = unit * qty;
+
 
   const toggleExtra = (id: string) =>
     setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
