@@ -49,10 +49,11 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             fontWeight: 900,
           }}
         >
-          <span className="inline-block -rotate-[4deg]">Sorvete</span>
+          <span className="inline-block -rotate-[5deg]">Sorvete</span>
           <br />
-          <span className="inline-block rotate-[3deg]">Favorito</span>
+          <span className="inline-block -rotate-[5deg]">Favorito</span>
         </h1>
+
 
         {/* Elegant ribbon banner — twin ribbon tails + soft gradient */}
         <div className="relative mt-6 w-full max-w-[290px] -rotate-[1.5deg]">
