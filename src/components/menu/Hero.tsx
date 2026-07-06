@@ -34,7 +34,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         src={heroBgRight.url}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute -right-4 -top-16 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute -right-4 -top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
       />
 
       <div className="relative z-10 pt-2">
