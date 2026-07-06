@@ -36,10 +36,11 @@ export function Benefits() {
                 className={`h-7 w-7 shrink-0 ${it.color}`}
                 strokeWidth={2.25}
               />
-              <div className="min-w-0 text-[10px] font-bold leading-tight text-white">
-                <div>{it.title}</div>
-                <div className="font-semibold text-white/70">{it.sub}</div>
+              <div className="min-w-0 text-[9px] font-medium leading-snug tracking-tight text-white">
+                <div className="font-semibold">{it.title}</div>
+                <div className="font-light text-white/70">{it.sub}</div>
               </div>
+
 
             </div>
           ))}
