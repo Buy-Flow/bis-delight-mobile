@@ -462,8 +462,8 @@ function ProductEditor({
       removable: p.removable && p.removable.length ? p.removable : null,
       badge: p.badge ?? null,
       hero: !!p.hero,
-      active: true,
-      sort_order: 0,
+      // On new products default to active + append at end; on edits keep existing values.
+      ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
     toast.success(isNew ? "Produto criado!" : "Salvo!");
