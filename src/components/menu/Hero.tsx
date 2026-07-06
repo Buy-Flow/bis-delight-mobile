@@ -37,7 +37,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         className="pointer-events-none absolute -right-4 -top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
       />
 
-      <div className="relative z-10 pt-2">
+      <div className="relative z-10 pt-2 flex flex-col items-center text-center">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
           <Sparkles className="h-3 w-3" />
           Aberto agora · Delivery {BRAND.hours.split(" ")[0]}
@@ -54,7 +54,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           A felicidade cabe em cada colher. Monte, personalize e receba em casa.
         </p>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           <a
             href={waLink}
             target="_blank"
@@ -71,6 +71,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             Ver cardápio
           </button>
         </div>
+
 
         {/* Floating products */}
         <div className="relative mt-6 h-64">
