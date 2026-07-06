@@ -15,7 +15,7 @@ import { CheckoutSheet } from "@/components/menu/CheckoutSheet";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
-import heroTexture from "@/assets/purple-crumpled-bg.jpg.asset.json";
+import heroTexture from "@/assets/bg-purple-smoke.png.asset.json";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -81,10 +81,10 @@ function Content() {
     <div
       className="relative mx-auto min-h-screen w-full max-w-[520px] pb-32"
       style={{
-        backgroundColor: "#1a0838",
-        backgroundImage: `linear-gradient(rgba(26,8,56,0.72), rgba(26,8,56,0.72)), url(${heroTexture.url})`,
-        backgroundSize: "auto, 380px 380px",
-        backgroundRepeat: "repeat, repeat",
+        backgroundColor: "#0d0322",
+        backgroundImage: `url(${heroTexture.url})`,
+        backgroundSize: "cover",
+        backgroundRepeat: "repeat",
         backgroundAttachment: "scroll",
       }}
     >
