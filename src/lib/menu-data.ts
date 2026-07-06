@@ -302,6 +302,7 @@ export function useUpsertCategory() {
       image_pos_x?: number;
       image_pos_y?: number;
       image_scale?: number;
+      icon?: string | null;
     }) => {
       const { error } = await supabase.from("categories").upsert(c, { onConflict: "id" });
       if (error) throw error;
