@@ -108,7 +108,7 @@ export function CategoryStrip({
             >
               {/* Sunken photo area (top 60%) */}
               <div
-                className="relative h-[138px] w-full overflow-hidden"
+                className="relative h-[102px] w-full overflow-hidden"
                 style={{
                   boxShadow:
                     "inset 0 10px 18px -8px rgba(0,0,0,0.75), inset 0 -6px 14px -6px rgba(0,0,0,0.55), inset 0 0 22px rgba(0,0,0,0.35)",
