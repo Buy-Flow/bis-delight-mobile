@@ -331,6 +331,45 @@ export function useUpdateSettings() {
   });
 }
 
+export function useReorderProducts() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (items: { id: string; sort_order: number }[]) => {
+      await Promise.all(
+        items.map((it) =>
+          supabase.from("products").update({ sort_order: it.sort_order }).eq("id", it.id),
+        ),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useReorderCategories() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (items: { id: string; sort_order: number }[]) => {
+      await Promise.all(
+        items.map((it) =>
+          supabase.from("categories").update({ sort_order: it.sort_order }).eq("id", it.id),
+        ),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useToggleProductActive() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase.from("products").update({ active }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
 export async function uploadProductImage(file: File): Promise<string> {
   const ext = file.name.split(".").pop() || "jpg";
   const path = `${crypto.randomUUID()}.${ext}`;
