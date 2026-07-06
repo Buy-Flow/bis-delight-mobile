@@ -26,24 +26,29 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
       {/* Side ice cream illustrations (cropped to visible product) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-6 bottom-4 z-0 h-[200px] w-[150px] opacity-95 select-none"
+        className="pointer-events-none absolute left-0 bottom-2 z-0 opacity-95 select-none"
         style={{
+          width: "110px",
+          height: "321px",
           backgroundImage: `url(${heroBgLeft.url})`,
-          backgroundSize: "260px auto",
-          backgroundPosition: "0px -75px",
+          backgroundSize: "389px auto",
+          backgroundPosition: "-6px -127px",
           backgroundRepeat: "no-repeat",
         }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-6 bottom-4 z-0 h-[220px] w-[160px] opacity-95 select-none"
+        className="pointer-events-none absolute right-0 bottom-2 z-0 opacity-95 select-none"
         style={{
+          width: "110px",
+          height: "330px",
           backgroundImage: `url(${heroBgRight.url})`,
-          backgroundSize: "260px auto",
-          backgroundPosition: "-80px -90px",
+          backgroundSize: "359px auto",
+          backgroundPosition: "-244px -135px",
           backgroundRepeat: "no-repeat",
         }}
       />
+
 
 
       <div className="relative z-10 pt-2 mx-auto flex max-w-md flex-col items-center text-center">
