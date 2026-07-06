@@ -114,7 +114,7 @@ export function HighlightCard({
           <button
             onClick={() => onOpen(product)}
             aria-label={`Personalizar ${product.name}`}
-            className="group relative inline-flex h-11 items-center gap-1.5 rounded-full pl-3 pr-3.5 text-white active:scale-95 transition"
+            className="group relative inline-flex h-11 w-11 items-center justify-center rounded-full text-white active:scale-95 transition"
             style={{
               background:
                 "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.62 0.28 350) 100%)",
@@ -122,13 +122,7 @@ export function HighlightCard({
                 "0 10px 22px -6px oklch(0.62 0.28 350 / 0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
             }}
           >
-            <Plus className="h-4 w-4" strokeWidth={3.4} />
-            <span
-              className="text-[12px] font-extrabold uppercase tracking-wide"
-              style={{ fontFamily: "'Poppins', sans-serif" }}
-            >
-              Pedir
-            </span>
+            <Plus className="h-5 w-5" strokeWidth={3.4} />
           </button>
         </div>
       </div>
