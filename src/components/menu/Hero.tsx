@@ -73,18 +73,26 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Offer chips */}
         <div
-          className="mt-5 flex flex-wrap items-center justify-center gap-1.5"
+          className="mt-5 flex flex-col items-center gap-1.5"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          {["Açaí", "Sorvetes", "Shakes"].map((chip) => (
-            <span
-              key={chip}
-              className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
-            >
-              {chip}
-            </span>
-          ))}
+          <div className="flex items-center justify-center gap-1.5">
+            {["Açaí", "Shakes"].map((chip) => (
+              <span
+                key={chip}
+                className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
+          <span
+            className="rounded-full border border-white/25 bg-white/15 px-4 py-[5px] text-[13px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm"
+          >
+            Sorvetes
+          </span>
         </div>
+
 
         <p
           className="mt-3 text-[12px] leading-snug text-white/75"
