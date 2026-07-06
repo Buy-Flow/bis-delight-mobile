@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { CartProvider, useCart } from "@/lib/cart-context";
@@ -7,6 +7,7 @@ import { Hero } from "@/components/menu/Hero";
 import { Benefits } from "@/components/menu/Benefits";
 import { CategoryStrip } from "@/components/menu/CategoryStrip";
 import { ProductCard } from "@/components/menu/ProductCard";
+import { HighlightCard } from "@/components/menu/HighlightCard";
 import { ProductModal } from "@/components/menu/ProductModal";
 import { AcaiBuilder } from "@/components/menu/AcaiBuilder";
 import { CartSheet } from "@/components/menu/CartSheet";
@@ -15,7 +16,8 @@ import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
 import heroTexture from "@/assets/bg-purple-dark.png.asset.json";
-import { Sparkles, Flame } from "lucide-react";
+import { Sparkles } from "lucide-react";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
