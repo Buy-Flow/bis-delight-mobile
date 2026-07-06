@@ -64,6 +64,7 @@ function Page() {
 
 function Content() {
   const [activeCat, setActiveCat] = useState("all");
+  const [query, setQuery] = useState("");
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const { isAcaiOpen, openAcai, closeAcai } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -73,10 +74,16 @@ function Content() {
   };
 
   const highlights = useMemo(() => PRODUCTS.filter((p) => p.hero), []);
-  const filtered = useMemo(
-    () => (activeCat === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.category === activeCat)),
-    [activeCat],
-  );
+  const filtered = useMemo(() => {
+    const byCat = activeCat === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.category === activeCat);
+    const q = query.trim().toLowerCase();
+    if (!q) return byCat;
+    return byCat.filter((p) => {
+      const hay = `${p.name} ${p.description ?? ""} ${(p.ingredients ?? []).join(" ")}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [activeCat, query]);
+
 
   return (
     <div
