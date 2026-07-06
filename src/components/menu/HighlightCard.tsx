@@ -47,7 +47,7 @@ export function HighlightCard({
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full scale-[2.6] object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
+          className="absolute inset-0 h-full w-full scale-[1.4] object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
         />
 
         {/* TOP badge */}
