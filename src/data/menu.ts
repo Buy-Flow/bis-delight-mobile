@@ -8,6 +8,7 @@ import casquinhaMint from "@/assets/p11-07-X17.png.asset.json";
 import milkOreo from "@/assets/p11-08-X21.png.asset.json";
 import nutininho from "@/assets/p11-09-X25.png.asset.json";
 import texturePurple from "@/assets/p12-01-X4.jpg.asset.json";
+import logoAsset from "@/assets/querobis-logo.png.asset.json";
 
 export const BRAND = {
   name: "Quero Bis",
