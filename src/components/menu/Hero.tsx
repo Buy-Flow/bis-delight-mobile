@@ -32,10 +32,10 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         }}
       />
 
-      <div className="relative z-20 mx-auto flex w-[170px] max-w-full flex-col items-center text-center">
+      <div className="relative z-20 mx-auto flex w-[220px] max-w-full flex-col items-center text-center">
         {/* Eyebrow */}
         <div
-          className="text-[20px] italic leading-none text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
+          className="text-[26px] italic leading-none text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
           style={{ fontFamily: "'Caveat', cursive", fontWeight: 600 }}
         >
           Sabor que
@@ -43,7 +43,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Headline */}
         <h1
-          className="mt-1 text-[30px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
+          className="mt-1 text-[42px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
           style={{
             fontFamily: "'Barlow Condensed', 'Anton', sans-serif",
             fontWeight: 900,
@@ -57,7 +57,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         <svg
           aria-hidden="true"
           viewBox="0 0 160 14"
-          className="mt-1 h-3 w-[120px]"
+          className="mt-1 h-4 w-[160px]"
           fill="none"
         >
           <path
@@ -70,7 +70,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Sub headline in script */}
         <div
-          className="mt-3 -rotate-[2deg] text-[16px] leading-tight text-white"
+          className="mt-3 -rotate-[2deg] text-[22px] leading-tight text-white"
           style={{
             fontFamily: "'Caveat', cursive",
             fontWeight: 700,
