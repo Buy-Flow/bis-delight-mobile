@@ -17,6 +17,8 @@ import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
 import heroTexture from "@/assets/bg-purple-dark.png.asset.json";
 import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 
 
 export const Route = createFileRoute("/")({
