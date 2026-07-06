@@ -19,7 +19,7 @@ export function ProductCard({
   return (
     <button
       onClick={() => onOpen(product)}
-      className="group relative flex h-full w-full flex-col overflow-hidden rounded-[22px] text-left transition active:scale-[.98]"
+      className="group relative flex h-full w-full flex-col overflow-visible rounded-[22px] text-left transition active:scale-[.98]"
       style={{
         background:
           "linear-gradient(180deg, oklch(0.22 0.15 305) 0%, oklch(0.12 0.08 300) 100%)",
