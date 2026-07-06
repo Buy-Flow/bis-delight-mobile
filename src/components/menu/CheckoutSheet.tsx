@@ -1,11 +1,37 @@
-import { useState } from "react";
-import { X, Truck, Store } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Truck, Store, Sparkles } from "lucide-react";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 type Mode = "entrega" | "retirada";
+
+const STORAGE_KEY = "querobis:customer";
+
+type SavedCustomer = {
+  name?: string;
+  phone?: string;
+  address?: string;
+  reference?: string;
+};
+
+function loadSaved(): SavedCustomer {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function formatPhone(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d;
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
+}
 
 export function CheckoutSheet() {
   const { isCheckoutOpen, closeCheckout, items, subtotal, clear } = useCart();
@@ -15,17 +41,54 @@ export function CheckoutSheet() {
   const [address, setAddress] = useState("");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
+  const [hasSaved, setHasSaved] = useState(false);
+
+  // Pré-carrega dados salvos quando abre o checkout
+  useEffect(() => {
+    if (!isCheckoutOpen) return;
+    const saved = loadSaved();
+    const any = !!(saved.name || saved.phone || saved.address);
+    setHasSaved(any);
+    if (any) {
+      if (saved.name && !name) setName(saved.name);
+      if (saved.phone && !phone) setPhone(saved.phone);
+      if (saved.address && !address) setAddress(saved.address);
+      if (saved.reference && !reference) setReference(saved.reference);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCheckoutOpen]);
 
   if (!isCheckoutOpen) return null;
 
   const fee = mode === "entrega" ? BRAND.deliveryFee : 0;
   const total = subtotal + fee;
 
+  const fillFromSaved = () => {
+    const s = loadSaved();
+    if (!s.name && !s.phone && !s.address) {
+      toast.info("Nenhum dado salvo ainda. Faça um pedido para salvar.");
+      return;
+    }
+    setName(s.name || "");
+    setPhone(s.phone || "");
+    setAddress(s.address || "");
+    setReference(s.reference || "");
+    toast.success("Dados preenchidos!");
+  };
+
   const send = () => {
     if (!name.trim() || !phone.trim() || (mode === "entrega" && !address.trim())) {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
+    // Salva os dados do cliente para próxima vez
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ name: name.trim(), phone: phone.trim(), address: address.trim(), reference: reference.trim() }),
+      );
+    } catch {}
+
     const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total });
     const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
     window.open(url, "_blank");
@@ -50,7 +113,14 @@ export function CheckoutSheet() {
           </button>
         </div>
 
-        <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
+        <form
+          className="flex-1 space-y-5 overflow-y-auto px-4 py-5"
+          autoComplete="on"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send();
+          }}
+        >
           <div>
             <h4 className="mb-2 font-display text-[15px] font-extrabold uppercase tracking-wide text-white">
               Como quer receber?
@@ -61,15 +131,64 @@ export function CheckoutSheet() {
             </div>
           </div>
 
-          <Field label="Seu nome *" value={name} onChange={setName} placeholder="Como te chamamos?" />
-          <Field label="Telefone *" value={phone} onChange={setPhone} placeholder="(69) 9 9999-9999" />
+          {hasSaved && (
+            <button
+              type="button"
+              onClick={fillFromSaved}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 px-3 py-3 text-sm font-bold text-neon-cyan glow-cyan active:scale-[.98]"
+            >
+              <Sparkles className="h-4 w-4" />
+              Preencher com meus dados salvos
+            </button>
+          )}
+
+          <Field
+            label="Seu nome *"
+            value={name}
+            onChange={setName}
+            placeholder="Como te chamamos?"
+            autoComplete="name"
+            name="name"
+            inputMode="text"
+          />
+          <Field
+            label="Telefone *"
+            value={phone}
+            onChange={(v) => setPhone(formatPhone(v))}
+            placeholder="(69) 9 9999-9999"
+            autoComplete="tel"
+            name="tel"
+            type="tel"
+            inputMode="tel"
+          />
           {mode === "entrega" && (
             <>
-              <Field label="Endereço *" value={address} onChange={setAddress} placeholder="Rua, número, bairro" />
-              <Field label="Ponto de referência" value={reference} onChange={setReference} placeholder="Próximo a…" />
+              <Field
+                label="Endereço *"
+                value={address}
+                onChange={setAddress}
+                placeholder="Rua, número, bairro"
+                autoComplete="street-address"
+                name="street-address"
+              />
+              <Field
+                label="Ponto de referência"
+                value={reference}
+                onChange={setReference}
+                placeholder="Próximo a…"
+                autoComplete="address-line2"
+                name="address-line2"
+              />
             </>
           )}
-          <Field label="Observação do pedido" value={note} onChange={setNote} placeholder="Alguma preferência?" multiline />
+          <Field
+            label="Observação do pedido"
+            value={note}
+            onChange={setNote}
+            placeholder="Alguma preferência?"
+            multiline
+            autoComplete="off"
+          />
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
             <h4 className="mb-2 font-display text-[13px] font-extrabold uppercase tracking-wide text-white">
@@ -110,7 +229,12 @@ export function CheckoutSheet() {
             </div>
           </div>
           <div className="h-20" />
-        </div>
+
+          {/* Submit oculto para o teclado do celular disparar o autofill/enter */}
+          <button type="submit" className="sr-only" aria-hidden>
+            Enviar
+          </button>
+        </form>
 
         <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
@@ -131,12 +255,20 @@ function Field({
   onChange,
   placeholder,
   multiline,
+  autoComplete,
+  name,
+  type,
+  inputMode,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   multiline?: boolean;
+  autoComplete?: string;
+  name?: string;
+  type?: string;
+  inputMode?: "text" | "tel" | "email" | "numeric" | "search" | "url" | "none" | "decimal";
 }) {
   const Comp: any = multiline ? "textarea" : "input";
   return (
@@ -147,6 +279,12 @@ function Field({
         onChange={(e: any) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={multiline ? 3 : undefined}
+        name={name}
+        type={type}
+        inputMode={inputMode}
+        autoComplete={autoComplete}
+        autoCorrect={autoComplete === "name" ? "off" : undefined}
+        autoCapitalize={autoComplete === "name" ? "words" : undefined}
         className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
       />
     </label>
@@ -168,6 +306,7 @@ function ModeBtn({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn(
         "flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition",
