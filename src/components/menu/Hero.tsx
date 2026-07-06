@@ -32,13 +32,13 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         src={heroBgLeft.url}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute -left-4 -top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none drop-shadow-[0_10px_40px_rgba(255,0,128,0.5)]"
+        className="pointer-events-none absolute -left-4 top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
       />
       <img
         src={heroBgRight.url}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute -right-4 top-10 z-0 h-[860px] w-auto max-w-none opacity-90 select-none drop-shadow-[0_10px_40px_rgba(0,200,255,0.5)]"
+        className="pointer-events-none absolute -right-4 top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
       />
 
       <div className="relative z-10 pt-2">
