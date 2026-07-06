@@ -690,7 +690,11 @@ function CategoriesTab() {
   const { data: categories = [] } = useCategories();
   const upsert = useUpsertCategory();
   const del = useDeleteCategory();
-  const list = categories.filter((c) => c.id !== "all");
+  const reorder = useReorderCategories();
+  const base = categories.filter((c) => c.id !== "all");
+  const [localOrder, setLocalOrder] = useState<Category[] | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const list = localOrder ?? base;
   const [draft, setDraft] = useState<{ id: string; name: string; emoji: string; image_url: string }>({
     id: "",
     name: "",
@@ -713,9 +717,34 @@ function CategoriesTab() {
     setDraft({ id: "", name: "", emoji: "✨", image_url: "" });
   };
 
+  const onDragOver = (e: React.DragEvent, overId: string) => {
+    e.preventDefault();
+    if (!dragId || dragId === overId) return;
+    const arr = [...list];
+    const from = arr.findIndex((c) => c.id === dragId);
+    const to = arr.findIndex((c) => c.id === overId);
+    if (from < 0 || to < 0) return;
+    const [m] = arr.splice(from, 1);
+    arr.splice(to, 0, m);
+    setLocalOrder(arr);
+  };
+  const onDragEnd = async () => {
+    setDragId(null);
+    if (!localOrder) return;
+    try {
+      await reorder.mutateAsync(localOrder.map((c, i) => ({ id: c.id, sort_order: i })));
+      toast.success("Ordem salva");
+    } catch {
+      toast.error("Falha ao salvar ordem");
+    } finally {
+      setLocalOrder(null);
+    }
+  };
+
   return (
     <div>
-      <h2 className="mb-4 font-display text-2xl font-black">Categorias</h2>
+      <h2 className="mb-1 font-display text-2xl font-black">Categorias</h2>
+      <p className="mb-4 text-xs text-white/50">Arraste para reordenar como aparecem no cardápio.</p>
 
       <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 p-3">
         <div className="mb-2 text-xs font-semibold text-white/70">Nova categoria</div>
@@ -746,7 +775,17 @@ function CategoriesTab() {
 
       <div className="space-y-2">
         {list.map((c, i) => (
-          <CategoryRow key={c.id} category={c} index={i} onDelete={() => del.mutate(c.id)} onSave={(u) => upsert.mutate(u)} />
+          <CategoryRow
+            key={c.id}
+            category={c}
+            index={i}
+            dragging={dragId === c.id}
+            onDragStart={() => setDragId(c.id)}
+            onDragOver={(e) => onDragOver(e, c.id)}
+            onDragEnd={onDragEnd}
+            onDelete={() => del.mutate(c.id)}
+            onSave={(u) => upsert.mutate(u)}
+          />
         ))}
       </div>
     </div>
@@ -756,11 +795,19 @@ function CategoriesTab() {
 function CategoryRow({
   category,
   index,
+  dragging,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
   onDelete,
   onSave,
 }: {
   category: Category;
   index: number;
+  dragging: boolean;
+  onDragStart: () => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
   onDelete: () => void;
   onSave: (u: { id: string; name: string; emoji: string; image_url: string | null; sort_order: number; active: boolean }) => void;
 }) {
@@ -770,7 +817,19 @@ function CategoryRow({
   const dirty = name !== category.name || emoji !== category.emoji || image !== category.image;
 
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2">
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      className={cn(
+        "flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 transition",
+        dragging && "opacity-40",
+      )}
+    >
+      <div className="grid h-8 w-6 shrink-0 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
+        <GripVertical className="h-4 w-4" />
+      </div>
       <input className={cn(inputCls, "w-14 text-center")} value={emoji} onChange={(e) => setEmoji(e.target.value)} />
       <input className={cn(inputCls, "flex-1")} value={name} onChange={(e) => setName(e.target.value)} />
       <input
