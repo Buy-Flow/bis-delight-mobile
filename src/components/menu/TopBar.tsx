@@ -1,5 +1,6 @@
 import { ShoppingBag, Menu, MapPin } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { BRAND } from "@/data/menu";
 
 export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
   const { count, openCart } = useCart();
