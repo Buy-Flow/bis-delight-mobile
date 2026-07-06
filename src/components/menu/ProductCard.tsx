@@ -104,7 +104,7 @@ export function ProductCard({
           className="block text-[7px] font-bold uppercase tracking-[0.2em] text-[oklch(0.22_0.14_305)]"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          desde
+          a partir de
         </span>
         <span
           className="mt-[2px] block whitespace-nowrap text-[15px] font-black text-[oklch(0.16_0.11_305)]"
