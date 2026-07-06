@@ -585,15 +585,11 @@ function ProductEditor({
 
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Categoria">
-                  <select
-                    className={inputCls}
+                  <CategoryPicker
+                    categories={categories}
                     value={p.category}
-                    onChange={(e) => setField("category", e.target.value)}
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
-                    ))}
-                  </select>
+                    onChange={(id) => setField("category", id)}
+                  />
                 </Field>
                 <Field label="Preço base (R$)">
                   <input
