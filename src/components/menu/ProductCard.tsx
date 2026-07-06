@@ -71,30 +71,6 @@ export function ProductCard({
           </div>
         )}
 
-        {/* Price tag sticker — diagonal, overlapping */}
-        <div
-          className="absolute -bottom-3 right-2 z-20 rotate-[8deg] rounded-lg px-2.5 py-1.5 leading-none"
-          style={{
-            background:
-              "linear-gradient(180deg, oklch(0.94 0.19 100) 0%, oklch(0.82 0.22 90) 100%)",
-            boxShadow:
-              "0 10px 20px -6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.55), 0 0 0 2px oklch(0.16 0.11 305)",
-          }}
-        >
-          <span
-            className="block text-[7px] font-bold uppercase tracking-[0.2em] text-[oklch(0.22_0.14_305)]"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
-          >
-            desde
-          </span>
-          <span
-            className="mt-[2px] block text-[16px] font-black text-[oklch(0.16_0.11_305)]"
-            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-          >
-            {brl(product.basePrice)}
-          </span>
-        </div>
-
         {/* Wavy divider on bottom */}
         <svg
           className="absolute -bottom-px left-0 h-4 w-full"
@@ -108,6 +84,31 @@ export function ProductCard({
           />
         </svg>
       </div>
+
+      {/* Price tag sticker — diagonal, overlapping (outside overflow) */}
+      <div
+        className="absolute right-2 top-[126px] z-30 rotate-[8deg] rounded-lg px-2.5 py-1.5 leading-none"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.94 0.19 100) 0%, oklch(0.82 0.22 90) 100%)",
+          boxShadow:
+            "0 10px 20px -6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.55), 0 0 0 2px oklch(0.16 0.11 305)",
+        }}
+      >
+        <span
+          className="block text-[7px] font-bold uppercase tracking-[0.2em] text-[oklch(0.22_0.14_305)]"
+          style={{ fontFamily: "'Poppins', sans-serif" }}
+        >
+          desde
+        </span>
+        <span
+          className="mt-[2px] block whitespace-nowrap text-[16px] font-black text-[oklch(0.16_0.11_305)]"
+          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+        >
+          {brl(product.basePrice)}
+        </span>
+      </div>
+
 
       {/* Content */}
       <div className="relative flex flex-1 flex-col px-3 pb-3 pt-2">
