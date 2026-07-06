@@ -24,15 +24,13 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           backgroundSize: "cover",
         }}
       />
-      <div className="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-neon-pink/30 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 top-20 h-64 w-64 rounded-full bg-neon-cyan/25 blur-3xl" />
 
       {/* Side background images */}
       <img
         src={heroBgLeft.url}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute -left-4 top-4 z-0 h-[820px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute -left-4 top-10 z-0 h-[760px] w-auto max-w-none opacity-90 select-none"
       />
       <img
         src={heroBgRight.url}
@@ -81,17 +79,17 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           <img
             src={hero1.image}
             alt={hero1.name}
-            className="glow-product absolute left-1/2 top-0 h-64 -translate-x-1/2 animate-float-slow"
+            className="absolute left-1/2 top-0 h-64 -translate-x-1/2 animate-float-slow"
           />
           <img
             src={hero2.image}
             alt={hero2.name}
-            className="glow-product absolute -left-4 bottom-0 h-28 animate-float-med"
+            className="absolute -left-4 bottom-0 h-28 animate-float-med"
           />
           <img
             src={hero3.image}
             alt={hero3.name}
-            className="glow-product absolute -right-2 bottom-2 h-32 animate-float-slow"
+            className="absolute -right-2 bottom-2 h-32 animate-float-slow"
           />
           <button
             onClick={openCart}
