@@ -117,7 +117,7 @@ function Content() {
             </div>
           </div>
           <img
-            src={PRODUCTS.find((p) => p.id === "acai-turbinado")!.image}
+            src={PRODUCTS.find((p) => p.id === "acai-mix-monte")?.image ?? PRODUCTS[0]?.image}
             alt="Monte seu açaí"
             className="ml-auto h-32 w-32 shrink-0 object-contain drop-shadow-[0_15px_20px_rgba(0,0,0,0.5)] animate-float-slow"
           />
