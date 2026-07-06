@@ -1984,73 +1984,603 @@ function SettingsTab() {
 
   if (!s) return <Loader2 className="h-6 w-6 animate-spin" />;
 
-  const set = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) =>
+/* ============================= Settings ============================= */
+type SettingsSection =
+  | "identity"
+  | "contact"
+  | "hours"
+  | "delivery"
+  | "payment"
+  | "social"
+  | "announcement"
+  | "appearance";
+
+const DAY_LABEL: Record<WeekDay, string> = {
+  mon: "Segunda",
+  tue: "Terça",
+  wed: "Quarta",
+  thu: "Quinta",
+  fri: "Sexta",
+  sat: "Sábado",
+  sun: "Domingo",
+};
+
+function SettingsTab() {
+  const { data } = useSiteSettings();
+  const update = useUpdateSettings();
+  const [s, setS] = useState<SiteSettings | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [section, setSection] = useState<SettingsSection>("identity");
+  const [logoBusy, setLogoBusy] = useState(false);
+  const [textureBusy, setTextureBusy] = useState(false);
+
+  useEffect(() => {
+    if (data && !s) setS(data);
+  }, [data, s]);
+
+  if (!s) {
+    return (
+      <div className="grid place-items-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+      </div>
+    );
+  }
+
+  const set = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => {
     setS((prev) => (prev ? { ...prev, [k]: v } : prev));
+    setDirty(true);
+  };
 
   const save = async () => {
     if (!s) return;
     await update.mutateAsync(s);
     toast.success("Configurações salvas");
+    setDirty(false);
   };
 
+  const discard = () => {
+    if (!data) return;
+    if (dirty && !confirm("Descartar alterações não salvas?")) return;
+    setS(data);
+    setDirty(false);
+  };
+
+  const uploadLogo = async (file: File) => {
+    setLogoBusy(true);
+    try {
+      set("logo", await uploadProductImage(file));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+  const uploadTexture = async (file: File) => {
+    setTextureBusy(true);
+    try {
+      set("texture", await uploadProductImage(file));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setTextureBusy(false);
+    }
+  };
+
+  const sections: { id: SettingsSection; label: string; icon: React.ElementType }[] = [
+    { id: "identity", label: "Identidade", icon: Store },
+    { id: "contact", label: "Contato & Local", icon: MapPin },
+    { id: "hours", label: "Horários", icon: Clock },
+    { id: "delivery", label: "Entrega", icon: Truck },
+    { id: "payment", label: "Pagamento", icon: CreditCard },
+    { id: "social", label: "Redes sociais", icon: Globe },
+    { id: "announcement", label: "Anúncio", icon: Megaphone },
+    { id: "appearance", label: "Aparência", icon: Palette },
+  ];
+
   return (
-    <div className="space-y-3">
-      <h2 className="mb-2 font-display text-2xl font-black">Identidade da loja</h2>
-      <Field label="Nome da loja">
-        <input className={inputCls} value={s.name} onChange={(e) => set("name", e.target.value)} />
-      </Field>
-      <Field label="Slogan">
-        <input className={inputCls} value={s.tagline} onChange={(e) => set("tagline", e.target.value)} />
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
+    <div className="pb-24">
+      {/* Header */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-display text-2xl font-black">Configurações da Loja</h2>
+          <p className="text-xs text-white/50">
+            Tudo que os clientes veem e como o pedido chega até você.
+          </p>
+        </div>
+        <StoreStatusBadge s={s} />
+      </div>
+
+      {/* Section chips */}
+      <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
+        {sections.map((sec) => (
+          <button
+            key={sec.id}
+            onClick={() => setSection(sec.id)}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+              section === sec.id
+                ? "bg-neon-pink text-white glow-pink"
+                : "border border-white/10 text-white/70 hover:text-white",
+            )}
+          >
+            <sec.icon className="h-3.5 w-3.5" />
+            {sec.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Live preview */}
+      <StorePreview s={s} />
+
+      {/* Body */}
+      <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
+        {section === "identity" && <IdentitySection s={s} set={set} onLogo={uploadLogo} logoBusy={logoBusy} />}
+        {section === "contact" && <ContactSection s={s} set={set} />}
+        {section === "hours" && <HoursSection s={s} set={set} />}
+        {section === "delivery" && <DeliverySection s={s} set={set} />}
+        {section === "payment" && <PaymentSection s={s} set={set} />}
+        {section === "social" && <SocialSection s={s} set={set} />}
+        {section === "announcement" && <AnnouncementSection s={s} set={set} />}
+        {section === "appearance" && (
+          <AppearanceSection s={s} set={set} onTexture={uploadTexture} textureBusy={textureBusy} />
+        )}
+      </div>
+
+      {/* Sticky save bar */}
+      {dirty && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[oklch(0.12_0.09_305)]/95 backdrop-blur">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="h-2 w-2 rounded-full bg-neon-yellow" />
+              <span className="text-white/70">Você tem alterações não salvas</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={discard}
+                className="rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/5"
+              >
+                Descartar
+              </button>
+              <button
+                onClick={save}
+                disabled={update.isPending}
+                className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
+              >
+                {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ------- Live preview ------- */
+function StorePreview({ s }: { s: SiteSettings }) {
+  return (
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)]">
+      {s.announcementActive && s.announcementText && (
+        <div className="flex items-center gap-2 bg-neon-yellow px-4 py-1.5 text-[11px] font-bold text-[oklch(0.15_0.10_305)]">
+          <Megaphone className="h-3.5 w-3.5" />
+          <span className="truncate">{s.announcementText}</span>
+        </div>
+      )}
+      <div className="flex items-center gap-4 p-4">
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-black/30">
+          {s.logo && <img src={s.logo} alt="" className="h-full w-full object-cover" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-display text-lg font-black">{s.name || "Nome da loja"}</div>
+          <div className="truncate text-xs text-white/60">{s.tagline || "Slogan"}</div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-white/50">
+            {s.address && <span>📍 {s.address}</span>}
+            {s.whatsappDisplay && <span>📱 {s.whatsappDisplay}</span>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StoreStatusBadge({ s }: { s: SiteSettings }) {
+  const label =
+    s.openOverride === "open"
+      ? "Aberto (forçado)"
+      : s.openOverride === "closed"
+      ? "Fechado (forçado)"
+      : "Automático (por horário)";
+  const color =
+    s.openOverride === "closed"
+      ? "border-red-400/40 bg-red-500/10 text-red-300"
+      : s.openOverride === "open"
+      ? "border-green-400/40 bg-green-500/10 text-green-300"
+      : "border-white/10 bg-white/5 text-white/60";
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold", color)}>
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {label}
+    </span>
+  );
+}
+
+/* ------- Sections ------- */
+type SetFn = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
+
+function SectionTitle({ icon: Icon, title, sub }: { icon: React.ElementType; title: string; sub?: string }) {
+  return (
+    <div className="mb-4 flex items-center gap-2">
+      <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink/15 text-neon-pink">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div>
+        <div className="text-sm font-bold">{title}</div>
+        {sub && <div className="text-[11px] text-white/50">{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function IdentitySection({
+  s,
+  set,
+  onLogo,
+  logoBusy,
+}: {
+  s: SiteSettings;
+  set: SetFn;
+  onLogo: (f: File) => void;
+  logoBusy: boolean;
+}) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={Store} title="Identidade" sub="Como sua loja aparece no topo do cardápio." />
+      <div className="grid gap-4 sm:grid-cols-[220px_1fr]">
+        <div>
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">Logo</div>
+          <ImageDropzone url={s.logo} busy={logoBusy} onFile={onLogo} onClear={() => set("logo", "")} />
+          <input
+            className={cn(inputCls, "mt-2 text-xs")}
+            placeholder="ou cole uma URL"
+            value={s.logo}
+            onChange={(e) => set("logo", e.target.value)}
+          />
+        </div>
+        <div className="space-y-3">
+          <Field label="Nome da loja">
+            <input className={inputCls} value={s.name} onChange={(e) => set("name", e.target.value)} />
+          </Field>
+          <Field label="Slogan">
+            <input className={inputCls} value={s.tagline} onChange={(e) => set("tagline", e.target.value)} />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={MapPin} title="Contato & Localização" sub="Onde encontrar sua loja e como falam com você." />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Cidade">
           <input className={inputCls} value={s.city} onChange={(e) => set("city", e.target.value)} />
         </Field>
-        <Field label="Horário">
-          <input className={inputCls} value={s.hours} onChange={(e) => set("hours", e.target.value)} />
+        <Field label="Endereço completo">
+          <input className={inputCls} value={s.address} onChange={(e) => set("address", e.target.value)} />
         </Field>
       </div>
-      <Field label="Endereço">
-        <input className={inputCls} value={s.address} onChange={(e) => set("address", e.target.value)} />
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="WhatsApp (só números com DDI)">
-          <input className={inputCls} value={s.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="WhatsApp (só números, com DDI)">
+          <div className="relative">
+            <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+            <input
+              className={cn(inputCls, "pl-9")}
+              placeholder="55699..."
+              value={s.whatsapp}
+              onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))}
+            />
+          </div>
         </Field>
-        <Field label="WhatsApp (exibição)">
-          <input className={inputCls} value={s.whatsappDisplay} onChange={(e) => set("whatsappDisplay", e.target.value)} />
+        <Field label="WhatsApp (exibição bonita)">
+          <input
+            className={inputCls}
+            placeholder="(69) 99999-9999"
+            value={s.whatsappDisplay}
+            onChange={(e) => set("whatsappDisplay", e.target.value)}
+          />
         </Field>
       </div>
-      <Field label="Taxa de entrega (R$)">
+      <Field label="Horário resumido (aparece no rodapé)">
         <input
-          type="number"
-          step="0.01"
           className={inputCls}
-          value={s.deliveryFee}
-          onChange={(e) => set("deliveryFee", Number(e.target.value))}
+          placeholder="Ex.: Seg-Dom · 14h às 22h"
+          value={s.hours}
+          onChange={(e) => set("hours", e.target.value)}
         />
       </Field>
-      <Field label="URL do Google Maps">
-        <input className={inputCls} value={s.mapsUrl} onChange={(e) => set("mapsUrl", e.target.value)} />
-      </Field>
-      <Field label="URL do mapa embed">
-        <input className={inputCls} value={s.mapEmbed} onChange={(e) => set("mapEmbed", e.target.value)} />
-      </Field>
-      <Field label="URL do logo">
-        <input className={inputCls} value={s.logo} onChange={(e) => set("logo", e.target.value)} />
-      </Field>
-      <Field label="URL da textura de fundo">
-        <input className={inputCls} value={s.texture} onChange={(e) => set("texture", e.target.value)} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="URL do Google Maps (link)">
+          <input className={inputCls} value={s.mapsUrl} onChange={(e) => set("mapsUrl", e.target.value)} />
+        </Field>
+        <Field label="URL do mapa embed">
+          <input className={inputCls} value={s.mapEmbed} onChange={(e) => set("mapEmbed", e.target.value)} />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function HoursSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const hours = s.hoursJson.length ? s.hoursJson : DEFAULT_HOURS;
+
+  const updateDay = (day: WeekDay, patch: Partial<DayHours>) => {
+    set(
+      "hoursJson",
+      hours.map((h) => (h.day === day ? { ...h, ...patch } : h)),
+    );
+  };
+
+  const copyAll = () => {
+    const first = hours[0];
+    set(
+      "hoursJson",
+      hours.map((h) => ({ ...h, open: first.open, close: first.close, closed: first.closed })),
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={Clock} title="Horários de funcionamento" sub="Define quando o site aparece como aberto no modo automático." />
+
+      <Field label="Status da loja">
+        <div className="grid grid-cols-3 gap-2">
+          {(["auto", "open", "closed"] as const).map((o) => (
+            <button
+              key={o}
+              onClick={() => set("openOverride", o)}
+              className={cn(
+                "rounded-xl border px-3 py-2 text-xs font-bold transition",
+                s.openOverride === o
+                  ? "border-neon-pink bg-neon-pink/20 text-white"
+                  : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
+              )}
+            >
+              {o === "auto" ? "Automático" : o === "open" ? "Forçar aberto" : "Forçar fechado"}
+            </button>
+          ))}
+        </div>
       </Field>
 
-      <button
-        onClick={save}
-        disabled={update.isPending}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink disabled:opacity-60"
-      >
-        {update.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-        Salvar configurações
-      </button>
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="text-[11px] font-semibold text-white/70">Horário por dia</div>
+          <button
+            onClick={copyAll}
+            className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-white/60 hover:bg-white/10"
+          >
+            Aplicar segunda a todos
+          </button>
+        </div>
+        <div className="space-y-1.5">
+          {hours.map((h) => (
+            <div
+              key={h.day}
+              className="grid grid-cols-[80px_1fr_auto_1fr_auto] items-center gap-2 rounded-xl bg-white/5 px-2 py-1.5"
+            >
+              <div className="text-xs font-bold text-white/80">{DAY_LABEL[h.day]}</div>
+              <input
+                type="time"
+                disabled={h.closed}
+                className={cn(inputCls, "h-9 py-1 text-xs disabled:opacity-40")}
+                value={h.open}
+                onChange={(e) => updateDay(h.day, { open: e.target.value })}
+              />
+              <span className="text-white/40">→</span>
+              <input
+                type="time"
+                disabled={h.closed}
+                className={cn(inputCls, "h-9 py-1 text-xs disabled:opacity-40")}
+                value={h.close}
+                onChange={(e) => updateDay(h.day, { close: e.target.value })}
+              />
+              <button
+                onClick={() => updateDay(h.day, { closed: !h.closed })}
+                className={cn(
+                  "rounded-lg border px-2 py-1 text-[10px] font-semibold transition",
+                  h.closed
+                    ? "border-red-400/40 bg-red-500/10 text-red-300"
+                    : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
+                )}
+              >
+                {h.closed ? "Fechado" : "Aberto"}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={Truck} title="Entrega & Retirada" sub="Como o cliente recebe o pedido." />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Toggle
+          checked={s.acceptsDelivery}
+          onChange={(v) => set("acceptsDelivery", v)}
+          label={s.acceptsDelivery ? "Aceita entrega" : "Entrega desativada"}
+        />
+        <Toggle
+          checked={s.acceptsPickup}
+          onChange={(v) => set("acceptsPickup", v)}
+          label={s.acceptsPickup ? "Aceita retirada" : "Retirada desativada"}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Field label="Taxa de entrega (R$)">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            className={inputCls}
+            value={s.deliveryFee}
+            onChange={(e) => set("deliveryFee", Number(e.target.value))}
+          />
+        </Field>
+        <Field label="Frete grátis a partir de (R$)">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            className={inputCls}
+            value={s.freeDeliveryThreshold}
+            onChange={(e) => set("freeDeliveryThreshold", Number(e.target.value))}
+          />
+          <div className="mt-1 text-[10px] text-white/40">0 = desligado</div>
+        </Field>
+        <Field label="Pedido mínimo (R$)">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            className={inputCls}
+            value={s.minOrder}
+            onChange={(e) => set("minOrder", Number(e.target.value))}
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function PaymentSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={CreditCard} title="Pagamento" sub="Como o cliente pode pagar o pedido." />
+      <Field label="Chave Pix">
+        <input
+          className={inputCls}
+          placeholder="CPF, telefone, e-mail ou chave aleatória"
+          value={s.pixKey}
+          onChange={(e) => set("pixKey", e.target.value)}
+        />
+      </Field>
+      <Field label="Formas de pagamento aceitas">
+        <ChipInput
+          values={s.paymentMethods}
+          onChange={(v) => set("paymentMethods", v)}
+          placeholder="Digite e Enter (ex.: Cartão de crédito)"
+        />
+        <div className="mt-1 text-[10px] text-white/40">
+          Aparece na tela de checkout para o cliente escolher.
+        </div>
+      </Field>
+    </div>
+  );
+}
+
+function SocialSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={Globe} title="Redes sociais" sub="Links exibidos no rodapé do cardápio." />
+      <Field label="Instagram">
+        <div className="relative">
+          <Instagram className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            className={cn(inputCls, "pl-9")}
+            placeholder="@seuinsta ou URL completa"
+            value={s.instagram}
+            onChange={(e) => set("instagram", e.target.value)}
+          />
+        </div>
+      </Field>
+      <Field label="Facebook">
+        <div className="relative">
+          <Facebook className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            className={cn(inputCls, "pl-9")}
+            placeholder="URL da página"
+            value={s.facebook}
+            onChange={(e) => set("facebook", e.target.value)}
+          />
+        </div>
+      </Field>
+      <Field label="TikTok">
+        <div className="relative">
+          <Music2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            className={cn(inputCls, "pl-9")}
+            placeholder="@seutiktok ou URL"
+            value={s.tiktok}
+            onChange={(e) => set("tiktok", e.target.value)}
+          />
+        </div>
+      </Field>
+    </div>
+  );
+}
+
+function AnnouncementSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={Megaphone} title="Anúncio no topo" sub="Barra amarela que aparece no topo do cardápio." />
+      <Toggle
+        checked={s.announcementActive}
+        onChange={(v) => set("announcementActive", v)}
+        label={s.announcementActive ? "Anúncio visível para os clientes" : "Anúncio desativado"}
+      />
+      <Field label="Texto do anúncio">
+        <textarea
+          rows={2}
+          maxLength={140}
+          className={inputCls}
+          placeholder="Ex.: Promoção de sexta! Açaí 500ml por R$ 15 🎉"
+          value={s.announcementText}
+          onChange={(e) => set("announcementText", e.target.value)}
+        />
+        <div className="mt-1 text-right text-[10px] text-white/40">
+          {s.announcementText.length}/140
+        </div>
+      </Field>
+    </div>
+  );
+}
+
+function AppearanceSection({
+  s,
+  set,
+  onTexture,
+  textureBusy,
+}: {
+  s: SiteSettings;
+  set: SetFn;
+  onTexture: (f: File) => void;
+  textureBusy: boolean;
+}) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle icon={Palette} title="Aparência" sub="Imagens do fundo do site." />
+      <div>
+        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">Textura de fundo</div>
+        <ImageDropzone
+          url={s.texture}
+          busy={textureBusy}
+          onFile={onTexture}
+          onClear={() => set("texture", "")}
+        />
+        <input
+          className={cn(inputCls, "mt-2 text-xs")}
+          placeholder="ou cole uma URL"
+          value={s.texture}
+          onChange={(e) => set("texture", e.target.value)}
+        />
+      </div>
     </div>
   );
 }
