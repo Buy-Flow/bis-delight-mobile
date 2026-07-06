@@ -103,7 +103,8 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400 }}
         >
           Qualidade{" "}
-          <span className="font-bold text-neon-yellow">irresistível</span>{" "}
+          <span className="font-bold text-neon-yellow">irresistível</span>
+          <br />
           para o seu dia.
         </p>
 
