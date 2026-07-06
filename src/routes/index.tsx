@@ -134,13 +134,57 @@ function Content() {
       {/* Product list */}
       <section ref={menuRef} className="px-4 pb-6">
 
-        <div className="mb-3 flex items-end justify-between">
-          <h2 className="font-display text-xl font-extrabold text-white">
-            {activeCat === "all"
-              ? "Nosso cardápio"
-              : `Categoria: ${filtered[0]?.category ?? ""}`}
+        <div className="mb-4">
+          <div className="flex items-center justify-center gap-3">
+            <span className="h-[2px] w-8 rounded-full bg-linear-to-r from-transparent to-neon-pink" />
+            <span
+              className="text-[11px] uppercase tracking-[0.4em] text-neon-pink"
+              style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
+            >
+              Feito com amor
+            </span>
+            <span className="h-[2px] w-8 rounded-full bg-linear-to-l from-transparent to-neon-pink" />
+          </div>
+          <h2
+            className="mt-1 text-center font-display text-[34px] font-black uppercase leading-[0.95] text-white"
+            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
+          >
+            {activeCat === "all" ? (
+              <>
+                Nosso{" "}
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.45)]">
+                    cardápio
+                  </span>
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 160 14"
+                    className="absolute -bottom-1 left-0 h-3 w-full"
+                    fill="none"
+                  >
+                    <path
+                      d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
+                      stroke="oklch(0.72 0.26 350)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
+              </>
+            ) : (
+              <span className="text-neon-yellow">{filtered[0]?.category ?? ""}</span>
+            )}
           </h2>
-          <span className="text-[11px] text-white/50">{filtered.length} itens</span>
+          <div
+            className="mt-2 flex items-center justify-center gap-2 text-white/70"
+            style={{ fontFamily: "'Caveat', cursive", fontWeight: 600, fontSize: "18px" }}
+          >
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-cyan shadow-[0_0_8px_rgba(0,229,255,0.9)]" />
+            <span className="-rotate-[2deg]">
+              {filtered.length} delícias para adoçar seu dia
+            </span>
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.9)]" />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {filtered.map((p, i) => (
