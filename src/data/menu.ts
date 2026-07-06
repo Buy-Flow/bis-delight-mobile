@@ -9,6 +9,13 @@ import milkOreo from "@/assets/p11-08-X21.png.asset.json";
 import nutininho from "@/assets/p11-09-X25.png.asset.json";
 import texturePurple from "@/assets/p12-01-X4.jpg.asset.json";
 import logoAsset from "@/assets/querobis-logo.png.asset.json";
+import categoryAcaiMix from "@/assets/category-acai-mix.png";
+import categoryAcai from "@/assets/category-acai.png";
+import categoryTaca from "@/assets/category-taca.png";
+import categoryMix from "@/assets/category-mix.png";
+import categoryCasquinha from "@/assets/category-casquinha.png";
+import categoryShake from "@/assets/category-shake.png";
+import categoryCopo from "@/assets/category-copo.png";
 
 export const BRAND = {
   name: "Quero Bis",
@@ -36,14 +43,14 @@ export type Category = {
 };
 
 export const CATEGORIES: Category[] = [
-  { id: "all", name: "Tudo", emoji: "✨", image: acaiMix.url },
-  { id: "acai", name: "Açaí", emoji: "🍇", image: acaiPuro.url },
-  { id: "tacas", name: "Taças", emoji: "🍨", image: tacaRosa.url },
-  { id: "mix", name: "Mix", emoji: "🍫", image: nutininho.url },
-  { id: "kids", name: "Kids", emoji: "🎈", image: acaiMix.url },
-  { id: "casquinhas", name: "Casquinhas", emoji: "🍦", image: casquinhaMint.url },
-  { id: "shakes", name: "Milk Shakes", emoji: "🥤", image: milkOreo.url },
-  { id: "copos", name: "Copos", emoji: "🧋", image: bubbleGreen.url },
+  { id: "all", name: "Tudo", emoji: "✨", image: categoryAcaiMix },
+  { id: "acai", name: "Açaí", emoji: "🍇", image: categoryAcai },
+  { id: "tacas", name: "Taças", emoji: "🍨", image: categoryTaca },
+  { id: "mix", name: "Mix", emoji: "🍫", image: categoryMix },
+  { id: "kids", name: "Kids", emoji: "🎈", image: categoryAcaiMix },
+  { id: "casquinhas", name: "Casquinhas", emoji: "🍦", image: categoryCasquinha },
+  { id: "shakes", name: "Milk Shakes", emoji: "🥤", image: categoryShake },
+  { id: "copos", name: "Copos", emoji: "🧋", image: categoryCopo },
 ];
 
 export type SizeOption = { id: string; label: string; priceDelta: number };
