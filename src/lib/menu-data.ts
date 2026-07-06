@@ -40,6 +40,7 @@ function rowToProduct(row: Record<string, unknown>): Product {
     removable: (row.removable as string[] | null) ?? undefined,
     badge: (row.badge as Product["badge"]) ?? undefined,
     hero: Boolean(row.hero),
+    active: row.active === undefined ? true : Boolean(row.active),
   };
 }
 
