@@ -17,7 +17,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         aria-hidden="true"
         src={heroBgRight.url}
         alt=""
-        className="pointer-events-none absolute -right-6 -top-12 z-0 h-[820px] w-auto max-w-none select-none object-contain object-right"
+        className="pointer-events-none absolute -right-6 -top-20 z-0 h-[820px] w-auto max-w-none select-none object-contain object-right"
 
       />
 
