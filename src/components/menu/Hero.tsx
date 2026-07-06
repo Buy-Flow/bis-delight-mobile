@@ -107,22 +107,13 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           para o seu dia.
         </p>
 
-        {/* CTA button */}
-        <button
-          onClick={onScrollMenu}
-          className="mt-5 group relative inline-flex items-center gap-2 rounded-full bg-neon-pink px-5 py-2.5 text-[13px] font-extrabold uppercase tracking-[0.14em] text-white shadow-[0_10px_24px_-8px_rgba(236,64,122,0.85)] ring-2 ring-white/20 transition active:scale-[0.97]"
-          style={{ fontFamily: "'Poppins', sans-serif" }}
-        >
-          <span>Peça agora</span>
-          <span aria-hidden="true" className="text-[14px]">🚀</span>
-        </button>
-
         <span
-          className="mt-2 text-[10.5px] uppercase tracking-[0.3em] text-white/55"
+          className="mt-4 text-[10.5px] uppercase tracking-[0.3em] text-white/55"
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
         >
           Rápido · Prático · Extraordinário
         </span>
+
 
         {/* Space for side illustrations */}
         <div className="h-28" />
