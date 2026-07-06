@@ -343,7 +343,7 @@ export function ProductModal({
               onClick={submit}
               className="flex-1 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
-              Adicionar ao carrinho · {brl(total)}
+              {brl(total)}
             </button>
           </div>
         </div>
