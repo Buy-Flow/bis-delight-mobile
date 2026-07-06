@@ -658,6 +658,18 @@ function ProductEditor({
             </div>
           )}
 
+          {tab === "photo" && (
+            <PhotoTab
+              product={p}
+              onChange={(patch) => {
+                setP((prev) => ({ ...prev, ...patch }));
+                setDirty(true);
+              }}
+            />
+          )}
+
+
+
           {tab === "sizes" && (
             <div className="space-y-5">
               <div>
