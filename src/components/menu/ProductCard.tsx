@@ -85,9 +85,9 @@ export function ProductCard({
         </svg>
       </div>
 
-      {/* Price tag sticker — diagonal, overlapping (outside overflow) */}
+      {/* Price tag sticker — diagonal, sits on the wave */}
       <div
-        className="absolute right-2 top-[126px] z-30 rotate-[8deg] rounded-lg px-2.5 py-1.5 leading-none"
+        className="absolute right-3 top-[122px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none"
         style={{
           background:
             "linear-gradient(180deg, oklch(0.94 0.19 100) 0%, oklch(0.82 0.22 90) 100%)",
@@ -102,7 +102,7 @@ export function ProductCard({
           desde
         </span>
         <span
-          className="mt-[2px] block whitespace-nowrap text-[16px] font-black text-[oklch(0.16_0.11_305)]"
+          className="mt-[2px] block whitespace-nowrap text-[15px] font-black text-[oklch(0.16_0.11_305)]"
           style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
         >
           {brl(product.basePrice)}
@@ -111,9 +111,9 @@ export function ProductCard({
 
 
       {/* Content */}
-      <div className="relative flex flex-1 flex-col px-3 pb-3 pt-2">
+      <div className="relative flex flex-1 flex-col px-3 pb-3 pt-8">
         <h3
-          className="text-[13.5px] font-black uppercase leading-tight text-white line-clamp-2"
+          className="pr-1 text-[13.5px] font-black uppercase leading-tight text-white"
           style={{
             fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
             letterSpacing: "0.03em",
@@ -121,6 +121,7 @@ export function ProductCard({
         >
           {product.name}
         </h3>
+
 
         {/* Ingredients — full list, wrapped */}
         <div className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
