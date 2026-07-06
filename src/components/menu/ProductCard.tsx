@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
@@ -19,49 +19,137 @@ export function ProductCard({
   return (
     <button
       onClick={() => onOpen(product)}
-      className="group relative flex h-full flex-col overflow-hidden rounded-3xl card-acai text-left transition active:scale-[.98]"
+      className="group relative flex h-full flex-col overflow-visible rounded-[26px] text-left transition active:scale-[.98]"
+      style={{
+        background:
+          "linear-gradient(160deg, oklch(0.26 0.17 305) 0%, oklch(0.16 0.11 305) 55%, oklch(0.10 0.06 300) 100%)",
+        boxShadow:
+          "0 22px 40px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.05)",
+      }}
     >
+      {/* Corner glow accents */}
+      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-neon-pink/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-neon-cyan/20 blur-2xl" />
+
+      {/* Badge ribbon */}
       {product.badge && (
         <div
           className={cn(
-            "absolute left-2 top-2 z-10 rounded-full px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-wider shadow",
+            "absolute -top-2 left-3 z-20 flex items-center gap-1 rounded-full px-2.5 py-[4px] text-[9px] font-black uppercase tracking-[0.14em] shadow-lg",
             badgeStyles[product.badge],
           )}
+          style={{
+            boxShadow:
+              "0 6px 12px -3px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
+          }}
         >
+          <Star className="h-[9px] w-[9px] fill-current" strokeWidth={2.5} />
           {product.badge}
         </div>
       )}
 
-      <div className="relative h-[150px] overflow-hidden">
-        <div className="absolute inset-0 noise-purple opacity-90" />
-        <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_65%,oklch(0.86_0.18_200_/_0.18),transparent_60%)]" />
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          className="absolute inset-0 mx-auto h-full w-full scale-125 object-contain p-3 drop-shadow-[0_18px_18px_rgba(0,0,0,0.45)] transition duration-500 group-hover:scale-[1.35]"
-        />
+      {/* Circular photo medallion */}
+      <div className="relative flex justify-center pt-5">
+        <div
+          className="relative grid h-[110px] w-[110px] place-items-center rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 35%, oklch(0.42 0.24 320 / 0.9) 0%, oklch(0.18 0.13 305 / 0.6) 60%, transparent 100%)",
+          }}
+        >
+          {/* Rotating gradient ring */}
+          <div
+            className="absolute inset-0 rounded-full opacity-80"
+            style={{
+              background:
+                "conic-gradient(from 120deg, oklch(0.72 0.26 350), oklch(0.86 0.18 200), oklch(0.92 0.20 100), oklch(0.72 0.26 350))",
+              WebkitMask:
+                "radial-gradient(circle, transparent 46px, #000 47px, #000 53px, transparent 54px)",
+              mask: "radial-gradient(circle, transparent 46px, #000 47px, #000 53px, transparent 54px)",
+            }}
+          />
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            className="relative z-10 h-[130%] w-[130%] object-contain drop-shadow-[0_14px_18px_rgba(0,0,0,0.6)] transition duration-500 group-hover:scale-105"
+          />
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <div className="font-display text-[15px] font-extrabold leading-tight text-white line-clamp-2">
+      {/* Content */}
+      <div className="relative flex flex-1 flex-col px-3.5 pt-3 pb-3.5">
+        <h3
+          className="text-center text-[14px] font-black leading-tight text-white line-clamp-2"
+          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.02em" }}
+        >
           {product.name}
-        </div>
-        <div className="text-[11px] text-white/60 line-clamp-2">
-          {product.ingredients.slice(0, 3).join(" · ")}
+        </h3>
+
+        {/* Ingredients as micro chips */}
+        <div className="mt-2 flex flex-wrap justify-center gap-1">
+          {product.ingredients.slice(0, 3).map((c) => (
+            <span
+              key={c}
+              className="rounded-full border border-white/10 bg-white/[0.06] px-1.5 py-[1px] text-[8.5px] font-medium text-white/75"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              {c}
+            </span>
+          ))}
         </div>
 
-        <div className="mt-auto flex items-end justify-between pt-1">
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-white/50">
+        {/* Dashed ticket divider with notches */}
+        <div className="relative my-3">
+          <div
+            className="absolute -left-4 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full"
+            style={{ background: "oklch(0.10 0.06 300)" }}
+          />
+          <div
+            className="absolute -right-4 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full"
+            style={{ background: "oklch(0.10 0.06 300)" }}
+          />
+          <div
+            className="h-px w-full"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(255,255,255,0.25) 50%, transparent 50%)",
+              backgroundSize: "6px 1px",
+              backgroundRepeat: "repeat-x",
+            }}
+          />
+        </div>
+
+        {/* Price + CTA */}
+        <div className="flex items-end justify-between gap-2">
+          <div className="flex flex-col leading-none">
+            <span
+              className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/50"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
               A partir de
-            </div>
-            <div className="font-display text-lg font-extrabold text-neon-yellow glow-yellow-text leading-none">
+            </span>
+            <span
+              className="mt-1 text-[19px] font-black leading-none text-neon-yellow"
+              style={{
+                fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
+                textShadow: "0 2px 10px rgba(255,215,60,0.35)",
+              }}
+            >
               {brl(product.basePrice)}
-            </div>
+            </span>
           </div>
-          <span className="grid h-9 w-9 place-items-center rounded-2xl bg-neon-pink text-white glow-pink">
-            <Plus className="h-4 w-4" />
+
+          <span
+            className="grid h-9 w-9 place-items-center rounded-full text-white active:scale-95"
+            style={{
+              background:
+                "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.62 0.28 350) 100%)",
+              boxShadow:
+                "0 8px 18px -4px oklch(0.62 0.28 350 / 0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
+            }}
+          >
+            <Plus className="h-4 w-4" strokeWidth={3.2} />
           </span>
         </div>
       </div>
