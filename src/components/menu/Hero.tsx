@@ -1,97 +1,112 @@
-import { ArrowRight, Sparkles } from "lucide-react";
-import { BRAND, PRODUCTS } from "@/data/menu";
+import { BRAND } from "@/data/menu";
 
 import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
-  
-
-
   const waLink = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(
     "Olá! Quero fazer um pedido na Quero Bis 🍧",
   )}`;
 
   return (
-    <section className="relative overflow-hidden px-4 pb-8 pt-4">
-      {/* Textured backdrop */}
-      <div
-        className="absolute inset-0 -z-10 opacity-40 mix-blend-overlay"
-        style={{
-          backgroundImage: `url(${BRAND.texture})`,
-          backgroundSize: "cover",
-        }}
-      />
-
-      {/* Side ice cream illustrations (cropped to visible product) */}
+    <section className="relative overflow-hidden px-4 pb-10 pt-2">
+      {/* Side ice cream illustrations */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 bottom-2 z-0 opacity-95 select-none"
+        className="pointer-events-none absolute left-0 top-16 z-0 select-none"
         style={{
-          width: "110px",
-          height: "321px",
+          width: "128px",
+          height: "360px",
           backgroundImage: `url(${heroBgLeft.url})`,
-          backgroundSize: "389px auto",
-          backgroundPosition: "-6px -127px",
+          backgroundSize: "440px auto",
+          backgroundPosition: "-10px -140px",
           backgroundRepeat: "no-repeat",
         }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-0 bottom-2 z-0 opacity-95 select-none"
+        className="pointer-events-none absolute right-0 top-24 z-0 select-none"
         style={{
-          width: "110px",
-          height: "330px",
+          width: "128px",
+          height: "360px",
           backgroundImage: `url(${heroBgRight.url})`,
-          backgroundSize: "359px auto",
-          backgroundPosition: "-244px -135px",
+          backgroundSize: "410px auto",
+          backgroundPosition: "-278px -150px",
           backgroundRepeat: "no-repeat",
         }}
       />
 
-
-
-      <div className="relative z-10 pt-2 mx-auto flex max-w-md flex-col items-center text-center">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
-          <Sparkles className="h-3 w-3" />
-          Aberto agora · Delivery {BRAND.hours.split(" ")[0]}
+      <div className="relative z-10 mx-auto flex max-w-md flex-col items-center px-16 text-center">
+        {/* "Peça seu" script */}
+        <div className="mb-1 font-display text-[22px] font-bold italic text-white/95 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+          Peça seu
         </div>
 
-        <h1 className="font-display text-[42px] leading-[1] font-extrabold text-neon-yellow glow-yellow-text">
-          Peça seu
+        {/* Big yellow headline */}
+        <h1
+          className="font-display text-[46px] font-black uppercase leading-[0.92] tracking-tight text-neon-yellow"
+          style={{
+            textShadow:
+              "0 3px 0 rgba(120,80,10,0.45), 0 6px 18px rgba(255,215,60,0.35), 0 0 26px rgba(255,215,60,0.25)",
+          }}
+        >
+          Sorvete
           <br />
-          sorvete
-          <br />
-          <span className="text-neon-pink">favorito.</span>
+          Favorito
         </h1>
-        <p className="mt-3 max-w-xs text-[15px] leading-snug text-white/80">
-          A felicidade cabe em cada colher. Monte, personalize e receba em casa.
+
+        {/* Pink handwritten pill */}
+        <div className="relative mt-4">
+          <span
+            className="inline-block -rotate-[2deg] rounded-full bg-neon-pink px-4 py-1.5 font-display text-[13px] font-bold italic text-white shadow-[0_6px_16px_-4px_rgba(236,64,122,0.6)]"
+          >
+            A felicidade cabe em cada colher!
+          </span>
+        </div>
+
+        {/* Subtitle */}
+        <p className="mt-4 text-[13px] leading-snug text-white/85">
+          Açaí, sorvetes, milk shakes
+          <br />
+          e muito mais para deixar
+          <br />
+          seu dia <span className="font-bold text-neon-pink">mais feliz!</span>
         </p>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <a
-            href={waLink}
-            target="_blank"
-            rel="noreferrer"
-            className="group inline-flex items-center gap-2 rounded-full bg-neon-pink px-5 py-3 text-sm font-bold text-white glow-pink active:scale-[.98] transition"
-          >
-            Pedir agora no WhatsApp
-            <ArrowRight className="h-4 w-4 transition -mr-1 group-active:translate-x-1" />
-          </a>
-          <button
-            onClick={onScrollMenu}
-            className="rounded-full border border-neon-cyan/60 px-5 py-3 text-sm font-semibold text-neon-cyan"
-          >
-            Ver cardápio
-          </button>
-        </div>
+        {/* WhatsApp pill button */}
+        <a
+          href={waLink}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-5 inline-flex items-center gap-2.5 rounded-full bg-neon-yellow px-6 py-3.5 text-[13px] font-black uppercase tracking-wide text-[#2a1500] shadow-[0_10px_24px_-6px_rgba(255,215,60,0.55),inset_0_2px_0_rgba(255,255,255,0.5)] active:scale-[.97] transition"
+        >
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-[#25D366] text-white">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+              <path d="M20.5 3.5A11 11 0 0 0 3.6 17.2L2 22l4.9-1.6a11 11 0 0 0 5.3 1.4h.1a11 11 0 0 0 8.2-18.3zM12.3 19.9a9 9 0 0 1-4.6-1.3l-.3-.2-2.9.9.9-2.8-.2-.3a9 9 0 1 1 16.8-4.5 9 9 0 0 1-9.7 8.2zm5.2-6.7c-.3-.1-1.7-.8-1.9-.9s-.4-.1-.6.2-.7.9-.8 1-.3.2-.6 0a7.4 7.4 0 0 1-3.7-3.2c-.3-.5.3-.5.8-1.5.1-.2 0-.3 0-.5s-.6-1.5-.9-2c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.2c0 1.3 1 2.6 1.1 2.8s2 3.1 4.8 4.3a15.8 15.8 0 0 0 1.6.6c.7.2 1.3.2 1.8.1s1.7-.7 2-1.4a1.7 1.7 0 0 0 .1-1.4c-.1-.2-.3-.2-.6-.3z" />
+            </svg>
+          </span>
+          <span className="flex flex-col items-start leading-tight">
+            <span className="text-[13px]">Pedir agora</span>
+            <span className="text-[9px] font-bold tracking-[0.14em] text-[#2a1500]/70">
+              PELO WHATSAPP
+            </span>
+          </span>
+        </a>
 
-        {/* Space for side ice cream illustrations */}
-        <div className="h-64" />
+        {/* Caption */}
+        <button
+          onClick={onScrollMenu}
+          className="mt-4 font-display text-[13px] italic text-white/90"
+        >
+          Rápido, prático e{" "}
+          <span className="font-bold text-neon-pink underline decoration-neon-pink/70 decoration-2 underline-offset-2">
+            delicioso!
+          </span>
+        </button>
 
-
+        {/* Space for side illustrations */}
+        <div className="h-20" />
       </div>
-
     </section>
   );
 }
