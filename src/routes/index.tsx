@@ -190,7 +190,7 @@ function Content() {
           {filtered.map((p, i) => (
             <div
               key={p.id}
-              className="animate-rise-in"
+              className="animate-rise-in h-full"
               style={{ animationDelay: `${Math.min(i * 40, 300)}ms` }}
             >
               <ProductCard product={p} onOpen={setModalProduct} />
