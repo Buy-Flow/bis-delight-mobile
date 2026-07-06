@@ -14,11 +14,13 @@ import { CartSheet } from "@/components/menu/CartSheet";
 import { CheckoutSheet } from "@/components/menu/CheckoutSheet";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
-import { PRODUCTS, BRAND, type Product } from "@/data/menu";
+import { BRAND, type Product } from "@/data/menu";
+import { useProducts, useSiteSettings } from "@/lib/menu-data";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
 import { Search, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 
 
 
@@ -69,20 +71,24 @@ function Content() {
   const { isAcaiOpen, openAcai, closeAcai } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const { data: products = [] } = useProducts();
+  const { data: settings } = useSiteSettings();
+
   const scrollToMenu = () => {
     document.getElementById("categorias")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const highlights = useMemo(() => PRODUCTS.filter((p) => p.hero), []);
+  const highlights = useMemo(() => products.filter((p) => p.hero), [products]);
   const filtered = useMemo(() => {
-    const byCat = activeCat === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.category === activeCat);
+    const byCat = activeCat === "all" ? products : products.filter((p) => p.category === activeCat);
     const q = query.trim().toLowerCase();
     if (!q) return byCat;
     return byCat.filter((p) => {
       const hay = `${p.name} ${p.description ?? ""} ${(p.ingredients ?? []).join(" ")}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [activeCat, query]);
+  }, [activeCat, query, products]);
+
 
 
   return (
@@ -260,16 +266,17 @@ function Content() {
 
       <footer className="border-t border-white/5 px-4 py-8 text-center">
         <img
-          src={BRAND.logo}
-          alt="Quero Bis — Sorveteria e Açaí"
+          src={settings?.logo ?? BRAND.logo}
+          alt={settings?.name ?? BRAND.name}
           className="mx-auto h-24 w-auto drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
         />
-        <div className="mt-4 text-[12px] text-white/60">{BRAND.address}</div>
-        <div className="mt-1 text-[12px] text-white/60">{BRAND.whatsappDisplay}</div>
+        <div className="mt-4 text-[12px] text-white/60">{settings?.address ?? BRAND.address}</div>
+        <div className="mt-1 text-[12px] text-white/60">{settings?.whatsappDisplay ?? BRAND.whatsappDisplay}</div>
         <div className="mt-6 text-[10px] text-white/30">
-          © {new Date().getFullYear()} Quero Bis · Feito com 💜 em Ouro Preto do Oeste
+          © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com 💜
         </div>
       </footer>
+
 
       <FloatingActions />
       <ProductModal product={modalProduct} onClose={() => setModalProduct(null)} />
