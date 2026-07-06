@@ -135,8 +135,8 @@ function Content() {
         </button>
       </section>
 
-      {/* Categories right above menu */}
-      <CategoryStrip active={activeCat} onChange={setActiveCat} />
+
+
 
       {/* Product list */}
       <section ref={menuRef} className="px-4 pb-6">
@@ -236,7 +236,13 @@ function Content() {
           )}
         </div>
 
+        {/* Categories under search */}
+        <div className="-mx-4 mb-2">
+          <CategoryStrip active={activeCat} onChange={setActiveCat} />
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
+
 
           {filtered.map((p, i) => (
             <div
