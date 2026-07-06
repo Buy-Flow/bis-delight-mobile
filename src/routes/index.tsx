@@ -15,7 +15,7 @@ import { CheckoutSheet } from "@/components/menu/CheckoutSheet";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
-import heroTexture from "@/assets/purple-crumpled-soft.jpg.asset.json";
+import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
