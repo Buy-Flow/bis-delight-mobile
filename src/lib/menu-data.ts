@@ -247,6 +247,9 @@ export type ProductInput = {
   hero: boolean;
   active?: boolean;
   sort_order?: number;
+  image_pos_x?: number;
+  image_pos_y?: number;
+  image_scale?: number;
 };
 
 export function useUpsertProduct() {
