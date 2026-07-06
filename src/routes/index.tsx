@@ -236,7 +236,13 @@ function Content() {
           )}
         </div>
 
+        {/* Categories under search */}
+        <div className="-mx-4 mb-2">
+          <CategoryStrip active={activeCat} onChange={setActiveCat} />
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
+
 
           {filtered.map((p, i) => (
             <div
