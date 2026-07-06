@@ -133,7 +133,7 @@ export function CategoryStrip({
               >
                 {/* Top photo area */}
                 <div
-                  className="relative h-[80px] w-full overflow-hidden"
+                  className="relative h-[108px] w-full overflow-hidden"
                   style={{
                     boxShadow:
                       "inset 0 6px 12px -5px rgba(0,0,0,0.7), inset 0 -4px 10px -4px rgba(0,0,0,0.5)",
@@ -151,7 +151,7 @@ export function CategoryStrip({
 
                 {/* Unified icon badge — same white color for all categories */}
                 <div
-                  className="absolute left-1/2 top-[112px] grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
+                  className="absolute left-1/2 top-[108px] grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
                   style={{
                     background:
                       "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
@@ -167,6 +167,7 @@ export function CategoryStrip({
                     }}
                   />
                 </div>
+
 
 
                 {/* White label */}
