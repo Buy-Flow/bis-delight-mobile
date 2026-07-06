@@ -1,9 +1,70 @@
 import { useMemo, useState } from "react";
 import { Minus, Plus, X, Check } from "lucide-react";
-import type { Product } from "@/data/menu";
+import type { ExtraOption, Product } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+/* Default customization pools by category — used when a product doesn't
+   define its own extras/removable so every item has a rich "Personalizar" flow. */
+const DEFAULT_EXTRAS_ACAI: ExtraOption[] = [
+  { id: "d-leite-condensado", label: "Leite Condensado", price: 2 },
+  { id: "d-creme-ninho", label: "Creme de Ninho", price: 3 },
+  { id: "d-nutella", label: "Nutella", price: 4 },
+  { id: "d-ovomaltine", label: "Ovomaltine", price: 3 },
+  { id: "d-morango", label: "Morango fresco", price: 3 },
+  { id: "d-banana", label: "Banana", price: 2 },
+  { id: "d-granola", label: "Granola", price: 2 },
+  { id: "d-pacoca", label: "Paçoca", price: 2 },
+  { id: "d-chocoball", label: "Chocoball", price: 3 },
+  { id: "d-leite-po", label: "Leite em Pó", price: 2 },
+];
+
+const DEFAULT_EXTRAS_TACA: ExtraOption[] = [
+  { id: "t-chantilly-extra", label: "Chantilly extra", price: 3 },
+  { id: "t-calda-quente", label: "Calda Quente", price: 3 },
+  { id: "t-nutella", label: "Nutella", price: 4 },
+  { id: "t-bombom", label: "Bombom extra", price: 5 },
+  { id: "t-cereja", label: "Cereja", price: 2 },
+  { id: "t-granulado", label: "Granulado", price: 2 },
+  { id: "t-raspas-choc", label: "Raspas de Chocolate", price: 3 },
+];
+
+const DEFAULT_EXTRAS_SHAKE: ExtraOption[] = [
+  { id: "s-chantilly", label: "Chantilly no topo", price: 3 },
+  { id: "s-calda-choc", label: "Calda de Chocolate", price: 3 },
+  { id: "s-calda-morango", label: "Calda de Morango", price: 3 },
+  { id: "s-oreo", label: "Oreo triturado", price: 4 },
+  { id: "s-nutella", label: "Nutella", price: 4 },
+  { id: "s-canudo-gigante", label: "Canudo gigante", price: 1 },
+];
+
+const DEFAULT_EXTRAS_MIX: ExtraOption[] = [
+  { id: "m-chantilly", label: "Chantilly", price: 3 },
+  { id: "m-nutella", label: "Nutella", price: 4 },
+  { id: "m-ninho", label: "Creme de Ninho", price: 3 },
+  { id: "m-morango", label: "Morango fresco", price: 3 },
+  { id: "m-pacoca", label: "Paçoca", price: 2 },
+];
+
+function getDefaultExtras(category: string): ExtraOption[] {
+  switch (category) {
+    case "acai":
+    case "copos":
+      return DEFAULT_EXTRAS_ACAI;
+    case "tacas":
+      return DEFAULT_EXTRAS_TACA;
+    case "shakes":
+      return DEFAULT_EXTRAS_SHAKE;
+    case "mix":
+    case "kids":
+    case "casquinhas":
+      return DEFAULT_EXTRAS_MIX;
+    default:
+      return DEFAULT_EXTRAS_MIX;
+  }
+}
+
 
 export function ProductModal({
   product,
