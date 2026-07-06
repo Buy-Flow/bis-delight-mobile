@@ -40,6 +40,7 @@ function rowToProduct(row: Record<string, unknown>): Product {
     removable: (row.removable as string[] | null) ?? undefined,
     badge: (row.badge as Product["badge"]) ?? undefined,
     hero: Boolean(row.hero),
+    active: row.active === undefined ? true : Boolean(row.active),
   };
 }
 
@@ -241,8 +242,8 @@ export type ProductInput = {
   removable: string[] | null;
   badge: string | null;
   hero: boolean;
-  active: boolean;
-  sort_order: number;
+  active?: boolean;
+  sort_order?: number;
 };
 
 export function useUpsertProduct() {
@@ -325,6 +326,45 @@ export function useUpdateSettings() {
         logo_url: s.logo,
         texture_url: s.texture,
       }).eq("id", 1);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useReorderProducts() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (items: { id: string; sort_order: number }[]) => {
+      await Promise.all(
+        items.map((it) =>
+          supabase.from("products").update({ sort_order: it.sort_order }).eq("id", it.id),
+        ),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useReorderCategories() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (items: { id: string; sort_order: number }[]) => {
+      await Promise.all(
+        items.map((it) =>
+          supabase.from("categories").update({ sort_order: it.sort_order }).eq("id", it.id),
+        ),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useToggleProductActive() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase.from("products").update({ active }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: invalidate,
