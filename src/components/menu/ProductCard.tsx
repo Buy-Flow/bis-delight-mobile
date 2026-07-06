@@ -122,21 +122,22 @@ export function ProductCard({
           {product.name}
         </h3>
 
-        {/* Ingredients as horizontal marquee-style row */}
-        <div className="mt-1.5 flex items-center gap-1 overflow-hidden">
-          {product.ingredients.slice(0, 3).map((c, i) => (
+        {/* Ingredients — full list, wrapped */}
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+          {product.ingredients.map((c, i) => (
             <span
               key={c}
-              className="truncate text-[9px] font-medium text-white/60"
+              className="text-[9.5px] font-medium leading-snug text-white/70"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
               {c}
-              {i < Math.min(product.ingredients.length, 3) - 1 && (
+              {i < product.ingredients.length - 1 && (
                 <span className="mx-1 text-neon-pink">•</span>
               )}
             </span>
           ))}
         </div>
+
 
         {/* Chunky floating CTA — full width */}
         <div className="mt-auto pt-3">
