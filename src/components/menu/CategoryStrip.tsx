@@ -88,7 +88,7 @@ export function CategoryStrip({
         </span>
       </div>
 
-      <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-4 pt-2">
+      <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-4 pt-2">
         {CATEGORIES.map((c) => {
           const isActive = active === c.id;
           const accent = ACCENTS[c.id] ?? ACCENTS.all;
@@ -99,18 +99,18 @@ export function CategoryStrip({
               onClick={() => onChange(c.id)}
               aria-pressed={isActive}
               className={cn(
-                "group relative snap-start shrink-0 w-[124px] h-[188px] rounded-[24px]",
+                "group relative snap-start shrink-0 w-[146px] h-[218px] rounded-[26px]",
                 "bg-[oklch(0.20_0.12_305)] transition active:scale-95 overflow-hidden",
                 "ring-1 ring-white/10",
                 isActive && `ring-2 ${accent.ring} ${accent.glow}`,
               )}
             >
               {/* Photo top area */}
-              <div className="relative h-[118px] w-full overflow-hidden">
+              <div className="relative h-[158px] w-full overflow-hidden">
                 <img
                   src={c.image}
                   alt={c.name}
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className="absolute left-1/2 top-[45%] h-[136%] w-[136%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
                 />
                 {/* fade to card bg */}
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-[oklch(0.20_0.12_305)]" />
@@ -119,7 +119,7 @@ export function CategoryStrip({
               {/* Icon circle overlapping */}
               <div
                 className={cn(
-                  "absolute left-1/2 top-[100px] grid h-11 w-11 -translate-x-1/2 place-items-center rounded-full",
+                  "absolute left-1/2 top-[138px] grid h-12 w-12 -translate-x-1/2 place-items-center rounded-full",
                   accent.bg,
                   "ring-4 ring-[oklch(0.20_0.12_305)]",
                 )}
