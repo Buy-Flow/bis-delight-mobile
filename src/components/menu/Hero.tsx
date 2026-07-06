@@ -89,7 +89,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           {["Açaí", "Sorvetes", "Shakes"].map((chip) => (
             <span
               key={chip}
-              className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm"
+              className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
             >
               {chip}
             </span>
