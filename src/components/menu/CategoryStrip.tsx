@@ -1,5 +1,6 @@
 import { CATEGORIES as STATIC_CATEGORIES } from "@/data/menu";
 import { useCategories } from "@/lib/menu-data";
+import { getCategoryIcon } from "@/lib/category-icons";
 
 import { cn } from "@/lib/utils";
 import {
