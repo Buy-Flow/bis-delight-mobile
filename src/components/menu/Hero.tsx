@@ -5,10 +5,8 @@ import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
-  const hero1 = PRODUCTS.find((p) => p.id === "acai-turbinado")!;
-  const hero2 = PRODUCTS.find((p) => p.id === "taca-rosa")!;
-  const hero3 = PRODUCTS.find((p) => p.id === "milk-oreo")!;
   const { openCart } = useCart();
+
 
   const waLink = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(
     "Olá! Quero fazer um pedido na Quero Bis 🍧",
