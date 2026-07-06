@@ -92,7 +92,7 @@ function Content() {
       <TopBar onOpenCategories={scrollToMenu} />
       <Hero onScrollMenu={scrollToMenu} />
       <Benefits />
-      <CategoryStrip active={activeCat} onChange={setActiveCat} />
+      
 
       {/* Highlights */}
       <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
@@ -124,8 +124,12 @@ function Content() {
         </button>
       </section>
 
+      {/* Categories right above menu */}
+      <CategoryStrip active={activeCat} onChange={setActiveCat} />
+
       {/* Product list */}
       <section ref={menuRef} className="px-4 pb-6">
+
         <div className="mb-3 flex items-end justify-between">
           <h2 className="font-display text-xl font-extrabold text-white">
             {activeCat === "all"
