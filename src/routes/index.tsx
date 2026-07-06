@@ -150,12 +150,11 @@ function Content() {
       <LocationSection />
 
       <footer className="border-t border-white/5 px-4 py-8 text-center">
-        <div className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text">
-          Quero<span className="text-neon-pink">Bis</span>
-        </div>
-        <div className="mt-1 text-[11px] uppercase tracking-widest text-white/50">
-          Sorveteria & Açaí
-        </div>
+        <img
+          src={BRAND.logo}
+          alt="Quero Bis — Sorveteria e Açaí"
+          className="mx-auto h-24 w-auto drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
+        />
         <div className="mt-4 text-[12px] text-white/60">{BRAND.address}</div>
         <div className="mt-1 text-[12px] text-white/60">{BRAND.whatsappDisplay}</div>
         <div className="mt-6 text-[10px] text-white/30">
