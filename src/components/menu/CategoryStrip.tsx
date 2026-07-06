@@ -89,17 +89,8 @@ export function CategoryStrip({
   onChange: (id: string) => void;
 }) {
   return (
-    <section id="categorias" className="pb-4">
-      <div className="mb-3 flex items-end justify-between px-4">
-        <h2 className="font-display text-xl font-extrabold text-white">
-          Categorias
-        </h2>
-        <span className="text-[11px] uppercase tracking-widest text-white/50">
-          Deslize →
-        </span>
-      </div>
-
-      <div className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-4 pt-2">
+    <section id="categorias" className="pb-2">
+      <div className="hide-scrollbar flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-3 pt-1">
         {CATEGORIES.map((c) => {
           const isActive = active === c.id;
           const accent = ACCENTS[c.id] ?? ACCENTS.all;
@@ -110,19 +101,18 @@ export function CategoryStrip({
               onClick={() => onChange(c.id)}
               aria-pressed={isActive}
               className={cn(
-                "group relative snap-start shrink-0 w-[100px] h-[150px] rounded-[22px]",
+                "group relative snap-start shrink-0 w-[72px] h-[104px] rounded-[16px]",
                 "transition active:scale-95",
                 isActive && `${accent.glow}`,
               )}
               style={{
                 boxShadow:
-                  "0 14px 24px -12px rgba(0,0,0,0.75), 0 3px 8px -3px rgba(0,0,0,0.55)",
+                  "0 8px 16px -8px rgba(0,0,0,0.7), 0 2px 6px -2px rgba(0,0,0,0.5)",
               }}
             >
-
               <div
                 className={cn(
-                  "relative h-full w-full overflow-hidden rounded-[20px]",
+                  "relative h-full w-full overflow-hidden rounded-[14px]",
                   "bg-[#2a0a5c]",
                   isActive && `ring-2 ${accent.ring}`,
                 )}
@@ -133,10 +123,10 @@ export function CategoryStrip({
               >
                 {/* Top photo area */}
                 <div
-                  className="relative h-[108px] w-full overflow-hidden"
+                  className="relative h-[68px] w-full overflow-hidden"
                   style={{
                     boxShadow:
-                      "inset 0 6px 12px -5px rgba(0,0,0,0.7), inset 0 -4px 10px -4px rgba(0,0,0,0.5)",
+                      "inset 0 4px 8px -3px rgba(0,0,0,0.7), inset 0 -3px 8px -3px rgba(0,0,0,0.5)",
                   }}
                 >
                   <img
@@ -145,32 +135,29 @@ export function CategoryStrip({
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
-                  {/* Bottom fade into card */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
                 </div>
 
-                {/* Unified icon badge — same white color for all categories */}
+                {/* Icon badge */}
                 <div
-                  className="absolute left-1/2 top-[108px] grid h-8 w-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
+                  className="absolute left-1/2 top-[68px] grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
                   style={{
                     background:
                       "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
-                    boxShadow: "0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.35)",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.35)",
                   }}
                 >
                   <Icon
-                    className="h-[16px] w-[16px]"
+                    className="h-[12px] w-[12px]"
                     strokeWidth={2.4}
                     style={{ color: "#ffffff" }}
                   />
                 </div>
 
-
-
-                {/* White label */}
-                <div className="absolute inset-x-0 bottom-2 px-1.5 text-center">
+                {/* Label */}
+                <div className="absolute inset-x-0 bottom-1.5 px-1 text-center">
                   <div
-                    className="truncate text-[10.5px] font-black uppercase tracking-[0.14em] text-white"
+                    className="truncate text-[8.5px] font-black uppercase tracking-[0.1em] text-white"
                     style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}
                   >
                     {c.name}
@@ -179,10 +166,10 @@ export function CategoryStrip({
               </div>
             </button>
           );
-
         })}
       </div>
     </section>
   );
 }
+
 
