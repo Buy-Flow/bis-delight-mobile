@@ -51,15 +51,15 @@ export function ProductCard({
       {/* Circular photo medallion */}
       <div className="relative flex justify-center pt-5">
         <div
-          className="relative grid h-[110px] w-[110px] place-items-center rounded-full"
+          className="relative h-[110px] w-[110px] overflow-hidden rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 50% 35%, oklch(0.42 0.24 320 / 0.9) 0%, oklch(0.18 0.13 305 / 0.6) 60%, transparent 100%)",
+              "radial-gradient(circle at 50% 35%, oklch(0.42 0.24 320 / 0.9) 0%, oklch(0.18 0.13 305 / 0.6) 60%, oklch(0.12 0.08 300) 100%)",
           }}
         >
-          {/* Rotating gradient ring */}
+          {/* Gradient ring */}
           <div
-            className="absolute inset-0 rounded-full opacity-80"
+            className="pointer-events-none absolute inset-0 rounded-full opacity-80"
             style={{
               background:
                 "conic-gradient(from 120deg, oklch(0.72 0.26 350), oklch(0.86 0.18 200), oklch(0.92 0.20 100), oklch(0.72 0.26 350))",
@@ -72,7 +72,7 @@ export function ProductCard({
             src={product.image}
             alt={product.name}
             loading="lazy"
-            className="relative z-10 h-[130%] w-[130%] object-contain drop-shadow-[0_14px_18px_rgba(0,0,0,0.6)] transition duration-500 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full scale-[1.15] object-contain p-2 drop-shadow-[0_10px_14px_rgba(0,0,0,0.55)] transition duration-500 group-hover:scale-125"
           />
         </div>
       </div>
