@@ -88,7 +88,7 @@ export function CategoryStrip({
         </span>
       </div>
 
-      <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-6 pt-8">
+      <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-6 pt-14">
         {CATEGORIES.map((c) => {
           const isActive = active === c.id;
           const accent = ACCENTS[c.id] ?? ACCENTS.all;
