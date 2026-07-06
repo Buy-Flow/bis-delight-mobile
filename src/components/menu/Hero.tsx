@@ -32,9 +32,9 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
       <div className="grass-strip pointer-events-none absolute inset-x-0 -bottom-1 h-6 opacity-80" />
 
       <div className="relative pt-2">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full tropical-chip px-3 py-1 text-[11px] uppercase tracking-widest">
           <Sparkles className="h-3 w-3" />
-          Aberto agora · Delivery {BRAND.hours.split(" ")[0]}
+          Açaí fresquinho · Delivery {BRAND.hours.split(" ")[0]}
         </div>
 
         <h1 className="font-display text-[42px] leading-[1] font-extrabold text-neon-yellow glow-yellow-text">
