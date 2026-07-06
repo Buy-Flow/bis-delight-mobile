@@ -130,6 +130,47 @@ export function useCategories() {
   });
 }
 
+export const DEFAULT_HOURS: DayHours[] = [
+  { day: "mon", closed: false, open: "14:00", close: "22:00" },
+  { day: "tue", closed: false, open: "14:00", close: "22:00" },
+  { day: "wed", closed: false, open: "14:00", close: "22:00" },
+  { day: "thu", closed: false, open: "14:00", close: "22:00" },
+  { day: "fri", closed: false, open: "14:00", close: "23:00" },
+  { day: "sat", closed: false, open: "14:00", close: "23:00" },
+  { day: "sun", closed: false, open: "14:00", close: "22:00" },
+];
+
+const DEFAULT_EXTRA: Pick<
+  SiteSettings,
+  | "instagram"
+  | "facebook"
+  | "tiktok"
+  | "announcementText"
+  | "announcementActive"
+  | "pixKey"
+  | "paymentMethods"
+  | "freeDeliveryThreshold"
+  | "minOrder"
+  | "acceptsDelivery"
+  | "acceptsPickup"
+  | "openOverride"
+  | "hoursJson"
+> = {
+  instagram: "",
+  facebook: "",
+  tiktok: "",
+  announcementText: "",
+  announcementActive: false,
+  pixKey: "",
+  paymentMethods: ["Dinheiro", "Pix", "Cartão"],
+  freeDeliveryThreshold: 0,
+  minOrder: 0,
+  acceptsDelivery: true,
+  acceptsPickup: true,
+  openOverride: "auto",
+  hoursJson: DEFAULT_HOURS,
+};
+
 export function useSiteSettings() {
   return useQuery({
     queryKey: ["site_settings"],
@@ -149,8 +190,12 @@ export function useSiteSettings() {
           deliveryFee: STATIC_BRAND.deliveryFee,
           logo: STATIC_BRAND.logo,
           texture: STATIC_BRAND.texture,
+          ...DEFAULT_EXTRA,
         };
       }
+      const rawHours = (data.hours_json as unknown) as DayHours[] | null;
+      const rawMethods = (data.payment_methods as unknown) as string[] | null;
+      const rawOverride = String(data.open_override ?? "auto");
       return {
         name: data.name || STATIC_BRAND.name,
         tagline: data.tagline || STATIC_BRAND.tagline,
@@ -164,6 +209,19 @@ export function useSiteSettings() {
         deliveryFee: Number(data.delivery_fee ?? STATIC_BRAND.deliveryFee),
         logo: data.logo_url || STATIC_BRAND.logo,
         texture: data.texture_url || STATIC_BRAND.texture,
+        instagram: String(data.instagram ?? ""),
+        facebook: String(data.facebook ?? ""),
+        tiktok: String(data.tiktok ?? ""),
+        announcementText: String(data.announcement_text ?? ""),
+        announcementActive: Boolean(data.announcement_active ?? false),
+        pixKey: String(data.pix_key ?? ""),
+        paymentMethods: Array.isArray(rawMethods) && rawMethods.length ? rawMethods : ["Dinheiro", "Pix", "Cartão"],
+        freeDeliveryThreshold: Number(data.free_delivery_threshold ?? 0),
+        minOrder: Number(data.min_order ?? 0),
+        acceptsDelivery: Boolean(data.accepts_delivery ?? true),
+        acceptsPickup: Boolean(data.accepts_pickup ?? true),
+        openOverride: rawOverride === "open" || rawOverride === "closed" ? rawOverride : "auto",
+        hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
       };
     },
   });
