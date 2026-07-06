@@ -166,3 +166,71 @@ function Content() {
     </div>
   );
 }
+
+function HighlightsCarousel({
+  highlights,
+  onOpen,
+}: {
+  highlights: Product[];
+  onOpen: (p: Product) => void;
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const idx = Math.round(el.scrollLeft / (el.clientWidth * 0.88));
+      setActiveIdx(Math.min(highlights.length - 1, Math.max(0, idx)));
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [highlights.length]);
+
+  const scrollTo = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth * 0.88, behavior: "smooth" });
+  };
+
+  return (
+    <section className="pb-4 pt-2">
+      <div className="mb-3 flex items-center justify-center gap-3 px-4">
+        <span className="text-neon-pink">›</span>
+        <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.2em] text-white">
+          Nossos Destaques
+        </h2>
+        <span className="text-neon-pink rotate-180">›</span>
+      </div>
+
+      <div
+        ref={scrollerRef}
+        className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-3"
+      >
+        {highlights.map((p) => (
+          <div key={p.id} className="w-[88%] shrink-0 snap-start">
+            <HighlightCard product={p} onOpen={onOpen} />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-1 flex items-center justify-center gap-1.5">
+        {highlights.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => scrollTo(i)}
+            aria-label={`Ir para destaque ${i + 1}`}
+            className={cn(
+              "h-1.5 rounded-full transition-all",
+              i === activeIdx
+                ? "w-5 bg-neon-pink"
+                : "w-1.5 bg-white/30",
+            )}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
