@@ -10,6 +10,9 @@ import {
   type ExtraOption,
 } from "@/data/menu";
 
+export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export type DayHours = { day: WeekDay; closed: boolean; open: string; close: string };
+
 export type SiteSettings = {
   name: string;
   tagline: string;
@@ -23,6 +26,19 @@ export type SiteSettings = {
   deliveryFee: number;
   logo: string;
   texture: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  announcementText: string;
+  announcementActive: boolean;
+  pixKey: string;
+  paymentMethods: string[];
+  freeDeliveryThreshold: number;
+  minOrder: number;
+  acceptsDelivery: boolean;
+  acceptsPickup: boolean;
+  openOverride: "auto" | "open" | "closed";
+  hoursJson: DayHours[];
 };
 
 function rowToProduct(row: Record<string, unknown>): Product {
