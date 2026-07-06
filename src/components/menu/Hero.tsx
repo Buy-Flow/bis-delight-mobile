@@ -1,6 +1,6 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { BRAND, PRODUCTS } from "@/data/menu";
-import { useCart } from "@/lib/cart-context";
+
 import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
