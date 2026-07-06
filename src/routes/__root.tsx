@@ -78,19 +78,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#2a1240" },
-      { title: "Quero Bis — Sorveteria & Açaí" },
+      { title: "Lovable App" },
       {
         name: "description",
         content:
           "Cardápio digital da Quero Bis Sorveteria e Açaí em Ouro Preto do Oeste. Peça sorvetes, açaí e milk shakes pelo WhatsApp.",
       },
-      { property: "og:title", content: "Quero Bis — Sorveteria & Açaí" },
+      { property: "og:title", content: "Lovable App" },
       {
         property: "og:description",
         content: "Cardápio digital premium. Monte seu açaí e peça pelo WhatsApp.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "description", content: "Quero Bis Mobile App is a premium digital menu for a sorbet and açaí shop." },
+      { property: "og:description", content: "Quero Bis Mobile App is a premium digital menu for a sorbet and açaí shop." },
+      { name: "twitter:description", content: "Quero Bis Mobile App is a premium digital menu for a sorbet and açaí shop." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/21506c6f-0ff9-4d52-9ae2-7d94d6490d9f/id-preview-75dd4027--0c506810-a7a5-4b15-8b02-91d9d9dde920.lovable.app-1783203719281.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/21506c6f-0ff9-4d52-9ae2-7d94d6490d9f/id-preview-75dd4027--0c506810-a7a5-4b15-8b02-91d9d9dde920.lovable.app-1783203719281.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
