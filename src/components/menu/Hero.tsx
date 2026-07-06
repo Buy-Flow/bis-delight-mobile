@@ -43,7 +43,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Headline */}
         <h1
-          className="mt-1 text-[46px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
+          className="mt-1 text-[38px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
           style={{
             fontFamily: "'Barlow Condensed', 'Anton', sans-serif",
             fontWeight: 900,
@@ -51,6 +51,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         >
           <span className="inline-block -rotate-[3deg]">Transforma</span>
         </h1>
+
 
         {/* Underline swash */}
         <svg
