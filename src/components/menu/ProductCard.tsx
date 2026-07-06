@@ -39,7 +39,7 @@ export function ProductCard({
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 mx-auto h-full w-full object-contain p-3 drop-shadow-[0_18px_18px_rgba(0,0,0,0.45)] transition duration-500 group-hover:scale-105"
+          className="absolute inset-0 mx-auto h-full w-full scale-125 object-contain p-3 drop-shadow-[0_18px_18px_rgba(0,0,0,0.45)] transition duration-500 group-hover:scale-[1.35]"
         />
       </div>
 
