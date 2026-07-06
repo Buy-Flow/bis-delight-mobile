@@ -74,7 +74,15 @@ function Content() {
   );
 
   return (
-    <div className="relative mx-auto min-h-screen w-full max-w-[520px] pb-32">
+    <div
+      className="relative mx-auto min-h-screen w-full max-w-[520px] pb-32"
+      style={{
+        backgroundImage: `url(${heroTexture.url})`,
+        backgroundSize: "cover",
+        backgroundRepeat: "repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
       <TopBar onOpenCategories={scrollToMenu} />
       <Hero onScrollMenu={scrollToMenu} />
       <Benefits />
