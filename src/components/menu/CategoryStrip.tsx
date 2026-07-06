@@ -138,6 +138,10 @@ export function CategoryStrip({
                     src={c.image}
                     alt={c.name}
                     className="absolute inset-0 h-full w-full object-cover"
+                    style={{
+                      transform: `translate(${c.imagePosX ?? 0}%, ${c.imagePosY ?? 0}%) scale(${c.imageScale ?? 1})`,
+                      transformOrigin: "center",
+                    }}
                   />
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
