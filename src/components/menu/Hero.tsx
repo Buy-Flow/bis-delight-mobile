@@ -23,19 +23,28 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         }}
       />
 
-      {/* Side background images */}
-      <img
-        src={heroBgLeft.url}
-        alt=""
+      {/* Side ice cream illustrations (cropped to visible product) */}
+      <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-10 bottom-0 z-0 h-[300px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute -left-6 bottom-4 z-0 h-[200px] w-[150px] opacity-95 select-none"
+        style={{
+          backgroundImage: `url(${heroBgLeft.url})`,
+          backgroundSize: "260px auto",
+          backgroundPosition: "0px -75px",
+          backgroundRepeat: "no-repeat",
+        }}
       />
-      <img
-        src={heroBgRight.url}
-        alt=""
+      <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-10 bottom-0 z-0 h-[320px] w-auto max-w-none opacity-90 select-none"
+        className="pointer-events-none absolute -right-6 bottom-4 z-0 h-[220px] w-[160px] opacity-95 select-none"
+        style={{
+          backgroundImage: `url(${heroBgRight.url})`,
+          backgroundSize: "260px auto",
+          backgroundPosition: "-80px -90px",
+          backgroundRepeat: "no-repeat",
+        }}
       />
+
 
       <div className="relative z-10 pt-2 mx-auto flex max-w-md flex-col items-center text-center">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
