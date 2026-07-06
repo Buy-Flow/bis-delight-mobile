@@ -55,70 +55,63 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         </h1>
 
 
-        {/* Decorative typographic phrase — no background, sparkles + swash */}
-        <div className="relative mt-6 w-full max-w-[300px] text-center">
-          {/* Floating decorations */}
+        {/* Pink brush-stroke banner (two-line) with tapered ends */}
+        <div className="relative mt-6 w-full max-w-[300px] -rotate-[3deg]">
           <svg
+            viewBox="0 0 400 130"
+            className="absolute inset-0 h-full w-full drop-shadow-[0_10px_18px_-6px_rgba(236,64,122,0.55)]"
+            preserveAspectRatio="none"
             aria-hidden="true"
-            viewBox="0 0 300 130"
-            className="pointer-events-none absolute inset-0 h-full w-full"
           >
-            <g transform="translate(18 22)" fill="oklch(0.92 0.20 100)">
-              <path d="M6 0 L7.5 4.5 L12 6 L7.5 7.5 L6 12 L4.5 7.5 L0 6 L4.5 4.5 Z" />
-            </g>
-            <g transform="translate(268 14)" fill="oklch(0.72 0.26 350)">
-              <path d="M5 0 L6.2 3.8 L10 5 L6.2 6.2 L5 10 L3.8 6.2 L0 5 L3.8 3.8 Z" />
-            </g>
-            <circle cx="286" cy="70" r="2" fill="oklch(0.86 0.18 200)" />
-            <circle cx="10" cy="72" r="2" fill="oklch(0.92 0.20 100)" />
-            <circle cx="30" cy="100" r="1.5" fill="rgba(255,255,255,0.7)" />
-            <circle cx="272" cy="106" r="1.5" fill="rgba(255,255,255,0.7)" />
+            {/* Rough brush shape with tapered/frayed left + right ends */}
+            <path
+              d="M6,68
+                 C 2,50 14,38 34,34
+                 C 70,26 120,24 180,22
+                 C 240,20 300,26 356,30
+                 C 384,32 400,44 394,66
+                 C 388,86 372,96 344,100
+                 C 292,108 220,112 156,112
+                 C 104,112 56,108 28,102
+                 C 8,98 -2,84 6,68 Z"
+              fill="oklch(0.68 0.27 350)"
+            />
+            {/* Textured speckle strokes (brush grain) */}
+            <path
+              d="M40,54 C 130,44 260,44 360,50"
+              stroke="rgba(255,255,255,0.28)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <path
+              d="M50,86 C 150,92 260,92 350,86"
+              stroke="rgba(255,255,255,0.18)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              fill="none"
+            />
+            {/* Left frayed edge */}
+            <path d="M6,68 L-4,72 L2,60 Z" fill="oklch(0.68 0.27 350)" />
+            <path d="M8,80 L-2,84 L4,78 Z" fill="oklch(0.68 0.27 350)" />
+            {/* Right frayed edge */}
+            <path d="M394,66 L406,62 L400,74 Z" fill="oklch(0.68 0.27 350)" />
+            <path d="M392,80 L404,84 L398,76 Z" fill="oklch(0.68 0.27 350)" />
           </svg>
-
-          <div
-            className="-rotate-[3deg] text-[28px] leading-none text-white"
+          <p
+            className="relative block px-8 py-5 text-center text-[19px] leading-[1.15] text-white"
             style={{
               fontFamily: "'Caveat', cursive",
               fontWeight: 700,
-              textShadow: "0 2px 8px rgba(0,0,0,0.45)",
+              textShadow: "0 2px 3px rgba(0,0,0,0.3)",
             }}
           >
-            A felicidade
-          </div>
-
-          <div
-            className="mt-1.5 text-[11px] uppercase tracking-[0.32em] text-white/70"
-            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
-          >
-            cabe em cada
-          </div>
-
-          <div className="relative mt-1 inline-block">
-            <span
-              className="relative z-10 inline-block rotate-[2deg] text-[34px] leading-none text-neon-yellow"
-              style={{
-                fontFamily: "'Caveat', cursive",
-                fontWeight: 700,
-                textShadow: "0 3px 10px rgba(255,215,60,0.35), 0 2px 3px rgba(0,0,0,0.35)",
-              }}
-            >
-              colher!
-            </span>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 140 22"
-              className="absolute -bottom-2 left-1/2 h-4 w-[120px] -translate-x-1/2"
-              fill="none"
-            >
-              <path
-                d="M4 12 C 30 2, 70 22, 110 6 C 122 2, 132 6, 136 12"
-                stroke="oklch(0.72 0.26 350)"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
+            A felicidade cabe em
+            <br />
+            cada colher!
+          </p>
         </div>
+
 
 
 
