@@ -128,7 +128,12 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             <span>Rápido</span>
             <span>Prático</span>
             <span className="text-neon-pink">&amp;</span>
-            <span className="text-neon-yellow">extraordinário</span>
+            <span
+              className="text-neon-yellow"
+              style={{ fontFamily: "'Caveat', cursive", fontWeight: 700, fontSize: "18px", letterSpacing: "0", textTransform: "none" }}
+            >
+              extraordinário
+            </span>
           </div>
         </div>
 
