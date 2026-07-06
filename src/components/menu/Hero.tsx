@@ -86,16 +86,9 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           </button>
         </div>
 
+        {/* Space for side ice cream illustrations */}
+        <div className="h-64" />
 
-        {/* Floating products */}
-        <div className="relative mt-6 flex h-64 items-center justify-center">
-          <button
-            onClick={openCart}
-            className="rounded-full bg-neon-cyan/20 px-4 py-2 text-[11px] font-semibold text-neon-cyan ring-1 ring-neon-cyan/60"
-          >
-            Ver carrinho
-          </button>
-        </div>
 
       </div>
 
