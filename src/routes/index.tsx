@@ -92,7 +92,7 @@ function Content() {
       <TopBar onOpenCategories={scrollToMenu} />
       <Hero onScrollMenu={scrollToMenu} />
       <Benefits />
-      <CategoryStrip active={activeCat} onChange={setActiveCat} />
+      
 
       {/* Highlights */}
       <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
