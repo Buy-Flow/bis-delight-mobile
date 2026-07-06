@@ -70,6 +70,7 @@ export type Product = {
   removable?: string[];
   badge?: "Premium" | "Novidade" | "Favorito";
   hero?: boolean;
+  active?: boolean;
 };
 
 /* Reusable size presets */
