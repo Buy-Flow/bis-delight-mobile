@@ -517,6 +517,7 @@ function ProductEditor({
 
   const tabs: { id: EditorTab; label: string }[] = [
     { id: "basic", label: "Básico" },
+    { id: "photo", label: "Foto" },
     { id: "sizes", label: "Tamanhos & Sabores" },
     { id: "extras", label: "Complementos" },
     { id: "advanced", label: "Extras" },
