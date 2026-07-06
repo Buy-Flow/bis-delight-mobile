@@ -17,7 +17,7 @@ import { FloatingActions } from "@/components/menu/FloatingActions";
 import { PRODUCTS, BRAND, type Product } from "@/data/menu";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
-import { Sparkles } from "lucide-react";
+import { Search, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
@@ -64,6 +64,7 @@ function Page() {
 
 function Content() {
   const [activeCat, setActiveCat] = useState("all");
+  const [query, setQuery] = useState("");
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const { isAcaiOpen, openAcai, closeAcai } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -73,10 +74,16 @@ function Content() {
   };
 
   const highlights = useMemo(() => PRODUCTS.filter((p) => p.hero), []);
-  const filtered = useMemo(
-    () => (activeCat === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.category === activeCat)),
-    [activeCat],
-  );
+  const filtered = useMemo(() => {
+    const byCat = activeCat === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.category === activeCat);
+    const q = query.trim().toLowerCase();
+    if (!q) return byCat;
+    return byCat.filter((p) => {
+      const hay = `${p.name} ${p.description ?? ""} ${(p.ingredients ?? []).join(" ")}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [activeCat, query]);
+
 
   return (
     <div
@@ -186,7 +193,51 @@ function Content() {
             <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.9)]" />
           </div>
         </div>
+
+        {/* Search bar */}
+        <div className="mb-4">
+          <div className="group relative">
+            <div
+              className="pointer-events-none absolute -inset-[1px] rounded-full opacity-70 blur-md transition group-focus-within:opacity-100"
+              style={{
+                background:
+                  "linear-gradient(90deg, oklch(0.72 0.26 350 / 0.55), oklch(0.86 0.18 200 / 0.55), oklch(0.82 0.19 90 / 0.55))",
+              }}
+            />
+            <div className="relative flex items-center gap-2 rounded-full border border-white/10 bg-[oklch(0.14_0.09_305)]/85 pl-4 pr-1.5 py-1.5 backdrop-blur-md shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)]">
+              <Search className="h-4 w-4 shrink-0 text-neon-cyan" strokeWidth={2.5} />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar sabor, sorvete, açaí…"
+                className="min-w-0 flex-1 bg-transparent py-2 text-[13.5px] text-white placeholder:text-white/45 outline-none"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  aria-label="Limpar busca"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 active:scale-95"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+          {query && (
+            <div
+              className="mt-2 text-center text-[11px] text-white/60"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              {filtered.length} resultado{filtered.length === 1 ? "" : "s"} para
+              <span className="ml-1 font-semibold text-neon-yellow">"{query}"</span>
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
+
           {filtered.map((p, i) => (
             <div
               key={p.id}
