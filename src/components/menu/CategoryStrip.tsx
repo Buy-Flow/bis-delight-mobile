@@ -117,7 +117,7 @@ export function CategoryStrip({
                 <img
                   src={c.image}
                   alt={c.name}
-                  className="absolute left-1/2 top-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
+                  className="absolute inset-0 h-full w-full object-cover drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
                 />
                 {/* soft vignette to reinforce depth */}
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.35)_100%)]" />
