@@ -92,6 +92,15 @@
   --neon-cyan-glow: oklch(0.92 0.14 195);
   --neon-yellow: oklch(0.92 0.20 100);
   --neon-yellow-soft: oklch(0.88 0.17 95);
+
+  /* Tropical palette — palm, mango, coral, sand */
+  --palm-900: oklch(0.28 0.09 155);
+  --palm-700: oklch(0.45 0.16 150);
+  --palm-500: oklch(0.62 0.19 148);
+  --palm-300: oklch(0.82 0.18 140);
+  --mango: oklch(0.82 0.19 75);
+  --coral: oklch(0.72 0.20 30);
+  --sand: oklch(0.93 0.06 85);
 }
 
 .dark {
