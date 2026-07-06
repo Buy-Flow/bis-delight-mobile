@@ -1593,25 +1593,22 @@ function CategoryEditor({
                   Para reposicionar / dar zoom na foto, abra a aba <b>Foto</b>.
                 </div>
 
-                <div className="grid grid-cols-[80px_1fr] gap-3">
-                  <Field label="Emoji">
-                    <input
-                      className={cn(inputCls, "text-center text-2xl")}
-                      value={c.emoji}
-                      onChange={(e) => setField("emoji", e.target.value)}
-                      maxLength={4}
-                    />
-                  </Field>
-                  <Field label="Nome da categoria">
-                    <input
-                      className={inputCls}
-                      placeholder="Ex.: Açaí"
-                      value={c.name}
-                      onChange={(e) => setField("name", e.target.value)}
-                      maxLength={40}
-                    />
-                  </Field>
-                </div>
+                <Field label="Nome da categoria">
+                  <input
+                    className={inputCls}
+                    placeholder="Ex.: Açaí"
+                    value={c.name}
+                    onChange={(e) => setField("name", e.target.value)}
+                    maxLength={40}
+                  />
+                </Field>
+
+                <Field label="Ícone">
+                  <IconPicker
+                    value={c.icon ?? null}
+                    onChange={(name) => setField("icon", name)}
+                  />
+                </Field>
 
                 <Field label="ID técnico (slug)">
                   <input
