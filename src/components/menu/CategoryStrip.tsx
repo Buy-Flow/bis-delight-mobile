@@ -106,11 +106,11 @@ export function CategoryStrip({
               )}
             >
               {/* Product image — escapes card top */}
-              <div className="absolute -top-6 left-1/2 h-24 w-24 -translate-x-1/2">
+              <div className="absolute -top-10 left-1/2 h-32 w-32 -translate-x-1/2">
                 <img
                   src={c.image}
                   alt={c.name}
-                  className="h-full w-full object-contain drop-shadow-[0_10px_12px_rgba(0,0,0,0.55)]"
+                  className="h-full w-full object-contain drop-shadow-[0_12px_14px_rgba(0,0,0,0.6)]"
                 />
               </div>
 
