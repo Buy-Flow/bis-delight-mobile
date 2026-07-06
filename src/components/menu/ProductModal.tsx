@@ -1,9 +1,20 @@
 import { useMemo, useState } from "react";
-import { Minus, Plus, X, Check } from "lucide-react";
+import { Minus, Plus, X, Check, Sparkles } from "lucide-react";
 import type { ExtraOption, Product } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+const CATEGORY_LABEL: Record<string, string> = {
+  acai: "Açaí artesanal",
+  copos: "Copo especial",
+  tacas: "Taça premium",
+  shakes: "Shake cremoso",
+  mix: "Mix da casa",
+  kids: "Linha kids",
+  casquinhas: "Casquinha",
+};
+
 
 /* Default customization pools by category — used when a product doesn't
    define its own extras/removable so every item has a rich "Personalizar" flow. */
