@@ -154,7 +154,7 @@ export function ProductCard({
               className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/85"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              Adicionar
+              Personalizar
             </span>
             <span
               className="grid h-8 w-8 place-items-center rounded-full text-white transition group-hover:rotate-90"
