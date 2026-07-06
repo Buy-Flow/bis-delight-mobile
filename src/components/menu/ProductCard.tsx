@@ -51,8 +51,13 @@ export function ProductCard({
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full scale-110 object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)] transition duration-500 group-hover:scale-125 group-hover:rotate-3"
+          className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)] transition-transform duration-500 group-hover:rotate-3"
+          style={{
+            transform: `translate(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%) scale(${product.imageScale ?? 1.1})`,
+            transformOrigin: "center",
+          }}
         />
+
 
         {/* Badge sticker tilted */}
         {product.badge && (
