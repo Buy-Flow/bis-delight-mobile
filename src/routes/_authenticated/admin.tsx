@@ -43,7 +43,10 @@ import {
   seedInitialMenu,
   useInvalidateMenu,
   uploadProductImage,
+  DEFAULT_HOURS,
   type SiteSettings,
+  type DayHours,
+  type WeekDay,
   type ProductInput,
 } from "@/lib/menu-data";
 import type { Product, Category } from "@/data/menu";
