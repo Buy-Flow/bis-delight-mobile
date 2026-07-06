@@ -1,6 +1,8 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import { BRAND, PRODUCTS } from "@/data/menu";
 import { useCart } from "@/lib/cart-context";
+import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
+import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
   const hero1 = PRODUCTS.find((p) => p.id === "acai-turbinado")!;
@@ -24,6 +26,20 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
       />
       <div className="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-neon-pink/30 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 top-20 h-64 w-64 rounded-full bg-neon-cyan/25 blur-3xl" />
+
+      {/* Side background images */}
+      <img
+        src={heroBgLeft.url}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-16 top-8 -z-10 h-[520px] w-auto max-w-none opacity-90 select-none drop-shadow-[0_10px_40px_rgba(255,0,128,0.35)]"
+      />
+      <img
+        src={heroBgRight.url}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-16 top-24 -z-10 h-[540px] w-auto max-w-none opacity-90 select-none drop-shadow-[0_10px_40px_rgba(0,200,255,0.35)]"
+      />
 
       <div className="relative pt-2">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-widest text-neon-cyan">
