@@ -4,7 +4,7 @@ import { ACAI_CREAMS, ACAI_EXTRAS, ACAI_FRUITS, ACAI_SIZES } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import acaiHero from "@/assets/p11-11-X29.png.asset.json";
+import acaiHero from "@/assets/monte-acai.png.asset.json";
 
 export function AcaiBuilder({ onClose }: { onClose: () => void }) {
   const { add } = useCart();
