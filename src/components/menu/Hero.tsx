@@ -11,14 +11,15 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         aria-hidden="true"
         src={heroBgLeft.url}
         alt=""
-        className="pointer-events-none absolute -left-6 top-0 z-0 h-[480px] w-auto select-none object-contain object-left"
+        className="pointer-events-none absolute -left-16 -top-8 z-0 h-[760px] w-auto max-w-none select-none object-contain object-left"
       />
       <img
         aria-hidden="true"
         src={heroBgRight.url}
         alt=""
-        className="pointer-events-none absolute -right-6 top-4 z-0 h-[480px] w-auto select-none object-contain object-right"
+        className="pointer-events-none absolute -right-16 top-0 z-0 h-[760px] w-auto max-w-none select-none object-contain object-right"
       />
+
 
 
 
