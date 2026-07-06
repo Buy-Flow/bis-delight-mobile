@@ -55,45 +55,71 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         </h1>
 
 
-        {/* Hand-painted pink brush blob sticker */}
-        <div className="relative mt-6 w-full max-w-[280px] -rotate-[3deg]">
+        {/* Decorative typographic phrase — no background, sparkles + swash */}
+        <div className="relative mt-6 w-full max-w-[300px] text-center">
+          {/* Floating decorations */}
           <svg
-            viewBox="0 0 400 130"
-            className="absolute inset-0 h-full w-full drop-shadow-[0_10px_18px_-6px_rgba(236,64,122,0.55)]"
-            preserveAspectRatio="none"
             aria-hidden="true"
+            viewBox="0 0 300 130"
+            className="pointer-events-none absolute inset-0 h-full w-full"
           >
-            {/* Organic wobbly brush shape */}
-            <path
-              d="M18,58
-                 C 8,26 60,10 118,14
-                 C 176,18 226,4 296,12
-                 C 348,18 396,26 388,58
-                 C 380,86 348,110 286,112
-                 C 214,114 154,124 96,116
-                 C 38,108 -4,96 18,58 Z"
-              fill="oklch(0.68 0.27 350)"
-            />
-            {/* Soft inner highlight */}
-            <path
-              d="M46,42 C 130,26 260,26 350,40"
-              stroke="rgba(255,255,255,0.35)"
-              strokeWidth="3"
-              strokeLinecap="round"
-              fill="none"
-            />
+            <g transform="translate(18 22)" fill="oklch(0.92 0.20 100)">
+              <path d="M6 0 L7.5 4.5 L12 6 L7.5 7.5 L6 12 L4.5 7.5 L0 6 L4.5 4.5 Z" />
+            </g>
+            <g transform="translate(268 14)" fill="oklch(0.72 0.26 350)">
+              <path d="M5 0 L6.2 3.8 L10 5 L6.2 6.2 L5 10 L3.8 6.2 L0 5 L3.8 3.8 Z" />
+            </g>
+            <circle cx="286" cy="70" r="2" fill="oklch(0.86 0.18 200)" />
+            <circle cx="10" cy="72" r="2" fill="oklch(0.92 0.20 100)" />
+            <circle cx="30" cy="100" r="1.5" fill="rgba(255,255,255,0.7)" />
+            <circle cx="272" cy="106" r="1.5" fill="rgba(255,255,255,0.7)" />
           </svg>
-          <span
-            className="relative block px-8 py-5 text-center text-[19px] leading-[1.05] text-white"
+
+          <div
+            className="-rotate-[3deg] text-[28px] leading-none text-white"
             style={{
               fontFamily: "'Caveat', cursive",
               fontWeight: 700,
-              textShadow: "0 2px 3px rgba(0,0,0,0.25)",
+              textShadow: "0 2px 8px rgba(0,0,0,0.45)",
             }}
           >
-            A felicidade cabe em cada colher!
-          </span>
+            A felicidade
+          </div>
+
+          <div
+            className="mt-1.5 text-[11px] uppercase tracking-[0.32em] text-white/70"
+            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
+          >
+            cabe em cada
+          </div>
+
+          <div className="relative mt-1 inline-block">
+            <span
+              className="relative z-10 inline-block rotate-[2deg] text-[34px] leading-none text-neon-yellow"
+              style={{
+                fontFamily: "'Caveat', cursive",
+                fontWeight: 700,
+                textShadow: "0 3px 10px rgba(255,215,60,0.35), 0 2px 3px rgba(0,0,0,0.35)",
+              }}
+            >
+              colher!
+            </span>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 140 22"
+              className="absolute -bottom-2 left-1/2 h-4 w-[120px] -translate-x-1/2"
+              fill="none"
+            >
+              <path
+                d="M4 12 C 30 2, 70 22, 110 6 C 122 2, 132 6, 136 12"
+                stroke="oklch(0.72 0.26 350)"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
         </div>
+
 
 
         {/* Subtitle */}
