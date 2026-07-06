@@ -5,31 +5,19 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
   return (
-    <section className="relative overflow-hidden px-4 pb-24 pt-2">
+    <section className="relative overflow-visible px-4 pb-40 pt-8">
       {/* Side ice cream illustrations */}
-      <div
+      <img
+        src={heroBgLeft.url}
+        alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 top-16 z-0 select-none"
-        style={{
-          width: "128px",
-          height: "360px",
-          backgroundImage: `url(${heroBgLeft.url})`,
-          backgroundSize: "440px auto",
-          backgroundPosition: "-10px -140px",
-          backgroundRepeat: "no-repeat",
-        }}
+        className="pointer-events-none absolute left-1 top-14 z-0 h-auto w-[112px] select-none object-contain"
       />
-      <div
+      <img
+        src={heroBgRight.url}
+        alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute right-0 top-24 z-0 select-none"
-        style={{
-          width: "128px",
-          height: "360px",
-          backgroundImage: `url(${heroBgRight.url})`,
-          backgroundSize: "410px auto",
-          backgroundPosition: "-278px -150px",
-          backgroundRepeat: "no-repeat",
-        }}
+        className="pointer-events-none absolute right-1 top-14 z-0 h-auto w-[112px] select-none object-contain"
       />
 
       <div className="relative z-20 mx-auto flex w-[220px] max-w-full flex-col items-center text-center">
@@ -137,7 +125,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         </div>
 
         {/* Space for side illustrations */}
-        <div className="h-28" />
+        <div className="h-40" />
       </div>
 
     </section>
