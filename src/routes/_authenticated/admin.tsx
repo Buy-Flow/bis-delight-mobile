@@ -1046,6 +1046,68 @@ function Toggle({
   );
 }
 
+function CategoryPicker({
+  categories,
+  value,
+  onChange,
+}: {
+  categories: Category[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const list = categories.filter((c) => c.id !== "all");
+  const current = list.find((c) => c.id === value) ?? list[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [open]);
+
+  return (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={cn(inputCls, "flex items-center justify-between text-left")}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="text-base leading-none">{current?.emoji ?? "✨"}</span>
+          <span className="truncate">{current?.name ?? "Selecionar..."}</span>
+        </span>
+        <span className="ml-2 text-white/40">▾</span>
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-[oklch(0.16_0.09_305)] p-1 shadow-2xl">
+          {list.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => {
+                onChange(c.id);
+                setOpen(false);
+              }}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition",
+                c.id === value
+                  ? "bg-neon-pink/20 text-white"
+                  : "text-white/80 hover:bg-white/10",
+              )}
+            >
+              <span className="text-base leading-none">{c.emoji}</span>
+              <span className="truncate">{c.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
 
 /* ============================= Categories ============================= */
 function CategoriesTab() {
