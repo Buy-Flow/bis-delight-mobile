@@ -120,7 +120,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-cyan shadow-[0_0_8px_rgba(0,229,255,0.8)]" />
             <span className="h-px w-5 bg-linear-to-r from-transparent via-neon-pink/60 to-neon-pink" />
             <span
-              className="rounded-full border border-neon-pink/40 bg-neon-pink/10 px-2.5 py-[3px] text-[9.5px] uppercase tracking-[0.35em] text-neon-pink shadow-[0_0_14px_rgba(255,60,170,0.35)] backdrop-blur-sm"
+              className="rounded-full border border-neon-yellow/50 bg-neon-yellow/10 px-2.5 py-[3px] text-[9.5px] uppercase tracking-[0.35em] text-neon-yellow shadow-[0_0_14px_rgba(255,215,60,0.4)] backdrop-blur-sm"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
             >
               Quero Bis
