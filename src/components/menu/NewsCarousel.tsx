@@ -69,30 +69,48 @@ export function NewsCarousel({
         </span>
       </div>
 
-      {/* Ticker bar */}
-      <div className="relative mb-4 flex items-center gap-2 overflow-hidden border-y border-white/10 bg-white/[0.03] py-1.5">
-        <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-4 text-[10px] font-bold uppercase tracking-[0.28em] text-white/50">
-          {Array.from({ length: 2 }).map((_, r) => (
-            <span key={r} className="flex items-center gap-6">
-              <Sparkles className="h-3 w-3 text-neon-yellow" />
-              Lançamento fresquinho
-              <span className="h-1 w-1 rounded-full bg-neon-pink" />
-              Edição limitada
-              <span className="h-1 w-1 rounded-full bg-neon-cyan" />
-              Só na Quero Bis
-              <span className="h-1 w-1 rounded-full bg-neon-yellow" />
-              Novidade da semana
-              <span className="h-1 w-1 rounded-full bg-neon-pink" />
-            </span>
-          ))}
+      {/* Ticker bar — soft gradient edges, no hard borders */}
+      <div className="relative mb-4 overflow-hidden py-2">
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, oklch(0.20 0.12 305 / 0.5) 20%, oklch(0.20 0.12 305 / 0.5) 80%, transparent)",
+          }}
+        />
+        <div className="relative flex items-center gap-2 overflow-hidden">
+          <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-4 text-[10px] font-bold uppercase tracking-[0.28em] text-white/55">
+            {Array.from({ length: 2 }).map((_, r) => (
+              <span key={r} className="flex items-center gap-6">
+                <Sparkles className="h-3 w-3 text-neon-yellow" />
+                Lançamento fresquinho
+                <span className="h-1 w-1 rounded-full bg-neon-pink" />
+                Edição limitada
+                <span className="h-1 w-1 rounded-full bg-neon-cyan" />
+                Só na Quero Bis
+                <span className="h-1 w-1 rounded-full bg-neon-yellow" />
+                Novidade da semana
+                <span className="h-1 w-1 rounded-full bg-neon-pink" />
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Card scroller */}
+      {/* Card scroller — generous vertical padding so neon halos don't clip,
+          and edge mask fades left/right for smooth continuity */}
       <div
         ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-4"
+        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-6 px-6 py-6"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(90deg, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)",
+          maskImage:
+            "linear-gradient(90deg, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)",
+        }}
       >
+
         {items.map((p, i) => (
           <NewsPosterCard
             key={p.id}
