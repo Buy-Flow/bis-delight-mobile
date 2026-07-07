@@ -177,7 +177,7 @@ function Content() {
 
 
       {/* Highlights */}
-      <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
+      <Reveal><HighlightsCarousel highlights={highlights} onOpen={setModalProduct} /></Reveal>
 
 
       {/* Monte seu açaí banner */}
