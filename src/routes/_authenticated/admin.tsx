@@ -50,6 +50,7 @@ import {
   useUpsertProduct,
   useDeleteProduct,
   useToggleHero,
+  useUpdateHeroImage,
   useToggleProductActive,
   useReorderProducts,
   useReorderCategories,
