@@ -69,30 +69,48 @@ export function NewsCarousel({
         </span>
       </div>
 
-      {/* Ticker bar */}
-      <div className="relative mb-4 flex items-center gap-2 overflow-hidden border-y border-white/10 bg-white/[0.03] py-1.5">
-        <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-4 text-[10px] font-bold uppercase tracking-[0.28em] text-white/50">
-          {Array.from({ length: 2 }).map((_, r) => (
-            <span key={r} className="flex items-center gap-6">
-              <Sparkles className="h-3 w-3 text-neon-yellow" />
-              Lançamento fresquinho
-              <span className="h-1 w-1 rounded-full bg-neon-pink" />
-              Edição limitada
-              <span className="h-1 w-1 rounded-full bg-neon-cyan" />
-              Só na Quero Bis
-              <span className="h-1 w-1 rounded-full bg-neon-yellow" />
-              Novidade da semana
-              <span className="h-1 w-1 rounded-full bg-neon-pink" />
-            </span>
-          ))}
+      {/* Ticker bar — soft gradient edges, no hard borders */}
+      <div className="relative mb-4 overflow-hidden py-2">
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, oklch(0.20 0.12 305 / 0.5) 20%, oklch(0.20 0.12 305 / 0.5) 80%, transparent)",
+          }}
+        />
+        <div className="relative flex items-center gap-2 overflow-hidden">
+          <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-4 text-[10px] font-bold uppercase tracking-[0.28em] text-white/55">
+            {Array.from({ length: 2 }).map((_, r) => (
+              <span key={r} className="flex items-center gap-6">
+                <Sparkles className="h-3 w-3 text-neon-yellow" />
+                Lançamento fresquinho
+                <span className="h-1 w-1 rounded-full bg-neon-pink" />
+                Edição limitada
+                <span className="h-1 w-1 rounded-full bg-neon-cyan" />
+                Só na Quero Bis
+                <span className="h-1 w-1 rounded-full bg-neon-yellow" />
+                Novidade da semana
+                <span className="h-1 w-1 rounded-full bg-neon-pink" />
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Card scroller */}
+      {/* Card scroller — generous vertical padding so neon halos don't clip,
+          and edge mask fades left/right for smooth continuity */}
       <div
         ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-4"
+        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-6 px-6 py-6"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(90deg, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)",
+          maskImage:
+            "linear-gradient(90deg, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)",
+        }}
       >
+
         {items.map((p, i) => (
           <NewsPosterCard
             key={p.id}
@@ -148,24 +166,24 @@ function NewsPosterCard({
 
   return (
     <article className="group relative w-[190px] shrink-0 snap-center">
-      {/* Neon glow halo */}
-      <div
-        aria-hidden
-        className="absolute -inset-1 rounded-[24px] opacity-30 blur-lg transition-opacity group-hover:opacity-60"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.70 0.28 355 / 0.6), oklch(0.85 0.18 200 / 0.5))",
-        }}
-      />
-
       <button
         onClick={() => onOpen(product)}
-        className="relative flex w-full flex-col overflow-hidden rounded-[22px] border border-neon-pink/30 bg-[oklch(0.16_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1 group-hover:border-neon-pink"
+        className="relative flex w-full flex-col overflow-hidden rounded-[22px] border border-neon-pink/40 bg-[oklch(0.16_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1 group-hover:border-neon-pink"
         style={{
           boxShadow:
-            "0 18px 34px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06)",
+            "0 0 0 1px oklch(0.72 0.26 350 / 0.25), 0 0 24px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -12px oklch(0.85 0.18 200 / 0.45), 0 18px 34px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
+        {/* Inner neon rim — sits inside the card so it never clips */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[22px]"
+          style={{
+            boxShadow:
+              "inset 0 0 20px oklch(0.72 0.26 350 / 0.35), inset 0 0 40px oklch(0.85 0.18 200 / 0.15)",
+          }}
+        />
+
         {/* Image block on top */}
         <div className="relative aspect-square w-full overflow-hidden">
           <div
