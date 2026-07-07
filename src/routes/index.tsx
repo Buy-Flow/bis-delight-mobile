@@ -140,15 +140,43 @@ function Content() {
       
 
       {/* Novidades */}
-      {settings?.newsActive && newsItems.length > 0 && (
-        <HighlightsCarousel
-          highlights={newsItems}
-          onOpen={setModalProduct}
-          titleLead="Nossas"
-          titleAccent={settings.newsTitle || "Novidades"}
-          accentColor="cyan"
-        />
+      {settings?.newsActive && (
+        <section className="pb-4 pt-2">
+          <div className="mb-3 px-4 text-center">
+            <h2 className="font-display text-[34px] font-black uppercase leading-[0.95] text-white">
+              Nossas <span className="text-neon-cyan drop-shadow-[0_4px_14px_rgba(90,220,255,0.45)]">{settings.newsTitle || "Novidades"}</span>
+            </h2>
+          </div>
+          {newsLoading ? (
+            <div className="flex gap-3 overflow-hidden px-4" aria-label="Carregando novidades" aria-busy="true">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-44 w-[85%] shrink-0 animate-pulse rounded-3xl bg-white/5 ring-1 ring-white/10"
+                />
+              ))}
+            </div>
+          ) : newsError ? (
+            <div className="mx-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-200" role="alert">
+              Não foi possível carregar as novidades. Tente novamente em instantes.
+            </div>
+          ) : newsItems.length > 0 ? (
+            <HighlightsCarousel
+              highlights={newsItems}
+              onOpen={setModalProduct}
+              titleLead="Nossas"
+              titleAccent={settings.newsTitle || "Novidades"}
+              accentColor="cyan"
+              hideHeader
+            />
+          ) : (
+            <div className="mx-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-sm text-white/70">
+              Nenhuma novidade por aqui ainda. Volte em breve!
+            </div>
+          )}
+        </section>
       )}
+
 
       {/* Highlights */}
       <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
