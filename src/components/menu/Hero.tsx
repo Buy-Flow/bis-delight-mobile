@@ -15,7 +15,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         height={980}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -left-6 -top-4 z-0 h-[980px] w-auto max-w-none select-none object-contain object-left"
+        className="pointer-events-none absolute -left-6 -top-10 z-0 h-[980px] w-auto max-w-none select-none object-contain object-left"
       />
       <img
         aria-hidden="true"
