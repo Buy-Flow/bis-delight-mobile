@@ -2590,40 +2590,154 @@ function HoursSection({ s, set }: { s: SiteSettings; set: SetFn }) {
 }
 
 function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const brl = (n: number) =>
+    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
+
+  const summary: string[] = [];
+  if (s.acceptsDelivery) {
+    if (s.freeDeliveryThreshold > 0) {
+      summary.push(
+        `Entrega ${brl(s.deliveryFee)} — grátis a partir de ${brl(s.freeDeliveryThreshold)}`,
+      );
+    } else if (s.deliveryFee > 0) {
+      summary.push(`Entrega ${brl(s.deliveryFee)}`);
+    } else {
+      summary.push("Entrega grátis");
+    }
+  }
+  if (s.acceptsPickup) summary.push("Retirada no local disponível");
+  if (s.minOrder > 0) summary.push(`Pedido mínimo ${brl(s.minOrder)}`);
+
   return (
     <div className="space-y-5">
       <SectionTitle icon={Truck} title="Entrega & Retirada" sub="Como o cliente recebe o pedido." />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Toggle
-          checked={s.acceptsDelivery}
-          onChange={(v) => set("acceptsDelivery", v)}
-          label={s.acceptsDelivery ? "Aceita entrega" : "Entrega desativada"}
-        />
-        <Toggle
-          checked={s.acceptsPickup}
-          onChange={(v) => set("acceptsPickup", v)}
-          label={s.acceptsPickup ? "Aceita retirada" : "Retirada desativada"}
-        />
-      </div>
-
+      {/* Modalidades */}
       <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
         <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
-          <CreditCard className="h-3.5 w-3.5 text-neon-cyan" />
-          Valores
+          <Truck className="h-3.5 w-3.5 text-neon-pink" /> Modalidades
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => set("acceptsDelivery", !s.acceptsDelivery)}
+            className={cn(
+              "group flex items-center gap-3 rounded-2xl border p-3 text-left transition",
+              s.acceptsDelivery
+                ? "border-neon-pink/50 bg-neon-pink/10 shadow-[0_0_20px_-8px_oklch(0.72_0.24_10/0.6)]"
+                : "border-white/10 bg-white/5 hover:bg-white/10",
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                s.acceptsDelivery ? "bg-neon-pink/25 text-neon-pink" : "bg-white/5 text-white/40",
+              )}
+            >
+              <Truck className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-bold text-white">Entrega em casa</div>
+              <div className="text-[11px] text-white/50">
+                {s.acceptsDelivery ? "Ativa · cobra taxa por pedido" : "Desativada"}
+              </div>
+            </div>
+            <div
+              className={cn(
+                "h-5 w-5 shrink-0 rounded-full border-2 transition",
+                s.acceptsDelivery ? "border-neon-pink bg-neon-pink" : "border-white/25",
+              )}
+            />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => set("acceptsPickup", !s.acceptsPickup)}
+            className={cn(
+              "group flex items-center gap-3 rounded-2xl border p-3 text-left transition",
+              s.acceptsPickup
+                ? "border-neon-cyan/50 bg-neon-cyan/10 shadow-[0_0_20px_-8px_oklch(0.80_0.16_200/0.6)]"
+                : "border-white/10 bg-white/5 hover:bg-white/10",
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                s.acceptsPickup ? "bg-neon-cyan/25 text-neon-cyan" : "bg-white/5 text-white/40",
+              )}
+            >
+              <Store className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-bold text-white">Retirada no local</div>
+              <div className="text-[11px] text-white/50">
+                {s.acceptsPickup ? "Ativa · cliente busca na loja" : "Desativada"}
+              </div>
+            </div>
+            <div
+              className={cn(
+                "h-5 w-5 shrink-0 rounded-full border-2 transition",
+                s.acceptsPickup ? "border-neon-cyan bg-neon-cyan" : "border-white/25",
+              )}
+            />
+          </button>
+        </div>
+
+        {!s.acceptsDelivery && !s.acceptsPickup && (
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-[11px] text-red-300">
+            <Info className="mt-[1px] h-3.5 w-3.5 shrink-0" />
+            <span>Nenhuma modalidade ativa — o cliente não consegue finalizar pedidos.</span>
+          </div>
+        )}
+      </div>
+
+      {/* Valores */}
+      <div
+        className={cn(
+          "rounded-2xl border border-white/10 bg-black/20 p-4 transition",
+          !s.acceptsDelivery && "opacity-60",
+        )}
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+            <CreditCard className="h-3.5 w-3.5 text-neon-cyan" /> Valores
+          </div>
+          {!s.acceptsDelivery && (
+            <span className="text-[10px] text-white/40">Ative a entrega para usar</span>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Field label="Taxa de entrega" hint="Valor cobrado a mais no pedido em modo entrega.">
             <MoneyInput value={s.deliveryFee} onChange={(v) => set("deliveryFee", v)} />
           </Field>
           <Field label="Frete grátis a partir de" hint="0 = sempre cobra a taxa acima.">
-            <MoneyInput value={s.freeDeliveryThreshold} onChange={(v) => set("freeDeliveryThreshold", v)} />
+            <MoneyInput
+              value={s.freeDeliveryThreshold}
+              onChange={(v) => set("freeDeliveryThreshold", v)}
+            />
           </Field>
           <Field label="Pedido mínimo" hint="O cliente só finaliza a partir deste valor.">
             <MoneyInput value={s.minOrder} onChange={(v) => set("minOrder", v)} />
           </Field>
         </div>
       </div>
+
+      {/* Resumo ao vivo */}
+      {summary.length > 0 && (
+        <div className="rounded-2xl border border-neon-yellow/25 bg-gradient-to-br from-neon-yellow/10 to-transparent p-4">
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neon-yellow/90">
+            <Sparkles className="h-3.5 w-3.5" /> Como o cliente vê
+          </div>
+          <ul className="space-y-1.5">
+            {summary.map((line) => (
+              <li key={line} className="flex items-start gap-2 text-[12.5px] text-white/85">
+                <Check className="mt-[2px] h-3.5 w-3.5 shrink-0 text-neon-yellow" />
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
