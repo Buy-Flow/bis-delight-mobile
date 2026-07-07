@@ -256,24 +256,16 @@ function NewsPosterCard({
           }}
         />
 
-        {/* Wash sutil só no rodapé para legibilidade do texto */}
+        {/* Wash bem sutil só no rodapé para legibilidade do texto */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]"
           style={{
             background:
-              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0) 0%, oklch(0.08 0.10 305 / 0.55) 40%, oklch(0.08 0.10 305 / 0.92) 100%)",
+              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0) 0%, oklch(0.08 0.10 305 / 0.55) 60%, oklch(0.08 0.10 305 / 0.85) 100%)",
           }}
         />
-        {/* Wash bem leve no topo para o eyebrow */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[22%]"
-          style={{
-            background:
-              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0.55) 0%, oklch(0.08 0.10 305 / 0) 100%)",
-          }}
-        />
+
 
         {/* Badge minimalista no canto */}
         <div className="absolute right-3 top-3 z-20">
