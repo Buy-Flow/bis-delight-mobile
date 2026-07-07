@@ -27,9 +27,10 @@ export const BRAND = {
   whatsapp: "5569992031044",
   whatsappDisplay: "(69) 99203-1044",
   mapsUrl:
-    "https://www.google.com/maps/search/?api=1&query=Av.+Daniel+Comboni+esquina+JK+Ouro+Preto+do+Oeste+RO",
+    "https://www.google.com/maps/place/Quero+Bis+Sorveteria+e+A%C3%A7a%C3%AD/@-10.7413504,-62.2395392,14z/data=!4m6!3m5!1s0x93c97d334b230b9b:0x6e0572de5f6840e3!8m2!3d-10.7184204!4d-62.2527108!16s%2Fg%2F11fjg8xrcd?entry=ttu",
   mapEmbed:
-    "https://www.google.com/maps?q=Av.+Daniel+Comboni+esquina+JK+Ouro+Preto+do+Oeste+RO&output=embed",
+    "https://www.google.com/maps?q=Quero+Bis+Sorveteria+e+A%C3%A7a%C3%AD&ll=-10.7184204,-62.2527108&z=16&output=embed",
+
   deliveryFee: 5,
   texture: texturePurple.url,
   logo: logoAsset.url,
