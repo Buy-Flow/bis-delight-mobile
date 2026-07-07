@@ -171,6 +171,8 @@ const DEFAULT_EXTRA: Pick<
   | "hoursJson"
   | "newsActive"
   | "newsTitle"
+  | "newsSubtitle"
+  | "newsTicker"
   | "newsProductIds"
 > = {
   instagram: "",
@@ -188,6 +190,8 @@ const DEFAULT_EXTRA: Pick<
   hoursJson: DEFAULT_HOURS,
   newsActive: false,
   newsTitle: "Novidades",
+  newsSubtitle: "acabou de sair!",
+  newsTicker: "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana",
   newsProductIds: [],
 };
 
