@@ -41,6 +41,8 @@ export type SiteSettings = {
   hoursJson: DayHours[];
   newsActive: boolean;
   newsTitle: string;
+  newsSubtitle: string;
+  newsTicker: string;
   newsProductIds: string[];
 };
 
@@ -169,6 +171,8 @@ const DEFAULT_EXTRA: Pick<
   | "hoursJson"
   | "newsActive"
   | "newsTitle"
+  | "newsSubtitle"
+  | "newsTicker"
   | "newsProductIds"
 > = {
   instagram: "",
@@ -186,6 +190,8 @@ const DEFAULT_EXTRA: Pick<
   hoursJson: DEFAULT_HOURS,
   newsActive: false,
   newsTitle: "Novidades",
+  newsSubtitle: "acabou de sair!",
+  newsTicker: "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana",
   newsProductIds: [],
 };
 
@@ -243,6 +249,8 @@ export function useSiteSettings() {
         hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
         newsActive: Boolean(data.news_active ?? false),
         newsTitle: String(data.news_title ?? "Novidades"),
+        newsSubtitle: String((data as Record<string, unknown>).news_subtitle ?? "acabou de sair!"),
+        newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
         newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
       };
     },
@@ -492,6 +500,8 @@ export function useUpdateSettings() {
         hours_json: s.hoursJson,
         news_active: s.newsActive,
         news_title: s.newsTitle,
+        news_subtitle: s.newsSubtitle,
+        news_ticker: s.newsTicker,
         news_product_ids: s.newsProductIds,
       }, { onConflict: "id" });
       if (error) throw error;

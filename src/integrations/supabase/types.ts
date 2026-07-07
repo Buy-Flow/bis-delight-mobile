@@ -384,6 +384,8 @@ export type Database = {
           name: string
           news_active: boolean
           news_product_ids: Json
+          news_subtitle: string | null
+          news_ticker: string | null
           news_title: string
           open_override: string
           payment_methods: Json
@@ -416,6 +418,8 @@ export type Database = {
           name?: string
           news_active?: boolean
           news_product_ids?: Json
+          news_subtitle?: string | null
+          news_ticker?: string | null
           news_title?: string
           open_override?: string
           payment_methods?: Json
@@ -448,6 +452,8 @@ export type Database = {
           name?: string
           news_active?: boolean
           news_product_ids?: Json
+          news_subtitle?: string | null
+          news_ticker?: string | null
           news_title?: string
           open_override?: string
           payment_methods?: Json
