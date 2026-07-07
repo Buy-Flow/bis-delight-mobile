@@ -500,6 +500,8 @@ export function useUpdateSettings() {
         hours_json: s.hoursJson,
         news_active: s.newsActive,
         news_title: s.newsTitle,
+        news_subtitle: s.newsSubtitle,
+        news_ticker: s.newsTicker,
         news_product_ids: s.newsProductIds,
       }, { onConflict: "id" });
       if (error) throw error;
