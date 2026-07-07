@@ -82,8 +82,10 @@ function Content() {
   const { isAcaiOpen, openAcai, closeAcai, isCartOpen, isCheckoutOpen } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { data: products = [] } = useProducts();
-  const { data: settings } = useSiteSettings();
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
+  const { data: settings, isLoading: settingsLoading, error: settingsError } = useSiteSettings();
+  const newsLoading = settingsLoading || productsLoading;
+  const newsError = settingsError || productsError;
 
   const scrollToMenu = () => {
     document.getElementById("categorias")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -138,15 +140,43 @@ function Content() {
       
 
       {/* Novidades */}
-      {settings?.newsActive && newsItems.length > 0 && (
-        <HighlightsCarousel
-          highlights={newsItems}
-          onOpen={setModalProduct}
-          titleLead="Nossas"
-          titleAccent={settings.newsTitle || "Novidades"}
-          accentColor="cyan"
-        />
+      {settings?.newsActive && (
+        <section className="pb-4 pt-2">
+          <div className="mb-3 px-4 text-center">
+            <h2 className="font-display text-[34px] font-black uppercase leading-[0.95] text-white">
+              Nossas <span className="text-neon-cyan drop-shadow-[0_4px_14px_rgba(90,220,255,0.45)]">{settings.newsTitle || "Novidades"}</span>
+            </h2>
+          </div>
+          {newsLoading ? (
+            <div className="flex gap-3 overflow-hidden px-4" aria-label="Carregando novidades" aria-busy="true">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-44 w-[85%] shrink-0 animate-pulse rounded-3xl bg-white/5 ring-1 ring-white/10"
+                />
+              ))}
+            </div>
+          ) : newsError ? (
+            <div className="mx-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-200" role="alert">
+              Não foi possível carregar as novidades. Tente novamente em instantes.
+            </div>
+          ) : newsItems.length > 0 ? (
+            <HighlightsCarousel
+              highlights={newsItems}
+              onOpen={setModalProduct}
+              titleLead="Nossas"
+              titleAccent={settings.newsTitle || "Novidades"}
+              accentColor="cyan"
+              hideHeader
+            />
+          ) : (
+            <div className="mx-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-sm text-white/70">
+              Nenhuma novidade por aqui ainda. Volte em breve!
+            </div>
+          )}
+        </section>
       )}
+
 
       {/* Highlights */}
       <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
@@ -342,12 +372,14 @@ function HighlightsCarousel({
   titleLead = "Nossos",
   titleAccent = "Destaques",
   accentColor = "yellow",
+  hideHeader = false,
 }: {
   highlights: Product[];
   onOpen: (p: Product) => void;
   titleLead?: string;
   titleAccent?: string;
   accentColor?: "yellow" | "cyan" | "pink";
+  hideHeader?: boolean;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -415,32 +447,34 @@ function HighlightsCarousel({
 
   return (
     <section className="pb-4 pt-2">
-      <div className="mb-3 px-4 text-center">
-        <h2
-          className="font-display text-[34px] font-black uppercase leading-[0.95] text-white"
-          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
-        >
-          {titleLead}{" "}
-          <span className="relative inline-block">
-            <span className={cn("relative z-10", accent.text, accent.shadow)}>
-              {titleAccent}
+      {!hideHeader && (
+        <div className="mb-3 px-4 text-center">
+          <h2
+            className="font-display text-[34px] font-black uppercase leading-[0.95] text-white"
+            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
+          >
+            {titleLead}{" "}
+            <span className="relative inline-block">
+              <span className={cn("relative z-10", accent.text, accent.shadow)}>
+                {titleAccent}
+              </span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 160 14"
+                className="absolute -bottom-1 left-0 h-3 w-full"
+                fill="none"
+              >
+                <path
+                  d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
+                  stroke={accent.stroke}
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
             </span>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 160 14"
-              className="absolute -bottom-1 left-0 h-3 w-full"
-              fill="none"
-            >
-              <path
-                d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
-                stroke={accent.stroke}
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
-        </h2>
-      </div>
+          </h2>
+        </div>
+      )}
 
 
 
