@@ -19,7 +19,10 @@ import {
   Eye,
   EyeOff,
   Copy,
+  Check,
+  Info,
   X,
+
   ImagePlus,
   ArrowUp,
   ArrowDown,
@@ -1262,24 +1265,30 @@ function Toggle({
       type="button"
       onClick={() => onChange(!checked)}
       className={cn(
-        "flex h-10 w-full items-center gap-2 rounded-xl border px-3 text-left text-xs transition",
+        "flex h-12 w-full items-center gap-3 rounded-2xl border px-3 text-left text-[12.5px] font-semibold transition",
         checked
-          ? "border-neon-yellow/50 bg-neon-yellow/10 text-neon-yellow"
-          : "border-white/10 bg-white/5 text-white/60",
+          ? "border-neon-yellow/60 bg-neon-yellow/10 text-neon-yellow shadow-[0_0_14px_-4px_oklch(0.86_0.19_100/0.6)]"
+          : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
       )}
     >
       <span
         className={cn(
-          "grid h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition",
-          checked ? "bg-neon-yellow/40 justify-items-end" : "bg-white/10 justify-items-start",
+          "relative h-6 w-11 shrink-0 rounded-full p-0.5 transition",
+          checked ? "bg-neon-yellow/70" : "bg-white/15",
         )}
       >
-        <span className={cn("h-4 w-4 rounded-full", checked ? "bg-neon-yellow" : "bg-white/60")} />
+        <span
+          className={cn(
+            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+            checked ? "left-[calc(100%-1.375rem)]" : "left-0.5",
+          )}
+        />
       </span>
       <span className="truncate">{label}</span>
     </button>
   );
 }
+
 
 function CategoryPicker({
   categories,
@@ -2198,17 +2207,18 @@ type SetFn = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
 
 function SectionTitle({ icon: Icon, title, sub }: { icon: React.ElementType; title: string; sub?: string }) {
   return (
-    <div className="mb-4 flex items-center gap-2">
-      <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink/15 text-neon-pink">
-        <Icon className="h-4 w-4" />
+    <div className="mb-5 flex items-center gap-3 border-b border-white/10 pb-4">
+      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/30 via-neon-pink/15 to-neon-cyan/20 text-neon-pink ring-1 ring-neon-pink/30 shadow-[0_0_18px_-4px_oklch(0.72_0.22_340/0.5)]">
+        <Icon className="h-5 w-5" />
       </div>
-      <div>
-        <div className="text-sm font-bold">{title}</div>
-        {sub && <div className="text-[11px] text-white/50">{sub}</div>}
+      <div className="min-w-0">
+        <div className="font-display text-base font-black text-white">{title}</div>
+        {sub && <div className="text-[11.5px] text-white/55">{sub}</div>}
       </div>
     </div>
   );
 }
+
 
 function IdentitySection({
   s,
@@ -2395,8 +2405,9 @@ function HoursSection({ s, set }: { s: SiteSettings; set: SetFn }) {
 
 function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={Truck} title="Entrega & Retirada" sub="Como o cliente recebe o pedido." />
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Toggle
           checked={s.acceptsDelivery}
@@ -2410,68 +2421,119 @@ function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Field label="Taxa de entrega (R$)">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            className={inputCls}
-            value={s.deliveryFee}
-            onChange={(e) => set("deliveryFee", Number(e.target.value))}
-          />
-        </Field>
-        <Field label="Frete grátis a partir de (R$)">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            className={inputCls}
-            value={s.freeDeliveryThreshold}
-            onChange={(e) => set("freeDeliveryThreshold", Number(e.target.value))}
-          />
-          <div className="mt-1 text-[10px] text-white/40">0 = desligado</div>
-        </Field>
-        <Field label="Pedido mínimo (R$)">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            className={inputCls}
-            value={s.minOrder}
-            onChange={(e) => set("minOrder", Number(e.target.value))}
-          />
-        </Field>
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <CreditCard className="h-3.5 w-3.5 text-neon-cyan" />
+          Valores
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Field label="Taxa de entrega" hint="Valor cobrado a mais no pedido em modo entrega.">
+            <MoneyInput value={s.deliveryFee} onChange={(v) => set("deliveryFee", v)} />
+          </Field>
+          <Field label="Frete grátis a partir de" hint="0 = sempre cobra a taxa acima.">
+            <MoneyInput value={s.freeDeliveryThreshold} onChange={(v) => set("freeDeliveryThreshold", v)} />
+          </Field>
+          <Field label="Pedido mínimo" hint="O cliente só finaliza a partir deste valor.">
+            <MoneyInput value={s.minOrder} onChange={(v) => set("minOrder", v)} />
+          </Field>
+        </div>
       </div>
     </div>
   );
 }
 
+const QUICK_PAYMENT_METHODS = ["Pix", "Dinheiro", "Cartão de crédito", "Cartão de débito", "Vale-refeição"];
+
 function PaymentSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const [copied, setCopied] = useState(false);
+  const copyPix = () => {
+    if (!s.pixKey) return;
+    navigator.clipboard.writeText(s.pixKey);
+    setCopied(true);
+    toast.success("Chave Pix copiada");
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const addMethod = (m: string) => {
+    if (s.paymentMethods.includes(m)) return;
+    set("paymentMethods", [...s.paymentMethods, m]);
+  };
+  const missingQuick = QUICK_PAYMENT_METHODS.filter((m) => !s.paymentMethods.includes(m));
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={CreditCard} title="Pagamento" sub="Como o cliente pode pagar o pedido." />
-      <Field label="Chave Pix">
-        <input
-          className={inputCls}
-          placeholder="CPF, telefone, e-mail ou chave aleatória"
-          value={s.pixKey}
-          onChange={(e) => set("pixKey", e.target.value)}
-        />
-      </Field>
-      <Field label="Formas de pagamento aceitas">
+
+      <div className="rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/10 to-transparent p-4">
+        <Field label="Chave Pix" hint="Aparece na tela de pagamento para o cliente copiar.">
+          <div className="relative">
+            <input
+              className={cn(inputCls, "pr-24")}
+              placeholder="CPF, telefone, e-mail ou chave aleatória"
+              value={s.pixKey}
+              onChange={(e) => set("pixKey", e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={copyPix}
+              disabled={!s.pixKey}
+              className={cn(
+                "absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition",
+                s.pixKey
+                  ? "bg-neon-cyan text-[oklch(0.18_0.11_305)] hover:brightness-110"
+                  : "bg-white/5 text-white/30",
+              )}
+            >
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? "Copiado" : "Copiar"}
+            </button>
+          </div>
+        </Field>
+      </div>
+
+      <Field label="Formas de pagamento aceitas" hint="Aparecem no checkout para o cliente escolher.">
         <ChipInput
           values={s.paymentMethods}
           onChange={(v) => set("paymentMethods", v)}
           placeholder="Digite e Enter (ex.: Cartão de crédito)"
         />
-        <div className="mt-1 text-[10px] text-white/40">
-          Aparece na tela de checkout para o cliente escolher.
-        </div>
+        {missingQuick.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <span className="text-[10.5px] uppercase tracking-wider text-white/40">Sugestões:</span>
+            {missingQuick.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => addMethod(m)}
+                className="inline-flex items-center gap-1 rounded-full border border-dashed border-white/20 bg-white/5 px-2 py-0.5 text-[11px] text-white/70 hover:border-neon-cyan hover:text-neon-cyan"
+              >
+                <Plus className="h-3 w-3" /> {m}
+              </button>
+            ))}
+          </div>
+        )}
       </Field>
     </div>
   );
 }
+
+function MoneyInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[12px] font-bold text-white/50">R$</span>
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        inputMode="decimal"
+        className={cn(inputCls, "pl-9 font-mono tabular-nums")}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </div>
+  );
+}
+
 
 function SocialSection({ s, set }: { s: SiteSettings; set: SetFn }) {
   return (
@@ -2515,15 +2577,27 @@ function SocialSection({ s, set }: { s: SiteSettings; set: SetFn }) {
 }
 
 function AnnouncementSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const len = s.announcementText.length;
+  const pct = Math.min(100, (len / 140) * 100);
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={Megaphone} title="Anúncio no topo" sub="Barra amarela que aparece no topo do cardápio." />
+
       <Toggle
         checked={s.announcementActive}
         onChange={(v) => set("announcementActive", v)}
         label={s.announcementActive ? "Anúncio visível para os clientes" : "Anúncio desativado"}
       />
-      <Field label="Texto do anúncio">
+
+      {s.announcementActive && s.announcementText && (
+        <div className="flex items-center gap-2 rounded-2xl bg-neon-yellow px-4 py-2 text-[12px] font-bold text-[oklch(0.15_0.10_305)]">
+          <Megaphone className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{s.announcementText}</span>
+          <span className="ml-auto text-[10px] uppercase tracking-widest opacity-70">Prévia</span>
+        </div>
+      )}
+
+      <Field label="Texto do anúncio" hint="Curto e chamativo. Emoji ajuda! 🎉">
         <textarea
           rows={2}
           maxLength={140}
@@ -2532,13 +2606,23 @@ function AnnouncementSection({ s, set }: { s: SiteSettings; set: SetFn }) {
           value={s.announcementText}
           onChange={(e) => set("announcementText", e.target.value)}
         />
-        <div className="mt-1 text-right text-[10px] text-white/40">
-          {s.announcementText.length}/140
+        <div className="mt-2 flex items-center gap-2">
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all",
+                pct > 90 ? "bg-red-400" : pct > 70 ? "bg-neon-yellow" : "bg-neon-cyan",
+              )}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className="text-[10px] tabular-nums text-white/50">{len}/140</div>
         </div>
       </Field>
     </div>
   );
 }
+
 
 function AppearanceSection({
   s,
@@ -2577,14 +2661,29 @@ function AppearanceSection({
 const inputCls =
   "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">{label}</div>
+      <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/60">{label}</div>
       {children}
+      {hint && (
+        <div className="mt-1 flex items-start gap-1 text-[10.5px] text-white/45">
+          <Info className="mt-[1px] h-3 w-3 shrink-0" />
+          <span>{hint}</span>
+        </div>
+      )}
     </label>
   );
 }
+
 
 function IconPicker({
   value,
