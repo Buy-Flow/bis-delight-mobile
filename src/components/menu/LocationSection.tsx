@@ -23,12 +23,12 @@ export function LocationSection() {
           <iframe
             title="Localização Quero Bis"
             src={BRAND.mapEmbed}
-            className="h-full w-full grayscale-[10%] contrast-[1.05]"
-            style={{ border: 0, filter: "hue-rotate(220deg) saturate(1.2)" }}
+            className="h-full w-full"
+            style={{ border: 0 }}
             loading="lazy"
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[oklch(0.18_0.11_305)]/70" />
         </div>
+
 
         <div className="space-y-3 p-4">
           <div className="flex items-start gap-3">
