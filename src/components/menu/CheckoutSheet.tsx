@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { X, Truck, Store, Sparkles } from "lucide-react";
+import { X, Truck, Store, Sparkles, LogIn, Loader2 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 type Mode = "entrega" | "retirada";
 
@@ -35,6 +38,9 @@ function formatPhone(v: string) {
 
 export function CheckoutSheet() {
   const { isCheckoutOpen, closeCheckout, items, subtotal, clear } = useCart();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [mode, setMode] = useState<Mode>("entrega");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -42,8 +48,9 @@ export function CheckoutSheet() {
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [hasSaved, setHasSaved] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  // Pré-carrega dados salvos quando abre o checkout
+  // Pré-carrega dados salvos + do perfil quando abre
   useEffect(() => {
     if (!isCheckoutOpen) return;
     const saved = loadSaved();
@@ -55,8 +62,24 @@ export function CheckoutSheet() {
       if (saved.address && !address) setAddress(saved.address);
       if (saved.reference && !reference) setReference(saved.reference);
     }
+
+    // Se logado, tenta puxar do perfil
+    if (user) {
+      supabase
+        .from("profiles")
+        .select("full_name, phone, address, reference")
+        .eq("id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (!data) return;
+          if (data.full_name && !name) setName(data.full_name);
+          if (data.phone && !phone) setPhone(data.phone);
+          if (data.address && !address) setAddress(data.address);
+          if (data.reference && !reference) setReference(data.reference);
+        });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCheckoutOpen]);
+  }, [isCheckoutOpen, user?.id]);
 
   if (!isCheckoutOpen) return null;
 
@@ -66,7 +89,7 @@ export function CheckoutSheet() {
   const fillFromSaved = () => {
     const s = loadSaved();
     if (!s.name && !s.phone && !s.address) {
-      toast.info("Nenhum dado salvo ainda. Faça um pedido para salvar.");
+      toast.info("Nenhum dado salvo ainda.");
       return;
     }
     setName(s.name || "");
@@ -76,27 +99,89 @@ export function CheckoutSheet() {
     toast.success("Dados preenchidos!");
   };
 
-  const send = () => {
+  const goLogin = () => {
+    sessionStorage.setItem("querobis:resume_checkout", "1");
+    closeCheckout();
+    navigate({ to: "/auth", search: { next: "/" } as never });
+  };
+
+  const send = async () => {
+    if (!isAuthenticated || !user) {
+      goLogin();
+      return;
+    }
     if (!name.trim() || !phone.trim() || (mode === "entrega" && !address.trim())) {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
-    // Salva os dados do cliente para próxima vez
+    setSending(true);
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ name: name.trim(), phone: phone.trim(), address: address.trim(), reference: reference.trim() }),
-      );
-    } catch {}
+      // Save order to DB
+      const { data: order, error: orderErr } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          mode,
+          customer_name: name.trim(),
+          phone: phone.trim(),
+          address: mode === "entrega" ? address.trim() : null,
+          reference: reference.trim() || null,
+          note: note.trim() || null,
+          subtotal,
+          delivery_fee: fee,
+          total,
+        })
+        .select("id")
+        .single();
+      if (orderErr) throw orderErr;
 
-    const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total });
-    const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
-    toast.success("Pedido enviado! Abrindo WhatsApp…");
-    setTimeout(() => {
-      clear();
-      closeCheckout();
-    }, 400);
+      const itemsPayload = items.map((it) => ({
+        order_id: order.id,
+        product_id: it.productId,
+        name: it.name,
+        size: it.size ?? null,
+        flavor: it.flavor ?? null,
+        extras: it.extras,
+        removed: it.removed,
+        note: it.note ?? null,
+        quantity: it.quantity,
+        unit_price: it.unitPrice,
+      }));
+      const { error: itemsErr } = await supabase.from("order_items").insert(itemsPayload);
+      if (itemsErr) throw itemsErr;
+
+      // Update profile with latest info for future orders
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        full_name: name.trim(),
+        phone: phone.trim(),
+        address: address.trim() || null,
+        reference: reference.trim() || null,
+      });
+
+      // Save locally too
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ name: name.trim(), phone: phone.trim(), address: address.trim(), reference: reference.trim() }),
+        );
+      } catch {}
+
+      // Open WhatsApp
+      const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total });
+      const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
+      window.open(url, "_blank");
+      toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
+      setTimeout(() => {
+        clear();
+        closeCheckout();
+      }, 400);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao registrar o pedido. Tente novamente.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -106,7 +191,9 @@ export function CheckoutSheet() {
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
           <div>
             <h3 className="font-display text-xl font-extrabold text-white">Finalizar pedido</h3>
-            <p className="text-[11px] text-white/60">Envie direto pro WhatsApp da loja</p>
+            <p className="text-[11px] text-white/60">
+              {isAuthenticated ? "Envie direto pro WhatsApp da loja" : "Entre para finalizar e acumular selos"}
+            </p>
           </div>
           <button onClick={closeCheckout} className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white">
             <X className="h-5 w-5" />
@@ -121,6 +208,30 @@ export function CheckoutSheet() {
             send();
           }}
         >
+          {!authLoading && !isAuthenticated && (
+            <div className="rounded-2xl border border-neon-yellow/40 bg-neon-yellow/10 p-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="mt-0.5 h-5 w-5 text-neon-yellow" />
+                <div className="flex-1">
+                  <div className="text-sm font-extrabold text-neon-yellow">
+                    Entre para finalizar seu pedido
+                  </div>
+                  <div className="mt-1 text-[11px] leading-relaxed text-white/70">
+                    A cada pedido você ganha 1 selo Bis Recompensa. 10 selos = 1 açaí 300ml grátis!
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={goLogin}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-yellow px-4 py-3 text-sm font-extrabold text-[oklch(0.18_0.11_305)] active:scale-[.98]"
+              >
+                <LogIn className="h-4 w-4" />
+                Entrar ou criar conta
+              </button>
+            </div>
+          )}
+
           <div>
             <h4 className="mb-2 font-display text-[15px] font-extrabold uppercase tracking-wide text-white">
               Como quer receber?
@@ -135,113 +246,58 @@ export function CheckoutSheet() {
             <button
               type="button"
               onClick={fillFromSaved}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 px-3 py-3 text-sm font-bold text-neon-cyan glow-cyan active:scale-[.98]"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 px-3 py-3 text-sm font-bold text-neon-cyan active:scale-[.98]"
             >
               <Sparkles className="h-4 w-4" />
               Preencher com meus dados salvos
             </button>
           )}
 
-          <Field
-            label="Seu nome *"
-            value={name}
-            onChange={setName}
-            placeholder="Como te chamamos?"
-            autoComplete="name"
-            name="name"
-            inputMode="text"
-          />
-          <Field
-            label="Telefone *"
-            value={phone}
-            onChange={(v) => setPhone(formatPhone(v))}
-            placeholder="(69) 9 9999-9999"
-            autoComplete="tel"
-            name="tel"
-            type="tel"
-            inputMode="tel"
-          />
+          <Field label="Seu nome *" value={name} onChange={setName} placeholder="Como te chamamos?" autoComplete="name" name="name" />
+          <Field label="Telefone *" value={phone} onChange={(v) => setPhone(formatPhone(v))} placeholder="(69) 9 9999-9999" autoComplete="tel" name="tel" type="tel" inputMode="tel" />
           {mode === "entrega" && (
             <>
-              <Field
-                label="Endereço *"
-                value={address}
-                onChange={setAddress}
-                placeholder="Rua, número, bairro"
-                autoComplete="street-address"
-                name="street-address"
-              />
-              <Field
-                label="Ponto de referência"
-                value={reference}
-                onChange={setReference}
-                placeholder="Próximo a…"
-                autoComplete="address-line2"
-                name="address-line2"
-              />
+              <Field label="Endereço *" value={address} onChange={setAddress} placeholder="Rua, número, bairro" autoComplete="street-address" name="street-address" />
+              <Field label="Ponto de referência" value={reference} onChange={setReference} placeholder="Próximo a…" autoComplete="address-line2" name="address-line2" />
             </>
           )}
-          <Field
-            label="Observação do pedido"
-            value={note}
-            onChange={setNote}
-            placeholder="Alguma preferência?"
-            multiline
-            autoComplete="off"
-          />
+          <Field label="Observação do pedido" value={note} onChange={setNote} placeholder="Alguma preferência?" multiline autoComplete="off" />
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-            <h4 className="mb-2 font-display text-[13px] font-extrabold uppercase tracking-wide text-white">
-              Resumo
-            </h4>
+            <h4 className="mb-2 font-display text-[13px] font-extrabold uppercase tracking-wide text-white">Resumo</h4>
             <div className="space-y-2">
               {items.map((it) => (
                 <div key={it.uid} className="flex justify-between gap-2 text-[13px]">
                   <div className="min-w-0">
-                    <div className="truncate font-semibold text-white">
-                      {it.quantity}× {it.name}
-                    </div>
-                    <div className="truncate text-[11px] text-white/60">
-                      {[it.size, it.flavor].filter(Boolean).join(" · ")}
-                    </div>
+                    <div className="truncate font-semibold text-white">{it.quantity}× {it.name}</div>
+                    <div className="truncate text-[11px] text-white/60">{[it.size, it.flavor].filter(Boolean).join(" · ")}</div>
                   </div>
-                  <div className="whitespace-nowrap font-bold text-neon-yellow">
-                    {brl(it.unitPrice * it.quantity)}
-                  </div>
+                  <div className="whitespace-nowrap font-bold text-neon-yellow">{brl(it.unitPrice * it.quantity)}</div>
                 </div>
               ))}
             </div>
             <div className="mt-3 space-y-1 border-t border-white/10 pt-3 text-sm">
-              <div className="flex justify-between text-white/70">
-                <span>Subtotal</span>
-                <span>{brl(subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-white/70">
-                <span>{mode === "entrega" ? "Taxa de entrega" : "Retirada na loja"}</span>
-                <span>{fee > 0 ? brl(fee) : "Grátis"}</span>
-              </div>
+              <div className="flex justify-between text-white/70"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
+              <div className="flex justify-between text-white/70"><span>{mode === "entrega" ? "Taxa de entrega" : "Retirada na loja"}</span><span>{fee > 0 ? brl(fee) : "Grátis"}</span></div>
               <div className="mt-2 flex items-end justify-between">
                 <span className="text-[11px] uppercase tracking-widest text-white/50">Total</span>
-                <span className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text">
-                  {brl(total)}
-                </span>
+                <span className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text">{brl(total)}</span>
               </div>
             </div>
           </div>
           <div className="h-20" />
 
-          {/* Submit oculto para o teclado do celular disparar o autofill/enter */}
-          <button type="submit" className="sr-only" aria-hidden>
-            Enviar
-          </button>
+          <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
         <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             onClick={send}
-            className="w-full rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
+            disabled={sending || authLoading}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-60"
           >
-            Enviar pedido no WhatsApp · {brl(total)}
+            {sending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isAuthenticated ? `Enviar pedido no WhatsApp · ${brl(total)}` : `Entrar para finalizar · ${brl(total)}`}
           </button>
         </div>
       </div>
@@ -283,8 +339,6 @@ function Field({
         type={type}
         inputMode={inputMode}
         autoComplete={autoComplete}
-        autoCorrect={autoComplete === "name" ? "off" : undefined}
-        autoCapitalize={autoComplete === "name" ? "words" : undefined}
         className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
       />
     </label>
