@@ -447,32 +447,34 @@ function HighlightsCarousel({
 
   return (
     <section className="pb-4 pt-2">
-      <div className="mb-3 px-4 text-center">
-        <h2
-          className="font-display text-[34px] font-black uppercase leading-[0.95] text-white"
-          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
-        >
-          {titleLead}{" "}
-          <span className="relative inline-block">
-            <span className={cn("relative z-10", accent.text, accent.shadow)}>
-              {titleAccent}
+      {!hideHeader && (
+        <div className="mb-3 px-4 text-center">
+          <h2
+            className="font-display text-[34px] font-black uppercase leading-[0.95] text-white"
+            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
+          >
+            {titleLead}{" "}
+            <span className="relative inline-block">
+              <span className={cn("relative z-10", accent.text, accent.shadow)}>
+                {titleAccent}
+              </span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 160 14"
+                className="absolute -bottom-1 left-0 h-3 w-full"
+                fill="none"
+              >
+                <path
+                  d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
+                  stroke={accent.stroke}
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
             </span>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 160 14"
-              className="absolute -bottom-1 left-0 h-3 w-full"
-              fill="none"
-            >
-              <path
-                d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
-                stroke={accent.stroke}
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
-        </h2>
-      </div>
+          </h2>
+        </div>
+      )}
 
 
 
