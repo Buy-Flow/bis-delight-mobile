@@ -137,6 +137,17 @@ function Content() {
       <Benefits />
       
 
+      {/* Novidades */}
+      {settings?.newsActive && newsItems.length > 0 && (
+        <HighlightsCarousel
+          highlights={newsItems}
+          onOpen={setModalProduct}
+          titleLead="Nossas"
+          titleAccent={settings.newsTitle || "Novidades"}
+          accentColor="cyan"
+        />
+      )}
+
       {/* Highlights */}
       <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
 
