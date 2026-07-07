@@ -118,18 +118,20 @@ function MenuItem({
   label,
   onClick,
   danger,
+  accent,
 }: {
   icon: typeof UserIcon;
   label: string;
   onClick: () => void;
   danger?: boolean;
+  accent?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-white/5",
-        danger ? "text-red-300" : "text-white",
+        danger ? "text-red-300" : accent ? "text-neon-yellow font-semibold" : "text-white",
       )}
     >
       <Icon className="h-4 w-4" />
