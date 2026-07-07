@@ -4,6 +4,8 @@ import type { ExtraOption, Product } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useSiteSettings } from "@/lib/menu-data";
+
 
 const CATEGORY_LABEL: Record<string, string> = {
   acai: "Açaí artesanal",
