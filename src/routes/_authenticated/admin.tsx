@@ -2337,53 +2337,157 @@ function IdentitySection({
 }
 
 function ContactSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const formatWhatsappDisplay = () => {
+    const digits = (s.whatsapp || "").replace(/\D/g, "");
+    // remove 55 se for BR
+    const local = digits.startsWith("55") ? digits.slice(2) : digits;
+    if (local.length < 10) return;
+    const ddd = local.slice(0, 2);
+    const rest = local.slice(2);
+    const pretty =
+      rest.length === 9
+        ? `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`
+        : `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`;
+    set("whatsappDisplay", pretty);
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={MapPin} title="Contato & Localização" sub="Onde encontrar sua loja e como falam com você." />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Cidade">
-          <input className={inputCls} value={s.city} onChange={(e) => set("city", e.target.value)} />
-        </Field>
-        <Field label="Endereço completo">
-          <input className={inputCls} value={s.address} onChange={(e) => set("address", e.target.value)} />
-        </Field>
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="WhatsApp (só números, com DDI)">
-          <div className="relative">
-            <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+
+      {/* Endereço */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <MapPin className="h-3.5 w-3.5 text-neon-pink" /> Endereço
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_2fr]">
+          <Field label="Cidade">
             <input
-              className={cn(inputCls, "pl-9")}
-              placeholder="55699..."
-              value={s.whatsapp}
-              onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))}
+              className={inputCls}
+              value={s.city}
+              onChange={(e) => set("city", e.target.value)}
+              placeholder="Ouro Preto do Oeste"
             />
-          </div>
-        </Field>
-        <Field label="WhatsApp (exibição bonita)">
-          <input
-            className={inputCls}
-            placeholder="(69) 99999-9999"
-            value={s.whatsappDisplay}
-            onChange={(e) => set("whatsappDisplay", e.target.value)}
-          />
-        </Field>
+          </Field>
+          <Field label="Endereço completo" hint="Rua, número, bairro — aparece no rodapé do cardápio.">
+            <input
+              className={inputCls}
+              value={s.address}
+              onChange={(e) => set("address", e.target.value)}
+              placeholder="Av. Brasil, 123 · Centro"
+            />
+          </Field>
+        </div>
       </div>
-      <Field label="Horário resumido (aparece no rodapé)">
-        <input
-          className={inputCls}
-          placeholder="Ex.: Seg-Dom · 14h às 22h"
-          value={s.hours}
-          onChange={(e) => set("hours", e.target.value)}
-        />
-      </Field>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="URL do Google Maps (link)">
-          <input className={inputCls} value={s.mapsUrl} onChange={(e) => set("mapsUrl", e.target.value)} />
-        </Field>
-        <Field label="URL do mapa embed">
-          <input className={inputCls} value={s.mapEmbed} onChange={(e) => set("mapEmbed", e.target.value)} />
-        </Field>
+
+      {/* WhatsApp */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+            <Phone className="h-3.5 w-3.5 text-neon-cyan" /> WhatsApp
+          </div>
+          {s.whatsappDisplay && (
+            <a
+              href={`https://wa.me/${(s.whatsapp || "").replace(/\D/g, "")}`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-500/20"
+            >
+              Testar link →
+            </a>
+          )}
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Número (só dígitos, com DDI)" hint="Usado para abrir o WhatsApp. Ex.: 5569999999999">
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-white/40">
+                +
+              </span>
+              <input
+                className={cn(inputCls, "pl-6 tabular-nums")}
+                placeholder="5569999999999"
+                inputMode="numeric"
+                value={s.whatsapp}
+                onChange={(e) => set("whatsapp", e.target.value.replace(/\D/g, ""))}
+              />
+            </div>
+          </Field>
+          <Field label="Exibição bonita" hint="Como o número aparece para o cliente.">
+            <div className="relative">
+              <input
+                className={cn(inputCls, "pr-20")}
+                placeholder="(69) 99999-9999"
+                value={s.whatsappDisplay}
+                onChange={(e) => set("whatsappDisplay", e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={formatWhatsappDisplay}
+                disabled={!s.whatsapp}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md bg-neon-cyan/20 px-2 py-1 text-[10px] font-bold text-neon-cyan hover:bg-neon-cyan/30 disabled:opacity-40"
+              >
+                Auto
+              </button>
+            </div>
+          </Field>
+        </div>
+        <div className="mt-3">
+          <Field label="Horário resumido (rodapé)" hint="Frase curta. O horário detalhado fica na aba Horários.">
+            <div className="relative">
+              <Clock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <input
+                className={cn(inputCls, "pl-9")}
+                placeholder="Ex.: Seg-Dom · 14h às 22h"
+                value={s.hours}
+                onChange={(e) => set("hours", e.target.value)}
+              />
+            </div>
+          </Field>
+        </div>
+      </div>
+
+      {/* Mapa */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <Globe className="h-3.5 w-3.5 text-neon-yellow" /> Mapa
+        </div>
+        <div className="grid grid-cols-1 gap-3">
+          <Field label="Link do Google Maps" hint="Botão 'Compartilhar → Copiar link' no Google Maps.">
+            <div className="relative">
+              <LinkIcon className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+              <input
+                className={cn(inputCls, "pl-9")}
+                value={s.mapsUrl}
+                onChange={(e) => set("mapsUrl", e.target.value)}
+                placeholder="https://maps.app.goo.gl/..."
+              />
+            </div>
+          </Field>
+          <Field label="URL de embed do mapa" hint="Google Maps → Compartilhar → Incorporar mapa → copiar apenas o valor do src.">
+            <input
+              className={cn(inputCls, "font-mono text-xs")}
+              value={s.mapEmbed}
+              onChange={(e) => set("mapEmbed", e.target.value)}
+              placeholder="https://www.google.com/maps/embed?pb=..."
+            />
+          </Field>
+
+          {s.mapEmbed ? (
+            <div className="overflow-hidden rounded-xl border border-white/10">
+              <iframe
+                src={s.mapEmbed}
+                title="Prévia do mapa"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-40 w-full"
+              />
+            </div>
+          ) : (
+            <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] text-[11px] text-white/40">
+              Cole a URL de embed acima para ver a prévia
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
