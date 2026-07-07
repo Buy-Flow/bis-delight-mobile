@@ -163,6 +163,9 @@ const DEFAULT_EXTRA: Pick<
   | "acceptsPickup"
   | "openOverride"
   | "hoursJson"
+  | "newsActive"
+  | "newsTitle"
+  | "newsProductIds"
 > = {
   instagram: "",
   facebook: "",
@@ -177,6 +180,9 @@ const DEFAULT_EXTRA: Pick<
   acceptsPickup: true,
   openOverride: "auto",
   hoursJson: DEFAULT_HOURS,
+  newsActive: false,
+  newsTitle: "Novidades",
+  newsProductIds: [],
 };
 
 export function useSiteSettings() {
