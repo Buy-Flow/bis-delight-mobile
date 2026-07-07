@@ -63,6 +63,10 @@ function rowToProduct(row: Record<string, unknown>): Product {
     imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
     imageScale: row.image_scale !== undefined && row.image_scale !== null ? Number(row.image_scale) : 1.1,
+    heroImage: (row.hero_image_url as string) || "",
+    heroImagePosX: row.hero_image_pos_x !== undefined && row.hero_image_pos_x !== null ? Number(row.hero_image_pos_x) : 0,
+    heroImagePosY: row.hero_image_pos_y !== undefined && row.hero_image_pos_y !== null ? Number(row.hero_image_pos_y) : 0,
+    heroImageScale: row.hero_image_scale !== undefined && row.hero_image_scale !== null ? Number(row.hero_image_scale) : 1.4,
   };
 }
 
