@@ -171,7 +171,7 @@ function NewsPosterCard({
 }) {
   const heroSrc = product.heroImage || product.image;
   const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
-  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
+  const heroPosY = product.heroImage ? (product.heroImagePosY ?? -8) : -8;
   const heroScale = product.heroImage ? (product.heroImageScale ?? 1.2) : 1.2;
   const issueNo = String(index + 1).padStart(2, "0");
   const now = new Date();
@@ -274,21 +274,8 @@ function NewsPosterCard({
                 {monthLabel} · {eyebrow}
               </span>
             </div>
-            <div className="flex flex-col items-end leading-none">
-              <span
-                className="text-[8px] font-bold uppercase tracking-[0.32em] text-white/60"
-                style={{ fontFamily: "'Poppins', sans-serif" }}
-              >
-                Edição
-              </span>
-              <span
-                className="mt-0.5 font-display text-[28px] font-black italic leading-none text-neon-yellow drop-shadow-[0_0_10px_rgba(255,214,0,0.6)]"
-                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-              >
-                N°{issueNo}
-              </span>
-            </div>
           </header>
+
 
           {/* Cover title — massive stacked type at the bottom */}
           <div className="mt-auto">
