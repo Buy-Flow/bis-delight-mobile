@@ -120,7 +120,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
             <span className="h-px w-5 bg-linear-to-r from-transparent via-neon-yellow/60 to-neon-yellow" />
             <span
-              className="rounded-full border border-neon-yellow/50 bg-neon-yellow/10 px-2.5 py-[3px] text-[9.5px] uppercase tracking-[0.35em] text-neon-yellow shadow-[0_0_14px_rgba(255,215,60,0.4)] backdrop-blur-sm"
+              className="rounded-full border border-neon-yellow/50 bg-neon-yellow/10 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-neon-yellow shadow-[0_0_14px_rgba(255,215,60,0.4)] backdrop-blur-sm"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
             >
               Quero Bis
@@ -134,13 +134,14 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
           <div
             className="flex flex-col items-center gap-0 -rotate-[4deg] text-white/85"
-            style={{ fontFamily: "'Caveat', cursive", fontWeight: 600, fontSize: "14px", lineHeight: 1 }}
+            style={{ fontFamily: "'Caveat', cursive", fontWeight: 600, fontSize: "18px", lineHeight: 1 }}
           >
             <span>Rápido</span>
             <span>Prático</span>
             <span className="text-white">&amp;</span>
             <span className="text-neon-yellow">extraordinário</span>
           </div>
+
         </div>
 
 
