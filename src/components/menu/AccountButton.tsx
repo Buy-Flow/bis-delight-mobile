@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { User as UserIcon, LogOut, Award, Heart, ClipboardList } from "lucide-react";
+import { User as UserIcon, LogOut, Award, Heart, ClipboardList, Shield } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth, signOut } from "@/lib/use-auth";
+import { useIsAdmin } from "@/lib/menu-data";
 import { cn } from "@/lib/utils";
 
 export function AccountButton() {
   const { user, isAuthenticated } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -79,6 +81,20 @@ export function AccountButton() {
                 navigate({ to: "/conta", search: { tab: "perfil" } as never });
               }}
             />
+            {isAdmin && (
+              <div className="border-t border-white/10">
+                <MenuItem
+                  icon={Shield}
+                  label="Painel Administrador"
+                  accent
+                  onClick={() => {
+                    setOpen(false);
+                    navigate({ to: "/admin" });
+                  }}
+                />
+              </div>
+            )}
+
             <div className="border-t border-white/10">
               <MenuItem
                 icon={LogOut}
@@ -102,18 +118,20 @@ function MenuItem({
   label,
   onClick,
   danger,
+  accent,
 }: {
   icon: typeof UserIcon;
   label: string;
   onClick: () => void;
   danger?: boolean;
+  accent?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-white/5",
-        danger ? "text-red-300" : "text-white",
+        danger ? "text-red-300" : accent ? "text-neon-yellow font-semibold" : "text-white",
       )}
     >
       <Icon className="h-4 w-4" />
