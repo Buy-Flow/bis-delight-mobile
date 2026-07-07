@@ -27,6 +27,7 @@ export function NewsCarousel({
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const pausedRef = useRef(false);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -41,6 +42,44 @@ export function NewsCarousel({
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, [items.length]);
+
+  // Autoplay: avança 1 card a cada 4s quando há mais de um item.
+  useEffect(() => {
+    if (items.length <= 1) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const pause = () => {
+      pausedRef.current = true;
+    };
+    const resume = () => {
+      pausedRef.current = false;
+    };
+    el.addEventListener("pointerdown", pause);
+    el.addEventListener("pointerup", resume);
+    el.addEventListener("pointercancel", resume);
+    el.addEventListener("mouseleave", resume);
+
+    const id = window.setInterval(() => {
+      if (pausedRef.current) return;
+      const node = scrollerRef.current;
+      if (!node) return;
+      const first = node.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      const step = first.getBoundingClientRect().width + 20;
+      const currentIdx = Math.round(node.scrollLeft / step);
+      const nextIdx = (currentIdx + 1) % items.length;
+      node.scrollTo({ left: nextIdx * step, behavior: "smooth" });
+    }, 4000);
+
+    return () => {
+      window.clearInterval(id);
+      el.removeEventListener("pointerdown", pause);
+      el.removeEventListener("pointerup", resume);
+      el.removeEventListener("pointercancel", resume);
+      el.removeEventListener("mouseleave", resume);
+    };
+  }, [items.length]);
+
 
   return (
     <section className="relative isolate overflow-visible py-8">
@@ -132,7 +171,7 @@ export function NewsCarousel({
       {/* Card scroller — edge-to-edge, cards ocupam quase toda a tela */}
       <div
         ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-5 px-5 py-6"
+        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto py-6 px-[7.5vw] scroll-px-[7.5vw]"
       >
         {items.map((p, i) => (
           <NewsPosterCard
