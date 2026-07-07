@@ -209,6 +209,7 @@ export function useSiteSettings() {
       }
       const rawHours = (data.hours_json as unknown) as DayHours[] | null;
       const rawMethods = (data.payment_methods as unknown) as string[] | null;
+      const rawNewsIds = (data.news_product_ids as unknown) as string[] | null;
       const rawOverride = String(data.open_override ?? "auto");
       return {
         name: data.name || STATIC_BRAND.name,
@@ -236,6 +237,9 @@ export function useSiteSettings() {
         acceptsPickup: Boolean(data.accepts_pickup ?? true),
         openOverride: rawOverride === "open" || rawOverride === "closed" ? rawOverride : "auto",
         hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
+        newsActive: Boolean(data.news_active ?? false),
+        newsTitle: String(data.news_title ?? "Novidades"),
+        newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
       };
     },
   });
