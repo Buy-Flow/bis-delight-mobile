@@ -95,6 +95,12 @@ function Content() {
 
 
   const highlights = useMemo(() => products.filter((p) => p.hero), [products]);
+  const newsItems = useMemo(() => {
+    const ids = settings?.newsProductIds ?? [];
+    if (!ids.length) return [];
+    const byId = new Map(products.map((p) => [p.id, p]));
+    return ids.map((id) => byId.get(id)).filter((p): p is typeof products[number] => Boolean(p));
+  }, [products, settings?.newsProductIds]);
   const filtered = useMemo(() => {
     const byCat = activeCat === "all" ? products : products.filter((p) => p.category === activeCat);
     const q = query.trim().toLowerCase();
