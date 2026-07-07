@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
-import { CartProvider, useCart } from "@/lib/cart-context";
+import { useCart } from "@/lib/cart-context";
 import { TopBar } from "@/components/menu/TopBar";
 import { Hero } from "@/components/menu/Hero";
 import { Benefits } from "@/components/menu/Benefits";
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/")({
 
 function Page() {
   return (
-    <CartProvider>
+    <>
       <Content />
       <Toaster
         position="top-center"
@@ -70,9 +70,10 @@ function Page() {
           },
         }}
       />
-    </CartProvider>
+    </>
   );
 }
+
 
 function Content() {
   const [activeCat, setActiveCat] = useState("all");
