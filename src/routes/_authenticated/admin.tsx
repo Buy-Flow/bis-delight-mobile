@@ -3954,6 +3954,10 @@ function ExtrasTab() {
         </p>
       </div>
 
+      <GlobalExtrasSection />
+
+
+
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[180px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
