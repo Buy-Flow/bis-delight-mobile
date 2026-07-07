@@ -360,7 +360,30 @@ function HighlightsCarousel({
       setActiveIdx(Math.min(highlights.length - 1, Math.max(0, idx)));
     };
     el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
+
+    // Desktop: converte scroll vertical do mouse em rolagem lateral
+    const isFinePointer =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(pointer: fine)").matches;
+    const onWheel = (e: WheelEvent) => {
+      if (!isFinePointer) return;
+      if (e.deltaY === 0) return;
+      const delta =
+        Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) return;
+      const atStart = el.scrollLeft <= 0 && delta < 0;
+      const atEnd = el.scrollLeft >= maxScroll - 1 && delta > 0;
+      if (atStart || atEnd) return;
+      e.preventDefault();
+      el.scrollBy({ left: delta, behavior: "auto" });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("wheel", onWheel);
+    };
   }, [highlights.length]);
 
   const scrollTo = (i: number) => {
