@@ -2004,7 +2004,7 @@ function HighlightsTab() {
       </div>
 
       {heroProducts.length > 0 && (
-        <div className="mt-8">
+        <div id="hero-image-editors" className="mt-8 scroll-mt-24">
           <div className="mb-2">
             <h3 className="font-display text-lg font-black">Ajustar imagem de cada destaque</h3>
             <p className="text-[11px] text-white/50">
