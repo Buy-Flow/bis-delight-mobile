@@ -3598,11 +3598,28 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
 
       {/* Selecionados */}
       <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
             <Check className="h-3.5 w-3.5 text-neon-cyan" /> No carrossel
           </div>
-          <span className="text-[10px] text-white/40">{selected.length} selecionado{selected.length === 1 ? "" : "s"}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-white/40">
+              {selected.length} selecionado{selected.length === 1 ? "" : "s"}
+            </span>
+            {selected.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Remover todos os produtos do carrossel?")) {
+                    set("newsProductIds", []);
+                  }
+                }}
+                className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-300 hover:bg-red-500/20"
+              >
+                <Eraser className="h-3 w-3" /> Limpar
+              </button>
+            )}
+          </div>
         </div>
 
         {selected.length === 0 ? (
@@ -3611,55 +3628,83 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
           </div>
         ) : (
           <ul className="space-y-1.5">
-            {selected.map((p, i) => (
-              <li
-                key={p.id}
-                className="flex items-center gap-2 rounded-xl bg-white/5 p-2"
-              >
-                {p.image ? (
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="h-10 w-10 shrink-0 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-white/10" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[12.5px] font-semibold text-white">{p.name}</div>
-                  <div className="truncate text-[10.5px] text-white/40">{p.category}</div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => move(i, -1)}
-                    disabled={i === 0}
-                    className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
-                  >
-                    <ArrowUp className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => move(i, 1)}
-                    disabled={i === selected.length - 1}
-                    className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
-                  >
-                    <ArrowDown className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggle(p.id)}
-                    className="rounded-md border border-red-400/30 bg-red-500/10 p-1 text-red-300 hover:bg-red-500/20"
-                    aria-label="Remover"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </li>
-            ))}
+            {selected.map((p, i) => {
+              const hasHero = Boolean(p.heroImage);
+              return (
+                <li
+                  key={p.id}
+                  className="flex items-center gap-2 rounded-xl bg-white/5 p-2"
+                >
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-neon-cyan/20 text-[10px] font-black text-neon-cyan">
+                    {i + 1}
+                  </span>
+                  {p.image ? (
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-white/10" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[12.5px] font-semibold text-white">{p.name}</div>
+                    <div className="flex items-center gap-1.5 text-[10.5px] text-white/40">
+                      <span className="truncate">{p.category}</span>
+                      {!hasHero && (
+                        <span
+                          title="Sem imagem hero (heroImage). O card usará a imagem padrão do produto."
+                          className="inline-flex items-center gap-0.5 rounded-full bg-yellow-400/15 px-1.5 py-[1px] text-[9px] font-bold text-yellow-300"
+                        >
+                          <AlertTriangle className="h-2.5 w-2.5" /> sem hero
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => move(i, -1)}
+                      disabled={i === 0}
+                      className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
+                      aria-label="Mover para cima"
+                    >
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => move(i, 1)}
+                      disabled={i === selected.length - 1}
+                      className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
+                      aria-label="Mover para baixo"
+                    >
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggle(p.id)}
+                      className="rounded-md border border-red-400/30 bg-red-500/10 p-1 text-red-300 hover:bg-red-500/20"
+                      aria-label="Remover"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
+
+        {selected.length > 0 && selected.some((p) => !p.heroImage) && (
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-yellow-400/25 bg-yellow-400/5 p-3 text-[11px] text-yellow-200">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span>
+              Alguns produtos não têm <b>imagem hero</b> configurada. O carrossel fica muito melhor com ela — edite o produto em <b>Cardápio</b> e defina a imagem hero.
+            </span>
+          </div>
+        )}
       </div>
+
 
       {/* Adicionar */}
       <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
