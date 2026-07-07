@@ -89,34 +89,45 @@ export function NewsCarousel({
             {title}
           </span>
         </h2>
-        <span
-          className="-rotate-[6deg] whitespace-nowrap text-lg text-neon-cyan drop-shadow-[0_0_6px_rgba(90,220,255,0.6)]"
-          style={{ fontFamily: "'Caveat', cursive" }}
-        >
-          acabou de sair!
-        </span>
+        {subtitle && (
+          <span
+            className="-rotate-[6deg] whitespace-nowrap text-lg text-neon-cyan drop-shadow-[0_0_6px_rgba(90,220,255,0.6)]"
+            style={{ fontFamily: "'Caveat', cursive" }}
+          >
+            {subtitle}
+          </span>
+        )}
       </div>
 
       {/* Ticker bar */}
-      <div className="relative mb-4 overflow-hidden py-2">
-        <div className="relative flex items-center gap-2 overflow-hidden">
-          <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-5 text-[10px] font-bold uppercase tracking-[0.28em] text-white/60">
-            {Array.from({ length: 2 }).map((_, r) => (
-              <span key={r} className="flex items-center gap-6">
-                <Sparkles className="h-3 w-3 text-neon-yellow" />
-                Lançamento fresquinho
-                <span className="h-1 w-1 rounded-full bg-neon-pink" />
-                Edição limitada
-                <span className="h-1 w-1 rounded-full bg-neon-cyan" />
-                Só na Quero Bis
-                <span className="h-1 w-1 rounded-full bg-neon-yellow" />
-                Novidade da semana
-                <span className="h-1 w-1 rounded-full bg-neon-pink" />
-              </span>
-            ))}
+      {(() => {
+        const tickerItems = ticker
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+        if (tickerItems.length === 0) return null;
+        const dotColors = ["bg-neon-pink", "bg-neon-cyan", "bg-neon-yellow"];
+        return (
+          <div className="relative mb-4 overflow-hidden py-2">
+            <div className="relative flex items-center gap-2 overflow-hidden">
+              <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-5 text-[10px] font-bold uppercase tracking-[0.28em] text-white/60">
+                {Array.from({ length: 2 }).map((_, r) => (
+                  <span key={r} className="flex items-center gap-6">
+                    <Sparkles className="h-3 w-3 text-neon-yellow" />
+                    {tickerItems.map((t, i) => (
+                      <span key={`${r}-${i}`} className="flex items-center gap-6">
+                        {t}
+                        <span className={cn("h-1 w-1 rounded-full", dotColors[i % dotColors.length])} />
+                      </span>
+                    ))}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
+
 
       {/* Card scroller — edge-to-edge, cards ocupam quase toda a tela */}
       <div
