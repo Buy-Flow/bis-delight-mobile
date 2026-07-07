@@ -80,6 +80,10 @@ export type Product = {
   imagePosX?: number;
   imagePosY?: number;
   imageScale?: number;
+  heroImage?: string;
+  heroImagePosX?: number;
+  heroImagePosY?: number;
+  heroImageScale?: number;
 };
 
 /* Reusable size presets */
