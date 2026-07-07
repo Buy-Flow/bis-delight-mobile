@@ -385,6 +385,28 @@ export function useToggleHero() {
   });
 }
 
+export function useUpdateHeroImage() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (p: {
+      id: string;
+      heroImage?: string | null;
+      heroImagePosX?: number;
+      heroImagePosY?: number;
+      heroImageScale?: number;
+    }) => {
+      const patch: Record<string, unknown> = {};
+      if (p.heroImage !== undefined) patch.hero_image_url = p.heroImage || null;
+      if (p.heroImagePosX !== undefined) patch.hero_image_pos_x = p.heroImagePosX;
+      if (p.heroImagePosY !== undefined) patch.hero_image_pos_y = p.heroImagePosY;
+      if (p.heroImageScale !== undefined) patch.hero_image_scale = p.heroImageScale;
+      const { error } = await supabase.from("products").update(patch).eq("id", p.id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
 export function useUpsertCategory() {
   const invalidate = useInvalidateMenu();
   return useMutation({
