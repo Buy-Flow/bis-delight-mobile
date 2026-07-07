@@ -63,12 +63,17 @@ function rowToProduct(row: Record<string, unknown>): Product {
   };
 }
 
+function getStaticCategoryImage(id: string) {
+  return STATIC_CATEGORIES.find((category) => category.id === id)?.image ?? "";
+}
+
 function rowToCategory(row: Record<string, unknown>): Category {
+  const id = String(row.id);
   return {
-    id: String(row.id),
+    id,
     name: String(row.name),
     emoji: String(row.emoji ?? "✨"),
-    image: (row.image_url as string) || "",
+    image: (row.image_url as string) || getStaticCategoryImage(id),
     icon: (row.icon as string | null) ?? null,
     imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
@@ -123,7 +128,7 @@ export function useCategories() {
           ? data.map((r) => rowToCategory(r as Record<string, unknown>))
           : STATIC_CATEGORIES.filter((c) => c.id !== "all");
       return [
-        { id: "all", name: "Tudo", emoji: "✨", image: rows[0]?.image ?? "" } as Category,
+        { id: "all", name: "Tudo", emoji: "✨", image: getStaticCategoryImage("all") || rows[0]?.image || "" } as Category,
         ...rows,
       ];
     },
