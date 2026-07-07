@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { useCart } from "@/lib/cart-context";
 import { TopBar } from "@/components/menu/TopBar";
