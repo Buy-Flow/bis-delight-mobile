@@ -87,6 +87,7 @@ export function ProductModal({
   onClose: () => void;
 }) {
   const { add } = useCart();
+  const { data: settings } = useSiteSettings();
   const [sizeId, setSizeId] = useState<string>(product?.sizes[0]?.id ?? "u");
   const [flavor, setFlavor] = useState<string | undefined>(product?.flavors?.[0]);
   const [extras, setExtras] = useState<string[]>([]);
@@ -108,10 +109,20 @@ export function ProductModal({
   if (!product) return null;
 
   // Rich customization pools with sensible fallbacks per category
-  const availableExtras: ExtraOption[] =
+  const productExtras: ExtraOption[] =
     product.extras && product.extras.length > 0
       ? product.extras
       : getDefaultExtras(product.category);
+  const globalExtras: ExtraOption[] = settings?.globalExtras ?? [];
+  // Merge globals + product extras (product-specific overrides global with same id)
+  const seen = new Set<string>();
+  const availableExtras: ExtraOption[] = [];
+  for (const e of [...globalExtras, ...productExtras]) {
+    if (seen.has(e.id)) continue;
+    seen.add(e.id);
+    availableExtras.push(e);
+  }
+
   const removableList: string[] =
     product.removable && product.removable.length > 0
       ? product.removable
