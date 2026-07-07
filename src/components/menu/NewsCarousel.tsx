@@ -39,27 +39,49 @@ export function NewsCarousel({
   }, [items.length]);
 
   return (
-    <section className="relative overflow-visible pb-6 pt-4">
-      {/* Ambient glow backdrop */}
+    <section className="relative isolate overflow-visible py-8">
+      {/* Full-bleed background band */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-16 top-6 h-56 w-56 rounded-full opacity-60 blur-3xl"
-        style={{ background: "oklch(0.70 0.28 355 / 0.35)" }}
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.14 0.11 305 / 0) 0%, oklch(0.18 0.14 305 / 0.85) 12%, oklch(0.20 0.16 320 / 0.9) 50%, oklch(0.18 0.14 305 / 0.85) 88%, oklch(0.14 0.11 305 / 0) 100%)",
+        }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-16 bottom-0 h-56 w-56 rounded-full opacity-50 blur-3xl"
-        style={{ background: "oklch(0.85 0.18 200 / 0.30)" }}
+        className="pointer-events-none absolute inset-0 -z-10 opacity-40 mix-blend-screen"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 15% 20%, oklch(0.72 0.26 350 / 0.55), transparent 45%), radial-gradient(circle at 85% 80%, oklch(0.85 0.18 200 / 0.45), transparent 50%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, oklch(0.72 0.26 350 / 0.7), oklch(0.85 0.18 200 / 0.7), transparent)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, oklch(0.85 0.18 200 / 0.6), oklch(0.72 0.26 350 / 0.6), transparent)",
+        }}
       />
 
       {/* Header — magazine style */}
-      <div className="relative mb-4 flex items-baseline gap-3 px-4">
+      <div className="relative mb-3 flex items-baseline gap-3 px-5">
         <h2
-          className="font-display text-[32px] font-black uppercase italic leading-none text-white"
+          className="font-display text-[36px] font-black uppercase italic leading-none text-white"
           style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "-0.01em" }}
         >
           Nossas{" "}
-          <span className="text-neon-pink drop-shadow-[0_0_10px_rgba(255,45,149,0.75)]">
+          <span className="text-neon-pink drop-shadow-[0_0_12px_rgba(255,45,149,0.85)]">
             {title}
           </span>
         </h2>
@@ -71,18 +93,10 @@ export function NewsCarousel({
         </span>
       </div>
 
-      {/* Ticker bar — soft gradient edges, no hard borders */}
+      {/* Ticker bar */}
       <div className="relative mb-4 overflow-hidden py-2">
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, oklch(0.20 0.12 305 / 0.5) 20%, oklch(0.20 0.12 305 / 0.5) 80%, transparent)",
-          }}
-        />
         <div className="relative flex items-center gap-2 overflow-hidden">
-          <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-4 text-[10px] font-bold uppercase tracking-[0.28em] text-white/55">
+          <div className="flex shrink-0 animate-[news-marquee_22s_linear_infinite] gap-6 whitespace-nowrap pl-5 text-[10px] font-bold uppercase tracking-[0.28em] text-white/60">
             {Array.from({ length: 2 }).map((_, r) => (
               <span key={r} className="flex items-center gap-6">
                 <Sparkles className="h-3 w-3 text-neon-yellow" />
@@ -100,19 +114,11 @@ export function NewsCarousel({
         </div>
       </div>
 
-      {/* Card scroller — generous vertical padding so neon halos don't clip,
-          and edge mask fades left/right for smooth continuity */}
+      {/* Card scroller — edge-to-edge, cards ocupam quase toda a tela */}
       <div
         ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-8 px-8 py-10"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
-          maskImage:
-            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
-        }}
+        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-5 px-5 py-6"
       >
-
         {items.map((p, i) => (
           <NewsPosterCard
             key={p.id}
@@ -126,13 +132,13 @@ export function NewsCarousel({
 
       {/* Progress rail */}
       {items.length > 1 && (
-        <div className="mt-1 flex items-center justify-center gap-2 px-4">
+        <div className="mt-2 flex items-center justify-center gap-2 px-4">
           {items.map((_, i) => (
             <span
               key={i}
               className={cn(
                 "h-[3px] rounded-full transition-all",
-                i === activeIdx ? "w-8 bg-neon-pink shadow-[0_0_8px_rgba(255,45,149,0.8)]" : "w-2 bg-white/20",
+                i === activeIdx ? "w-10 bg-neon-pink shadow-[0_0_10px_rgba(255,45,149,0.9)]" : "w-2 bg-white/25",
               )}
             />
           ))}
