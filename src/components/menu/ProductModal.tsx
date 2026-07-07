@@ -158,14 +158,15 @@ export function ProductModal({
       />
       <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
         {/* Header — mesmo estilo do "Monte seu açaí" */}
-        <div className="relative h-[320px] shrink-0 overflow-hidden">
+        <div className="relative h-[220px] shrink-0 overflow-hidden">
           <div className="absolute inset-0 noise-purple" />
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_55%,oklch(0.86_0.18_200_/_0.35),transparent_65%)]" />
           <img
             src={product.image}
             alt={product.name}
-            className="absolute left-1/2 top-0 h-[290px] w-[110%] max-w-none -translate-x-1/2 object-contain drop-shadow-[0_28px_28px_rgba(0,0,0,0.55)] animate-float-slow"
+            className="absolute left-1/2 -top-2 h-[200px] w-[100%] max-w-none -translate-x-1/2 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.55)] animate-float-slow"
           />
+
 
 
           <button
@@ -301,17 +302,17 @@ export function ProductModal({
             />
           </Section>
 
-          <div className="h-24" />
+          <div className="h-8" />
         </div>
 
         {/* Sticky footer */}
-        <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-2">
             <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
                 aria-label="Diminuir"
-                className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white active:scale-95"
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white active:scale-95"
               >
                 <Minus className="h-4 w-4" />
               </button>
@@ -319,19 +320,20 @@ export function ProductModal({
               <button
                 onClick={() => setQty(qty + 1)}
                 aria-label="Aumentar"
-                className="grid h-10 w-10 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] active:scale-95"
+                className="grid h-9 w-9 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] active:scale-95"
               >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
             <button
               onClick={submit}
-              className="flex-1 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
+              className="flex-1 rounded-2xl bg-neon-pink px-4 py-3 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
               {brl(total)}
             </button>
           </div>
         </div>
+
 
       </div>
     </div>
