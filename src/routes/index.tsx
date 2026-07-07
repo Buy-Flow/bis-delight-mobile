@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { useCart } from "@/lib/cart-context";
 import { TopBar } from "@/components/menu/TopBar";
@@ -109,7 +109,7 @@ function Content() {
 
   return (
     <div
-      className="relative mx-auto min-h-screen w-full max-w-[520px] pb-32"
+      className="relative mx-auto min-h-screen w-full max-w-[520px]"
       style={{
         backgroundColor: "#0d0322",
         backgroundImage: `url(${heroTexture.url})`,
@@ -296,9 +296,12 @@ function Content() {
         />
         <div className="mt-4 text-[12px] text-white/60">{settings?.address ?? BRAND.address}</div>
         <div className="mt-1 text-[12px] text-white/60">{settings?.whatsappDisplay ?? BRAND.whatsappDisplay}</div>
-        <div className="mt-6 text-[10px] text-white/30">
+        <Link
+          to="/admin"
+          className="mt-6 block text-[10px] text-white/30 transition-colors hover:text-white/60"
+        >
           © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com 💜
-        </div>
+        </Link>
       </footer>
 
 
