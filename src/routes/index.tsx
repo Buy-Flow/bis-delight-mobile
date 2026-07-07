@@ -142,13 +142,13 @@ function Content() {
 
       {/* Novidades */}
       {settings?.newsActive && (
-        <section className="pb-2 pt-2">
+        <section className="overflow-visible pb-2 pt-2">
           {newsLoading ? (
-            <div className="flex gap-5 overflow-hidden px-4 pt-6" aria-label="Carregando novidades" aria-busy="true">
+            <div className="flex gap-5 overflow-visible px-8 py-8" aria-label="Carregando novidades" aria-busy="true">
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="aspect-[3/4] w-[260px] shrink-0 animate-pulse rounded-[28px] bg-white/5 ring-1 ring-white/10"
+                  className="h-[300px] w-[190px] shrink-0 animate-pulse rounded-[22px] bg-white/5 ring-1 ring-white/10"
                 />
               ))}
             </div>
@@ -176,10 +176,10 @@ function Content() {
 
 
       {/* Monte seu açaí banner */}
-      <section className="px-4 py-6">
+      <section className="overflow-visible px-4 py-6">
         <button
           onClick={openAcai}
-          className="shine-strip group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
+          className="shine-strip group relative flex w-full items-center gap-4 rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
         >
           <div className="relative z-10">
             <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
@@ -439,7 +439,7 @@ function HighlightsCarousel({
   }[accentColor];
 
   return (
-    <section className="pb-4 pt-2">
+      <section className="overflow-visible pb-4 pt-2">
       {!hideHeader && (
         <div className="mb-3 px-4 text-center">
           <h2
@@ -474,7 +474,13 @@ function HighlightsCarousel({
 
       <div
         ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-3"
+        className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-8 px-8 py-8"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
+          maskImage:
+            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
+        }}
       >
         {highlights.map((p) => (
           <div key={p.id} className="w-[88%] shrink-0 snap-start">
