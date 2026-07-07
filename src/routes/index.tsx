@@ -82,8 +82,10 @@ function Content() {
   const { isAcaiOpen, openAcai, closeAcai, isCartOpen, isCheckoutOpen } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { data: products = [] } = useProducts();
-  const { data: settings } = useSiteSettings();
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
+  const { data: settings, isLoading: settingsLoading, error: settingsError } = useSiteSettings();
+  const newsLoading = settingsLoading || productsLoading;
+  const newsError = settingsError || productsError;
 
   const scrollToMenu = () => {
     document.getElementById("categorias")?.scrollIntoView({ behavior: "smooth", block: "start" });
