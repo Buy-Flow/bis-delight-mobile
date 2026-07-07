@@ -81,6 +81,20 @@ export function AccountButton() {
                 navigate({ to: "/conta", search: { tab: "perfil" } as never });
               }}
             />
+            {isAdmin && (
+              <div className="border-t border-white/10">
+                <MenuItem
+                  icon={Shield}
+                  label="Painel Administrador"
+                  accent
+                  onClick={() => {
+                    setOpen(false);
+                    navigate({ to: "/admin" });
+                  }}
+                />
+              </div>
+            )}
+
             <div className="border-t border-white/10">
               <MenuItem
                 icon={LogOut}
