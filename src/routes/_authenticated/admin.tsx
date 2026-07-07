@@ -49,6 +49,7 @@ import {
   useSiteSettings,
   useUpsertProduct,
   useDeleteProduct,
+  useUpdateProductExtras,
   useToggleHero,
   useUpdateHeroImage,
   useToggleProductActive,
@@ -82,7 +83,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "settings";
+type Tab = "products" | "categories" | "highlights" | "extras" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -125,6 +126,7 @@ function AdminPage() {
     { id: "products", label: "Produtos", icon: Package },
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "highlights", label: "Destaques", icon: Star },
+    { id: "extras", label: "Complementos", icon: Plus },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
@@ -181,6 +183,7 @@ function AdminPage() {
         {tab === "products" && <ProductsTab />}
         {tab === "categories" && <CategoriesTab />}
         {tab === "highlights" && <HighlightsTab />}
+        {tab === "extras" && <ExtrasTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
@@ -3793,6 +3796,221 @@ function AppearanceSection({
             })}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================= Extras Tab ============================= */
+function ExtrasTab() {
+  const { data: products = [] } = useAllProducts();
+  const { data: categories = [] } = useCategories();
+  const update = useUpdateProductExtras();
+
+  const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, import("@/data/menu").ExtraOption[]>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const catList = categories.filter((c) => c.id !== "all");
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (filter !== "all" && p.category !== filter) return false;
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [products, filter, search]);
+
+  const getList = (p: Product) => drafts[p.id] ?? p.extras ?? [];
+  const setList = (id: string, list: import("@/data/menu").ExtraOption[]) =>
+    setDrafts((d) => ({ ...d, [id]: list }));
+
+  const dirty = (p: Product) => {
+    const d = drafts[p.id];
+    if (!d) return false;
+    return JSON.stringify(d) !== JSON.stringify(p.extras ?? []);
+  };
+
+  const save = async (p: Product) => {
+    setSavingId(p.id);
+    try {
+      await update.mutateAsync({ id: p.id, extras: getList(p) });
+      setDrafts((d) => {
+        const n = { ...d };
+        delete n[p.id];
+        return n;
+      });
+      toast.success("Complementos salvos");
+    } catch {
+      toast.error("Falha ao salvar");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const discard = (id: string) =>
+    setDrafts((d) => {
+      const n = { ...d };
+      delete n[id];
+      return n;
+    });
+
+  return (
+    <div>
+      <div className="mb-4">
+        <h2 className="font-display text-2xl font-black">Complementos</h2>
+        <p className="text-xs text-white/50">
+          Adicione, edite ou remova os adicionais pagos de cada produto.
+        </p>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[180px]">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar produto..."
+            className={cn(inputCls, "pl-9")}
+          />
+        </div>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className={cn(inputCls, "w-auto")}
+        >
+          <option value="all">Todas categorias</option>
+          {catList.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {visible.length === 0 && (
+        <div className="rounded-xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
+          Nenhum produto encontrado.
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {visible.map((p) => {
+          const list = getList(p);
+          const isOpen = expanded === p.id;
+          const isDirty = dirty(p);
+          return (
+            <div
+              key={p.id}
+              className="rounded-2xl border border-white/10 bg-white/5"
+            >
+              <button
+                onClick={() => setExpanded(isOpen ? null : p.id)}
+                className="flex w-full items-center gap-3 px-3 py-3 text-left"
+              >
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt=""
+                    className="h-10 w-10 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-lg bg-white/5" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-bold">{p.name}</div>
+                  <div className="truncate text-[11px] text-white/50">
+                    {catList.find((c) => c.id === p.category)?.name ?? p.category} ·{" "}
+                    {(p.extras?.length ?? 0)} complemento
+                    {(p.extras?.length ?? 0) === 1 ? "" : "s"}
+                  </div>
+                </div>
+                {isDirty && (
+                  <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-yellow">
+                    Não salvo
+                  </span>
+                )}
+                {isOpen ? (
+                  <ArrowUp className="h-4 w-4 text-white/50" />
+                ) : (
+                  <ArrowDown className="h-4 w-4 text-white/50" />
+                )}
+              </button>
+
+              {isOpen && (
+                <div className="border-t border-white/10 p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="text-[11px] text-white/50">
+                      Nome exibido e preço unitário do adicional.
+                    </div>
+                    <button
+                      onClick={() =>
+                        setList(p.id, [
+                          ...list,
+                          { id: `e${Date.now()}`, label: "Novo complemento", price: 0 },
+                        ])
+                      }
+                      className="inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Adicionar
+                    </button>
+                  </div>
+
+                  <RowList
+                    items={list}
+                    onChange={(v) => setList(p.id, v)}
+                    render={(row, upd) => (
+                      <>
+                        <input
+                          className={cn(inputCls, "flex-1")}
+                          placeholder="Ex.: Leite Ninho"
+                          value={row.label}
+                          onChange={(e) => upd({ ...row, label: e.target.value })}
+                        />
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px] text-white/50">R$</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            className={cn(inputCls, "w-20")}
+                            value={row.price}
+                            onChange={(e) => upd({ ...row, price: Number(e.target.value) })}
+                          />
+                        </div>
+                      </>
+                    )}
+                    emptyLabel="Nenhum complemento cadastrado."
+                  />
+
+                  <div className="mt-3 flex items-center justify-end gap-2">
+                    {isDirty && (
+                      <button
+                        onClick={() => discard(p.id)}
+                        className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-white/70 hover:bg-white/5"
+                      >
+                        Descartar
+                      </button>
+                    )}
+                    <button
+                      onClick={() => save(p)}
+                      disabled={!isDirty || savingId === p.id}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-neon-pink px-3 py-2 text-xs font-bold text-white glow-pink disabled:opacity-40"
+                    >
+                      {savingId === p.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Save className="h-3.5 w-3.5" />
+                      )}
+                      Salvar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

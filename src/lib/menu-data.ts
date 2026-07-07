@@ -374,6 +374,20 @@ export function useDeleteProduct() {
   });
 }
 
+export function useUpdateProductExtras() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async ({ id, extras }: { id: string; extras: ExtraOption[] | null }) => {
+      const { error } = await supabase
+        .from("products")
+        .update({ extras: extras && extras.length ? extras : null })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
 export function useToggleHero() {
   const invalidate = useInvalidateMenu();
   return useMutation({
