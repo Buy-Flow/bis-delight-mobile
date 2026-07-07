@@ -68,7 +68,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Sub headline in script */}
         <div
-          className="mt-3 -rotate-[2deg] text-[22px] leading-tight text-white"
+          className="mt-3 -rotate-[2deg] text-[28px] leading-tight text-white"
           style={{
             fontFamily: "'Caveat', cursive",
             fontWeight: 700,
@@ -79,6 +79,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           <br />
           cada <span className="text-neon-yellow">colher.</span>
         </div>
+
 
 
         {/* Offer chips */}
