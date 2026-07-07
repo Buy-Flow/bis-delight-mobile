@@ -176,6 +176,7 @@ const DEFAULT_EXTRA: Pick<
   | "newsSubtitle"
   | "newsTicker"
   | "newsProductIds"
+  | "globalExtras"
 > = {
   instagram: "",
   facebook: "",
@@ -195,7 +196,9 @@ const DEFAULT_EXTRA: Pick<
   newsSubtitle: "acabou de sair!",
   newsTicker: "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana",
   newsProductIds: [],
+  globalExtras: [],
 };
+
 
 export function useSiteSettings() {
   return useQuery({
