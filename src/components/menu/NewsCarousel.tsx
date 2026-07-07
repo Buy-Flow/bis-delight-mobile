@@ -173,7 +173,7 @@ function NewsPosterCard({
   const heroScale = product.heroImage ? (product.heroImageScale ?? 1.15) : 1.15;
 
   return (
-    <article className="group relative w-[190px] shrink-0 snap-center">
+    <article className="group relative w-[85vw] max-w-[420px] shrink-0 snap-center">
       <button
         onClick={() => onOpen(product)}
         className="relative flex w-full flex-col overflow-hidden rounded-[22px] border border-neon-pink/40 bg-[oklch(0.16_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1 group-hover:border-neon-pink"
