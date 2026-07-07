@@ -1991,6 +1991,7 @@ type SettingsSection =
   | "payment"
   | "social"
   | "announcement"
+  | "news"
   | "appearance";
 
 const DAY_LABEL: Record<WeekDay, string> = {
