@@ -68,6 +68,7 @@ import {
 } from "@/lib/menu-data";
 import type { Product, Category } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
+import { HighlightCard } from "@/components/menu/HighlightCard";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
