@@ -259,6 +259,8 @@ export function useSiteSettings() {
         newsSubtitle: String((data as Record<string, unknown>).news_subtitle ?? "acabou de sair!"),
         newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
         newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
+        globalExtras: Array.isArray(rawGlobalExtras) ? rawGlobalExtras : [],
+
       };
     },
   });
