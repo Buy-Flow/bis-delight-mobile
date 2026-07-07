@@ -140,15 +140,15 @@ function Content() {
       <Benefits />
       
 
-      {/* Novidades */}
+      {/* Novidades — faixa full-bleed */}
       {settings?.newsActive && (
-        <section className="overflow-visible pb-2 pt-2">
+        <section className="relative -mx-4 sm:-mx-6 md:-mx-8 overflow-visible">
           {newsLoading ? (
-            <div className="flex gap-5 overflow-visible px-8 py-8" aria-label="Carregando novidades" aria-busy="true">
+            <div className="flex gap-5 overflow-visible px-4 py-10" aria-label="Carregando novidades" aria-busy="true">
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-[300px] w-[190px] shrink-0 animate-pulse rounded-[22px] bg-white/5 ring-1 ring-white/10"
+                  className="h-[380px] w-[85vw] max-w-[420px] shrink-0 animate-pulse rounded-[28px] bg-white/5 ring-1 ring-white/10"
                 />
               ))}
             </div>
@@ -169,6 +169,7 @@ function Content() {
           )}
         </section>
       )}
+
 
 
       {/* Highlights */}
