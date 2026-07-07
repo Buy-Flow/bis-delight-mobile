@@ -171,7 +171,7 @@ export function NewsCarousel({
       {/* Card scroller — edge-to-edge, cards ocupam quase toda a tela */}
       <div
         ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-5 px-5 py-6"
+        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto py-6 px-[7.5vw] scroll-px-[7.5vw]"
       >
         {items.map((p, i) => (
           <NewsPosterCard
