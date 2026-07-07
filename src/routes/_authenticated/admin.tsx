@@ -1919,13 +1919,29 @@ function HighlightsTab() {
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="font-display text-2xl font-black">Nossos Destaques</h2>
-        <p className="text-xs text-white/50">
-          Marque os produtos que devem aparecer no carrossel de destaques da home.{" "}
-          <b className="text-neon-yellow">{heroCount}</b> em destaque.
-        </p>
+      <div className="mb-4 flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-2xl font-black">Nossos Destaques</h2>
+          <p className="text-xs text-white/50">
+            Marque os produtos que devem aparecer no carrossel de destaques da home.{" "}
+            <b className="text-neon-yellow">{heroCount}</b> em destaque.
+          </p>
+        </div>
+        {heroProducts.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              document
+                .getElementById("hero-image-editors")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className="shrink-0 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-neon-cyan hover:bg-neon-cyan/20"
+          >
+            Ajustar imagens ↓
+          </button>
+        )}
       </div>
+
 
       <div className="mb-3 space-y-2">
         <div className="relative">
