@@ -442,7 +442,7 @@ function HighlightsCarousel({
             className={cn(
               "h-1.5 rounded-full transition-all",
               i === activeIdx
-                ? "w-5 bg-neon-pink"
+                ? cn("w-5", accent.dot)
                 : "w-1.5 bg-white/30",
             )}
           />
