@@ -126,6 +126,7 @@ export function NewsCarousel({
             onOpen={onOpen}
             badge={BADGE_STYLES[i % BADGE_STYLES.length]}
             eyebrow={EYEBROWS[i % EYEBROWS.length]}
+            index={i}
           />
         ))}
       </div>
