@@ -225,8 +225,9 @@ function NewsPosterCard({
 }) {
   const heroSrc = product.heroImage || product.image;
   const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
-  const heroPosY = product.heroImage ? (product.heroImagePosY ?? -8) : -8;
-  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.2) : 1.2;
+  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
+  const heroScale = product.heroImage ? (product.heroImageScale ?? 1) : 1;
+
   // (issue label removed — cleaner card)
 
   // Split product name so we can stack it dramatically across two lines
@@ -249,12 +250,13 @@ function NewsPosterCard({
           src={heroSrc}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+          className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.03]"
           style={{
             transform: `translate(${heroPosX}%, ${heroPosY}%) scale(${heroScale})`,
             transformOrigin: "center",
           }}
         />
+
 
         {/* Wash bem sutil só no rodapé para legibilidade do texto */}
         <div
