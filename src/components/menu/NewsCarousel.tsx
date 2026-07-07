@@ -221,7 +221,7 @@ function NewsPosterCard({
               backgroundSize: "22px 22px, 30px 30px",
             }}
           />
-          <div className="absolute left-2.5 top-2.5 z-20">
+          <div className="absolute left-4 top-4 z-20">
             <div
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[9.5px] font-black uppercase tracking-tight",
