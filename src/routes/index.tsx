@@ -88,6 +88,11 @@ function Content() {
     document.getElementById("categorias")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const scrollToFeitoComAmor = () => {
+    document.getElementById("feito-com-amor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+
   const highlights = useMemo(() => products.filter((p) => p.hero), [products]);
   const filtered = useMemo(() => {
     const byCat = activeCat === "all" ? products : products.filter((p) => p.category === activeCat);
@@ -120,7 +125,7 @@ function Content() {
         </div>
       )}
 
-      <TopBar onOpenCategories={scrollToMenu} />
+      <TopBar onOpenCategories={scrollToFeitoComAmor} />
       <Hero onScrollMenu={scrollToMenu} />
       <Benefits />
       
@@ -164,7 +169,8 @@ function Content() {
       {/* Product list */}
       <section ref={menuRef} className="px-4 pb-6">
 
-        <div className="mb-4">
+        <div id="feito-com-amor" className="mb-4 scroll-mt-20">
+
           <div className="flex items-center justify-center gap-3">
             <span className="h-[2px] w-8 rounded-full bg-linear-to-r from-transparent to-neon-pink" />
             <span
