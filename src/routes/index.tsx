@@ -144,7 +144,7 @@ function Content() {
 
       {/* Novidades — faixa full-bleed */}
       {settings?.newsActive && (
-        <section className="relative -mx-4 sm:-mx-6 md:-mx-8 overflow-visible">
+        <Reveal as="section" className="relative -mx-4 sm:-mx-6 md:-mx-8 overflow-visible">
           {newsLoading ? (
             <div className="flex gap-5 overflow-visible px-4 py-10" aria-label="Carregando novidades" aria-busy="true">
               {[0, 1, 2].map((i) => (
@@ -171,7 +171,7 @@ function Content() {
               Nenhuma novidade por aqui ainda. Volte em breve!
             </div>
           )}
-        </section>
+        </Reveal>
       )}
 
 
