@@ -224,7 +224,7 @@ function NewsPosterCard({
           <div className="absolute left-4 top-4 z-20">
             <div
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[9.5px] font-black uppercase tracking-tight",
+                "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-tight",
                 badge.bg,
                 badge.text,
                 badge.shadow,
@@ -232,7 +232,7 @@ function NewsPosterCard({
               )}
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              <Sparkles className="h-2.5 w-2.5" strokeWidth={3} />
+              <Sparkles className="h-3 w-3" strokeWidth={3} />
               {badge.label}
             </div>
           </div>
