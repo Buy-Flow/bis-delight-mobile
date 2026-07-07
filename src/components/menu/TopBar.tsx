@@ -1,6 +1,7 @@
-import { ShoppingBag, Menu, MapPin } from "lucide-react";
+import { ShoppingBag, Menu } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
+import { AccountButton } from "./AccountButton";
 
 export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
   const { count, openCart } = useCart();
@@ -16,7 +17,6 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
           <Menu className="h-5 w-5" />
         </button>
 
-
         <div className="flex items-center gap-2">
           <img
             src={BRAND.logo}
@@ -26,13 +26,7 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href="#localizacao"
-            aria-label="Delivery"
-            className="hidden sm:grid h-11 w-11 place-items-center rounded-2xl card-acai active:scale-95 transition"
-          >
-            <MapPin className="h-5 w-5 text-neon-cyan" />
-          </a>
+          <AccountButton />
           <button
             onClick={openCart}
             aria-label="Abrir carrinho"
