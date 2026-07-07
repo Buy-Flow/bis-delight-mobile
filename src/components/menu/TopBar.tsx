@@ -1,10 +1,9 @@
-import { ShoppingBag, Menu } from "lucide-react";
-import { useCart } from "@/lib/cart-context";
+import { Menu } from "lucide-react";
 import { BRAND } from "@/data/menu";
 import { AccountButton } from "./AccountButton";
 
 export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
-  const { count, openCart } = useCart();
+
 
   return (
     <header className="sticky top-0 z-40 bg-transparent">
