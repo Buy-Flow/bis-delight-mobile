@@ -370,6 +370,9 @@ export type Database = {
           maps_url: string
           min_order: number
           name: string
+          news_active: boolean
+          news_product_ids: Json
+          news_title: string
           open_override: string
           payment_methods: Json
           pix_key: string
@@ -399,6 +402,9 @@ export type Database = {
           maps_url?: string
           min_order?: number
           name?: string
+          news_active?: boolean
+          news_product_ids?: Json
+          news_title?: string
           open_override?: string
           payment_methods?: Json
           pix_key?: string
@@ -428,6 +434,9 @@ export type Database = {
           maps_url?: string
           min_order?: number
           name?: string
+          news_active?: boolean
+          news_product_ids?: Json
+          news_title?: string
           open_override?: string
           payment_methods?: Json
           pix_key?: string

@@ -95,6 +95,12 @@ function Content() {
 
 
   const highlights = useMemo(() => products.filter((p) => p.hero), [products]);
+  const newsItems = useMemo(() => {
+    const ids = settings?.newsProductIds ?? [];
+    if (!ids.length) return [];
+    const byId = new Map(products.map((p) => [p.id, p]));
+    return ids.map((id) => byId.get(id)).filter((p): p is typeof products[number] => Boolean(p));
+  }, [products, settings?.newsProductIds]);
   const filtered = useMemo(() => {
     const byCat = activeCat === "all" ? products : products.filter((p) => p.category === activeCat);
     const q = query.trim().toLowerCase();
@@ -130,6 +136,17 @@ function Content() {
       <Hero onScrollMenu={scrollToMenu} />
       <Benefits />
       
+
+      {/* Novidades */}
+      {settings?.newsActive && newsItems.length > 0 && (
+        <HighlightsCarousel
+          highlights={newsItems}
+          onOpen={setModalProduct}
+          titleLead="Nossas"
+          titleAccent={settings.newsTitle || "Novidades"}
+          accentColor="cyan"
+        />
+      )}
 
       {/* Highlights */}
       <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
@@ -322,9 +339,15 @@ function Content() {
 function HighlightsCarousel({
   highlights,
   onOpen,
+  titleLead = "Nossos",
+  titleAccent = "Destaques",
+  accentColor = "yellow",
 }: {
   highlights: Product[];
   onOpen: (p: Product) => void;
+  titleLead?: string;
+  titleAccent?: string;
+  accentColor?: "yellow" | "cyan" | "pink";
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -346,6 +369,27 @@ function HighlightsCarousel({
     el.scrollTo({ left: i * el.clientWidth * 0.88, behavior: "smooth" });
   };
 
+  const accent = {
+    yellow: {
+      text: "text-neon-yellow",
+      shadow: "drop-shadow-[0_4px_14px_rgba(255,215,60,0.45)]",
+      stroke: "oklch(0.72 0.26 350)",
+      dot: "bg-neon-pink",
+    },
+    cyan: {
+      text: "text-neon-cyan",
+      shadow: "drop-shadow-[0_4px_14px_rgba(90,220,255,0.45)]",
+      stroke: "oklch(0.80 0.16 200)",
+      dot: "bg-neon-cyan",
+    },
+    pink: {
+      text: "text-neon-pink",
+      shadow: "drop-shadow-[0_4px_14px_rgba(255,90,170,0.45)]",
+      stroke: "oklch(0.72 0.26 350)",
+      dot: "bg-neon-pink",
+    },
+  }[accentColor];
+
   return (
     <section className="pb-4 pt-2">
       <div className="mb-3 px-4 text-center">
@@ -353,10 +397,10 @@ function HighlightsCarousel({
           className="font-display text-[34px] font-black uppercase leading-[0.95] text-white"
           style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif", letterSpacing: "0.01em" }}
         >
-          Nossos{" "}
+          {titleLead}{" "}
           <span className="relative inline-block">
-            <span className="relative z-10 text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.45)]">
-              Destaques
+            <span className={cn("relative z-10", accent.text, accent.shadow)}>
+              {titleAccent}
             </span>
             <svg
               aria-hidden="true"
@@ -366,7 +410,7 @@ function HighlightsCarousel({
             >
               <path
                 d="M4 8 C 40 2, 80 12, 120 4 C 138 1, 150 6, 156 9"
-                stroke="oklch(0.72 0.26 350)"
+                stroke={accent.stroke}
                 strokeWidth="3"
                 strokeLinecap="round"
               />
@@ -374,6 +418,8 @@ function HighlightsCarousel({
           </span>
         </h2>
       </div>
+
+
 
 
       <div
@@ -396,7 +442,7 @@ function HighlightsCarousel({
             className={cn(
               "h-1.5 rounded-full transition-all",
               i === activeIdx
-                ? "w-5 bg-neon-pink"
+                ? cn("w-5", accent.dot)
                 : "w-1.5 bg-white/30",
             )}
           />

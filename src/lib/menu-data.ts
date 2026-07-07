@@ -39,6 +39,9 @@ export type SiteSettings = {
   acceptsPickup: boolean;
   openOverride: "auto" | "open" | "closed";
   hoursJson: DayHours[];
+  newsActive: boolean;
+  newsTitle: string;
+  newsProductIds: string[];
 };
 
 function rowToProduct(row: Record<string, unknown>): Product {
@@ -160,6 +163,9 @@ const DEFAULT_EXTRA: Pick<
   | "acceptsPickup"
   | "openOverride"
   | "hoursJson"
+  | "newsActive"
+  | "newsTitle"
+  | "newsProductIds"
 > = {
   instagram: "",
   facebook: "",
@@ -174,6 +180,9 @@ const DEFAULT_EXTRA: Pick<
   acceptsPickup: true,
   openOverride: "auto",
   hoursJson: DEFAULT_HOURS,
+  newsActive: false,
+  newsTitle: "Novidades",
+  newsProductIds: [],
 };
 
 export function useSiteSettings() {
@@ -200,6 +209,7 @@ export function useSiteSettings() {
       }
       const rawHours = (data.hours_json as unknown) as DayHours[] | null;
       const rawMethods = (data.payment_methods as unknown) as string[] | null;
+      const rawNewsIds = (data.news_product_ids as unknown) as string[] | null;
       const rawOverride = String(data.open_override ?? "auto");
       return {
         name: data.name || STATIC_BRAND.name,
@@ -227,6 +237,9 @@ export function useSiteSettings() {
         acceptsPickup: Boolean(data.accepts_pickup ?? true),
         openOverride: rawOverride === "open" || rawOverride === "closed" ? rawOverride : "auto",
         hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
+        newsActive: Boolean(data.news_active ?? false),
+        newsTitle: String(data.news_title ?? "Novidades"),
+        newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
       };
     },
   });
@@ -432,6 +445,9 @@ export function useUpdateSettings() {
         accepts_pickup: s.acceptsPickup,
         open_override: s.openOverride,
         hours_json: s.hoursJson,
+        news_active: s.newsActive,
+        news_title: s.newsTitle,
+        news_product_ids: s.newsProductIds,
       }, { onConflict: "id" });
       if (error) throw error;
     },
