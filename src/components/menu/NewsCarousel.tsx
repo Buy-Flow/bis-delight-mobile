@@ -16,10 +16,14 @@ export function NewsCarousel({
   items,
   onOpen,
   title = "Novidades",
+  subtitle = "acabou de sair!",
+  ticker = "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana",
 }: {
   items: Product[];
   onOpen: (p: Product) => void;
   title?: string;
+  subtitle?: string;
+  ticker?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
