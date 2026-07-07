@@ -3571,6 +3571,31 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
         />
       </Field>
 
+      {/* Subtítulo */}
+      <Field label="Subtítulo (frase escrita à mão)" hint="Aparece rotacionado ao lado do título. Deixe em branco para esconder.">
+        <input
+          className={inputCls}
+          value={s.newsSubtitle}
+          onChange={(e) => set("newsSubtitle", e.target.value)}
+          placeholder="acabou de sair!"
+          maxLength={40}
+        />
+      </Field>
+
+      {/* Ticker */}
+      <Field
+        label="Texto da faixa animada (ticker)"
+        hint="Separe cada item por vírgula. Deixe em branco para esconder a faixa."
+      >
+        <textarea
+          className={cn(inputCls, "min-h-[70px] resize-y py-2 leading-relaxed")}
+          value={s.newsTicker}
+          onChange={(e) => set("newsTicker", e.target.value)}
+          placeholder="Lançamento fresquinho, Edição limitada, Só na Quero Bis"
+        />
+      </Field>
+
+
       {/* Selecionados */}
       <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
         <div className="mb-3 flex items-center justify-between">
