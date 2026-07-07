@@ -41,6 +41,8 @@ export type SiteSettings = {
   hoursJson: DayHours[];
   newsActive: boolean;
   newsTitle: string;
+  newsSubtitle: string;
+  newsTicker: string;
   newsProductIds: string[];
 };
 
