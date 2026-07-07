@@ -11,6 +11,7 @@ import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
+import { Reveal } from "@/components/Reveal";
 import { BRAND, type Product } from "@/data/menu";
 import { useProducts, useSiteSettings } from "@/lib/menu-data";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
@@ -137,12 +138,13 @@ function Content() {
 
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
       <Hero onScrollMenu={scrollToMenu} />
-      <Benefits />
+      <Reveal><Benefits /></Reveal>
+      
       
 
       {/* Novidades — faixa full-bleed */}
       {settings?.newsActive && (
-        <section className="relative -mx-4 sm:-mx-6 md:-mx-8 overflow-visible">
+        <Reveal as="section" className="relative -mx-4 sm:-mx-6 md:-mx-8 overflow-visible">
           {newsLoading ? (
             <div className="flex gap-5 overflow-visible px-4 py-10" aria-label="Carregando novidades" aria-busy="true">
               {[0, 1, 2].map((i) => (
@@ -169,17 +171,17 @@ function Content() {
               Nenhuma novidade por aqui ainda. Volte em breve!
             </div>
           )}
-        </section>
+        </Reveal>
       )}
 
 
 
       {/* Highlights */}
-      <HighlightsCarousel highlights={highlights} onOpen={setModalProduct} />
+      <Reveal><HighlightsCarousel highlights={highlights} onOpen={setModalProduct} /></Reveal>
 
 
       {/* Monte seu açaí banner */}
-      <section className="overflow-visible px-4 py-6">
+      <Reveal as="section" className="overflow-visible px-4 py-6" direction="left">
         <button
           onClick={openAcai}
           className="shine-strip group relative flex w-full items-center gap-4 rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
@@ -205,7 +207,7 @@ function Content() {
             className="ml-auto h-32 w-32 shrink-0 object-contain drop-shadow-[0_15px_20px_rgba(0,0,0,0.5)] animate-float-slow"
           />
         </button>
-      </section>
+      </Reveal>
 
 
 
