@@ -183,6 +183,7 @@ function AdminPage() {
         {tab === "products" && <ProductsTab />}
         {tab === "categories" && <CategoriesTab />}
         {tab === "highlights" && <HighlightsTab />}
+        {tab === "extras" && <ExtrasTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
