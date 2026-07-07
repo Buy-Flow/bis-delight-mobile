@@ -1900,6 +1900,7 @@ function HighlightsTab() {
 
   const catList = categories.filter((c) => c.id !== "all");
   const heroCount = products.filter((p) => p.hero).length;
+  const heroProducts = useMemo(() => products.filter((p) => p.hero), [products]);
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -1980,6 +1981,253 @@ function HighlightsTab() {
           </div>
         )}
       </div>
+
+      {heroProducts.length > 0 && (
+        <div className="mt-8">
+          <div className="mb-2">
+            <h3 className="font-display text-lg font-black">Ajustar imagem de cada destaque</h3>
+            <p className="text-[11px] text-white/50">
+              Envie uma foto exclusiva para o card do carrossel e ajuste a posição com preview ao vivo.
+              Se vazio, usa a foto do produto.
+            </p>
+          </div>
+          <div className="space-y-3">
+            {heroProducts.map((p) => (
+              <HeroImageEditor key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HeroImageEditor({ product }: { product: Product }) {
+  const update = useUpdateHeroImage();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState({
+    heroImage: product.heroImage ?? "",
+    posX: product.heroImagePosX ?? 0,
+    posY: product.heroImagePosY ?? 0,
+    scale: product.heroImageScale ?? 1.4,
+  });
+
+  // Sync when data reloads
+  useEffect(() => {
+    setDraft({
+      heroImage: product.heroImage ?? "",
+      posX: product.heroImagePosX ?? 0,
+      posY: product.heroImagePosY ?? 0,
+      scale: product.heroImageScale ?? 1.4,
+    });
+  }, [product.heroImage, product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
+
+  const previewProduct: Product = {
+    ...product,
+    heroImage: draft.heroImage,
+    heroImagePosX: draft.posX,
+    heroImagePosY: draft.posY,
+    heroImageScale: draft.scale,
+  };
+
+  const save = async (patch: Partial<typeof draft>) => {
+    const next = { ...draft, ...patch };
+    setDraft(next);
+    await update.mutateAsync({
+      id: product.id,
+      heroImage: next.heroImage,
+      heroImagePosX: next.posX,
+      heroImagePosY: next.posY,
+      heroImageScale: next.scale,
+    });
+  };
+
+  const onFile = async (file: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadProductImage(file);
+      await save({ heroImage: url });
+      toast.success("Imagem do destaque atualizada");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clearImage = async () => {
+    await save({ heroImage: "" });
+    toast.success("Imagem removida — voltou para a foto do produto");
+  };
+
+  const reset = () => save({ posX: 0, posY: 0, scale: 1.4 });
+
+  // Drag on preview
+  const CARD_W = 320;
+  const CARD_H = 148;
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draft.heroImage) return;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, posX: draft.posX, posY: draft.posY };
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dx = ((e.clientX - d.startX) / (CARD_W * 0.44)) * 100;
+    const dy = ((e.clientY - d.startY) / CARD_H) * 100;
+    setDraft((prev) => ({
+      ...prev,
+      posX: clamp(d.posX + dx, -80, 80),
+      posY: clamp(d.posY + dy, -80, 80),
+    }));
+  };
+  const onPointerUp = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    // Persist on release
+    void update.mutateAsync({
+      id: product.id,
+      heroImagePosX: draft.posX,
+      heroImagePosY: draft.posY,
+    });
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-3 p-3 text-left"
+      >
+        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+          <img
+            src={draft.heroImage || product.image}
+            className="h-full w-full object-cover"
+            alt=""
+          />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <Star className="h-3.5 w-3.5 fill-neon-yellow text-neon-yellow" />
+            <div className="truncate text-sm font-bold">{product.name}</div>
+          </div>
+          <div className="text-[11px] text-white/50">
+            {draft.heroImage ? "Imagem personalizada" : "Usando foto do produto"}
+          </div>
+        </div>
+        <span
+          className={cn(
+            "rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70",
+            open && "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/30",
+          )}
+        >
+          {open ? "Fechar" : "Ajustar"}
+        </span>
+      </button>
+
+      {open && (
+        <div className="space-y-4 border-t border-white/5 p-3">
+          {/* Live preview + drag surface */}
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Preview ao vivo — arraste a foto no card
+            </div>
+            <div
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              className="mx-auto touch-none select-none cursor-grab active:cursor-grabbing"
+              style={{ width: CARD_W, height: CARD_H }}
+            >
+              <HighlightCard product={previewProduct} onOpen={() => {}} />
+            </div>
+          </div>
+
+          {/* Image uploader */}
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Imagem exclusiva do destaque
+            </div>
+            <ImageDropzone
+              url={draft.heroImage}
+              busy={busy}
+              onFile={onFile}
+              onClear={clearImage}
+            />
+            <p className="mt-1 text-[10.5px] text-white/40">
+              Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
+            </p>
+          </div>
+
+          {/* Sliders */}
+          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div>
+              <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                <span>Zoom</span>
+                <span className="text-white/50">{draft.scale.toFixed(2)}×</span>
+              </div>
+              <input
+                type="range"
+                min={0.5}
+                max={2.5}
+                step={0.05}
+                value={draft.scale}
+                onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
+                onPointerUp={() => save({ scale: draft.scale })}
+                className="w-full accent-neon-cyan"
+                disabled={!draft.heroImage}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                  <span>Horizontal</span>
+                  <span className="text-white/50">{draft.posX.toFixed(0)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={-80}
+                  max={80}
+                  step={1}
+                  value={draft.posX}
+                  onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
+                  onPointerUp={() => save({ posX: draft.posX })}
+                  className="w-full accent-neon-cyan"
+                  disabled={!draft.heroImage}
+                />
+              </div>
+              <div>
+                <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                  <span>Vertical</span>
+                  <span className="text-white/50">{draft.posY.toFixed(0)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={-80}
+                  max={80}
+                  step={1}
+                  value={draft.posY}
+                  onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
+                  onPointerUp={() => save({ posY: draft.posY })}
+                  className="w-full accent-neon-cyan"
+                  disabled={!draft.heroImage}
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={reset}
+              disabled={!draft.heroImage}
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 disabled:opacity-40"
+            >
+              Resetar posição e zoom
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
