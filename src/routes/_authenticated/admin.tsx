@@ -131,7 +131,7 @@ function AdminPage() {
 
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[oklch(0.10_0.08_300)]/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <Sparkles className="h-5 w-5 text-neon-yellow" />
             <h1
               className="font-display text-xl font-black uppercase"
@@ -139,7 +139,7 @@ function AdminPage() {
             >
               Painel <span className="text-neon-yellow">Admin</span>
             </h1>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             <Link
               to="/"
