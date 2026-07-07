@@ -39,6 +39,9 @@ export type SiteSettings = {
   acceptsPickup: boolean;
   openOverride: "auto" | "open" | "closed";
   hoursJson: DayHours[];
+  newsActive: boolean;
+  newsTitle: string;
+  newsProductIds: string[];
 };
 
 function rowToProduct(row: Record<string, unknown>): Product {
