@@ -225,8 +225,9 @@ function NewsPosterCard({
 }) {
   const heroSrc = product.heroImage || product.image;
   const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
-  const heroPosY = product.heroImage ? (product.heroImagePosY ?? -8) : -8;
-  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.2) : 1.2;
+  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
+  const heroScale = product.heroImage ? (product.heroImageScale ?? 1) : 1;
+
   // (issue label removed — cleaner card)
 
   // Split product name so we can stack it dramatically across two lines
