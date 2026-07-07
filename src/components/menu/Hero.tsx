@@ -5,7 +5,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
   return (
-    <section className="relative overflow-hidden px-4 pb-0 pt-2">
+    <section className="relative overflow-visible px-4 pb-0 pt-2">
       {/* Side ice cream illustrations */}
       <img
         aria-hidden="true"
@@ -15,7 +15,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         height={980}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -left-6 -top-10 z-0 h-[980px] w-auto max-w-none select-none object-contain object-left"
+        className="pointer-events-none absolute -left-6 -top-10 z-40 h-[980px] w-auto max-w-none select-none object-contain object-left"
       />
       <img
         aria-hidden="true"
@@ -25,7 +25,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         height={980}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -right-6 -top-28 z-0 h-[980px] w-auto max-w-none select-none object-contain object-right"
+        className="pointer-events-none absolute -right-6 -top-28 z-40 h-[980px] w-auto max-w-none select-none object-contain object-right"
       />
 
 
