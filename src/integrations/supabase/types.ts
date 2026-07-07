@@ -251,6 +251,10 @@ export type Database = {
           extras: Json | null
           flavors: Json | null
           hero: boolean
+          hero_image_pos_x: number
+          hero_image_pos_y: number
+          hero_image_scale: number
+          hero_image_url: string | null
           id: string
           image_pos_x: number
           image_pos_y: number
@@ -273,6 +277,10 @@ export type Database = {
           extras?: Json | null
           flavors?: Json | null
           hero?: boolean
+          hero_image_pos_x?: number
+          hero_image_pos_y?: number
+          hero_image_scale?: number
+          hero_image_url?: string | null
           id: string
           image_pos_x?: number
           image_pos_y?: number
@@ -295,6 +303,10 @@ export type Database = {
           extras?: Json | null
           flavors?: Json | null
           hero?: boolean
+          hero_image_pos_x?: number
+          hero_image_pos_y?: number
+          hero_image_scale?: number
+          hero_image_url?: string | null
           id?: string
           image_pos_x?: number
           image_pos_y?: number

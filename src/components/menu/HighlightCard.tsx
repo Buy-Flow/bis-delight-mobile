@@ -10,6 +10,10 @@ export function HighlightCard({
   onOpen: (p: Product) => void;
 }) {
   const chips = product.ingredients.slice(0, 3);
+  const heroSrc = product.heroImage || product.image;
+  const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
+  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
+  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.4) : 1.4;
 
   return (
     <div
@@ -44,11 +48,16 @@ export function HighlightCard({
         {/* Floor shine */}
         <div className="absolute inset-x-4 bottom-3 h-2 rounded-full bg-white/10 blur-md" />
         <img
-          src={product.image}
+          src={heroSrc}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full scale-[1.4] object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
+          className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_18px_18px_rgba(0,0,0,0.55)]"
+          style={{
+            transform: `translate(${heroPosX}%, ${heroPosY}%) scale(${heroScale})`,
+            transformOrigin: "center",
+          }}
         />
+
 
         {/* TOP badge */}
         <div

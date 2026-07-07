@@ -63,6 +63,10 @@ function rowToProduct(row: Record<string, unknown>): Product {
     imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
     imageScale: row.image_scale !== undefined && row.image_scale !== null ? Number(row.image_scale) : 1.1,
+    heroImage: (row.hero_image_url as string) || "",
+    heroImagePosX: row.hero_image_pos_x !== undefined && row.hero_image_pos_x !== null ? Number(row.hero_image_pos_x) : 0,
+    heroImagePosY: row.hero_image_pos_y !== undefined && row.hero_image_pos_y !== null ? Number(row.hero_image_pos_y) : 0,
+    heroImageScale: row.hero_image_scale !== undefined && row.hero_image_scale !== null ? Number(row.hero_image_scale) : 1.4,
   };
 }
 
@@ -375,6 +379,33 @@ export function useToggleHero() {
   return useMutation({
     mutationFn: async ({ id, hero }: { id: string; hero: boolean }) => {
       const { error } = await supabase.from("products").update({ hero }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateHeroImage() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (p: {
+      id: string;
+      heroImage?: string | null;
+      heroImagePosX?: number;
+      heroImagePosY?: number;
+      heroImageScale?: number;
+    }) => {
+      const patch: {
+        hero_image_url?: string | null;
+        hero_image_pos_x?: number;
+        hero_image_pos_y?: number;
+        hero_image_scale?: number;
+      } = {};
+      if (p.heroImage !== undefined) patch.hero_image_url = p.heroImage || null;
+      if (p.heroImagePosX !== undefined) patch.hero_image_pos_x = p.heroImagePosX;
+      if (p.heroImagePosY !== undefined) patch.hero_image_pos_y = p.heroImagePosY;
+      if (p.heroImageScale !== undefined) patch.hero_image_scale = p.heroImageScale;
+      const { error } = await supabase.from("products").update(patch).eq("id", p.id);
       if (error) throw error;
     },
     onSuccess: invalidate,
