@@ -59,6 +59,187 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          created_at: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty: {
+        Row: {
+          created_at: string
+          last_birthday_bonus: string | null
+          stamps: number
+          total_redeemed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_birthday_bonus?: string | null
+          stamps?: number
+          total_redeemed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_birthday_bonus?: string | null
+          stamps?: number
+          total_redeemed?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_coupons: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          extras: Json
+          flavor: string | null
+          id: string
+          name: string
+          note: string | null
+          order_id: string
+          product_id: string | null
+          quantity: number
+          removed: Json
+          size: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          extras?: Json
+          flavor?: string | null
+          id?: string
+          name: string
+          note?: string | null
+          order_id: string
+          product_id?: string | null
+          quantity: number
+          removed?: Json
+          size?: string | null
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          extras?: Json
+          flavor?: string | null
+          id?: string
+          name?: string
+          note?: string | null
+          order_id?: string
+          product_id?: string | null
+          quantity?: number
+          removed?: Json
+          size?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string | null
+          coupon_code: string | null
+          created_at: string
+          customer_name: string
+          delivery_fee: number
+          id: string
+          mode: string
+          note: string | null
+          phone: string
+          reference: string | null
+          status: string
+          subtotal: number
+          total: number
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          customer_name: string
+          delivery_fee?: number
+          id?: string
+          mode: string
+          note?: string | null
+          phone: string
+          reference?: string | null
+          status?: string
+          subtotal: number
+          total: number
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          customer_name?: string
+          delivery_fee?: number
+          id?: string
+          mode?: string
+          note?: string | null
+          phone?: string
+          reference?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean
@@ -135,6 +316,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          birthday: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          birthday?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          birthday?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          reference?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       site_settings: {
         Row: {
@@ -341,7 +555,13 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"

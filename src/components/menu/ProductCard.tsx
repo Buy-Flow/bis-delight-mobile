@@ -2,6 +2,7 @@ import { Plus, Flame } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { FavoriteButton } from "./FavoriteButton";
 
 const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
   Premium: "bg-neon-yellow text-[oklch(0.18_0.11_305)]",
@@ -75,6 +76,11 @@ export function ProductCard({
             {product.badge}
           </div>
         )}
+        {/* Favorite heart top-right */}
+        <div className="absolute right-2 top-2 z-20">
+          <FavoriteButton productId={product.id} />
+        </div>
+
 
         {/* Wavy divider on bottom */}
         <svg
