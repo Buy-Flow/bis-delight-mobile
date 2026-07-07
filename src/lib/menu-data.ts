@@ -445,6 +445,9 @@ export function useUpdateSettings() {
         accepts_pickup: s.acceptsPickup,
         open_override: s.openOverride,
         hours_json: s.hoursJson,
+        news_active: s.newsActive,
+        news_title: s.newsTitle,
+        news_product_ids: s.newsProductIds,
       }, { onConflict: "id" });
       if (error) throw error;
     },
