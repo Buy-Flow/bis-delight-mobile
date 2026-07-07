@@ -132,7 +132,6 @@ export function CategoryChip({
             <img
               src={category.image}
               alt={category.name}
-              loading="lazy"
               decoding="async"
               className="absolute inset-0 h-full w-full object-cover"
               style={{
