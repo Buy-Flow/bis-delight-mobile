@@ -166,24 +166,24 @@ function NewsPosterCard({
 
   return (
     <article className="group relative w-[190px] shrink-0 snap-center">
-      {/* Neon glow halo */}
-      <div
-        aria-hidden
-        className="absolute -inset-1 rounded-[24px] opacity-30 blur-lg transition-opacity group-hover:opacity-60"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.70 0.28 355 / 0.6), oklch(0.85 0.18 200 / 0.5))",
-        }}
-      />
-
       <button
         onClick={() => onOpen(product)}
-        className="relative flex w-full flex-col overflow-hidden rounded-[22px] border border-neon-pink/30 bg-[oklch(0.16_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1 group-hover:border-neon-pink"
+        className="relative flex w-full flex-col overflow-hidden rounded-[22px] border border-neon-pink/40 bg-[oklch(0.16_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1 group-hover:border-neon-pink"
         style={{
           boxShadow:
-            "0 18px 34px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06)",
+            "0 0 0 1px oklch(0.72 0.26 350 / 0.25), 0 0 24px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -12px oklch(0.85 0.18 200 / 0.45), 0 18px 34px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
+        {/* Inner neon rim — sits inside the card so it never clips */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[22px]"
+          style={{
+            boxShadow:
+              "inset 0 0 20px oklch(0.72 0.26 350 / 0.35), inset 0 0 40px oklch(0.85 0.18 200 / 0.15)",
+          }}
+        />
+
         {/* Image block on top */}
         <div className="relative aspect-square w-full overflow-hidden">
           <div
