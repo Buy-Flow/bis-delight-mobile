@@ -142,18 +142,13 @@ function Content() {
 
       {/* Novidades */}
       {settings?.newsActive && (
-        <section className="pb-4 pt-2">
-          <div className="mb-3 px-4 text-center">
-            <h2 className="font-display text-[34px] font-black uppercase leading-[0.95] text-white">
-              Nossas <span className="text-neon-cyan drop-shadow-[0_4px_14px_rgba(90,220,255,0.45)]">{settings.newsTitle || "Novidades"}</span>
-            </h2>
-          </div>
+        <section className="pb-2 pt-2">
           {newsLoading ? (
-            <div className="flex gap-3 overflow-hidden px-4" aria-label="Carregando novidades" aria-busy="true">
+            <div className="flex gap-5 overflow-hidden px-4 pt-6" aria-label="Carregando novidades" aria-busy="true">
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-44 w-[85%] shrink-0 animate-pulse rounded-3xl bg-white/5 ring-1 ring-white/10"
+                  className="aspect-[3/4] w-[260px] shrink-0 animate-pulse rounded-[28px] bg-white/5 ring-1 ring-white/10"
                 />
               ))}
             </div>
@@ -162,13 +157,10 @@ function Content() {
               Não foi possível carregar as novidades. Tente novamente em instantes.
             </div>
           ) : newsItems.length > 0 ? (
-            <HighlightsCarousel
-              highlights={newsItems}
+            <NewsCarousel
+              items={newsItems}
               onOpen={setModalProduct}
-              titleLead="Nossas"
-              titleAccent={settings.newsTitle || "Novidades"}
-              accentColor="cyan"
-              hideHeader
+              title={settings.newsTitle || "Novidades"}
             />
           ) : (
             <div className="mx-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-sm text-white/70">
