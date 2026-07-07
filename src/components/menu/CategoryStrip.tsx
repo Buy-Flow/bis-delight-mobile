@@ -132,6 +132,8 @@ export function CategoryChip({
             <img
               src={category.image}
               alt={category.name}
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-cover"
               style={{
                 transform: `translate(${category.imagePosX ?? 0}%, ${category.imagePosY ?? 0}%) scale(${category.imageScale ?? 1})`,
@@ -139,6 +141,7 @@ export function CategoryChip({
               }}
             />
           )}
+
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,0.4)_100%)]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-b from-transparent to-[#2a0a5c]" />
         </div>
