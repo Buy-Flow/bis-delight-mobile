@@ -227,12 +227,8 @@ function NewsPosterCard({
   const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
   const heroPosY = product.heroImage ? (product.heroImagePosY ?? -8) : -8;
   const heroScale = product.heroImage ? (product.heroImageScale ?? 1.2) : 1.2;
-  const issueNo = String(index + 1).padStart(2, "0");
-  const now = new Date();
-  const monthLabel = now
-    .toLocaleDateString("pt-BR", { month: "short", year: "numeric" })
-    .replace(".", "")
-    .toUpperCase();
+  // (issue label removed — cleaner card)
+
   // Split product name so we can stack it dramatically across two lines
   const words = product.name.trim().split(/\s+/);
   const topLine = words.slice(0, Math.max(1, Math.ceil(words.length / 2))).join(" ");
