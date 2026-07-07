@@ -78,7 +78,7 @@ function Content() {
   const [activeCat, setActiveCat] = useState("all");
   const [query, setQuery] = useState("");
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
-  const { isAcaiOpen, openAcai, closeAcai } = useCart();
+  const { isAcaiOpen, openAcai, closeAcai, isCartOpen, isCheckoutOpen } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
 
   const { data: products = [] } = useProducts();
