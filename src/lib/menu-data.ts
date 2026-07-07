@@ -44,7 +44,9 @@ export type SiteSettings = {
   newsSubtitle: string;
   newsTicker: string;
   newsProductIds: string[];
+  globalExtras: ExtraOption[];
 };
+
 
 function rowToProduct(row: Record<string, unknown>): Product {
   return {
@@ -174,6 +176,7 @@ const DEFAULT_EXTRA: Pick<
   | "newsSubtitle"
   | "newsTicker"
   | "newsProductIds"
+  | "globalExtras"
 > = {
   instagram: "",
   facebook: "",
@@ -193,7 +196,9 @@ const DEFAULT_EXTRA: Pick<
   newsSubtitle: "acabou de sair!",
   newsTicker: "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana",
   newsProductIds: [],
+  globalExtras: [],
 };
+
 
 export function useSiteSettings() {
   return useQuery({
@@ -220,6 +225,8 @@ export function useSiteSettings() {
       const rawHours = (data.hours_json as unknown) as DayHours[] | null;
       const rawMethods = (data.payment_methods as unknown) as string[] | null;
       const rawNewsIds = (data.news_product_ids as unknown) as string[] | null;
+      const rawGlobalExtras = ((data as Record<string, unknown>).global_extras as unknown) as ExtraOption[] | null;
+
       const rawOverride = String(data.open_override ?? "auto");
       return {
         name: data.name || STATIC_BRAND.name,
@@ -252,6 +259,8 @@ export function useSiteSettings() {
         newsSubtitle: String((data as Record<string, unknown>).news_subtitle ?? "acabou de sair!"),
         newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
         newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
+        globalExtras: Array.isArray(rawGlobalExtras) ? rawGlobalExtras : [],
+
       };
     },
   });
@@ -503,6 +512,8 @@ export function useUpdateSettings() {
         news_subtitle: s.newsSubtitle,
         news_ticker: s.newsTicker,
         news_product_ids: s.newsProductIds,
+        global_extras: s.globalExtras,
+
       }, { onConflict: "id" });
       if (error) throw error;
     },
