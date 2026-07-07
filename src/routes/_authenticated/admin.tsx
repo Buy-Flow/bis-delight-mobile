@@ -49,6 +49,7 @@ import {
   useSiteSettings,
   useUpsertProduct,
   useDeleteProduct,
+  useUpdateProductExtras,
   useToggleHero,
   useUpdateHeroImage,
   useToggleProductActive,
