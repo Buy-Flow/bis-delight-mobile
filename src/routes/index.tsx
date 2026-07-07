@@ -296,10 +296,15 @@ function Content() {
 
 
       <FloatingActions />
-      <ProductModal product={modalProduct} onClose={() => setModalProduct(null)} />
-      {isAcaiOpen && <AcaiBuilder onClose={closeAcai} />}
-      <CartSheet />
-      <CheckoutSheet />
+      <Suspense fallback={null}>
+        {modalProduct && (
+          <ProductModal product={modalProduct} onClose={() => setModalProduct(null)} />
+        )}
+        {isAcaiOpen && <AcaiBuilder onClose={closeAcai} />}
+        {isCartOpen && <CartSheet />}
+        {isCheckoutOpen && <CheckoutSheet />}
+      </Suspense>
+
     </div>
   );
 }
