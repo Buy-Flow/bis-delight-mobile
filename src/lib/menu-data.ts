@@ -44,7 +44,9 @@ export type SiteSettings = {
   newsSubtitle: string;
   newsTicker: string;
   newsProductIds: string[];
+  globalExtras: ExtraOption[];
 };
+
 
 function rowToProduct(row: Record<string, unknown>): Product {
   return {
