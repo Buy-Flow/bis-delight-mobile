@@ -161,145 +161,206 @@ function NewsPosterCard({
   onOpen,
   badge,
   eyebrow,
+  index,
 }: {
   product: Product;
   onOpen: (p: Product) => void;
   badge: (typeof BADGE_STYLES)[number];
   eyebrow: string;
+  index: number;
 }) {
-  const chips = product.ingredients.slice(0, 2);
   const heroSrc = product.heroImage || product.image;
   const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
   const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
-  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.15) : 1.15;
+  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.2) : 1.2;
+  const issueNo = String(index + 1).padStart(2, "0");
+  const now = new Date();
+  const monthLabel = now
+    .toLocaleDateString("pt-BR", { month: "short", year: "numeric" })
+    .replace(".", "")
+    .toUpperCase();
+  // Split product name so we can stack it dramatically across two lines
+  const words = product.name.trim().split(/\s+/);
+  const topLine = words.slice(0, Math.max(1, Math.ceil(words.length / 2))).join(" ");
+  const bottomLine = words.slice(Math.ceil(words.length / 2)).join(" ");
 
   return (
-    <article className="group relative w-[85vw] max-w-[420px] shrink-0 snap-center">
+    <article className="group relative w-[85vw] max-w-[380px] shrink-0 snap-center">
       <button
         onClick={() => onOpen(product)}
-        className="relative flex w-full flex-col overflow-hidden rounded-[22px] border border-neon-pink/40 bg-[oklch(0.16_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1 group-hover:border-neon-pink"
+        className="relative flex aspect-[3/4] w-full overflow-hidden rounded-[26px] bg-[oklch(0.12_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1"
         style={{
           boxShadow:
-            "0 0 0 1px oklch(0.72 0.26 350 / 0.28), 0 0 18px -6px oklch(0.72 0.26 350 / 0.65), 0 0 42px -18px oklch(0.85 0.18 200 / 0.55), 0 18px 34px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06)",
+            "0 0 0 1px oklch(0.72 0.26 350 / 0.35), 0 0 22px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -18px oklch(0.85 0.18 200 / 0.55), 0 24px 40px -20px rgba(0,0,0,0.8)",
         }}
       >
-        {/* Inner neon rim — sits inside the card so it never clips */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-[22px]"
+        {/* Full-bleed hero */}
+        <img
+          src={heroSrc}
+          alt={product.name}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
           style={{
-            boxShadow:
-              "inset 0 0 20px oklch(0.72 0.26 350 / 0.35), inset 0 0 40px oklch(0.85 0.18 200 / 0.15)",
+            transform: `translate(${heroPosX}%, ${heroPosY}%) scale(${heroScale})`,
+            transformOrigin: "center",
           }}
         />
 
-        {/* Image block on top */}
-        <div className="relative aspect-square w-full overflow-hidden">
+        {/* Editorial gradient wash — dark at top and bottom for legibility */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0.85) 0%, oklch(0.08 0.10 305 / 0.15) 28%, oklch(0.08 0.10 305 / 0.15) 45%, oklch(0.08 0.10 305 / 0.85) 88%, oklch(0.08 0.10 305 / 0.95) 100%)",
+          }}
+        />
+
+        {/* Halftone dot texture */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 25% 25%, rgba(255,255,255,0.55) 1px, transparent 1.5px)",
+            backgroundSize: "8px 8px",
+          }}
+        />
+
+        {/* Neon rim inside so it never clips */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[26px]"
+          style={{
+            boxShadow:
+              "inset 0 0 0 1px oklch(0.72 0.26 350 / 0.45), inset 0 0 30px oklch(0.72 0.26 350 / 0.28), inset 0 0 60px oklch(0.85 0.18 200 / 0.12)",
+          }}
+        />
+
+        {/* Diagonal ribbon */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-14 top-8 z-20 rotate-45"
+        >
           <div
-            aria-hidden
-            className="absolute inset-0"
+            className={cn(
+              "px-16 py-1.5 text-[10px] font-black uppercase tracking-[0.35em]",
+              badge.bg,
+              badge.text,
+            )}
             style={{
-              background:
-                "radial-gradient(circle at 50% 55%, oklch(0.72 0.26 350 / 0.35) 0%, transparent 65%)",
+              fontFamily: "'Poppins', sans-serif",
+              boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
             }}
-          />
-          <img
-            src={heroSrc}
-            alt={product.name}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
-            style={{
-              transform: `translate(${heroPosX}%, ${heroPosY}%) scale(${heroScale})`,
-              transformOrigin: "center",
-            }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.6) 1px, transparent 1px), radial-gradient(circle at 70% 80%, rgba(255,255,255,0.4) 1px, transparent 1px)",
-              backgroundSize: "22px 22px, 30px 30px",
-            }}
-          />
-          <div className="absolute left-4 top-4 z-20">
-            <div
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-tight",
-                badge.bg,
-                badge.text,
-                badge.shadow,
-                badge.rotate,
-              )}
-              style={{ fontFamily: "'Poppins', sans-serif" }}
-            >
-              <Sparkles className="h-3 w-3" strokeWidth={3} />
-              {badge.label}
-            </div>
+          >
+            {badge.label}
           </div>
-          <div
-            aria-hidden
-            className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[oklch(0.16_0.10_305)] to-transparent"
-          />
         </div>
 
-        {/* Text block below */}
-        <div className="flex flex-1 flex-col gap-1.5 p-5 pt-3">
-          <span
-            className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-neon-cyan drop-shadow-[0_0_6px_rgba(90,220,255,0.6)]"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
-          >
-            {eyebrow}
-          </span>
-          <h3
-            className="text-[26px] font-black uppercase leading-[0.95] text-white line-clamp-2"
-            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-          >
-            {product.name}
-          </h3>
-
-          {chips.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              {chips.map((c) => (
-                <span
-                  key={c}
-                  className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-[3px] text-[10px] font-semibold uppercase tracking-wide text-white/80"
-                  style={{ fontFamily: "'Poppins', sans-serif" }}
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-3 flex items-end justify-between gap-2">
+        {/* Masthead */}
+        <div className="relative z-10 flex w-full flex-col justify-between p-5">
+          <header className="flex items-start justify-between gap-3">
             <div className="flex flex-col leading-none">
               <span
-                className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/60"
+                className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90"
                 style={{ fontFamily: "'Poppins', sans-serif" }}
               >
-                A partir de
+                Quero Bis
               </span>
               <span
-                className="mt-1 text-[26px] font-black italic leading-none text-white"
-                style={{
-                  fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
-                  textShadow: "0 2px 12px rgba(255,45,149,0.55)",
-                }}
+                className="mt-1 text-[9px] font-semibold uppercase tracking-[0.28em] text-neon-cyan"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
               >
-                {brl(product.basePrice)}
+                {monthLabel} · {eyebrow}
               </span>
             </div>
+            <div className="flex flex-col items-end leading-none">
+              <span
+                className="text-[8px] font-bold uppercase tracking-[0.32em] text-white/60"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
+                Edição
+              </span>
+              <span
+                className="mt-0.5 font-display text-[28px] font-black italic leading-none text-neon-yellow drop-shadow-[0_0_10px_rgba(255,214,0,0.6)]"
+                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+              >
+                N°{issueNo}
+              </span>
+            </div>
+          </header>
 
-            <span
-              className="grid h-12 w-12 place-items-center rounded-2xl bg-neon-pink text-white transition-transform group-hover:rotate-90 group-active:scale-95"
+          {/* Cover title — massive stacked type at the bottom */}
+          <div className="mt-auto">
+            <h3
+              className="text-white"
               style={{
-                boxShadow: "0 0 18px rgba(255,45,149,0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
+                fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
+                fontWeight: 900,
+                fontStyle: "italic",
+                lineHeight: 0.82,
+                letterSpacing: "-0.02em",
+                textShadow: "0 4px 24px rgba(0,0,0,0.6)",
               }}
-              aria-hidden
             >
-              <Plus className="h-5 w-5" strokeWidth={3.2} />
-            </span>
+              <span className="block text-[46px] uppercase">{topLine}</span>
+              {bottomLine && (
+                <span
+                  className="mt-0.5 block text-[46px] uppercase text-neon-pink"
+                  style={{ textShadow: "0 0 18px rgba(255,45,149,0.7)" }}
+                >
+                  {bottomLine}
+                </span>
+              )}
+            </h3>
+
+            {/* Barcode-esque divider */}
+            <div className="mt-3 flex h-4 items-end gap-[2px] opacity-80">
+              {Array.from({ length: 28 }).map((_, k) => (
+                <span
+                  key={k}
+                  className="block bg-white/80"
+                  style={{
+                    width: k % 5 === 0 ? 2 : 1,
+                    height: `${40 + ((k * 37) % 60)}%`,
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Price + CTA */}
+            <div className="mt-3 flex items-end justify-between gap-3">
+              <div className="flex flex-col leading-none">
+                <span
+                  className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/70"
+                  style={{ fontFamily: "'Poppins', sans-serif" }}
+                >
+                  Capa · a partir de
+                </span>
+                <span
+                  className="mt-1 text-[30px] font-black italic leading-none text-white"
+                  style={{
+                    fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
+                    textShadow: "0 2px 14px rgba(255,45,149,0.6)",
+                  }}
+                >
+                  {brl(product.basePrice)}
+                </span>
+              </div>
+
+              <span
+                className="inline-flex items-center gap-2 rounded-full bg-neon-pink px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-transform group-hover:scale-105 group-active:scale-95"
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  boxShadow:
+                    "0 0 18px rgba(255,45,149,0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
+                }}
+                aria-hidden
+              >
+                Ler capa
+                <Plus className="h-3.5 w-3.5" strokeWidth={3.2} />
+              </span>
+            </div>
           </div>
         </div>
       </button>
