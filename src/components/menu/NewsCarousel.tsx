@@ -28,8 +28,10 @@ export function NewsCarousel({
     const el = scrollerRef.current;
     if (!el) return;
     const onScroll = () => {
-      const cardW = 190 + 16;
-      const idx = Math.round(el.scrollLeft / cardW);
+      const first = el.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      const step = first.getBoundingClientRect().width + 20;
+      const idx = Math.round(el.scrollLeft / step);
       setActiveIdx(Math.min(items.length - 1, Math.max(0, idx)));
     };
     el.addEventListener("scroll", onScroll, { passive: true });
