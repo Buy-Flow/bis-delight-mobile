@@ -512,6 +512,8 @@ export function useUpdateSettings() {
         news_subtitle: s.newsSubtitle,
         news_ticker: s.newsTicker,
         news_product_ids: s.newsProductIds,
+        global_extras: s.globalExtras,
+
       }, { onConflict: "id" });
       if (error) throw error;
     },
