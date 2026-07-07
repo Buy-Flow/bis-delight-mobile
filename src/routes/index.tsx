@@ -372,12 +372,14 @@ function HighlightsCarousel({
   titleLead = "Nossos",
   titleAccent = "Destaques",
   accentColor = "yellow",
+  hideHeader = false,
 }: {
   highlights: Product[];
   onOpen: (p: Product) => void;
   titleLead?: string;
   titleAccent?: string;
   accentColor?: "yellow" | "cyan" | "pink";
+  hideHeader?: boolean;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
