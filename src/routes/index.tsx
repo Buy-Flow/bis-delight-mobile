@@ -138,7 +138,8 @@ function Content() {
 
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
       <Hero onScrollMenu={scrollToMenu} />
-      <Benefits />
+      <Reveal><Benefits /></Reveal>
+      
       
 
       {/* Novidades — faixa full-bleed */}
