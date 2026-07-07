@@ -91,19 +91,19 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             {["Açaí", "Shakes"].map((chip) => (
               <span
                 key={chip}
-                className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
+                className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
               >
                 {chip}
               </span>
             ))}
           </div>
-          <span className="rounded-full border border-white/20 bg-white/10 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm">
+          <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm">
             Sorvetes
           </span>
         </div>
 
         <p
-          className="mt-3 text-[12px] leading-snug text-white/75"
+          className="mt-3 text-[14px] leading-snug text-white/75"
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400 }}
         >
           Qualidade{" "}
@@ -111,6 +111,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
           <br />
           para o seu dia.
         </p>
+
 
 
         {/* Beautiful tagline strip */}
