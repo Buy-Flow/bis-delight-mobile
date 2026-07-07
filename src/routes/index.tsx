@@ -11,6 +11,7 @@ import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
+import { Reveal } from "@/components/Reveal";
 import { BRAND, type Product } from "@/data/menu";
 import { useProducts, useSiteSettings } from "@/lib/menu-data";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
