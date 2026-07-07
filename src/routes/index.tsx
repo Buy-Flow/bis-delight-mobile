@@ -161,6 +161,8 @@ function Content() {
               items={newsItems}
               onOpen={setModalProduct}
               title={settings.newsTitle || "Novidades"}
+              subtitle={settings.newsSubtitle}
+              ticker={settings.newsTicker}
             />
           ) : (
             <div className="mx-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-sm text-white/70">
