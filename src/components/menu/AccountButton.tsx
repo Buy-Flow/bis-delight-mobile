@@ -21,20 +21,16 @@ export function AccountButton() {
     );
   }
 
-  const initial = (user?.user_metadata?.full_name || user?.email || "?")
-    .toString()
-    .charAt(0)
-    .toUpperCase();
-
   return (
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Minha conta"
-        className="grid h-11 w-11 place-items-center rounded-2xl bg-neon-cyan text-[oklch(0.18_0.11_305)] font-black active:scale-95 transition glow-cyan"
+        className="grid h-11 w-11 place-items-center rounded-2xl card-acai text-neon-cyan active:scale-95 transition"
       >
-        {initial}
+        <UserIcon className="h-5 w-5" />
       </button>
+
 
       {open && (
         <>
