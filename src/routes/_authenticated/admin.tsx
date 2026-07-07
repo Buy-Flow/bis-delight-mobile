@@ -3061,31 +3061,94 @@ function SocialSection({ s, set }: { s: SiteSettings; set: SetFn }) {
   );
 }
 
+const ANNOUNCEMENT_TEMPLATES = [
+  "🎉 Promoção de sexta! Açaí 500ml por R$ 15",
+  "🚚 Entrega grátis nos pedidos acima de R$ 50",
+  "🍦 Novidade: sabor do mês chegando!",
+  "⏰ Hoje aberto até meia-noite",
+];
+
 function AnnouncementSection({ s, set }: { s: SiteSettings; set: SetFn }) {
-  const len = s.announcementText.length;
-  const pct = Math.min(100, (len / 140) * 100);
+  const len = s.announcementText?.length ?? 0;
+  const max = 140;
+  const pct = Math.min(100, (len / max) * 100);
+  const hasText = len > 0;
+
   return (
     <div className="space-y-5">
       <SectionTitle icon={Megaphone} title="Anúncio no topo" sub="Barra amarela que aparece no topo do cardápio." />
 
-      <Toggle
-        checked={s.announcementActive}
-        onChange={(v) => set("announcementActive", v)}
-        label={s.announcementActive ? "Anúncio visível para os clientes" : "Anúncio desativado"}
-      />
-
-      {s.announcementActive && s.announcementText && (
-        <div className="flex items-center gap-2 rounded-2xl bg-neon-yellow px-4 py-2 text-[12px] font-bold text-[oklch(0.15_0.10_305)]">
-          <Megaphone className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{s.announcementText}</span>
-          <span className="ml-auto text-[10px] uppercase tracking-widest opacity-70">Prévia</span>
+      {/* Status toggle destacado */}
+      <div
+        className={cn(
+          "rounded-2xl border p-4 transition",
+          s.announcementActive
+            ? "border-neon-yellow/40 bg-gradient-to-br from-neon-yellow/15 to-transparent"
+            : "border-white/10 bg-black/20",
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition",
+              s.announcementActive ? "bg-neon-yellow text-[oklch(0.15_0.10_305)]" : "bg-white/5 text-white/40",
+            )}
+          >
+            <Megaphone className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-bold text-white">
+              {s.announcementActive ? "Anúncio ativo" : "Anúncio desativado"}
+            </div>
+            <div className="text-[11px] text-white/50">
+              {s.announcementActive
+                ? "Visível para todos os clientes no topo do cardápio."
+                : "Ative para exibir a barra amarela no topo."}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => set("announcementActive", !s.announcementActive)}
+            className={cn(
+              "relative h-6 w-11 shrink-0 rounded-full p-0.5 transition",
+              s.announcementActive ? "bg-neon-yellow" : "bg-white/15",
+            )}
+          >
+            <span
+              className={cn(
+                "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+                s.announcementActive ? "left-[calc(100%-1.375rem)]" : "left-0.5",
+              )}
+            />
+          </button>
         </div>
-      )}
+      </div>
 
+      {/* Prévia ao vivo — sempre visível */}
+      <div>
+        <div className="mb-1.5 flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-white/50">
+          <Sparkles className="h-3 w-3 text-neon-yellow" /> Prévia ao vivo
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[oklch(0.10_0.08_300)]">
+          {hasText && s.announcementActive ? (
+            <div className="flex items-center gap-2 bg-neon-yellow px-4 py-2 text-[12px] font-bold text-[oklch(0.15_0.10_305)]">
+              <Megaphone className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{s.announcementText}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-4 py-3 text-[11.5px] text-white/40">
+              <EyeOff className="h-3.5 w-3.5" />
+              {hasText ? "Anúncio desativado — não aparece para o cliente" : "Digite um texto abaixo para ver a prévia"}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Texto */}
       <Field label="Texto do anúncio" hint="Curto e chamativo. Emoji ajuda! 🎉">
         <textarea
           rows={2}
-          maxLength={140}
+          maxLength={max}
           className={inputCls}
           placeholder="Ex.: Promoção de sexta! Açaí 500ml por R$ 15 🎉"
           value={s.announcementText}
@@ -3101,12 +3164,37 @@ function AnnouncementSection({ s, set }: { s: SiteSettings; set: SetFn }) {
               style={{ width: `${pct}%` }}
             />
           </div>
-          <div className="text-[10px] tabular-nums text-white/50">{len}/140</div>
+          <div
+            className={cn(
+              "text-[10px] tabular-nums",
+              pct > 90 ? "text-red-300" : "text-white/50",
+            )}
+          >
+            {len}/{max}
+          </div>
         </div>
       </Field>
+
+      {/* Templates rápidos */}
+      <div>
+        <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-white/40">Ideias rápidas</div>
+        <div className="flex flex-wrap gap-1.5">
+          {ANNOUNCEMENT_TEMPLATES.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => set("announcementText", t)}
+              className="rounded-full border border-dashed border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-white/70 transition hover:border-neon-yellow hover:bg-neon-yellow/10 hover:text-neon-yellow"
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
 
 
 function AppearanceSection({
