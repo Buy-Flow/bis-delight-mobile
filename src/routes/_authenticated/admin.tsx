@@ -1265,24 +1265,30 @@ function Toggle({
       type="button"
       onClick={() => onChange(!checked)}
       className={cn(
-        "flex h-10 w-full items-center gap-2 rounded-xl border px-3 text-left text-xs transition",
+        "flex h-12 w-full items-center gap-3 rounded-2xl border px-3 text-left text-[12.5px] font-semibold transition",
         checked
-          ? "border-neon-yellow/50 bg-neon-yellow/10 text-neon-yellow"
-          : "border-white/10 bg-white/5 text-white/60",
+          ? "border-neon-yellow/60 bg-neon-yellow/10 text-neon-yellow shadow-[0_0_14px_-4px_oklch(0.86_0.19_100/0.6)]"
+          : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
       )}
     >
       <span
         className={cn(
-          "grid h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition",
-          checked ? "bg-neon-yellow/40 justify-items-end" : "bg-white/10 justify-items-start",
+          "relative h-6 w-11 shrink-0 rounded-full p-0.5 transition",
+          checked ? "bg-neon-yellow/70" : "bg-white/15",
         )}
       >
-        <span className={cn("h-4 w-4 rounded-full", checked ? "bg-neon-yellow" : "bg-white/60")} />
+        <span
+          className={cn(
+            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+            checked ? "left-[calc(100%-1.375rem)]" : "left-0.5",
+          )}
+        />
       </span>
       <span className="truncate">{label}</span>
     </button>
   );
 }
+
 
 function CategoryPicker({
   categories,
