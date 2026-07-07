@@ -296,9 +296,12 @@ function Content() {
         />
         <div className="mt-4 text-[12px] text-white/60">{settings?.address ?? BRAND.address}</div>
         <div className="mt-1 text-[12px] text-white/60">{settings?.whatsappDisplay ?? BRAND.whatsappDisplay}</div>
-        <div className="mt-6 text-[10px] text-white/30">
+        <Link
+          to="/admin"
+          className="mt-6 block text-[10px] text-white/30 transition-colors hover:text-white/60"
+        >
           © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com 💜
-        </div>
+        </Link>
       </footer>
 
 
