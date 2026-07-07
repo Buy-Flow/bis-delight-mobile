@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { CartProvider, useCart } from "@/lib/cart-context";
@@ -8,10 +8,6 @@ import { Benefits } from "@/components/menu/Benefits";
 import { CategoryStrip } from "@/components/menu/CategoryStrip";
 import { ProductCard } from "@/components/menu/ProductCard";
 import { HighlightCard } from "@/components/menu/HighlightCard";
-import { ProductModal } from "@/components/menu/ProductModal";
-import { AcaiBuilder } from "@/components/menu/AcaiBuilder";
-import { CartSheet } from "@/components/menu/CartSheet";
-import { CheckoutSheet } from "@/components/menu/CheckoutSheet";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { BRAND, type Product } from "@/data/menu";
@@ -20,6 +16,20 @@ import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
 import { Search, Sparkles, X, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const ProductModal = lazy(() =>
+  import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
+);
+const AcaiBuilder = lazy(() =>
+  import("@/components/menu/AcaiBuilder").then((m) => ({ default: m.AcaiBuilder })),
+);
+const CartSheet = lazy(() =>
+  import("@/components/menu/CartSheet").then((m) => ({ default: m.CartSheet })),
+);
+const CheckoutSheet = lazy(() =>
+  import("@/components/menu/CheckoutSheet").then((m) => ({ default: m.CheckoutSheet })),
+);
+
 
 
 
@@ -68,7 +78,7 @@ function Content() {
   const [activeCat, setActiveCat] = useState("all");
   const [query, setQuery] = useState("");
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
-  const { isAcaiOpen, openAcai, closeAcai } = useCart();
+  const { isAcaiOpen, openAcai, closeAcai, isCartOpen, isCheckoutOpen } = useCart();
   const menuRef = useRef<HTMLDivElement>(null);
 
   const { data: products = [] } = useProducts();
@@ -286,10 +296,15 @@ function Content() {
 
 
       <FloatingActions />
-      <ProductModal product={modalProduct} onClose={() => setModalProduct(null)} />
-      {isAcaiOpen && <AcaiBuilder onClose={closeAcai} />}
-      <CartSheet />
-      <CheckoutSheet />
+      <Suspense fallback={null}>
+        {modalProduct && (
+          <ProductModal product={modalProduct} onClose={() => setModalProduct(null)} />
+        )}
+        {isAcaiOpen && <AcaiBuilder onClose={closeAcai} />}
+        {isCartOpen && <CartSheet />}
+        {isCheckoutOpen && <CheckoutSheet />}
+      </Suspense>
+
     </div>
   );
 }
