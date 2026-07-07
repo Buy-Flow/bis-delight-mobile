@@ -2405,8 +2405,9 @@ function HoursSection({ s, set }: { s: SiteSettings; set: SetFn }) {
 
 function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={Truck} title="Entrega & Retirada" sub="Como o cliente recebe o pedido." />
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Toggle
           checked={s.acceptsDelivery}
@@ -2420,68 +2421,119 @@ function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Field label="Taxa de entrega (R$)">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            className={inputCls}
-            value={s.deliveryFee}
-            onChange={(e) => set("deliveryFee", Number(e.target.value))}
-          />
-        </Field>
-        <Field label="Frete grátis a partir de (R$)">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            className={inputCls}
-            value={s.freeDeliveryThreshold}
-            onChange={(e) => set("freeDeliveryThreshold", Number(e.target.value))}
-          />
-          <div className="mt-1 text-[10px] text-white/40">0 = desligado</div>
-        </Field>
-        <Field label="Pedido mínimo (R$)">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            className={inputCls}
-            value={s.minOrder}
-            onChange={(e) => set("minOrder", Number(e.target.value))}
-          />
-        </Field>
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <CreditCard className="h-3.5 w-3.5 text-neon-cyan" />
+          Valores
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Field label="Taxa de entrega" hint="Valor cobrado a mais no pedido em modo entrega.">
+            <MoneyInput value={s.deliveryFee} onChange={(v) => set("deliveryFee", v)} />
+          </Field>
+          <Field label="Frete grátis a partir de" hint="0 = sempre cobra a taxa acima.">
+            <MoneyInput value={s.freeDeliveryThreshold} onChange={(v) => set("freeDeliveryThreshold", v)} />
+          </Field>
+          <Field label="Pedido mínimo" hint="O cliente só finaliza a partir deste valor.">
+            <MoneyInput value={s.minOrder} onChange={(v) => set("minOrder", v)} />
+          </Field>
+        </div>
       </div>
     </div>
   );
 }
 
+const QUICK_PAYMENT_METHODS = ["Pix", "Dinheiro", "Cartão de crédito", "Cartão de débito", "Vale-refeição"];
+
 function PaymentSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const [copied, setCopied] = useState(false);
+  const copyPix = () => {
+    if (!s.pixKey) return;
+    navigator.clipboard.writeText(s.pixKey);
+    setCopied(true);
+    toast.success("Chave Pix copiada");
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const addMethod = (m: string) => {
+    if (s.paymentMethods.includes(m)) return;
+    set("paymentMethods", [...s.paymentMethods, m]);
+  };
+  const missingQuick = QUICK_PAYMENT_METHODS.filter((m) => !s.paymentMethods.includes(m));
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={CreditCard} title="Pagamento" sub="Como o cliente pode pagar o pedido." />
-      <Field label="Chave Pix">
-        <input
-          className={inputCls}
-          placeholder="CPF, telefone, e-mail ou chave aleatória"
-          value={s.pixKey}
-          onChange={(e) => set("pixKey", e.target.value)}
-        />
-      </Field>
-      <Field label="Formas de pagamento aceitas">
+
+      <div className="rounded-2xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/10 to-transparent p-4">
+        <Field label="Chave Pix" hint="Aparece na tela de pagamento para o cliente copiar.">
+          <div className="relative">
+            <input
+              className={cn(inputCls, "pr-24")}
+              placeholder="CPF, telefone, e-mail ou chave aleatória"
+              value={s.pixKey}
+              onChange={(e) => set("pixKey", e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={copyPix}
+              disabled={!s.pixKey}
+              className={cn(
+                "absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition",
+                s.pixKey
+                  ? "bg-neon-cyan text-[oklch(0.18_0.11_305)] hover:brightness-110"
+                  : "bg-white/5 text-white/30",
+              )}
+            >
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? "Copiado" : "Copiar"}
+            </button>
+          </div>
+        </Field>
+      </div>
+
+      <Field label="Formas de pagamento aceitas" hint="Aparecem no checkout para o cliente escolher.">
         <ChipInput
           values={s.paymentMethods}
           onChange={(v) => set("paymentMethods", v)}
           placeholder="Digite e Enter (ex.: Cartão de crédito)"
         />
-        <div className="mt-1 text-[10px] text-white/40">
-          Aparece na tela de checkout para o cliente escolher.
-        </div>
+        {missingQuick.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <span className="text-[10.5px] uppercase tracking-wider text-white/40">Sugestões:</span>
+            {missingQuick.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => addMethod(m)}
+                className="inline-flex items-center gap-1 rounded-full border border-dashed border-white/20 bg-white/5 px-2 py-0.5 text-[11px] text-white/70 hover:border-neon-cyan hover:text-neon-cyan"
+              >
+                <Plus className="h-3 w-3" /> {m}
+              </button>
+            ))}
+          </div>
+        )}
       </Field>
     </div>
   );
 }
+
+function MoneyInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[12px] font-bold text-white/50">R$</span>
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        inputMode="decimal"
+        className={cn(inputCls, "pl-9 font-mono tabular-nums")}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </div>
+  );
+}
+
 
 function SocialSection({ s, set }: { s: SiteSettings; set: SetFn }) {
   return (
