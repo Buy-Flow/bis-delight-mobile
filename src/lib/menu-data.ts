@@ -395,7 +395,12 @@ export function useUpdateHeroImage() {
       heroImagePosY?: number;
       heroImageScale?: number;
     }) => {
-      const patch: Record<string, unknown> = {};
+      const patch: {
+        hero_image_url?: string | null;
+        hero_image_pos_x?: number;
+        hero_image_pos_y?: number;
+        hero_image_scale?: number;
+      } = {};
       if (p.heroImage !== undefined) patch.hero_image_url = p.heroImage || null;
       if (p.heroImagePosX !== undefined) patch.hero_image_pos_x = p.heroImagePosX;
       if (p.heroImagePosY !== undefined) patch.hero_image_pos_y = p.heroImagePosY;
