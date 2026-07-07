@@ -225,6 +225,8 @@ export function useSiteSettings() {
       const rawHours = (data.hours_json as unknown) as DayHours[] | null;
       const rawMethods = (data.payment_methods as unknown) as string[] | null;
       const rawNewsIds = (data.news_product_ids as unknown) as string[] | null;
+      const rawGlobalExtras = ((data as Record<string, unknown>).global_extras as unknown) as ExtraOption[] | null;
+
       const rawOverride = String(data.open_override ?? "auto");
       return {
         name: data.name || STATIC_BRAND.name,
