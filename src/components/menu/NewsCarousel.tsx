@@ -37,7 +37,7 @@ export function NewsCarousel({
   }, [items.length]);
 
   return (
-    <section className="relative overflow-hidden pb-6 pt-4">
+    <section className="relative overflow-visible pb-6 pt-4">
       {/* Ambient glow backdrop */}
       <div
         aria-hidden
@@ -102,12 +102,12 @@ export function NewsCarousel({
           and edge mask fades left/right for smooth continuity */}
       <div
         ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-6 px-6 py-6"
+        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-8 px-8 py-10"
         style={{
           WebkitMaskImage:
-            "linear-gradient(90deg, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)",
+            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
           maskImage:
-            "linear-gradient(90deg, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)",
+            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
         }}
       >
 
@@ -171,7 +171,7 @@ function NewsPosterCard({
         className="relative flex w-full flex-col overflow-hidden rounded-[22px] border border-neon-pink/40 bg-[oklch(0.16_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1 group-hover:border-neon-pink"
         style={{
           boxShadow:
-            "0 0 0 1px oklch(0.72 0.26 350 / 0.25), 0 0 24px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -12px oklch(0.85 0.18 200 / 0.45), 0 18px 34px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06)",
+            "0 0 0 1px oklch(0.72 0.26 350 / 0.28), 0 0 18px -6px oklch(0.72 0.26 350 / 0.65), 0 0 42px -18px oklch(0.85 0.18 200 / 0.55), 0 18px 34px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
         {/* Inner neon rim — sits inside the card so it never clips */}
