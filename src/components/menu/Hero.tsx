@@ -32,7 +32,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
       <div className="relative z-20 mx-auto flex w-[260px] max-w-full flex-col items-center text-center">
         {/* Eyebrow */}
         <div
-          className="text-[26px] italic leading-none text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
+          className="text-[32px] italic leading-none text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
           style={{ fontFamily: "'Caveat', cursive", fontWeight: 600 }}
         >
           Sabor que
@@ -40,7 +40,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
         {/* Headline */}
         <h1
-          className="mt-1 text-[42px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
+          className="mt-1 text-[52px] uppercase leading-[0.9] tracking-[0.005em] text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.35)]"
           style={{
             fontFamily: "'Barlow Condensed', 'Anton', sans-serif",
             fontWeight: 900,
@@ -48,6 +48,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         >
           <span className="inline-block -rotate-[3deg]">Transforma</span>
         </h1>
+
 
 
         {/* Underline swash */}
