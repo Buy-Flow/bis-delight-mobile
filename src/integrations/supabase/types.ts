@@ -373,6 +373,7 @@ export type Database = {
           delivery_fee: number
           facebook: string
           free_delivery_threshold: number
+          global_extras: Json
           hours: string
           hours_json: Json
           id: number
@@ -407,6 +408,7 @@ export type Database = {
           delivery_fee?: number
           facebook?: string
           free_delivery_threshold?: number
+          global_extras?: Json
           hours?: string
           hours_json?: Json
           id?: number
@@ -441,6 +443,7 @@ export type Database = {
           delivery_fee?: number
           facebook?: string
           free_delivery_threshold?: number
+          global_extras?: Json
           hours?: string
           hours_json?: Json
           id?: number

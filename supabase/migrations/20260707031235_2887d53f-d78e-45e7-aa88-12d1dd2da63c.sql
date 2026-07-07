@@ -1,0 +1,1 @@
+ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS global_extras JSONB NOT NULL DEFAULT '[]'::jsonb;
