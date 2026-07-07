@@ -181,7 +181,7 @@ function Content() {
 
 
       {/* Monte seu açaí banner */}
-      <section className="overflow-visible px-4 py-6">
+      <Reveal as="section" className="overflow-visible px-4 py-6" direction="left">
         <button
           onClick={openAcai}
           className="shine-strip group relative flex w-full items-center gap-4 rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
@@ -207,7 +207,7 @@ function Content() {
             className="ml-auto h-32 w-32 shrink-0 object-contain drop-shadow-[0_15px_20px_rgba(0,0,0,0.5)] animate-float-slow"
           />
         </button>
-      </section>
+      </Reveal>
 
 
 
