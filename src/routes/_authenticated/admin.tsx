@@ -3216,6 +3216,222 @@ const TEXTURE_PRESETS = [
   },
 ];
 
+function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const { data: products = [] } = useAllProducts();
+  const [query, setQuery] = useState("");
+
+  const selectedIds = s.newsProductIds;
+  const selectedSet = new Set(selectedIds);
+  const selected = selectedIds
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is (typeof products)[number] => Boolean(p));
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? products.filter(
+        (p) => !selectedSet.has(p.id) && p.name.toLowerCase().includes(q),
+      )
+    : products.filter((p) => !selectedSet.has(p.id)).slice(0, 12);
+
+  const toggle = (id: string) => {
+    if (selectedSet.has(id)) {
+      set("newsProductIds", selectedIds.filter((x) => x !== id));
+    } else {
+      set("newsProductIds", [...selectedIds, id]);
+    }
+  };
+
+  const move = (idx: number, dir: -1 | 1) => {
+    const next = [...selectedIds];
+    const target = idx + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[idx], next[target]] = [next[target], next[idx]];
+    set("newsProductIds", next);
+  };
+
+  return (
+    <div className="space-y-5">
+      <SectionTitle
+        icon={Sparkles}
+        title="Novidades"
+        sub="Carrossel que aparece antes de 'Nossos Destaques' na página inicial."
+      />
+
+      {/* Status */}
+      <div
+        className={cn(
+          "rounded-2xl border p-4 transition",
+          s.newsActive
+            ? "border-neon-cyan/40 bg-gradient-to-br from-neon-cyan/15 to-transparent"
+            : "border-white/10 bg-black/20",
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition",
+              s.newsActive ? "bg-neon-cyan/25 text-neon-cyan" : "bg-white/5 text-white/40",
+            )}
+          >
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-bold text-white">
+              {s.newsActive ? "Novidades ativas" : "Novidades desativadas"}
+            </div>
+            <div className="text-[11px] text-white/50">
+              {s.newsActive
+                ? selected.length > 0
+                  ? `${selected.length} produto${selected.length === 1 ? "" : "s"} no carrossel.`
+                  : "Adicione produtos abaixo para o carrossel aparecer."
+                : "Ative para exibir o carrossel de novidades no topo."}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => set("newsActive", !s.newsActive)}
+            className={cn(
+              "relative h-6 w-11 shrink-0 rounded-full p-0.5 transition",
+              s.newsActive ? "bg-neon-cyan" : "bg-white/15",
+            )}
+          >
+            <span
+              className={cn(
+                "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+                s.newsActive ? "left-[calc(100%-1.375rem)]" : "left-0.5",
+              )}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Título */}
+      <Field label="Título da seção" hint="Aparece grande no cardápio: 'Nossas [Título]'.">
+        <input
+          className={inputCls}
+          value={s.newsTitle}
+          onChange={(e) => set("newsTitle", e.target.value)}
+          placeholder="Novidades"
+          maxLength={24}
+        />
+      </Field>
+
+      {/* Selecionados */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+            <Check className="h-3.5 w-3.5 text-neon-cyan" /> No carrossel
+          </div>
+          <span className="text-[10px] text-white/40">{selected.length} selecionado{selected.length === 1 ? "" : "s"}</span>
+        </div>
+
+        {selected.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-6 text-center text-[11.5px] text-white/40">
+            Nenhum produto selecionado ainda.
+          </div>
+        ) : (
+          <ul className="space-y-1.5">
+            {selected.map((p, i) => (
+              <li
+                key={p.id}
+                className="flex items-center gap-2 rounded-xl bg-white/5 p-2"
+              >
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="h-10 w-10 shrink-0 rounded-lg bg-white/10" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[12.5px] font-semibold text-white">{p.name}</div>
+                  <div className="truncate text-[10.5px] text-white/40">{p.category}</div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => move(i, -1)}
+                    disabled={i === 0}
+                    className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(i, 1)}
+                    disabled={i === selected.length - 1}
+                    className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
+                  >
+                    <ArrowDown className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggle(p.id)}
+                    className="rounded-md border border-red-400/30 bg-red-500/10 p-1 text-red-300 hover:bg-red-500/20"
+                    aria-label="Remover"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Adicionar */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <Plus className="h-3.5 w-3.5 text-neon-yellow" /> Adicionar produtos
+        </div>
+        <div className="relative mb-3">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+          <input
+            className={cn(inputCls, "pl-9")}
+            placeholder="Buscar produto…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        {filtered.length === 0 ? (
+          <div className="text-center text-[11.5px] text-white/40">
+            {q ? "Nenhum produto encontrado." : "Todos os produtos já foram adicionados."}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {filtered.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => toggle(p.id)}
+                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2 text-left transition hover:border-neon-cyan/40 hover:bg-neon-cyan/10"
+              >
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="h-9 w-9 shrink-0 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="h-9 w-9 shrink-0 rounded-lg bg-white/10" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[11.5px] font-semibold text-white">{p.name}</div>
+                  <div className="truncate text-[10px] text-white/40">{p.category}</div>
+                </div>
+                <Plus className="h-4 w-4 shrink-0 text-white/50" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function AppearanceSection({
   s,
   set,
