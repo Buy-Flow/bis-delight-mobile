@@ -3,7 +3,20 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  Sparkles,
+  Mail,
+  Lock,
+  User as UserIcon,
+  Phone,
+  Eye,
+  EyeOff,
+  Award,
+  Heart,
+  ClipboardList,
+} from "lucide-react";
 import { z } from "zod";
 
 const searchSchema = z.object({ next: z.string().optional() });
@@ -21,7 +34,6 @@ export const Route = createFileRoute("/auth")({
 
 function safeNext(next: string | undefined): string {
   if (!next) return "/conta";
-  // only allow same-origin relative paths
   if (next.startsWith("/") && !next.startsWith("//")) return next;
   return "/conta";
 }
@@ -37,6 +49,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -59,7 +72,6 @@ function AuthPage() {
         });
         if (error) throw error;
 
-        // If email confirmation is on, session may be null; try direct sign in
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) {
           toast.success("Conta criada! Confirme seu e-mail e entre.");
@@ -98,107 +110,228 @@ function AuthPage() {
 
   return (
     <div
-      className="flex min-h-screen items-center justify-center px-4"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10"
       style={{
         background:
-          "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.24 0.18 305) 45%, oklch(0.10 0.08 300) 100%)",
+          "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.24 0.18 305) 45%, oklch(0.08 0.06 300) 100%)",
       }}
     >
-      <div className="w-full max-w-sm">
-        <Link to="/" className="mb-6 inline-flex items-center gap-1 text-sm text-white/70 hover:text-white">
-          <ArrowLeft className="h-4 w-4" /> Voltar ao cardápio
+      {/* Decorative glow blobs */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 -left-24 h-80 w-80 rounded-full blur-3xl"
+        style={{ background: "oklch(0.70 0.28 355 / 0.35)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-32 -right-24 h-96 w-96 rounded-full blur-3xl"
+        style={{ background: "oklch(0.85 0.18 200 / 0.28)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.08]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+          backgroundSize: "22px 22px",
+        }}
+      />
+
+      <div className="relative z-10 w-full max-w-md">
+        <Link
+          to="/"
+          className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 backdrop-blur-md transition hover:bg-white/10 hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao cardápio
         </Link>
 
-        <div className="rounded-3xl border border-white/10 bg-[oklch(0.14_0.09_305)]/85 p-6 backdrop-blur-md shadow-2xl">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-neon-yellow" />
-            <h1
-              className="font-display text-2xl font-black uppercase text-white"
-              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-            >
-              {mode === "signin" ? "Entrar" : "Criar conta"}
-            </h1>
-          </div>
-          <p className="mt-1 text-sm text-white/60">
-            {mode === "signin"
-              ? "Acesse seus pedidos, favoritos e cupons Bis Recompensa."
-              : "Cadastre-se para acumular selos e ganhar açaí grátis 🍧"}
-          </p>
+        {/* Card */}
+        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[oklch(0.14_0.09_305)]/85 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+          {/* Top glow strip */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, oklch(0.85 0.18 200 / 0.7), transparent)",
+            }}
+          />
 
-          <button
-            onClick={google}
-            disabled={loading}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-white/95 disabled:opacity-60"
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5">
-              <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.9 1.5L18.7 5C17 3.4 14.7 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12S6.7 21.6 12 21.6c6.9 0 11.5-4.9 11.5-11.7 0-.8-.1-1.4-.2-2H12z" />
-            </svg>
-            Continuar com Google
-          </button>
-
-          <div className="my-4 flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40">
-            <div className="h-px flex-1 bg-white/10" /> ou <div className="h-px flex-1 bg-white/10" />
+          {/* Mode tabs */}
+          <div className="flex gap-1 p-3">
+            <TabButton active={mode === "signin"} onClick={() => setMode("signin")}>
+              Entrar
+            </TabButton>
+            <TabButton active={mode === "signup"} onClick={() => setMode("signup")}>
+              Criar conta
+            </TabButton>
           </div>
 
-          <form onSubmit={submit} className="space-y-3" autoComplete="on">
-            {mode === "signup" && (
-              <>
-                <input
-                  type="text"
-                  required
-                  autoComplete="name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Seu nome completo"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-                />
-                <input
-                  type="tel"
-                  autoComplete="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Telefone (WhatsApp)"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-                />
-              </>
-            )}
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-            />
-            <input
-              type="password"
-              required
-              minLength={6}
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Senha (mín. 6 caracteres)"
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-            />
+          <div className="px-6 pb-6 pt-2">
+            <div className="mb-5 flex items-center gap-2">
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <h1
+                  className="font-display text-2xl font-black uppercase leading-none text-white"
+                  style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                >
+                  {mode === "signin" ? "Bem-vindo de volta" : "Vamos começar!"}
+                </h1>
+                <p className="mt-1 text-xs text-white/60">
+                  {mode === "signin"
+                    ? "Entre para acessar seus pedidos e recompensas."
+                    : "Crie sua conta e ganhe selos a cada pedido."}
+                </p>
+              </div>
+            </div>
+
+            {/* Google */}
             <button
-              type="submit"
+              onClick={google}
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-60"
+              className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-lg shadow-black/20 transition hover:-translate-y-[1px] hover:bg-white active:translate-y-0 disabled:opacity-60"
             >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Entrar" : "Criar conta"}
+              <svg viewBox="0 0 24 24" className="h-5 w-5">
+                <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.9 1.5L18.7 5C17 3.4 14.7 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12S6.7 21.6 12 21.6c6.9 0 11.5-4.9 11.5-11.7 0-.8-.1-1.4-.2-2H12z" />
+              </svg>
+              Continuar com Google
             </button>
-          </form>
 
-          <button
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-4 w-full text-center text-xs text-white/60 hover:text-white"
-          >
-            {mode === "signin" ? "Ainda não tem conta? Criar conta" : "Já tem conta? Entrar"}
-          </button>
+            <div className="my-5 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
+              <div className="h-px flex-1 bg-white/10" /> ou com e-mail <div className="h-px flex-1 bg-white/10" />
+            </div>
+
+            <form onSubmit={submit} className="space-y-3" autoComplete="on">
+              {mode === "signup" && (
+                <>
+                  <Field icon={UserIcon}>
+                    <input
+                      type="text"
+                      required
+                      autoComplete="name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Seu nome completo"
+                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+                    />
+                  </Field>
+                  <Field icon={Phone}>
+                    <input
+                      type="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Telefone (WhatsApp)"
+                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+                    />
+                  </Field>
+                </>
+              )}
+              <Field icon={Mail}>
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+                />
+              </Field>
+              <Field icon={Lock}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={6}
+                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Senha (mín. 6 caracteres)"
+                  className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  className="text-white/50 transition hover:text-white"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </Field>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-neon-pink px-4 py-3.5 text-sm font-extrabold uppercase tracking-wide text-white glow-pink transition active:scale-[.98] disabled:opacity-60"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {mode === "signin" ? "Entrar agora" : "Criar minha conta"}
+              </button>
+            </form>
+
+            {/* Perks */}
+            <div className="mt-6 grid grid-cols-3 gap-2">
+              <Perk icon={Award} label="Recompensas" />
+              <Perk icon={ClipboardList} label="Pedidos" />
+              <Perk icon={Heart} label="Favoritos" />
+            </div>
+
+            <p className="mt-5 text-center text-[11px] leading-relaxed text-white/40">
+              Ao continuar, você concorda com nossos termos e política de privacidade.
+            </p>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "flex-1 rounded-2xl px-3 py-2.5 text-xs font-bold uppercase tracking-wider transition " +
+        (active
+          ? "bg-white/10 text-white shadow-inner ring-1 ring-white/15"
+          : "text-white/50 hover:text-white/80")
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function Field({
+  icon: Icon,
+  children,
+}: {
+  icon: typeof Mail;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3 transition focus-within:border-neon-cyan focus-within:bg-white/[0.07] focus-within:ring-2 focus-within:ring-neon-cyan/20">
+      <Icon className="h-4 w-4 shrink-0 text-white/40" />
+      {children}
+    </label>
+  );
+}
+
+function Perk({ icon: Icon, label }: { icon: typeof Award; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/5 bg-white/[0.03] px-2 py-3 text-center">
+      <Icon className="h-4 w-4 text-neon-cyan" />
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-white/60">{label}</span>
     </div>
   );
 }
