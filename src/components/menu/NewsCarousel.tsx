@@ -243,26 +243,26 @@ function NewsPosterCard({
         </div>
 
         {/* Text block below */}
-        <div className="flex flex-1 flex-col gap-1 p-3 pt-2">
+        <div className="flex flex-1 flex-col gap-1.5 p-5 pt-3">
           <span
-            className="text-[8.5px] font-extrabold uppercase tracking-[0.22em] text-neon-cyan drop-shadow-[0_0_6px_rgba(90,220,255,0.6)]"
+            className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-neon-cyan drop-shadow-[0_0_6px_rgba(90,220,255,0.6)]"
             style={{ fontFamily: "'Poppins', sans-serif" }}
           >
             {eyebrow}
           </span>
           <h3
-            className="text-[17px] font-black uppercase leading-[0.95] text-white line-clamp-2"
+            className="text-[26px] font-black uppercase leading-[0.95] text-white line-clamp-2"
             style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
           >
             {product.name}
           </h3>
 
           {chips.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1">
+            <div className="mt-1 flex flex-wrap gap-1.5">
               {chips.map((c) => (
                 <span
                   key={c}
-                  className="rounded-full border border-white/10 bg-white/[0.06] px-1.5 py-[1px] text-[8.5px] font-semibold uppercase tracking-wide text-white/75"
+                  className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-[3px] text-[10px] font-semibold uppercase tracking-wide text-white/80"
                   style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
                   {c}
@@ -271,19 +271,19 @@ function NewsPosterCard({
             </div>
           )}
 
-          <div className="mt-2 flex items-end justify-between gap-2">
+          <div className="mt-3 flex items-end justify-between gap-2">
             <div className="flex flex-col leading-none">
               <span
-                className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/55"
+                className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/60"
                 style={{ fontFamily: "'Poppins', sans-serif" }}
               >
                 A partir de
               </span>
               <span
-                className="mt-0.5 text-[17px] font-black italic leading-none text-white"
+                className="mt-1 text-[26px] font-black italic leading-none text-white"
                 style={{
                   fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
-                  textShadow: "0 2px 10px rgba(255,45,149,0.5)",
+                  textShadow: "0 2px 12px rgba(255,45,149,0.55)",
                 }}
               >
                 {brl(product.basePrice)}
@@ -291,13 +291,13 @@ function NewsPosterCard({
             </div>
 
             <span
-              className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink text-white transition-transform group-hover:rotate-90 group-active:scale-95"
+              className="grid h-12 w-12 place-items-center rounded-2xl bg-neon-pink text-white transition-transform group-hover:rotate-90 group-active:scale-95"
               style={{
-                boxShadow: "0 0 14px rgba(255,45,149,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
+                boxShadow: "0 0 18px rgba(255,45,149,0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
               }}
               aria-hidden
             >
-              <Plus className="h-4 w-4" strokeWidth={3.2} />
+              <Plus className="h-5 w-5" strokeWidth={3.2} />
             </span>
           </div>
         </div>
