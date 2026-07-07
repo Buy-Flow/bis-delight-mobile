@@ -26,19 +26,8 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
 
         <div className="flex items-center gap-2">
           <AccountButton />
-          <button
-            onClick={openCart}
-            aria-label="Abrir carrinho"
-            className="relative grid h-11 w-11 place-items-center rounded-2xl bg-neon-pink text-white glow-pink active:scale-95 transition"
-          >
-            <ShoppingBag className="h-5 w-5" />
-            {count > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-neon-yellow px-1 text-[11px] font-bold text-[oklch(0.18_0.11_305)]">
-                {count}
-              </span>
-            )}
-          </button>
         </div>
+
       </div>
     </header>
   );
