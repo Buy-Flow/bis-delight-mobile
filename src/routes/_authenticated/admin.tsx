@@ -4108,6 +4108,104 @@ function ExtrasTab() {
   );
 }
 
+function GlobalExtrasSection() {
+  const { data: settings } = useSiteSettings();
+  const update = useUpdateSettings();
+  const [draft, setDraft] = useState<import("@/data/menu").ExtraOption[] | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const current = settings?.globalExtras ?? [];
+  const list = draft ?? current;
+  const isDirty = JSON.stringify(list) !== JSON.stringify(current);
+
+  const save = async () => {
+    if (!settings) return;
+    setSaving(true);
+    try {
+      await update.mutateAsync({ ...settings, globalExtras: list });
+      setDraft(null);
+      toast.success("Complementos globais salvos");
+    } catch {
+      toast.error("Falha ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="mb-6 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-black text-neon-cyan">
+            Complementos globais
+          </h3>
+          <p className="text-[11px] text-white/60">
+            Aparecem em <b>todos os produtos</b> automaticamente, junto com os complementos
+            individuais do produto.
+          </p>
+        </div>
+        <button
+          onClick={() =>
+            setDraft([
+              ...list,
+              { id: `g${Date.now()}`, label: "Novo complemento", price: 0 },
+            ])
+          }
+          className="shrink-0 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30"
+        >
+          <Plus className="h-3.5 w-3.5" /> Adicionar
+        </button>
+      </div>
+
+      <RowList
+        items={list}
+        onChange={(v) => setDraft(v)}
+        render={(row, upd) => (
+          <>
+            <input
+              className={cn(inputCls, "flex-1")}
+              placeholder="Ex.: Leite Ninho"
+              value={row.label}
+              onChange={(e) => upd({ ...row, label: e.target.value })}
+            />
+            <div className="flex items-center gap-1">
+              <span className="text-[11px] text-white/50">R$</span>
+              <input
+                type="number"
+                step="0.01"
+                className={cn(inputCls, "w-20")}
+                value={row.price}
+                onChange={(e) => upd({ ...row, price: Number(e.target.value) })}
+              />
+            </div>
+          </>
+        )}
+        emptyLabel="Nenhum complemento global. Clique em Adicionar."
+      />
+
+      {isDirty && (
+        <div className="mt-3 flex items-center justify-end gap-2">
+          <button
+            onClick={() => setDraft(null)}
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:bg-white/10"
+          >
+            Descartar
+          </button>
+          <button
+            onClick={save}
+            disabled={saving}
+            className="rounded-full bg-neon-cyan px-4 py-1.5 text-xs font-black uppercase tracking-wider text-[oklch(0.18_0.11_305)] disabled:opacity-50"
+          >
+            {saving ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
 
 /* ============================= UI helpers ============================= */
 const inputCls =
