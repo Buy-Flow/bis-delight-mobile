@@ -2366,35 +2366,39 @@ function HoursSection({ s, set }: { s: SiteSettings; set: SetFn }) {
           {hours.map((h) => (
             <div
               key={h.day}
-              className="grid grid-cols-[80px_1fr_auto_1fr_auto] items-center gap-2 rounded-xl bg-white/5 px-2 py-1.5"
+              className="rounded-xl bg-white/5 px-2.5 py-2"
             >
-              <div className="text-xs font-bold text-white/80">{DAY_LABEL[h.day]}</div>
-              <input
-                type="time"
-                disabled={h.closed}
-                className={cn(inputCls, "h-9 py-1 text-xs disabled:opacity-40")}
-                value={h.open}
-                onChange={(e) => updateDay(h.day, { open: e.target.value })}
-              />
-              <span className="text-white/40">→</span>
-              <input
-                type="time"
-                disabled={h.closed}
-                className={cn(inputCls, "h-9 py-1 text-xs disabled:opacity-40")}
-                value={h.close}
-                onChange={(e) => updateDay(h.day, { close: e.target.value })}
-              />
-              <button
-                onClick={() => updateDay(h.day, { closed: !h.closed })}
-                className={cn(
-                  "rounded-lg border px-2 py-1 text-[10px] font-semibold transition",
-                  h.closed
-                    ? "border-red-400/40 bg-red-500/10 text-red-300"
-                    : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
-                )}
-              >
-                {h.closed ? "Fechado" : "Aberto"}
-              </button>
+              <div className="mb-1.5 flex items-center justify-between">
+                <div className="text-xs font-bold text-white/80">{DAY_LABEL[h.day]}</div>
+                <button
+                  onClick={() => updateDay(h.day, { closed: !h.closed })}
+                  className={cn(
+                    "rounded-lg border px-2 py-1 text-[10px] font-semibold transition",
+                    h.closed
+                      ? "border-red-400/40 bg-red-500/10 text-red-300"
+                      : "border-emerald-400/40 bg-emerald-500/10 text-emerald-300",
+                  )}
+                >
+                  {h.closed ? "Fechado" : "Aberto"}
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="time"
+                  disabled={h.closed}
+                  className={cn(inputCls, "h-9 flex-1 py-1 text-xs disabled:opacity-40")}
+                  value={h.open}
+                  onChange={(e) => updateDay(h.day, { open: e.target.value })}
+                />
+                <span className="text-white/40">→</span>
+                <input
+                  type="time"
+                  disabled={h.closed}
+                  className={cn(inputCls, "h-9 flex-1 py-1 text-xs disabled:opacity-40")}
+                  value={h.close}
+                  onChange={(e) => updateDay(h.day, { close: e.target.value })}
+                />
+              </div>
             </div>
           ))}
         </div>
