@@ -19,7 +19,10 @@ import {
   Eye,
   EyeOff,
   Copy,
+  Check,
+  Info,
   X,
+
   ImagePlus,
   ArrowUp,
   ArrowDown,
@@ -2198,17 +2201,18 @@ type SetFn = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
 
 function SectionTitle({ icon: Icon, title, sub }: { icon: React.ElementType; title: string; sub?: string }) {
   return (
-    <div className="mb-4 flex items-center gap-2">
-      <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink/15 text-neon-pink">
-        <Icon className="h-4 w-4" />
+    <div className="mb-5 flex items-center gap-3 border-b border-white/10 pb-4">
+      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/30 via-neon-pink/15 to-neon-cyan/20 text-neon-pink ring-1 ring-neon-pink/30 shadow-[0_0_18px_-4px_oklch(0.72_0.22_340/0.5)]">
+        <Icon className="h-5 w-5" />
       </div>
-      <div>
-        <div className="text-sm font-bold">{title}</div>
-        {sub && <div className="text-[11px] text-white/50">{sub}</div>}
+      <div className="min-w-0">
+        <div className="font-display text-base font-black text-white">{title}</div>
+        {sub && <div className="text-[11.5px] text-white/55">{sub}</div>}
       </div>
     </div>
   );
 }
+
 
 function IdentitySection({
   s,
@@ -2577,14 +2581,29 @@ function AppearanceSection({
 const inputCls =
   "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">{label}</div>
+      <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/60">{label}</div>
       {children}
+      {hint && (
+        <div className="mt-1 flex items-start gap-1 text-[10.5px] text-white/45">
+          <Info className="mt-[1px] h-3 w-3 shrink-0" />
+          <span>{hint}</span>
+        </div>
+      )}
     </label>
   );
 }
+
 
 function IconPicker({
   value,
