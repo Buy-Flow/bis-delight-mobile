@@ -248,141 +248,99 @@ function NewsPosterCard({
             "0 0 0 1px oklch(0.72 0.26 350 / 0.35), 0 0 22px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -18px oklch(0.85 0.18 200 / 0.55), 0 24px 40px -20px rgba(0,0,0,0.8)",
         }}
       >
-        {/* Full-bleed hero */}
+        {/* Full-bleed hero — nítida, sem sujeira por cima */}
         <img
           src={heroSrc}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           style={{
             transform: `translate(${heroPosX}%, ${heroPosY}%) scale(${heroScale})`,
             transformOrigin: "center",
           }}
         />
 
-        {/* Editorial gradient wash — dark at top and bottom for legibility */}
+        {/* Wash sutil só no rodapé para legibilidade do texto */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%]"
           style={{
             background:
-              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0.85) 0%, oklch(0.08 0.10 305 / 0.15) 28%, oklch(0.08 0.10 305 / 0.15) 45%, oklch(0.08 0.10 305 / 0.85) 88%, oklch(0.08 0.10 305 / 0.95) 100%)",
+              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0) 0%, oklch(0.08 0.10 305 / 0.55) 40%, oklch(0.08 0.10 305 / 0.92) 100%)",
           }}
         />
-
-        {/* Halftone dot texture */}
+        {/* Wash bem leve no topo para o eyebrow */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[22%]"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 25% 25%, rgba(255,255,255,0.55) 1px, transparent 1.5px)",
-            backgroundSize: "8px 8px",
+            background:
+              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0.55) 0%, oklch(0.08 0.10 305 / 0) 100%)",
           }}
         />
 
-        {/* Neon rim inside so it never clips */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-[26px]"
-          style={{
-            boxShadow:
-              "inset 0 0 0 1px oklch(0.72 0.26 350 / 0.45), inset 0 0 30px oklch(0.72 0.26 350 / 0.28), inset 0 0 60px oklch(0.85 0.18 200 / 0.12)",
-          }}
-        />
-
-        {/* Diagonal ribbon */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-14 top-8 z-20 rotate-45"
-        >
-          <div
+        {/* Badge minimalista no canto */}
+        <div className="absolute right-3 top-3 z-20">
+          <span
             className={cn(
-              "px-16 py-1.5 text-[10px] font-black uppercase tracking-[0.35em]",
+              "inline-block rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.28em]",
               badge.bg,
               badge.text,
             )}
             style={{
               fontFamily: "'Poppins', sans-serif",
-              boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
+              boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
             }}
           >
             {badge.label}
-          </div>
+          </span>
         </div>
 
-        {/* Masthead */}
+        {/* Conteúdo */}
         <div className="relative z-10 flex w-full flex-col justify-between p-5">
-          <header className="flex items-start justify-between gap-3">
-            <div className="flex flex-col leading-none">
-              <span
-                className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90"
-                style={{ fontFamily: "'Poppins', sans-serif" }}
-              >
-                Quero Bis
-              </span>
-              <span
-                className="mt-1 text-[9px] font-semibold uppercase tracking-[0.28em] text-neon-cyan"
-                style={{ fontFamily: "'Poppins', sans-serif" }}
-              >
-                {monthLabel} · {eyebrow}
-              </span>
-            </div>
-          </header>
+          <span
+            className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neon-cyan/90"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            {eyebrow}
+          </span>
 
-
-          {/* Cover title — massive stacked type at the bottom */}
-          <div className="mt-auto">
+          <div className="mt-auto space-y-3">
             <h3
               className="text-white"
               style={{
                 fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
                 fontWeight: 900,
                 fontStyle: "italic",
-                lineHeight: 0.82,
+                lineHeight: 0.88,
                 letterSpacing: "-0.02em",
-                textShadow: "0 4px 24px rgba(0,0,0,0.6)",
+                textShadow: "0 2px 16px rgba(0,0,0,0.7)",
               }}
             >
-              <span className="block text-[46px] uppercase">{topLine}</span>
+              <span className="block text-[38px] uppercase">{topLine}</span>
               {bottomLine && (
                 <span
-                  className="mt-0.5 block text-[46px] uppercase text-neon-pink"
-                  style={{ textShadow: "0 0 18px rgba(255,45,149,0.7)" }}
+                  className="mt-0.5 block text-[38px] uppercase text-neon-pink"
+                  style={{ textShadow: "0 0 14px rgba(255,45,149,0.55)" }}
                 >
                   {bottomLine}
                 </span>
               )}
             </h3>
 
-            {/* Barcode-esque divider */}
-            <div className="mt-3 flex h-4 items-end gap-[2px] opacity-80">
-              {Array.from({ length: 28 }).map((_, k) => (
-                <span
-                  key={k}
-                  className="block bg-white/80"
-                  style={{
-                    width: k % 5 === 0 ? 2 : 1,
-                    height: `${40 + ((k * 37) % 60)}%`,
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Price + CTA */}
-            <div className="mt-3 flex items-end justify-between gap-3">
+            {/* Preço + CTA */}
+            <div className="flex items-end justify-between gap-3">
               <div className="flex flex-col leading-none">
                 <span
-                  className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/70"
+                  className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/60"
                   style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
-                  Capa · a partir de
+                  A partir de
                 </span>
                 <span
-                  className="mt-1 text-[30px] font-black italic leading-none text-white"
+                  className="mt-1 text-[26px] font-black italic leading-none text-white"
                   style={{
                     fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
-                    textShadow: "0 2px 14px rgba(255,45,149,0.6)",
                   }}
                 >
                   {brl(product.basePrice)}
@@ -390,15 +348,15 @@ function NewsPosterCard({
               </div>
 
               <span
-                className="inline-flex items-center gap-2 rounded-full bg-neon-pink px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-transform group-hover:scale-105 group-active:scale-95"
+                className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.16em] text-white transition-transform group-hover:scale-105 group-active:scale-95"
                 style={{
                   fontFamily: "'Poppins', sans-serif",
                   boxShadow:
-                    "0 0 18px rgba(255,45,149,0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
+                    "0 0 18px rgba(255,45,149,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
                 }}
                 aria-hidden
               >
-                Ler capa
+                Ver
                 <Plus className="h-3.5 w-3.5" strokeWidth={3.2} />
               </span>
             </div>
@@ -408,3 +366,4 @@ function NewsPosterCard({
     </article>
   );
 }
+
