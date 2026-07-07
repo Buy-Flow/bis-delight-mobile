@@ -109,7 +109,7 @@ function Content() {
 
   return (
     <div
-      className="relative mx-auto min-h-screen w-full max-w-[520px] pb-32"
+      className="relative mx-auto min-h-screen w-full max-w-[520px]"
       style={{
         backgroundColor: "#0d0322",
         backgroundImage: `url(${heroTexture.url})`,
