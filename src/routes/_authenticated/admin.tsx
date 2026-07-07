@@ -2925,43 +2925,138 @@ function MoneyInput({ value, onChange }: { value: number; onChange: (v: number) 
 }
 
 
+const SOCIAL_NETWORKS = [
+  {
+    key: "instagram" as const,
+    label: "Instagram",
+    icon: Instagram,
+    placeholder: "@seuinsta ou URL completa",
+    accent: "from-[#f09433] via-[#e6683c] to-[#bc1888]",
+    ring: "ring-[#e6683c]/40",
+    text: "text-[#f5a97b]",
+    baseUrl: "https://instagram.com/",
+    resolve: (v: string) =>
+      v.startsWith("http") ? v : `https://instagram.com/${v.replace(/^@/, "")}`,
+  },
+  {
+    key: "facebook" as const,
+    label: "Facebook",
+    icon: Facebook,
+    placeholder: "URL da página",
+    accent: "from-[#1877f2] to-[#0a58ca]",
+    ring: "ring-[#1877f2]/40",
+    text: "text-[#7cb0ff]",
+    baseUrl: "https://facebook.com/",
+    resolve: (v: string) =>
+      v.startsWith("http") ? v : `https://facebook.com/${v.replace(/^@/, "")}`,
+  },
+  {
+    key: "tiktok" as const,
+    label: "TikTok",
+    icon: Music2,
+    placeholder: "@seutiktok ou URL",
+    accent: "from-[#25f4ee] via-[#0d0d0d] to-[#fe2c55]",
+    ring: "ring-[#fe2c55]/40",
+    text: "text-[#ff7a95]",
+    baseUrl: "https://tiktok.com/@",
+    resolve: (v: string) =>
+      v.startsWith("http")
+        ? v
+        : `https://tiktok.com/@${v.replace(/^@/, "")}`,
+  },
+];
+
 function SocialSection({ s, set }: { s: SiteSettings; set: SetFn }) {
+  const active = SOCIAL_NETWORKS.filter((n) => (s[n.key] as string)?.trim());
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={Globe} title="Redes sociais" sub="Links exibidos no rodapé do cardápio." />
-      <Field label="Instagram">
-        <div className="relative">
-          <Instagram className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-          <input
-            className={cn(inputCls, "pl-9")}
-            placeholder="@seuinsta ou URL completa"
-            value={s.instagram}
-            onChange={(e) => set("instagram", e.target.value)}
-          />
+
+      <div className="space-y-3">
+        {SOCIAL_NETWORKS.map((n) => {
+          const value = (s[n.key] as string) || "";
+          const filled = value.trim().length > 0;
+          const Icon = n.icon;
+          return (
+            <div
+              key={n.key}
+              className={cn(
+                "rounded-2xl border p-3 transition",
+                filled
+                  ? "border-white/15 bg-white/[0.04]"
+                  : "border-white/10 bg-black/20",
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg transition",
+                    n.accent,
+                    filled ? "opacity-100 ring-2" : "opacity-50",
+                    filled && n.ring,
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[12px] font-bold text-white">{n.label}</div>
+                    {filled && (
+                      <a
+                        href={n.resolve(value)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold transition hover:bg-white/10",
+                          n.text,
+                        )}
+                      >
+                        Abrir <LinkIcon className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                  <input
+                    className={cn(inputCls, "mt-1 h-9 text-xs")}
+                    placeholder={n.placeholder}
+                    value={value}
+                    onChange={(e) => set(n.key, e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Prévia */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <Sparkles className="h-3.5 w-3.5 text-neon-yellow" /> Como aparece no rodapé
         </div>
-      </Field>
-      <Field label="Facebook">
-        <div className="relative">
-          <Facebook className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-          <input
-            className={cn(inputCls, "pl-9")}
-            placeholder="URL da página"
-            value={s.facebook}
-            onChange={(e) => set("facebook", e.target.value)}
-          />
-        </div>
-      </Field>
-      <Field label="TikTok">
-        <div className="relative">
-          <Music2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-          <input
-            className={cn(inputCls, "pl-9")}
-            placeholder="@seutiktok ou URL"
-            value={s.tiktok}
-            onChange={(e) => set("tiktok", e.target.value)}
-          />
-        </div>
-      </Field>
+        {active.length === 0 ? (
+          <div className="text-[11.5px] text-white/40">
+            Preencha ao menos uma rede para aparecer no rodapé do cardápio.
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {active.map((n) => {
+              const Icon = n.icon;
+              return (
+                <span
+                  key={n.key}
+                  className={cn(
+                    "inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br text-white shadow-lg",
+                    n.accent,
+                  )}
+                >
+                  <Icon className="h-4.5 w-4.5" />
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
