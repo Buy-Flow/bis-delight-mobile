@@ -3197,6 +3197,22 @@ function AnnouncementSection({ s, set }: { s: SiteSettings; set: SetFn }) {
 
 
 
+const TEXTURE_PRESETS = [
+  { label: "Roxo escuro", url: "" },
+  {
+    label: "Neon purple",
+    url: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=800&q=80",
+  },
+  {
+    label: "Aurora",
+    url: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=800&q=80",
+  },
+  {
+    label: "Gradiente rosa",
+    url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&q=80",
+  },
+];
+
 function AppearanceSection({
   s,
   set,
@@ -3209,26 +3225,110 @@ function AppearanceSection({
   textureBusy: boolean;
 }) {
   return (
-    <div className="space-y-4">
-      <SectionTitle icon={Palette} title="Aparência" sub="Imagens do fundo do site." />
+    <div className="space-y-5">
+      <SectionTitle icon={Palette} title="Aparência" sub="Como o fundo do cardápio aparece." />
+
+      {/* Prévia ao vivo */}
       <div>
-        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">Textura de fundo</div>
+        <div className="mb-1.5 flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-white/50">
+          <Sparkles className="h-3 w-3 text-neon-yellow" /> Prévia ao vivo
+        </div>
+        <div
+          className="relative h-40 overflow-hidden rounded-2xl border border-white/10"
+          style={{
+            backgroundColor: "#0d0322",
+            backgroundImage: s.texture ? `url(${s.texture})` : undefined,
+            backgroundSize: "cover",
+            backgroundRepeat: "repeat",
+          }}
+        >
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-black/40" />
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+            <div
+              className="font-display text-lg font-black uppercase text-white drop-shadow-lg"
+              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+            >
+              {s.name || "Sua loja"}
+            </div>
+            <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[10px] font-black uppercase text-[oklch(0.15_0.10_305)]">
+              Aberto
+            </span>
+          </div>
+          {!s.texture && (
+            <div className="absolute inset-0 flex items-center justify-center text-[11px] text-white/40">
+              Sem textura — fundo roxo padrão
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Textura */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <Palette className="h-3.5 w-3.5 text-neon-pink" /> Textura de fundo
+        </div>
         <ImageDropzone
           url={s.texture}
           busy={textureBusy}
           onFile={onTexture}
           onClear={() => set("texture", "")}
         />
-        <input
-          className={cn(inputCls, "mt-2 text-xs")}
-          placeholder="ou cole uma URL"
-          value={s.texture}
-          onChange={(e) => set("texture", e.target.value)}
-        />
+        <div className="mt-2 text-[10.5px] text-white/40">
+          Imagem sutil e repetível funciona melhor. Recomendado 800×800 ou maior.
+        </div>
+        <div className="relative mt-3">
+          <LinkIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+          <input
+            className={cn(inputCls, "h-9 pl-8 text-xs")}
+            placeholder="ou cole uma URL"
+            value={s.texture}
+            onChange={(e) => set("texture", e.target.value)}
+          />
+        </div>
+
+        {/* Presets */}
+        <div className="mt-4">
+          <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-white/40">Presets</div>
+          <div className="grid grid-cols-4 gap-2">
+            {TEXTURE_PRESETS.map((p) => {
+              const active = (s.texture || "") === p.url;
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => set("texture", p.url)}
+                  className={cn(
+                    "group relative flex aspect-square items-end overflow-hidden rounded-xl border p-1.5 text-left transition",
+                    active
+                      ? "border-neon-yellow ring-2 ring-neon-yellow/40"
+                      : "border-white/10 hover:border-white/30",
+                  )}
+                  style={{
+                    backgroundColor: "#0d0322",
+                    backgroundImage: p.url ? `url(${p.url})` : undefined,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  <span className="relative z-10 truncate text-[9px] font-bold text-white drop-shadow">
+                    {p.label}
+                  </span>
+                  <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+                  {active && (
+                    <span className="absolute right-1 top-1 rounded-full bg-neon-yellow p-0.5 text-[oklch(0.15_0.10_305)]">
+                      <Check className="h-2.5 w-2.5" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
 
 /* ============================= UI helpers ============================= */
 const inputCls =
