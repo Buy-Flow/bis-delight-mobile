@@ -38,6 +38,7 @@ import {
   Palette,
   Phone,
   Globe,
+  Link as LinkIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -2231,26 +2232,103 @@ function IdentitySection({
   onLogo: (f: File) => void;
   logoBusy: boolean;
 }) {
+  const nameMax = 40;
+  const taglineMax = 60;
+  const nameLen = s.name?.length ?? 0;
+  const taglineLen = s.tagline?.length ?? 0;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <SectionTitle icon={Store} title="Identidade" sub="Como sua loja aparece no topo do cardápio." />
-      <div className="grid gap-4 sm:grid-cols-[220px_1fr]">
-        <div>
-          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-white/50">Logo</div>
-          <ImageDropzone url={s.logo} busy={logoBusy} onFile={onLogo} onClear={() => set("logo", "")} />
-          <input
-            className={cn(inputCls, "mt-2 text-xs")}
-            placeholder="ou cole uma URL"
-            value={s.logo}
-            onChange={(e) => set("logo", e.target.value)}
-          />
+
+      {/* Live preview */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[oklch(0.20_0.14_305)] via-[oklch(0.14_0.10_300)] to-[oklch(0.10_0.08_300)] p-4">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-neon-pink/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-neon-cyan/15 blur-3xl" />
+        <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/50">
+          <Sparkles className="h-3 w-3 text-neon-yellow" /> Prévia
         </div>
+        <div className="relative flex items-center gap-3">
+          {s.logo ? (
+            <img
+              src={s.logo}
+              alt={s.name || "Logo"}
+              className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-2 ring-white/10 drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
+            />
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-white/5 text-white/30">
+              <Store className="h-6 w-6" />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div
+              className="truncate font-display text-xl font-black uppercase text-white"
+              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+            >
+              {s.name || "Nome da loja"}
+            </div>
+            <div className="truncate text-[12px] text-white/60">
+              {s.tagline || "Adicione um slogan curto"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-[220px_1fr]">
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-white/60">Logo</div>
+          <ImageDropzone url={s.logo} busy={logoBusy} onFile={onLogo} onClear={() => set("logo", "")} />
+          <div className="text-[10.5px] text-white/40">PNG ou JPG · quadrado · min. 512×512</div>
+          <div className="relative">
+            <LinkIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+            <input
+              className={cn(inputCls, "h-9 pl-8 text-xs")}
+              placeholder="ou cole uma URL"
+              value={s.logo}
+              onChange={(e) => set("logo", e.target.value)}
+            />
+          </div>
+        </div>
+
         <div className="space-y-3">
-          <Field label="Nome da loja">
-            <input className={inputCls} value={s.name} onChange={(e) => set("name", e.target.value)} />
+          <Field label="Nome da loja" hint="Aparece no topo do cardápio e no rodapé.">
+            <div className="relative">
+              <input
+                className={cn(inputCls, "pr-14")}
+                maxLength={nameMax}
+                value={s.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder="Ex.: Quero Bis"
+              />
+              <span
+                className={cn(
+                  "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] tabular-nums",
+                  nameLen > nameMax * 0.9 ? "text-neon-yellow" : "text-white/30",
+                )}
+              >
+                {nameLen}/{nameMax}
+              </span>
+            </div>
           </Field>
-          <Field label="Slogan">
-            <input className={inputCls} value={s.tagline} onChange={(e) => set("tagline", e.target.value)} />
+
+          <Field label="Slogan" hint="Uma frase curta que resume o que você vende.">
+            <div className="relative">
+              <input
+                className={cn(inputCls, "pr-14")}
+                maxLength={taglineMax}
+                value={s.tagline}
+                onChange={(e) => set("tagline", e.target.value)}
+                placeholder="Ex.: Sorvetes e açaí feitos com amor"
+              />
+              <span
+                className={cn(
+                  "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] tabular-nums",
+                  taglineLen > taglineMax * 0.9 ? "text-neon-yellow" : "text-white/30",
+                )}
+              >
+                {taglineLen}/{taglineMax}
+              </span>
+            </div>
           </Field>
         </div>
       </div>
