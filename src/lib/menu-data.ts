@@ -249,6 +249,8 @@ export function useSiteSettings() {
         hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
         newsActive: Boolean(data.news_active ?? false),
         newsTitle: String(data.news_title ?? "Novidades"),
+        newsSubtitle: String((data as Record<string, unknown>).news_subtitle ?? "acabou de sair!"),
+        newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
         newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
       };
     },
