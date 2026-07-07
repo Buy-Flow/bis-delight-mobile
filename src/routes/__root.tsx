@@ -134,9 +134,54 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function findHorizontalScroller(start: EventTarget | null) {
+  if (!(start instanceof Element)) return null;
+
+  let current: Element | null = start;
+  while (current && current !== document.body) {
+    const style = window.getComputedStyle(current);
+    const canScrollX = current.scrollWidth > current.clientWidth + 1;
+    const overflowAllowsScroll = style.overflowX === "auto" || style.overflowX === "scroll";
+    if (canScrollX && overflowAllowsScroll) {
+      return current as HTMLElement;
+    }
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
+function useDesktopWheelHorizontalScroll() {
+  useEffect(() => {
+    const onWheel = (event: WheelEvent) => {
+      if (event.defaultPrevented || event.ctrlKey) return;
+      if (!window.matchMedia?.("(pointer: fine)").matches) return;
+
+      const scroller = findHorizontalScroller(event.target);
+      if (!scroller) return;
+
+      const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+      if (delta === 0) return;
+
+      const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+      const atStart = scroller.scrollLeft <= 0 && delta < 0;
+      const atEnd = scroller.scrollLeft >= maxScroll - 1 && delta > 0;
+      if (maxScroll <= 0 || atStart || atEnd) return;
+
+      event.preventDefault();
+      scroller.scrollBy({ left: delta, behavior: "auto" });
+    };
+
+    document.addEventListener("wheel", onWheel, { passive: false });
+    return () => document.removeEventListener("wheel", onWheel);
+  }, []);
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+
+  useDesktopWheelHorizontalScroll();
 
   useEffect(() => {
     let mounted = true;

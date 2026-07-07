@@ -41,7 +41,7 @@ function useCarousel() {
 const Carousel = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & CarouselProps
->(({ orientation = "horizontal", opts, setApi, plugins, className, children, ...props }, ref) => {
+>(({ orientation = "horizontal", opts, setApi, plugins, className, children, onWheel, ...props }, ref) => {
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
@@ -82,6 +82,25 @@ const Carousel = React.forwardRef<
     [scrollPrev, scrollNext],
   );
 
+  const handleWheel = React.useCallback(
+    (event: React.WheelEvent<HTMLDivElement>) => {
+      onWheel?.(event);
+      if (event.defaultPrevented || orientation !== "horizontal") return;
+      if (!window.matchMedia?.("(pointer: fine)").matches) return;
+      if (!api) return;
+
+      const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+      if (delta === 0) return;
+      const canMove = delta > 0 ? api.canScrollNext() : api.canScrollPrev();
+      if (!canMove) return;
+
+      event.preventDefault();
+      if (delta > 0) api.scrollNext();
+      else api.scrollPrev();
+    },
+    [api, onWheel, orientation],
+  );
+
   React.useEffect(() => {
     if (!api || !setApi) {
       return;
@@ -120,6 +139,7 @@ const Carousel = React.forwardRef<
       <div
         ref={ref}
         onKeyDownCapture={handleKeyDown}
+        onWheel={handleWheel}
         className={cn("relative", className)}
         role="region"
         aria-roledescription="carousel"
