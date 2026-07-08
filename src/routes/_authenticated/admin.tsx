@@ -2077,6 +2077,12 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const initialDraft = {
+    heroImage: product.heroImage ?? "",
+    posX: product.heroImagePosX ?? 0,
+    posY: product.heroImagePosY ?? 0,
+    scale: product.heroImageScale ?? 1.4,
+  };
   const [draft, setDraft] = useState({
     heroImage: product.heroImage ?? "",
     posX: product.heroImagePosX ?? 0,
@@ -2093,6 +2099,12 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     });
   }, [product.heroImage, product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
 
+  const dirty =
+    draft.heroImage !== initialDraft.heroImage ||
+    draft.posX !== initialDraft.posX ||
+    draft.posY !== initialDraft.posY ||
+    draft.scale !== initialDraft.scale;
+
   const previewProduct: Product = {
     ...product,
     heroImage: draft.heroImage,
@@ -2101,24 +2113,32 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     heroImageScale: draft.scale,
   };
 
-  const save = async (patch: Partial<typeof draft>) => {
-    const next = { ...draft, ...patch };
-    setDraft(next);
+  const patchDraft = (patch: Partial<typeof draft>) => {
+    setDraft((prev) => ({ ...prev, ...patch }));
+  };
+
+  const save = async () => {
     await update.mutateAsync({
       id: product.id,
-      heroImage: next.heroImage,
-      heroImagePosX: next.posX,
-      heroImagePosY: next.posY,
-      heroImageScale: next.scale,
+      heroImage: draft.heroImage,
+      heroImagePosX: draft.posX,
+      heroImagePosY: draft.posY,
+      heroImageScale: draft.scale,
     });
+    toast.success("Destaque salvo");
+  };
+
+  const discard = () => {
+    setDraft(initialDraft);
+    setOpen(false);
   };
 
   const onFile = async (file: File) => {
     setBusy(true);
     try {
       const url = await uploadProductImage(file);
-      await save({ heroImage: url });
-      toast.success("Imagem do destaque atualizada");
+      patchDraft({ heroImage: url });
+      toast.success("Imagem pronta — clique em Salvar");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
     } finally {
@@ -2127,11 +2147,11 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
   };
 
   const clearImage = async () => {
-    await save({ heroImage: "" });
-    toast.success("Imagem removida — voltou para a foto do produto");
+    patchDraft({ heroImage: "" });
+    toast.success("Imagem removida — clique em Salvar");
   };
 
-  const reset = () => save({ posX: 0, posY: 0, scale: 1.4 });
+  const reset = () => patchDraft({ posX: 0, posY: 0, scale: 1.4 });
 
   const CARD_W = 320;
   const CARD_H = 148;
@@ -2154,11 +2174,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
   const onPointerUp = () => {
     if (!dragRef.current) return;
     dragRef.current = null;
-    void update.mutateAsync({
-      id: product.id,
-      heroImagePosX: draft.posX,
-      heroImagePosY: draft.posY,
-    });
   };
 
   return (
@@ -2213,7 +2228,9 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                   <Star className="h-3.5 w-3.5 fill-neon-yellow text-neon-yellow" />
                   <div className="truncate text-sm font-bold">{product.name}</div>
                 </div>
-                <div className="text-[10.5px] text-white/50">Ajuste a foto do card de Destaque</div>
+                <div className="text-[10.5px] text-white/50">
+                  Ajuste a foto do card de Destaque{dirty ? " • alterações não salvas" : ""}
+                </div>
               </div>
               <button
                 type="button"
@@ -2236,7 +2253,7 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                     <HighlightCard product={previewProduct} onOpen={() => {}} />
                   </div>
                   <div className="text-[10px] text-white/40">
-                    Arraste a foto abaixo ou use os controles.
+                    Arraste a foto abaixo ou use os controles e salve no final.
                   </div>
                 </div>
               </div>
@@ -2294,7 +2311,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                     step={0.05}
                     value={draft.scale}
                     onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
-                    onPointerUp={() => save({ scale: draft.scale })}
                     className="w-full accent-neon-cyan"
                   />
                 </div>
@@ -2312,7 +2328,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                       step={1}
                       value={draft.posX}
                       onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
-                      onPointerUp={() => save({ posX: draft.posX })}
                       className="w-full accent-neon-cyan"
                     />
                   </div>
@@ -2328,20 +2343,19 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                       step={1}
                       value={draft.posY}
                       onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
-                      onPointerUp={() => save({ posY: draft.posY })}
                       className="w-full accent-neon-cyan"
                     />
                   </div>
                   <div className="flex flex-col items-stretch justify-end gap-1">
                     <div className="grid grid-cols-3 gap-1">
                       <div />
-                      <NudgeBtn onClick={() => save({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
+                      <NudgeBtn onClick={() => patchDraft({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
                       <div />
-                      <NudgeBtn onClick={() => save({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
+                      <NudgeBtn onClick={() => patchDraft({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
                       <NudgeBtn onClick={reset}>◎</NudgeBtn>
-                      <NudgeBtn onClick={() => save({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
+                      <NudgeBtn onClick={() => patchDraft({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
                       <div />
-                      <NudgeBtn onClick={() => save({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
+                      <NudgeBtn onClick={() => patchDraft({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
                       <div />
                     </div>
                   </div>
@@ -2372,6 +2386,30 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                 </p>
               </div>
 
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[oklch(0.10_0.08_300)] px-4 py-3">
+              <div className="flex items-center gap-2 text-[11px] text-white/60">
+                {dirty ? <span className="h-2 w-2 rounded-full bg-neon-yellow" /> : null}
+                {dirty ? "Alterações não salvas" : "Sem alterações"}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={discard}
+                  className="rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/5"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={save}
+                  disabled={!dirty || update.isPending || busy}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
+                >
+                  {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  Salvar
+                </button>
+              </div>
             </div>
           </div>
         </div>
