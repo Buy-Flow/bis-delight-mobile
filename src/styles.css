@@ -176,6 +176,11 @@
     0%,100% { box-shadow: 0 0 0 0 oklch(0.72 0.26 350 / 0.7); }
     50%     { box-shadow: 0 0 0 14px oklch(0.72 0.26 350 / 0); }
   }
+  @keyframes pulse-glow-yellow-sm {
+    0%,100% { box-shadow: 0 0 0 0 oklch(0.90 0.20 90 / 0.75); }
+    50%     { box-shadow: 0 0 0 5px oklch(0.90 0.20 90 / 0); }
+  }
+
   @keyframes shine {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(200%); }
@@ -237,6 +242,8 @@
   .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
   .animate-float-med  { animation: float-med 4.5s ease-in-out infinite; }
   .animate-pulse-glow { animation: pulse-glow 2.2s ease-out infinite; }
+  .animate-pulse-glow-yellow-sm { animation: pulse-glow-yellow-sm 2s ease-out infinite; }
+
   .animate-rise-in    { animation: rise-in .6s cubic-bezier(.2,.7,.2,1) both; }
   .animate-pop-in     { animation: pop-in .5s cubic-bezier(.34,1.56,.64,1) both; }
   .animate-wiggle     { animation: wiggle 2.4s ease-in-out infinite; }
@@ -293,6 +300,8 @@
     .animate-float-slow,
     .animate-float-med,
     .animate-pulse-glow,
+    .animate-pulse-glow-yellow-sm,
+
     .animate-rise-in,
     .animate-pop-in,
     .animate-wiggle,
