@@ -1,4 +1,5 @@
 import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck } from "lucide-react";
+import acaiBowlImg from "@/assets/acai-bowl-cute.png";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
@@ -57,20 +58,28 @@ export function CartSheet() {
               ].join(","),
             }}
           />
-          {/* Sorvete/açaí correndo — emoji flutuante decorativo */}
-          <div
+          {/* Açaí bowl ilustrado — imagem decorativa */}
+          <img
+            src={acaiBowlImg}
+            alt=""
             aria-hidden
-            className="pointer-events-none absolute -left-2 top-1 text-3xl opacity-80 animate-float-slow"
-            style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,.5))" }}
-          >
-            🍧
-          </div>
-          <div
+            width={96}
+            height={96}
+            loading="lazy"
+            className="pointer-events-none absolute -left-3 -top-2 h-24 w-24 rotate-[-8deg] animate-float-slow select-none"
+            style={{ filter: "drop-shadow(0 8px 18px rgba(0,0,0,0.55))" }}
+          />
+          <img
+            src={acaiBowlImg}
+            alt=""
             aria-hidden
-            className="pointer-events-none absolute right-24 top-8 text-xl opacity-70 animate-float-med"
-          >
-            🍨
-          </div>
+            width={56}
+            height={56}
+            loading="lazy"
+            className="pointer-events-none absolute right-24 top-4 h-14 w-14 rotate-[12deg] opacity-80 animate-float-med select-none"
+            style={{ filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.5))" }}
+          />
+
 
           <div className="relative px-5 pb-5 pt-6">
             <div className="flex items-center justify-between gap-3">
