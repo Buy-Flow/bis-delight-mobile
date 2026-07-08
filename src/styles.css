@@ -222,11 +222,12 @@
   }
   @keyframes heartbeat {
     0%,100% { transform: scale(1); }
-    12%     { transform: scale(1.22); }
+    12%     { transform: scale(1.08); }
     24%     { transform: scale(1); }
-    36%     { transform: scale(1.15); }
+    36%     { transform: scale(1.05); }
     50%     { transform: scale(1); }
   }
+
   @keyframes spin-slow {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
