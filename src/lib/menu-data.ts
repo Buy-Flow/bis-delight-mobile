@@ -649,6 +649,8 @@ export function useUpdateSettings() {
         card_border: s.cardBorder,
         card_glow: s.cardGlow,
         title_font: s.titleFont,
+        hero_images: s.heroImages,
+
 
 
       }, { onConflict: "id" });
