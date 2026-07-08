@@ -5247,27 +5247,14 @@ function HeroImagesSection({
       </div>
 
       {/* Live preview — real Hero, sticky while scrolling */}
-      <div className="sticky top-2 z-30 -mx-1">
+      <div className="sticky top-2 z-30">
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
           Preview real da tela inicial
         </div>
-        <div className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]">
-          {/* Scale a real 390px-wide mobile frame down to the preview width */}
-          <div
-            className="pointer-events-none origin-top-left"
-            style={{
-              width: 390,
-              height: 560,
-              transform: "scale(calc(min(420px, 100%) / 390))",
-              transformOrigin: "top left",
-            }}
-          >
-            <div className="h-full w-[390px] overflow-hidden">
-              <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
-            </div>
+        <div className="relative mx-auto w-[390px] max-w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]">
+          <div className="pointer-events-none h-[560px] w-[390px]">
+            <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
           </div>
-          {/* Spacer to reserve the scaled height */}
-          <div aria-hidden style={{ height: "calc(560px * (min(420px, 100%) / 390))" }} />
         </div>
       </div>
 
