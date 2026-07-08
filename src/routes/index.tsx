@@ -223,8 +223,9 @@ function Content() {
         >
           <div className="relative z-10">
             <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
-              <Sparkles className="h-3 w-3" /> Novo
+              <Sparkles className="h-3 w-3 animate-spin-slow" /> Novo
             </div>
+
             <div className="font-display text-2xl font-extrabold leading-tight text-white">
               Monte seu <span className="text-neon-pink">açaí</span>
             </div>
