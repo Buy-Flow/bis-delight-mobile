@@ -27,7 +27,7 @@ export function Benefits() {
     <section className="relative z-30 mt-2 px-4 pb-6">
       <div
         className="rounded-[32px] border border-white/10 px-3 py-4 shadow-lg"
-        style={{ backgroundColor: "#1a0b2e" }}
+        style={{ backgroundColor: "#3a1f5c" }}
       >
 
         <div className="grid grid-cols-3 items-center divide-x divide-white/20">
