@@ -568,6 +568,11 @@ export async function uploadProductImage(file: File): Promise<string> {
     cacheControl: "3600",
   });
   if (error) throw error;
-  const { data } = supabase.storage.from("product-images").getPublicUrl(path);
-  return data.publicUrl;
+  // Bucket is private (workspace blocks public buckets), so use a long-lived signed URL.
+  const { data, error: signErr } = await supabase.storage
+    .from("product-images")
+    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10); // 10 years
+  if (signErr || !data?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL da imagem");
+  return data.signedUrl;
 }
+
