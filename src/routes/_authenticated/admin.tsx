@@ -71,10 +71,8 @@ import {
   type DayHours,
   type WeekDay,
   type ProductInput,
-  type AcaiConfig,
-  DEFAULT_ACAI_CONFIG,
 } from "@/lib/menu-data";
-import type { Product, Category } from "@/data/menu";
+import type { Product, Category, OptionGroup, OptionItem } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
 import { getDefaultExtras } from "@/components/menu/ProductModal";
 import { HighlightCard } from "@/components/menu/HighlightCard";
@@ -212,7 +210,7 @@ function ProductsTab() {
   const toggleActive = useToggleProductActive();
   const upsert = useUpsertProduct();
   const [editing, setEditing] = useState<Product | null>(null);
-  const [editingAcai, setEditingAcai] = useState(false);
+  
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
@@ -310,27 +308,8 @@ function ProductsTab() {
         </div>
       </div>
 
-      {/* Produto personalizado — Monte seu açaí (Especial da Casa) */}
-      <button
-        onClick={() => setEditingAcai(true)}
-        className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-neon-cyan/40 bg-gradient-to-r from-neon-cyan/10 via-neon-pink/10 to-neon-yellow/10 p-3 text-left transition hover:from-neon-cyan/20 hover:to-neon-yellow/20"
-      >
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-neon-cyan/20 ring-1 ring-neon-cyan/40">
-          <Sparkles className="h-5 w-5 text-neon-cyan" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-extrabold text-white">Monte seu açaí</span>
-            <span className="rounded-full bg-neon-cyan/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-neon-cyan">
-              Especial da casa
-            </span>
-          </div>
-          <div className="text-[11px] text-white/60">
-            Produto personalizado — tamanhos, frutas, cremes e complementos
-          </div>
-        </div>
-        <Pencil className="h-4 w-4 shrink-0 text-white/60" />
-      </button>
+
+
 
 
       <div className="mb-3 space-y-2">
@@ -419,7 +398,7 @@ function ProductsTab() {
           onClose={() => setEditing(null)}
         />
       )}
-      {editingAcai && <AcaiConfigEditor onClose={() => setEditingAcai(false)} />}
+      
     </div>
   );
 }
@@ -468,7 +447,7 @@ function IconBtn({
   );
 }
 
-type EditorTab = "basic" | "photo" | "sizes" | "extras" | "advanced";
+type EditorTab = "basic" | "photo" | "sizes" | "extras" | "custom" | "advanced";
 
 function ProductEditor({
   initial,
@@ -519,6 +498,8 @@ function ProductEditor({
       image_pos_x: Number(p.imagePosX ?? 0),
       image_pos_y: Number(p.imagePosY ?? 0),
       image_scale: Number(p.imageScale ?? 1.1),
+      is_custom: !!p.isCustom,
+      option_groups: p.isCustom ? (p.optionGroups ?? []) : null,
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
@@ -557,6 +538,7 @@ function ProductEditor({
     { id: "photo", label: "Foto" },
     { id: "sizes", label: "Tamanhos & Sabores" },
     { id: "extras", label: "Complementos" },
+    { id: "custom", label: "Personalizar" },
     { id: "advanced", label: "Extras" },
   ];
 
@@ -818,6 +800,16 @@ function ProductEditor({
               />
             </div>
           )}
+
+          {tab === "custom" && (
+            <CustomTab
+              isCustom={!!p.isCustom}
+              onToggle={(v) => setField("isCustom", v)}
+              groups={p.optionGroups ?? []}
+              onGroupsChange={(g) => setField("optionGroups", g)}
+            />
+          )}
+
 
           {tab === "advanced" && (
             <div className="space-y-4">
@@ -4968,316 +4960,227 @@ function slugify(s: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-/* =============================== Especial da Casa (Monte seu açaí) =============================== */
-function AcaiConfigEditor({ onClose }: { onClose: () => void }) {
-  const { data: settings } = useSiteSettings();
-  const update = useUpdateSettings();
-  const [cfg, setCfg] = useState<AcaiConfig>(
-    settings?.acaiConfig ?? DEFAULT_ACAI_CONFIG,
-  );
-  const [saving, setSaving] = useState(false);
 
-  const save = async () => {
-    if (!settings) return;
-    setSaving(true);
-    try {
-      await update.mutateAsync({ ...settings, acaiConfig: cfg });
-      toast.success("Especial da casa atualizado");
-      onClose();
-    } catch {
-      toast.error("Falha ao salvar");
-    } finally {
-      setSaving(false);
-    }
-  };
+/* ============================== Produto personalizado ============================== */
 
-  const resetDefaults = async () => {
-    if (!(await confirmDialog({ title: "Restaurar padrão?", message: "As opções voltam ao padrão de fábrica.", confirmLabel: "Restaurar" }))) return;
-    setCfg(DEFAULT_ACAI_CONFIG);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 top-[4vh] flex flex-col overflow-hidden rounded-t-[24px] bg-[oklch(0.14_0.09_305)] ring-1 ring-white/10">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-neon-cyan/10 via-neon-pink/10 to-neon-yellow/10 px-4 py-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-neon-cyan" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-neon-cyan">Especial da casa</span>
-            </div>
-            <h2 className="font-display text-xl font-black text-white">Monte seu açaí</h2>
-          </div>
-          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-          {/* Regras */}
-          <Section title="Regras" hint="Quantos itens são grátis e o preço do extra">
-            <div className="grid grid-cols-2 gap-2">
-              <NumField label="Frutas grátis" value={cfg.freeFruits} onChange={(v) => setCfg({ ...cfg, freeFruits: v })} />
-              <NumField label="R$ por fruta extra" value={cfg.extraFruitPrice} step={0.5} onChange={(v) => setCfg({ ...cfg, extraFruitPrice: v })} />
-              <NumField label="Cremes grátis" value={cfg.freeCreams} onChange={(v) => setCfg({ ...cfg, freeCreams: v })} />
-              <NumField label="R$ por creme extra" value={cfg.extraCreamPrice} step={0.5} onChange={(v) => setCfg({ ...cfg, extraCreamPrice: v })} />
-            </div>
-          </Section>
-
-          {/* Tamanhos */}
-          <Section title="Tamanhos" hint="Cada tamanho tem seu preço">
-            <div className="space-y-2">
-              {cfg.sizes.map((s, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2">
-                  <input
-                    className={cn(inputCls, "flex-1")}
-                    placeholder="Rótulo (ex.: 500ml)"
-                    value={s.label}
-                    onChange={(e) => {
-                      const list = [...cfg.sizes];
-                      list[i] = { ...s, label: e.target.value };
-                      setCfg({ ...cfg, sizes: list });
-                    }}
-                  />
-                  <div className="relative w-28">
-                    <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white/50">R$</span>
-                    <input
-                      className={cn(inputCls, "pl-8 tabular-nums")}
-                      type="number"
-                      step={0.5}
-                      value={s.price}
-                      onChange={(e) => {
-                        const list = [...cfg.sizes];
-                        list[i] = { ...s, price: Number(e.target.value) || 0 };
-                        setCfg({ ...cfg, sizes: list });
-                      }}
-                    />
-                  </div>
-                  <button
-                    onClick={() => setCfg({ ...cfg, sizes: cfg.sizes.filter((_, j) => j !== i) })}
-                    className="grid h-9 w-9 place-items-center rounded-lg bg-white/5 text-white/60 hover:bg-red-500/20 hover:text-red-300"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() =>
-                  setCfg({
-                    ...cfg,
-                    sizes: [
-                      ...cfg.sizes,
-                      { id: `s-${Date.now().toString(36)}`, label: "Novo tamanho", price: 0 },
-                    ],
-                  })
-                }
-                className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-white/20 bg-white/5 py-2 text-xs font-bold text-white/70 hover:bg-white/10"
-              >
-                <Plus className="h-4 w-4" /> Adicionar tamanho
-              </button>
-            </div>
-          </Section>
-
-          {/* Frutas */}
-          <StringListEditor
-            title="Frutas"
-            hint={`${cfg.freeFruits} grátis · extras + R$ ${cfg.extraFruitPrice.toFixed(2)}`}
-            items={cfg.fruits}
-            onChange={(items) => setCfg({ ...cfg, fruits: items })}
-            placeholder="Ex.: Morango"
-          />
-
-          {/* Cremes */}
-          <StringListEditor
-            title="Cremes"
-            hint={`${cfg.freeCreams} grátis · extras + R$ ${cfg.extraCreamPrice.toFixed(2)}`}
-            items={cfg.creams}
-            onChange={(items) => setCfg({ ...cfg, creams: items })}
-            placeholder="Ex.: Creme de Ninho"
-          />
-
-          {/* Complementos */}
-          <Section title="Complementos" hint="Cada complemento tem preço individual">
-            <div className="space-y-2">
-              {cfg.extras.map((e, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2">
-                  <input
-                    className={cn(inputCls, "flex-1")}
-                    placeholder="Nome"
-                    value={e.label}
-                    onChange={(ev) => {
-                      const list = [...cfg.extras];
-                      list[i] = { ...e, label: ev.target.value };
-                      setCfg({ ...cfg, extras: list });
-                    }}
-                  />
-                  <div className="relative w-28">
-                    <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-white/50">R$</span>
-                    <input
-                      className={cn(inputCls, "pl-8 tabular-nums")}
-                      type="number"
-                      step={0.5}
-                      value={e.price}
-                      onChange={(ev) => {
-                        const list = [...cfg.extras];
-                        list[i] = { ...e, price: Number(ev.target.value) || 0 };
-                        setCfg({ ...cfg, extras: list });
-                      }}
-                    />
-                  </div>
-                  <button
-                    onClick={() => setCfg({ ...cfg, extras: cfg.extras.filter((_, j) => j !== i) })}
-                    className="grid h-9 w-9 place-items-center rounded-lg bg-white/5 text-white/60 hover:bg-red-500/20 hover:text-red-300"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() =>
-                  setCfg({
-                    ...cfg,
-                    extras: [
-                      ...cfg.extras,
-                      { id: `e-${Date.now().toString(36)}`, label: "Novo complemento", price: 0 },
-                    ],
-                  })
-                }
-                className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-white/20 bg-white/5 py-2 text-xs font-bold text-white/70 hover:bg-white/10"
-              >
-                <Plus className="h-4 w-4" /> Adicionar complemento
-              </button>
-            </div>
-          </Section>
-
-          <button
-            onClick={resetDefaults}
-            className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
-          >
-            Restaurar padrão
-          </button>
-
-          <div className="h-16" />
-        </div>
-
-        <div className="border-t border-white/10 bg-[oklch(0.12_0.09_305)]/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <button
-            onClick={save}
-            disabled={saving}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink disabled:opacity-60"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Salvar alterações
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+function shortId() {
+  return Math.random().toString(36).slice(2, 8);
 }
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="mb-2 flex items-baseline justify-between">
-        <h4 className="font-display text-sm font-extrabold uppercase tracking-wide text-white">{title}</h4>
-        {hint && <span className="text-[10px] text-white/50">{hint}</span>}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function NumField({
-  label,
-  value,
-  step = 1,
-  onChange,
+function CustomTab({
+  isCustom,
+  onToggle,
+  groups,
+  onGroupsChange,
 }: {
-  label: string;
-  value: number;
-  step?: number;
-  onChange: (v: number) => void;
+  isCustom: boolean;
+  onToggle: (v: boolean) => void;
+  groups: OptionGroup[];
+  onGroupsChange: (g: OptionGroup[]) => void;
 }) {
-  return (
-    <label className="block">
-      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-white/50">{label}</div>
-      <input
-        type="number"
-        step={step}
-        min={0}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className={cn(inputCls, "tabular-nums")}
-      />
-    </label>
-  );
-}
-
-function StringListEditor({
-  title,
-  hint,
-  items,
-  onChange,
-  placeholder,
-}: {
-  title: string;
-  hint?: string;
-  items: string[];
-  onChange: (items: string[]) => void;
-  placeholder?: string;
-}) {
-  const [draft, setDraft] = useState("");
-  const add = () => {
-    const v = draft.trim();
-    if (!v) return;
-    if (items.includes(v)) {
-      toast.error("Item já adicionado");
-      return;
-    }
-    onChange([...items, v]);
-    setDraft("");
+  const patch = (idx: number, next: Partial<OptionGroup>) => {
+    const arr = groups.slice();
+    arr[idx] = { ...arr[idx], ...next };
+    onGroupsChange(arr);
   };
+  const removeGroup = (idx: number) => {
+    onGroupsChange(groups.filter((_, i) => i !== idx));
+  };
+  const addGroup = () => {
+    onGroupsChange([
+      ...groups,
+      {
+        id: shortId(),
+        name: "Nova escolha",
+        type: "multi",
+        required: false,
+        freeCount: 0,
+        pricePerExtra: 0,
+        options: [],
+      },
+    ]);
+  };
+  const patchOption = (gi: number, oi: number, next: Partial<OptionItem>) => {
+    const arr = groups.slice();
+    const opts = arr[gi].options.slice();
+    opts[oi] = { ...opts[oi], ...next };
+    arr[gi] = { ...arr[gi], options: opts };
+    onGroupsChange(arr);
+  };
+  const addOption = (gi: number) => {
+    const arr = groups.slice();
+    arr[gi] = {
+      ...arr[gi],
+      options: [...arr[gi].options, { id: shortId(), label: "Nova opção", price: 0 }],
+    };
+    onGroupsChange(arr);
+  };
+  const removeOption = (gi: number, oi: number) => {
+    const arr = groups.slice();
+    arr[gi] = { ...arr[gi], options: arr[gi].options.filter((_, i) => i !== oi) };
+    onGroupsChange(arr);
+  };
+  const moveGroup = (idx: number, dir: -1 | 1) => {
+    const j = idx + dir;
+    if (j < 0 || j >= groups.length) return;
+    const arr = groups.slice();
+    [arr[idx], arr[j]] = [arr[j], arr[idx]];
+    onGroupsChange(arr);
+  };
+
   return (
-    <Section title={title} hint={hint}>
-      <div className="space-y-2">
-        <div className="flex flex-wrap gap-1.5">
-          {items.map((it, i) => (
-            <span key={i} className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 py-1 pl-3 pr-1 text-xs text-white">
-              {it}
-              <button
-                onClick={() => onChange(items.filter((_, j) => j !== i))}
-                className="grid h-5 w-5 place-items-center rounded-full text-white/60 hover:bg-red-500/20 hover:text-red-300"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
-          {items.length === 0 && (
-            <span className="text-xs text-white/40">Nenhum item ainda</span>
-          )}
-        </div>
-        <div className="flex gap-2">
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <label className="flex items-start gap-3 cursor-pointer">
           <input
-            className={cn(inputCls, "flex-1")}
-            placeholder={placeholder}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                add();
-              }
-            }}
+            type="checkbox"
+            checked={isCustom}
+            onChange={(e) => onToggle(e.target.checked)}
+            className="mt-1 h-5 w-5 rounded border-white/30 bg-transparent"
           />
-          <button
-            onClick={add}
-            className="inline-flex items-center gap-1 rounded-xl bg-neon-cyan/20 px-3 py-2 text-xs font-bold text-neon-cyan ring-1 ring-neon-cyan/40 hover:bg-neon-cyan/30"
-          >
-            <Plus className="h-3.5 w-3.5" /> Adicionar
-          </button>
-        </div>
+          <div>
+            <div className="font-bold text-white">Produto personalizado</div>
+            <div className="text-xs text-white/60">
+              O cliente monta o produto escolhendo entre grupos de opções (ex.: tamanho, sabores,
+              complementos). Ao ativar, os campos de <b>Tamanhos</b> e <b>Complementos</b> são
+              ignorados e o preço vem <b>somente</b> das opções configuradas abaixo.
+            </div>
+          </div>
+        </label>
       </div>
-    </Section>
+
+      {isCustom && (
+        <>
+          {groups.map((g, gi) => (
+            <div key={g.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  value={g.name}
+                  onChange={(e) => patch(gi, { name: e.target.value })}
+                  className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white"
+                  placeholder="Nome do grupo (ex.: Tamanho, Frutas, Cremes)"
+                />
+                <button
+                  onClick={() => moveGroup(gi, -1)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
+                  title="Subir"
+                >↑</button>
+                <button
+                  onClick={() => moveGroup(gi, 1)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
+                  title="Descer"
+                >↓</button>
+                <button
+                  onClick={() => removeGroup(gi)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                  title="Remover grupo"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Tipo</span>
+                  <select
+                    value={g.type}
+                    onChange={(e) => patch(gi, { type: e.target.value as OptionGroup["type"] })}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm"
+                  >
+                    <option value="single">Escolha única</option>
+                    <option value="multi">Múltipla escolha</option>
+                  </select>
+                </label>
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Obrigatório</span>
+                  <select
+                    value={g.required ? "1" : "0"}
+                    onChange={(e) => patch(gi, { required: e.target.value === "1" })}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm"
+                  >
+                    <option value="0">Não</option>
+                    <option value="1">Sim</option>
+                  </select>
+                </label>
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Grátis (qtd)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={g.freeCount ?? 0}
+                    onChange={(e) => patch(gi, { freeCount: Number(e.target.value) || 0 })}
+                    disabled={g.type === "single"}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm disabled:opacity-40"
+                  />
+                </label>
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Preço extra (R$)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.5"
+                    value={g.pricePerExtra ?? 0}
+                    onChange={(e) => patch(gi, { pricePerExtra: Number(e.target.value) || 0 })}
+                    disabled={g.type === "single"}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm disabled:opacity-40"
+                  />
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[11px] uppercase tracking-widest text-white/50">Opções</div>
+                {g.options.map((o, oi) => (
+                  <div key={o.id} className="flex items-center gap-2">
+                    <input
+                      value={o.label}
+                      onChange={(e) => patchOption(gi, oi, { label: e.target.value })}
+                      className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"
+                      placeholder="Nome da opção"
+                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-white/50">R$</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.5"
+                        value={o.price}
+                        onChange={(e) => patchOption(gi, oi, { price: Number(e.target.value) || 0 })}
+                        className="w-20 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeOption(gi, oi)}
+                      className="grid h-9 w-9 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => addOption(gi)}
+                  className="w-full rounded-lg border border-dashed border-white/20 py-2 text-xs text-white/70 hover:bg-white/5"
+                >
+                  + Adicionar opção
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            onClick={addGroup}
+            className="w-full rounded-2xl border-2 border-dashed border-neon-cyan/40 py-3 text-sm font-bold text-neon-cyan hover:bg-neon-cyan/5"
+          >
+            + Adicionar grupo de escolhas
+          </button>
+
+          <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-white/60">
+            💡 <b>Como funciona o preço:</b> em cada grupo, o total soma os preços das opções
+            selecionadas. Se o grupo tiver <b>grátis</b>, as N primeiras escolhas ignoram o
+            <b> preço extra</b>; a partir da (N+1)ª, cobra-se o preço extra por item. Grupos de
+            escolha única simplesmente usam o preço da opção selecionada.
+          </div>
+        </>
+      )}
+    </div>
   );
 }

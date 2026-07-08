@@ -8,56 +8,29 @@ import {
   type Category,
   type SizeOption,
   type ExtraOption,
+  type OptionGroup,
+  type OptionItem,
 } from "@/data/menu";
 
 export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type DayHours = { day: WeekDay; closed: boolean; open: string; close: string };
 
-export type AcaiSize = { id: string; label: string; price: number };
-export type AcaiConfig = {
-  sizes: AcaiSize[];
-  fruits: string[];
-  creams: string[];
-  extras: ExtraOption[];
-  freeFruits: number;
-  freeCreams: number;
-  extraFruitPrice: number;
-  extraCreamPrice: number;
-};
-
-export const DEFAULT_ACAI_CONFIG: AcaiConfig = {
-  sizes: [
-    { id: "300", label: "300ml", price: 20 },
-    { id: "400", label: "400ml", price: 23 },
-    { id: "500", label: "500ml", price: 28 },
-    { id: "1000", label: "1 Litro", price: 43 },
-  ],
-  fruits: ["Morango", "Banana", "Mamão", "Maçã", "Kiwi", "Uva", "Abacaxi"],
-  creams: [
-    "Creme de Ninho",
-    "Creme de Leite",
-    "Leite Condensado",
-    "Calda Quente",
-    "Creme de Ovomaltine",
-    "Creme de Nutella",
-  ],
-  extras: [
-    { id: "granola", label: "Granola", price: 2 },
-    { id: "leite-condensado", label: "Leite condensado", price: 3 },
-    { id: "nutella", label: "Nutella", price: 5 },
-    { id: "ovomaltine", label: "Ovomaltine", price: 4 },
-    { id: "pacoca", label: "Paçoca", price: 3 },
-    { id: "amendoim", label: "Amendoim", price: 3 },
-    { id: "leite-po", label: "Leite em pó", price: 3 },
-    { id: "coco", label: "Coco ralado", price: 2 },
-    { id: "chocoball", label: "Chocoball", price: 4 },
-    { id: "mm", label: "M&Ms", price: 4 },
-  ],
-  freeFruits: 2,
-  freeCreams: 1,
-  extraFruitPrice: 2,
-  extraCreamPrice: 4,
-};
+/** Default option groups used as scaffold when the admin turns a product into "personalizado". */
+export const DEFAULT_OPTION_GROUPS: OptionGroup[] = [
+  {
+    id: "tamanho",
+    name: "Tamanho",
+    type: "single",
+    required: true,
+    freeCount: 0,
+    pricePerExtra: 0,
+    options: [
+      { id: "p", label: "Pequeno", price: 20 },
+      { id: "m", label: "Médio", price: 25 },
+      { id: "g", label: "Grande", price: 30 },
+    ],
+  },
+];
 
 export type SiteSettings = {
   name: string;
@@ -99,7 +72,6 @@ export type SiteSettings = {
   cardBorder: boolean;
   cardGlow: boolean;
   titleFont: string;
-  acaiConfig: AcaiConfig;
 };
 
 
@@ -126,6 +98,8 @@ function rowToProduct(row: Record<string, unknown>): Product {
     heroImagePosX: row.hero_image_pos_x !== undefined && row.hero_image_pos_x !== null ? Number(row.hero_image_pos_x) : 0,
     heroImagePosY: row.hero_image_pos_y !== undefined && row.hero_image_pos_y !== null ? Number(row.hero_image_pos_y) : 0,
     heroImageScale: row.hero_image_scale !== undefined && row.hero_image_scale !== null ? Number(row.hero_image_scale) : 1.4,
+    isCustom: Boolean(row.is_custom ?? false),
+    optionGroups: normalizeOptionGroups(row.option_groups),
   };
 }
 
@@ -149,22 +123,26 @@ function rowToCategory(row: Record<string, unknown>): Category {
   };
 }
 
-function normalizeAcaiConfig(raw: unknown): AcaiConfig {
-  const r = (raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {}) as Record<string, unknown>;
-  const sizes = Array.isArray(r.sizes) && r.sizes.length ? (r.sizes as AcaiSize[]) : DEFAULT_ACAI_CONFIG.sizes;
-  const fruits = Array.isArray(r.fruits) && r.fruits.length ? (r.fruits as string[]) : DEFAULT_ACAI_CONFIG.fruits;
-  const creams = Array.isArray(r.creams) && r.creams.length ? (r.creams as string[]) : DEFAULT_ACAI_CONFIG.creams;
-  const extras = Array.isArray(r.extras) ? (r.extras as ExtraOption[]) : DEFAULT_ACAI_CONFIG.extras;
-  return {
-    sizes,
-    fruits,
-    creams,
-    extras,
-    freeFruits: Number(r.freeFruits ?? DEFAULT_ACAI_CONFIG.freeFruits),
-    freeCreams: Number(r.freeCreams ?? DEFAULT_ACAI_CONFIG.freeCreams),
-    extraFruitPrice: Number(r.extraFruitPrice ?? DEFAULT_ACAI_CONFIG.extraFruitPrice),
-    extraCreamPrice: Number(r.extraCreamPrice ?? DEFAULT_ACAI_CONFIG.extraCreamPrice),
-  };
+function normalizeOptionGroups(raw: unknown): OptionGroup[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  return raw.map((g) => {
+    const r = (g && typeof g === "object" ? (g as Record<string, unknown>) : {}) as Record<string, unknown>;
+    const type = r.type === "single" ? "single" : "multi";
+    const opts = Array.isArray(r.options) ? (r.options as OptionItem[]) : [];
+    return {
+      id: String(r.id ?? Math.random().toString(36).slice(2)),
+      name: String(r.name ?? ""),
+      type,
+      required: Boolean(r.required ?? false),
+      freeCount: Number(r.freeCount ?? 0),
+      pricePerExtra: Number(r.pricePerExtra ?? 0),
+      options: opts.map((o) => ({
+        id: String((o as Record<string, unknown>).id ?? Math.random().toString(36).slice(2)),
+        label: String((o as Record<string, unknown>).label ?? ""),
+        price: Number((o as Record<string, unknown>).price ?? 0),
+      })),
+    } satisfies OptionGroup;
+  });
 }
 
 export function useProducts() {
@@ -260,7 +238,6 @@ const DEFAULT_EXTRA: Pick<
   | "cardBorder"
   | "cardGlow"
   | "titleFont"
-  | "acaiConfig"
 > = {
   instagram: "",
   facebook: "",
@@ -289,7 +266,6 @@ const DEFAULT_EXTRA: Pick<
   cardBorder: true,
   cardGlow: false,
   titleFont: "Barlow Condensed",
-  acaiConfig: DEFAULT_ACAI_CONFIG,
 };
 
 
@@ -361,7 +337,6 @@ export function useSiteSettings() {
         cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
         cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
         titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
-        acaiConfig: normalizeAcaiConfig((data as Record<string, unknown>).acai_config),
       };
     },
   });
@@ -468,6 +443,8 @@ export type ProductInput = {
   image_pos_x?: number;
   image_pos_y?: number;
   image_scale?: number;
+  is_custom?: boolean;
+  option_groups?: OptionGroup[] | null;
 };
 
 export function useUpsertProduct() {
@@ -623,7 +600,6 @@ export function useUpdateSettings() {
         card_border: s.cardBorder,
         card_glow: s.cardGlow,
         title_font: s.titleFont,
-        acai_config: s.acaiConfig as unknown as never,
 
 
       }, { onConflict: "id" });

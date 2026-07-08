@@ -264,7 +264,9 @@ export type Database = {
           image_scale: number
           image_url: string | null
           ingredients: Json
+          is_custom: boolean
           name: string
+          option_groups: Json | null
           removable: Json | null
           sizes: Json
           sort_order: number
@@ -290,7 +292,9 @@ export type Database = {
           image_scale?: number
           image_url?: string | null
           ingredients?: Json
+          is_custom?: boolean
           name: string
+          option_groups?: Json | null
           removable?: Json | null
           sizes?: Json
           sort_order?: number
@@ -316,7 +320,9 @@ export type Database = {
           image_scale?: number
           image_url?: string | null
           ingredients?: Json
+          is_custom?: boolean
           name?: string
+          option_groups?: Json | null
           removable?: Json | null
           sizes?: Json
           sort_order?: number
@@ -367,7 +373,6 @@ export type Database = {
       }
       site_settings: {
         Row: {
-          acai_config: Json | null
           accent_color: string
           accepts_delivery: boolean
           accepts_pickup: boolean
@@ -411,7 +416,6 @@ export type Database = {
           whatsapp_display: string
         }
         Insert: {
-          acai_config?: Json | null
           accent_color?: string
           accepts_delivery?: boolean
           accepts_pickup?: boolean
@@ -455,7 +459,6 @@ export type Database = {
           whatsapp_display?: string
         }
         Update: {
-          acai_config?: Json | null
           accent_color?: string
           accepts_delivery?: boolean
           accepts_pickup?: boolean
