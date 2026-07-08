@@ -55,6 +55,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isCartOpen, setCartOpen] = useState(false);
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   const [isAcaiOpen, setAcaiOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
 
   // hydrate from localStorage on mount
   useEffect(() => {
