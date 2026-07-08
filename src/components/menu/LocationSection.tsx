@@ -189,13 +189,13 @@ export function LocationSection() {
             {/* Live status pill */}
             <div className="absolute left-4 top-4">
               <div
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[.22em] backdrop-blur-md ${
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[.22em] shadow-lg backdrop-blur-md ${
                   open
-                    ? "border border-emerald-300/50 bg-emerald-400/15 text-emerald-200"
-                    : "border border-rose-300/50 bg-rose-400/15 text-rose-200"
+                    ? "border border-emerald-300 bg-emerald-500/90 text-white"
+                    : "border border-rose-300 bg-rose-600/90 text-white"
                 }`}
               >
-                <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-emerald-300 animate-pulse" : "bg-rose-300"}`} />
+                <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-white animate-pulse" : "bg-white"}`} />
                 {open ? "Aberto" : "Fechado"}
               </div>
             </div>
@@ -203,17 +203,24 @@ export function LocationSection() {
             {/* Modes */}
             <div className="absolute right-4 top-4 flex flex-col items-end gap-1.5">
               {acceptsDelivery && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-neon-cyan/50 bg-neon-cyan/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-neon-cyan backdrop-blur">
+                <span
+                  className="inline-flex items-center gap-1 rounded-full border border-neon-cyan px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur"
+                  style={{ backgroundColor: "oklch(0.55 0.20 200 / 0.92)" }}
+                >
                   <Bike className="h-3 w-3" /> Delivery
                 </span>
               )}
               {acceptsPickup && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-neon-pink/50 bg-neon-pink/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-neon-pink backdrop-blur">
+                <span
+                  className="inline-flex items-center gap-1 rounded-full border border-neon-pink px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur"
+                  style={{ backgroundColor: "oklch(0.60 0.26 340 / 0.92)" }}
+                >
                   <Store className="h-3 w-3" /> Retirada
                 </span>
               )}
             </div>
           </div>
+
 
           {/* PERFORATED DIVIDER */}
           <div className="relative h-4">
