@@ -72,6 +72,7 @@ import {
 import type { Product, Category } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
 import { HighlightCard } from "@/components/menu/HighlightCard";
+import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
