@@ -310,6 +310,29 @@ function ProductsTab() {
         </div>
       </div>
 
+      {/* Produto personalizado — Monte seu açaí (Especial da Casa) */}
+      <button
+        onClick={() => setEditingAcai(true)}
+        className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-neon-cyan/40 bg-gradient-to-r from-neon-cyan/10 via-neon-pink/10 to-neon-yellow/10 p-3 text-left transition hover:from-neon-cyan/20 hover:to-neon-yellow/20"
+      >
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-neon-cyan/20 ring-1 ring-neon-cyan/40">
+          <Sparkles className="h-5 w-5 text-neon-cyan" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-extrabold text-white">Monte seu açaí</span>
+            <span className="rounded-full bg-neon-cyan/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-neon-cyan">
+              Especial da casa
+            </span>
+          </div>
+          <div className="text-[11px] text-white/60">
+            Produto personalizado — tamanhos, frutas, cremes e complementos
+          </div>
+        </div>
+        <Pencil className="h-4 w-4 shrink-0 text-white/60" />
+      </button>
+
+
       <div className="mb-3 space-y-2">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
