@@ -343,8 +343,7 @@ export function useSiteSettings() {
         cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
         cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
         titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
-
-
+        acaiConfig: normalizeAcaiConfig((data as Record<string, unknown>).acai_config),
       };
     },
   });
