@@ -2119,7 +2119,7 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
+    <div className="relative rounded-2xl border border-white/10 bg-white/[0.03]">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
