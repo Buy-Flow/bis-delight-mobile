@@ -303,11 +303,12 @@ function Content() {
             className="mt-2 flex items-center justify-center gap-2 text-white/70"
             style={{ fontFamily: "'Caveat', cursive", fontWeight: 600, fontSize: "18px" }}
           >
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-cyan shadow-[0_0_8px_rgba(0,229,255,0.9)]" />
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-cyan shadow-[0_0_8px_rgba(0,229,255,0.9)] animate-sparkle" />
             <span className="-rotate-[2deg]">
               {filtered.length} delícias para adoçar seu dia
             </span>
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.9)]" />
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.9)] animate-sparkle" style={{ animationDelay: "0.9s" }} />
+
           </div>
         </div>
 
