@@ -28,15 +28,15 @@ export function NewsCarousel({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
 
-  // Duplica os itens para permitir loop infinito sempre para a direita
-  const loopItems = items.length > 1 ? [...items, ...items] : items;
+  // Só duplica para loop infinito quando há 3+ itens; com 2, mostra exatamente o configurado.
+  const loopItems = items.length >= 3 ? [...items, ...items] : items;
 
   // Loop invisível: quando o scroll passa da primeira cópia (setWidth), volta
   // silenciosamente para a mesma posição na primeira — mantém o movimento
   // sempre indo para a direita sem "rewind".
   useEffect(() => {
     const el = scrollerRef.current;
-    if (!el || items.length <= 1) return;
+    if (!el || items.length < 3) return;
     const onScroll = () => {
       const first = el.firstElementChild as HTMLElement | null;
       if (!first) return;
@@ -54,7 +54,7 @@ export function NewsCarousel({
 
   // Autoplay: avança 1 card a cada 4s, sempre para a direita, em loop infinito.
   useEffect(() => {
-    if (items.length <= 1) return;
+    if (items.length < 3) return;
     const el = scrollerRef.current;
     if (!el) return;
     const pause = () => {
