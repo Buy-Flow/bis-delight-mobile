@@ -141,13 +141,15 @@ function Content() {
   } as React.CSSProperties;
 
   return (
-    <div
-      className="relative mx-auto min-h-screen w-full max-w-[520px]"
-      style={{
-        backgroundColor: settings?.bgColor ?? "#0d0322",
-        ...themeStyle,
-      }}
-    >
+      <div
+        className="relative mx-auto min-h-screen w-full max-w-[520px] overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(140% 900px at 50% 0%, oklch(0.24 0.15 305 / 0.92), transparent 68%), radial-gradient(120% 760px at 50% 34%, oklch(0.22 0.14 305 / 0.58), transparent 72%), linear-gradient(180deg, oklch(0.11 0.08 305) 0%, oklch(0.16 0.11 305) 28%, oklch(0.14 0.10 305) 58%, oklch(0.10 0.07 305) 100%)",
+          backgroundColor: settings?.bgColor ?? "#0d0322",
+          ...themeStyle,
+        }}
+      >
       {/* Textura de fundo — camada separada para permitir opacidade */}
       <div
         className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -157,10 +159,12 @@ function Content() {
           className="absolute -inset-6"
           style={{
             backgroundImage: `url(${settings?.texture || heroTexture.url})`,
-            backgroundSize: textureSizeCss,
-            backgroundRepeat: textureSizeCss === "cover" || textureSizeCss === "contain" ? "no-repeat" : "repeat",
-            opacity: settings?.textureOpacity ?? 1,
-            filter: "blur(6px) saturate(1.05)",
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
+            backgroundRepeat: "no-repeat",
+            opacity: Math.min(settings?.textureOpacity ?? 0.10, 0.10),
+            filter: "blur(32px) saturate(0.75)",
+            transform: "scale(1.16)",
           }}
         />
       </div>
@@ -170,10 +174,9 @@ function Content() {
         aria-hidden="true"
         style={{
           background:
-            "linear-gradient(180deg, oklch(0.20 0.12 305 / 0.35) 0%, oklch(0.14 0.10 305 / 0.10) 20%, oklch(0.12 0.09 305 / 0) 50%, oklch(0.10 0.08 305 / 0.20) 80%, oklch(0.08 0.07 305 / 0.55) 100%), radial-gradient(140% 70% at 50% 15%, oklch(0.32 0.18 305 / 0.28), transparent 65%), radial-gradient(140% 70% at 50% 100%, oklch(0.06 0.06 305 / 0.45), transparent 60%)",
+            "linear-gradient(180deg, oklch(0.13 0.09 305 / 0.42) 0%, oklch(0.18 0.12 305 / 0.18) 26%, oklch(0.16 0.11 305 / 0.12) 58%, oklch(0.10 0.07 305 / 0.48) 100%), radial-gradient(150% 980px at 50% 18%, oklch(0.28 0.16 305 / 0.22), transparent 76%), radial-gradient(150% 980px at 50% 58%, oklch(0.20 0.13 305 / 0.18), transparent 78%)",
         }}
       />
-
 
 
       <div className="relative">
