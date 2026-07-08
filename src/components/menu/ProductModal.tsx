@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Minus, Plus, X, Check, Sparkles } from "lucide-react";
 import type { ExtraOption, Product } from "@/data/menu";
-import { brl, useCart } from "@/lib/cart-context";
+import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSiteSettings, useCategories } from "@/lib/menu-data";
