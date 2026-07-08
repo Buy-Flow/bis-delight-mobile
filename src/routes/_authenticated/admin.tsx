@@ -3816,15 +3816,16 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
             <ImagePlus className="h-3.5 w-3.5 text-neon-cyan" /> Foto & posicionamento
           </div>
           <p className="mb-3 text-[11px] text-white/50">
-            Ajuste a imagem hero de cada produto do carrossel — arraste para reposicionar e use o zoom.
+            Prévia real do card de Novidades — arraste a foto para reposicionar e use o zoom.
           </p>
-          <div className="space-y-2">
-            {selected.map((p) => (
-              <HeroImageEditor key={p.id} product={p} />
+          <div className="space-y-3">
+            {selected.map((p, i) => (
+              <NewsHeroEditor key={p.id} product={p} index={i} />
             ))}
           </div>
         </div>
       )}
+
 
       {/* Adicionar */}
       <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
