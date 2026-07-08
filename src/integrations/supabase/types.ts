@@ -19,6 +19,7 @@ export type Database = {
           active: boolean
           created_at: string
           emoji: string
+          extras: Json | null
           icon: string | null
           id: string
           image_pos_x: number
@@ -33,6 +34,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           emoji?: string
+          extras?: Json | null
           icon?: string | null
           id: string
           image_pos_x?: number
@@ -47,6 +49,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           emoji?: string
+          extras?: Json | null
           icon?: string | null
           id?: string
           image_pos_x?: number
