@@ -115,10 +115,12 @@ export function ProductModal({
       ? product.extras
       : getDefaultExtras(product.category);
   const globalExtras: ExtraOption[] = settings?.globalExtras ?? [];
-  // Merge globals + product extras (product-specific overrides global with same id)
+  const categoryExtras: ExtraOption[] =
+    categories.find((c) => c.id === product.category)?.extras ?? [];
+  // Merge globals + category + product extras (later entries with same id are ignored)
   const seen = new Set<string>();
   const availableExtras: ExtraOption[] = [];
-  for (const e of [...globalExtras, ...productExtras]) {
+  for (const e of [...globalExtras, ...categoryExtras, ...productExtras]) {
     if (seen.has(e.id)) continue;
     seen.add(e.id);
     availableExtras.push(e);
