@@ -2248,21 +2248,8 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
             </div>
           </div>
 
-          {/* Imagem exclusiva do destaque */}
-          <div>
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              Imagem exclusiva do destaque
-            </div>
-            <ImageDropzone
-              url={draft.heroImage}
-              busy={busy}
-              onFile={onFile}
-              onClear={clearImage}
-            />
-            <p className="mt-1 text-[10.5px] text-white/40">
-              Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
-            </p>
-          </div>
+
+
 
           {/* Área de ajuste (arraste) */}
           <div>
@@ -2378,6 +2365,23 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
               Resetar posição e zoom
             </button>
           </div>
+
+          {/* Imagem exclusiva do destaque */}
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Imagem exclusiva do destaque
+            </div>
+            <ImageDropzone
+              url={draft.heroImage}
+              busy={busy}
+              onFile={onFile}
+              onClear={clearImage}
+            />
+            <p className="mt-1 text-[10.5px] text-white/40">
+              Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
+            </p>
+          </div>
+
             </div>
           </div>
         </div>
