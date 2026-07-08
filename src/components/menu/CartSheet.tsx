@@ -1,9 +1,9 @@
-import { X, Plus, Minus, ShoppingBag, Pencil, Heart, Sparkles, Receipt, Bike, ArrowRight } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
 export function CartSheet() {
-  const { isCartOpen, closeCart, items, update, subtotal, openCheckout, openEdit } = useCart();
+  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit } = useCart();
   if (!isCartOpen) return null;
 
   const total = subtotal + (items.length ? BRAND.deliveryFee : 0);
@@ -13,36 +13,19 @@ export function CartSheet() {
       <div className="absolute inset-0 bg-black/70 animate-in fade-in duration-150" onClick={closeCart} />
       <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
 
-        {/* Header */}
-        <div className="relative flex items-start justify-between px-5 pt-5 pb-3">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h3
-                className="font-display text-[30px] font-extrabold leading-none text-white"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-              >
-                Seu <span className="text-neon-yellow glow-yellow-text">carrinho</span>
-              </h3>
-              <Heart className="h-5 w-5 fill-neon-pink text-neon-pink" />
-              <Sparkles className="h-4 w-4 text-neon-yellow" />
-            </div>
-            {/* Underline swash */}
-            <svg viewBox="0 0 160 10" className="mt-1 h-2 w-[140px]" fill="none" aria-hidden="true">
-              <path d="M2 6 C 40 1, 90 10, 158 3" stroke="oklch(0.72 0.26 350)" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
+            <h3 className="font-display text-xl font-extrabold text-white">Seu carrinho</h3>
+            <p className="text-[11px] text-white/60">
+              {items.length ? `${items.length} item${items.length > 1 ? "s" : ""}` : "vazio"}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-neon-yellow/15 ring-1 ring-neon-yellow/40">
-              <ShoppingBag className="h-5 w-5 text-neon-yellow" />
-            </div>
-            <button onClick={closeCart} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          <button onClick={closeCart} className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white">
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-4 pb-3">
+        <div className="flex-1 overflow-y-auto px-4 py-4">
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
               <div className="grid h-16 w-16 place-items-center rounded-full bg-white/5">
@@ -73,106 +56,86 @@ export function CartSheet() {
                       openEdit(it);
                     }
                   }}
-                  className="relative flex cursor-pointer gap-3 rounded-2xl border border-white/10 bg-[oklch(0.18_0.11_305)]/80 p-3 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)] transition active:scale-[0.99] hover:border-white/20"
+                  className="flex cursor-pointer gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition active:scale-[0.99] hover:border-white/20"
                 >
-                  {/* Image */}
-                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-[oklch(0.24_0.14_305)] ring-1 ring-white/10">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[oklch(0.24_0.14_305)]">
                     <img src={it.image} alt={it.name} className="h-full w-full object-contain p-1" />
                   </div>
-
-                  {/* Content */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 pr-1">
-                        <div className="truncate text-[17px] font-extrabold leading-tight text-white">{it.name}</div>
-                        <div className="mt-0.5 line-clamp-2 text-[12px] leading-snug text-white/60">
-                          {[it.size, it.flavor, ...it.extras.map((e) => e.label)].filter(Boolean).join(", ") || "—"}
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-bold text-white">{it.name}</div>
+                        <div className="text-[11px] text-white/60">
+                          {[it.size, it.flavor].filter(Boolean).join(" · ")}
                         </div>
-                        {it.removed.length > 0 && (
-                          <div className="mt-0.5 text-[11px] text-neon-pink/90">Sem: {it.removed.join(", ")}</div>
+                        {it.extras.length > 0 && (
+                          <div className="mt-1 text-[11px] text-neon-cyan/90 line-clamp-2">
+                            + {it.extras.map((e) => e.label).join(", ")}
+                          </div>
                         )}
-                        {it.note && <div className="mt-0.5 text-[11px] italic text-white/50">"{it.note}"</div>}
+                        {it.removed.length > 0 && (
+                          <div className="text-[11px] text-neon-pink/90">
+                            Sem: {it.removed.join(", ")}
+                          </div>
+                        )}
+                        {it.note && <div className="mt-1 text-[11px] italic text-white/60">"{it.note}"</div>}
+                        <div className="mt-1 text-[10px] uppercase tracking-wider text-white/40">
+                          Toque para editar
+                        </div>
                       </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          openEdit(it);
+                          remove(it.uid);
                         }}
-                        aria-label="Editar item"
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 active:scale-95"
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-white/60 active:scale-95"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-
                     <div className="mt-2 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
-                      <div className="font-display text-lg font-extrabold text-neon-yellow">
-                        {brl(it.unitPrice * it.quantity)}
-                      </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             update(it.uid, { quantity: Math.max(1, it.quantity - 1) });
                           }}
-                          aria-label="Diminuir"
-                          className="grid h-8 w-8 place-items-center rounded-full bg-neon-pink/90 text-white glow-pink active:scale-95"
+                          className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white"
                         >
-                          <Minus className="h-3.5 w-3.5" />
+                          <Minus className="h-3 w-3" />
                         </button>
-                        <div className="w-5 text-center text-base font-extrabold text-white">{it.quantity}</div>
+                        <div className="w-6 text-center text-sm font-bold text-white">{it.quantity}</div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             update(it.uid, { quantity: it.quantity + 1 });
                           }}
-                          aria-label="Aumentar"
-                          className="grid h-8 w-8 place-items-center rounded-full bg-neon-pink text-white glow-pink active:scale-95"
+                          className="grid h-7 w-7 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)]"
                         >
-                          <Plus className="h-3.5 w-3.5" />
+                          <Plus className="h-3 w-3" />
                         </button>
+                      </div>
+                      <div className="font-display text-base font-extrabold text-neon-yellow">
+                        {brl(it.unitPrice * it.quantity)}
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
-
-              {/* Add more items */}
-              <button
-                onClick={closeCart}
-                className="relative flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neon-pink/60 bg-neon-pink/5 px-4 py-3 text-sm font-bold text-white transition active:scale-[0.99] hover:bg-neon-pink/10"
-              >
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-neon-pink text-white">
-                  <Plus className="h-3.5 w-3.5" />
-                </span>
-                Adicionar mais itens
-                <ArrowRight className="absolute right-4 h-4 w-4 -rotate-12 text-neon-pink/80" />
-              </button>
             </div>
           )}
         </div>
 
-        {/* Footer */}
         {items.length > 0 && (
           <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <div className="mb-3 space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
-              <SummaryRow icon={<Receipt className="h-4 w-4 text-neon-cyan" />} label="Subtotal" value={brl(subtotal)} />
-              <SummaryRow icon={<Bike className="h-4 w-4 text-neon-pink" />} label="Entrega" value={brl(BRAND.deliveryFee)} />
-            </div>
-            <div className="mb-3 flex items-end justify-between px-1">
-              <span
-                className="font-display text-2xl font-extrabold text-white"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-              >
-                Total
-              </span>
-              <div className="flex flex-col items-end">
-                <span className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">
+            <div className="mb-3 space-y-1 text-sm">
+              <Row label="Subtotal" value={brl(subtotal)} />
+              <Row label="Taxa de entrega" value={brl(BRAND.deliveryFee)} muted />
+              <div className="mt-2 flex items-end justify-between">
+                <span className="text-[11px] uppercase tracking-widest text-white/50">Total</span>
+                <span className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text">
                   {brl(total)}
                 </span>
-                <svg viewBox="0 0 120 8" className="h-2 w-[110px]" fill="none" aria-hidden="true">
-                  <path d="M2 5 C 30 1, 80 8, 118 3" stroke="oklch(0.72 0.26 350)" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
               </div>
             </div>
             <button
@@ -188,14 +151,11 @@ export function CartSheet() {
   );
 }
 
-function SummaryRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-white/80">
-        <span className="grid h-6 w-6 place-items-center rounded-full bg-white/5">{icon}</span>
-        <span className="text-sm">{label}</span>
-      </div>
-      <span className="text-sm font-semibold text-white">{value}</span>
+      <span className={muted ? "text-white/60" : "text-white/80"}>{label}</span>
+      <span className={muted ? "text-white/70" : "text-white font-semibold"}>{value}</span>
     </div>
   );
 }
