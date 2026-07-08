@@ -313,7 +313,7 @@ function ProductsTab() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <SeedButton />
+          
           <button
             onClick={() =>
               setEditing({
