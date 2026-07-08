@@ -63,7 +63,7 @@ import {
   useUpsertCategory,
   useDeleteCategory,
   useUpdateSettings,
-  seedInitialMenu,
+  
   useInvalidateMenu,
   uploadProductImage,
   DEFAULT_HOURS,
