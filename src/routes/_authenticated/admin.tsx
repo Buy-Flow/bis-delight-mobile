@@ -1912,7 +1912,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
           icon={<Star className="h-3.5 w-3.5 fill-neon-yellow text-neon-yellow" />}
           dirty={dirty}
           saving={update.isPending || busy}
-          onClose={() => setOpen(false)}
           onCancel={discard}
           onSave={save}
         >
