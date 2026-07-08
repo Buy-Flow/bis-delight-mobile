@@ -3576,6 +3576,189 @@ const TEXTURE_PRESETS = [
   },
 ];
 
+function NewsHeroEditor({ product, index }: { product: Product; index: number }) {
+  const update = useUpdateHeroImage();
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState({
+    posX: product.heroImagePosX ?? 0,
+    posY: product.heroImagePosY ?? 0,
+    scale: product.heroImageScale ?? 1.2,
+  });
+
+  useEffect(() => {
+    setDraft({
+      posX: product.heroImagePosX ?? 0,
+      posY: product.heroImagePosY ?? 0,
+      scale: product.heroImageScale ?? 1.2,
+    });
+  }, [product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
+
+  const previewProduct: Product = {
+    ...product,
+    heroImagePosX: draft.posX,
+    heroImagePosY: draft.posY,
+    heroImageScale: draft.scale,
+  };
+
+  const save = async (patch: Partial<typeof draft>) => {
+    const next = { ...draft, ...patch };
+    setDraft(next);
+    await update.mutateAsync({
+      id: product.id,
+      heroImagePosX: next.posX,
+      heroImagePosY: next.posY,
+      heroImageScale: next.scale,
+    });
+  };
+
+  const reset = () => save({ posX: 0, posY: 0, scale: 1.2 });
+
+  const CARD_W = 300;
+  const CARD_H = 400;
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, posX: draft.posX, posY: draft.posY };
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dx = ((e.clientX - d.startX) / CARD_W) * 100;
+    const dy = ((e.clientY - d.startY) / CARD_H) * 100;
+    setDraft((prev) => ({
+      ...prev,
+      posX: clamp(d.posX + dx, -80, 80),
+      posY: clamp(d.posY + dy, -80, 80),
+    }));
+  };
+  const onPointerUp = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    void update.mutateAsync({
+      id: product.id,
+      heroImagePosX: draft.posX,
+      heroImagePosY: draft.posY,
+    });
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-3 p-3 text-left"
+      >
+        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+          <img src={product.heroImage || product.image} className="h-full w-full object-cover" alt="" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
+            <div className="truncate text-sm font-bold">{product.name}</div>
+          </div>
+          <div className="text-[11px] text-white/50">
+            zoom {draft.scale.toFixed(2)}× · x {draft.posX.toFixed(0)}% · y {draft.posY.toFixed(0)}%
+          </div>
+        </div>
+        <span
+          className={cn(
+            "rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70",
+            open && "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/30",
+          )}
+        >
+          {open ? "Fechar" : "Ajustar"}
+        </span>
+      </button>
+
+      {open && (
+        <div className="space-y-4 border-t border-white/5 p-3">
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Prévia do card de Novidades — arraste para reposicionar
+            </div>
+            <div
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              className="mx-auto touch-none select-none cursor-grab active:cursor-grabbing"
+              style={{ width: CARD_W }}
+            >
+              <NewsPosterCard
+                product={previewProduct}
+                onOpen={() => {}}
+                badge={NEWS_BADGES[index % NEWS_BADGES.length]}
+                eyebrow={NEWS_EYEBROWS[index % NEWS_EYEBROWS.length]}
+                index={index}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div>
+              <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                <span>Zoom</span>
+                <span className="text-white/50">{draft.scale.toFixed(2)}×</span>
+              </div>
+              <input
+                type="range"
+                min={0.5}
+                max={2.5}
+                step={0.05}
+                value={draft.scale}
+                onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
+                onPointerUp={() => save({ scale: draft.scale })}
+                className="w-full accent-neon-cyan"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                  <span>Horizontal</span>
+                  <span className="text-white/50">{draft.posX.toFixed(0)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={-80}
+                  max={80}
+                  step={1}
+                  value={draft.posX}
+                  onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
+                  onPointerUp={() => save({ posX: draft.posX })}
+                  className="w-full accent-neon-cyan"
+                />
+              </div>
+              <div>
+                <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                  <span>Vertical</span>
+                  <span className="text-white/50">{draft.posY.toFixed(0)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={-80}
+                  max={80}
+                  step={1}
+                  value={draft.posY}
+                  onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
+                  onPointerUp={() => save({ posY: draft.posY })}
+                  className="w-full accent-neon-cyan"
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={reset}
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
+            >
+              Resetar posição e zoom
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
   const { data: products = [] } = useAllProducts();
   const [query, setQuery] = useState("");
