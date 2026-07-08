@@ -261,12 +261,13 @@ function Content() {
           <div className="flex items-center justify-center gap-3">
             <span className="h-[2px] w-8 rounded-full bg-linear-to-r from-transparent to-neon-pink" />
             <span
-              className="text-[11px] uppercase tracking-[0.4em] text-neon-pink"
+              className="text-[11px] uppercase tracking-[0.4em] text-neon-pink animate-letter-wave"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
             >
               Feito com amor
             </span>
             <span className="h-[2px] w-8 rounded-full bg-linear-to-l from-transparent to-neon-pink" />
+
           </div>
           <h2
             className="mt-1 text-center font-display text-[34px] font-black uppercase leading-[0.95] text-white"
