@@ -80,6 +80,7 @@ function getStaticCategoryImage(id: string) {
 
 function rowToCategory(row: Record<string, unknown>): Category {
   const id = String(row.id);
+  const rawExtras = row.extras as ExtraOption[] | null | undefined;
   return {
     id,
     name: String(row.name),
@@ -89,6 +90,7 @@ function rowToCategory(row: Record<string, unknown>): Category {
     imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
     imageScale: row.image_scale !== undefined && row.image_scale !== null ? Number(row.image_scale) : 1,
+    extras: Array.isArray(rawExtras) ? rawExtras : [],
   };
 }
 
@@ -457,8 +459,9 @@ export function useUpsertCategory() {
       image_pos_y?: number;
       image_scale?: number;
       icon?: string | null;
+      extras?: ExtraOption[] | null;
     }) => {
-      const { error } = await supabase.from("categories").upsert(c, { onConflict: "id" });
+      const { error } = await supabase.from("categories").upsert(c as never, { onConflict: "id" });
       if (error) throw error;
     },
     onSuccess: invalidate,

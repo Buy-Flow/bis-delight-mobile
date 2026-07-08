@@ -46,6 +46,7 @@ export type Category = {
   imagePosX?: number;
   imagePosY?: number;
   imageScale?: number;
+  extras?: ExtraOption[];
 };
 
 export const CATEGORIES: Category[] = [

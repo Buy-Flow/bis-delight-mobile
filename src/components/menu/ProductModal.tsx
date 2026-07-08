@@ -4,7 +4,7 @@ import type { ExtraOption, Product } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useSiteSettings } from "@/lib/menu-data";
+import { useSiteSettings, useCategories } from "@/lib/menu-data";
 
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -88,6 +88,7 @@ export function ProductModal({
 }) {
   const { add } = useCart();
   const { data: settings } = useSiteSettings();
+  const { data: categories = [] } = useCategories();
   const [sizeId, setSizeId] = useState<string>(product?.sizes[0]?.id ?? "u");
   const [flavor, setFlavor] = useState<string | undefined>(product?.flavors?.[0]);
   const [extras, setExtras] = useState<string[]>([]);
@@ -114,10 +115,12 @@ export function ProductModal({
       ? product.extras
       : getDefaultExtras(product.category);
   const globalExtras: ExtraOption[] = settings?.globalExtras ?? [];
-  // Merge globals + product extras (product-specific overrides global with same id)
+  const categoryExtras: ExtraOption[] =
+    categories.find((c) => c.id === product.category)?.extras ?? [];
+  // Merge globals + category + product extras (later entries with same id are ignored)
   const seen = new Set<string>();
   const availableExtras: ExtraOption[] = [];
-  for (const e of [...globalExtras, ...productExtras]) {
+  for (const e of [...globalExtras, ...categoryExtras, ...productExtras]) {
     if (seen.has(e.id)) continue;
     seen.add(e.id);
     availableExtras.push(e);
