@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Plus, Sparkles } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
@@ -26,32 +26,26 @@ export function NewsCarousel({
   ticker?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
   const pausedRef = useRef(false);
 
   // Duplica os itens para permitir loop infinito sempre para a direita
   const loopItems = items.length > 1 ? [...items, ...items] : items;
 
+  // Loop invisível: quando o scroll passa da primeira cópia (setWidth), volta
+  // silenciosamente para a mesma posição na primeira — mantém o movimento
+  // sempre indo para a direita sem "rewind".
   useEffect(() => {
     const el = scrollerRef.current;
-    if (!el) return;
+    if (!el || items.length <= 1) return;
     const onScroll = () => {
       const first = el.firstElementChild as HTMLElement | null;
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
-      const idx = Math.round(el.scrollLeft / step);
-      // Mapeia idx para o range real (0..items.length-1) por causa da duplicação
-      setActiveIdx(items.length ? ((idx % items.length) + items.length) % items.length : 0);
-
-      // Se o usuário arrastou até a segunda cópia, "teletransporta" para a mesma
-      // posição na primeira cópia sem animação — mantém a ilusão de loop.
-      if (items.length > 1) {
-        const setWidth = items.length * step;
-        if (el.scrollLeft >= setWidth * 2 - step / 2) {
-          el.scrollTo({ left: el.scrollLeft - setWidth, behavior: "auto" });
-        } else if (el.scrollLeft < 0) {
-          el.scrollTo({ left: el.scrollLeft + setWidth, behavior: "auto" });
-        }
+      const setWidth = items.length * step;
+      if (el.scrollLeft >= setWidth) {
+        el.scrollTo({ left: el.scrollLeft - setWidth, behavior: "auto" });
+      } else if (el.scrollLeft < 0) {
+        el.scrollTo({ left: el.scrollLeft + setWidth, behavior: "auto" });
       }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -81,19 +75,10 @@ export function NewsCarousel({
       const first = node.firstElementChild as HTMLElement | null;
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
-      const setWidth = items.length * step;
-      const currentIdx = Math.round(node.scrollLeft / step);
-
-      // Se estamos entrando na segunda cópia, primeiro "salta" silenciosamente
-      // de volta para a primeira cópia antes de animar — assim o próximo passo
-      // continua sempre indo para a direita sem "rewind" visível.
-      if (node.scrollLeft >= setWidth) {
-        node.scrollTo({ left: node.scrollLeft - setWidth, behavior: "auto" });
-      }
-      const nextLeft = (currentIdx + 1) * step;
-      node.scrollTo({ left: nextLeft, behavior: "smooth" });
+      // Sempre anda 1 card para a direita a partir da posição atual.
+      // O onScroll cuida do teleport invisível quando ultrapassa a primeira cópia.
+      node.scrollBy({ left: step, behavior: "smooth" });
     }, 4000);
-
 
     return () => {
       window.clearInterval(id);
@@ -106,41 +91,10 @@ export function NewsCarousel({
 
 
 
+
   return (
     <section className="relative isolate overflow-visible py-8">
-      {/* Full-bleed background band */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "linear-gradient(180deg, oklch(0.14 0.11 305 / 0) 0%, oklch(0.18 0.14 305 / 0.85) 12%, oklch(0.20 0.16 320 / 0.9) 50%, oklch(0.18 0.14 305 / 0.85) 88%, oklch(0.14 0.11 305 / 0) 100%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-40 mix-blend-screen"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 15% 20%, oklch(0.72 0.26 350 / 0.55), transparent 45%), radial-gradient(circle at 85% 80%, oklch(0.85 0.18 200 / 0.45), transparent 50%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, oklch(0.72 0.26 350 / 0.7), oklch(0.85 0.18 200 / 0.7), transparent)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, oklch(0.85 0.18 200 / 0.6), oklch(0.72 0.26 350 / 0.6), transparent)",
-        }}
-      />
+
 
       {/* Header — magazine style */}
       <div className="relative mb-3 flex items-baseline gap-3 px-5">
@@ -210,20 +164,8 @@ export function NewsCarousel({
         ))}
       </div>
 
-      {/* Progress rail */}
-      {items.length > 1 && (
-        <div className="mt-2 flex items-center justify-center gap-2 px-4">
-          {items.map((_, i) => (
-            <span
-              key={i}
-              className={cn(
-                "h-[3px] rounded-full transition-all",
-                i === activeIdx ? "w-10 bg-neon-pink shadow-[0_0_10px_rgba(255,45,149,0.9)]" : "w-2 bg-white/25",
-              )}
-            />
-          ))}
-        </div>
-      )}
+
+
 
       <style>{`
         @keyframes news-marquee {
