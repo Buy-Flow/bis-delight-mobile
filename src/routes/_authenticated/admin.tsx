@@ -4070,7 +4070,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 <button
                   type="button"
                   onClick={save}
-                  disabled={!dirty || update.isPending}
+                  disabled={!dirty || update.isPending || busy}
                   className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
                 >
                   {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
