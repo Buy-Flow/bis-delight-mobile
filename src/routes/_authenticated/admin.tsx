@@ -4960,3 +4960,227 @@ function slugify(s: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+
+/* ============================== Produto personalizado ============================== */
+
+function shortId() {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+function CustomTab({
+  isCustom,
+  onToggle,
+  groups,
+  onGroupsChange,
+}: {
+  isCustom: boolean;
+  onToggle: (v: boolean) => void;
+  groups: OptionGroup[];
+  onGroupsChange: (g: OptionGroup[]) => void;
+}) {
+  const patch = (idx: number, next: Partial<OptionGroup>) => {
+    const arr = groups.slice();
+    arr[idx] = { ...arr[idx], ...next };
+    onGroupsChange(arr);
+  };
+  const removeGroup = (idx: number) => {
+    onGroupsChange(groups.filter((_, i) => i !== idx));
+  };
+  const addGroup = () => {
+    onGroupsChange([
+      ...groups,
+      {
+        id: shortId(),
+        name: "Nova escolha",
+        type: "multi",
+        required: false,
+        freeCount: 0,
+        pricePerExtra: 0,
+        options: [],
+      },
+    ]);
+  };
+  const patchOption = (gi: number, oi: number, next: Partial<OptionItem>) => {
+    const arr = groups.slice();
+    const opts = arr[gi].options.slice();
+    opts[oi] = { ...opts[oi], ...next };
+    arr[gi] = { ...arr[gi], options: opts };
+    onGroupsChange(arr);
+  };
+  const addOption = (gi: number) => {
+    const arr = groups.slice();
+    arr[gi] = {
+      ...arr[gi],
+      options: [...arr[gi].options, { id: shortId(), label: "Nova opção", price: 0 }],
+    };
+    onGroupsChange(arr);
+  };
+  const removeOption = (gi: number, oi: number) => {
+    const arr = groups.slice();
+    arr[gi] = { ...arr[gi], options: arr[gi].options.filter((_, i) => i !== oi) };
+    onGroupsChange(arr);
+  };
+  const moveGroup = (idx: number, dir: -1 | 1) => {
+    const j = idx + dir;
+    if (j < 0 || j >= groups.length) return;
+    const arr = groups.slice();
+    [arr[idx], arr[j]] = [arr[j], arr[idx]];
+    onGroupsChange(arr);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isCustom}
+            onChange={(e) => onToggle(e.target.checked)}
+            className="mt-1 h-5 w-5 rounded border-white/30 bg-transparent"
+          />
+          <div>
+            <div className="font-bold text-white">Produto personalizado</div>
+            <div className="text-xs text-white/60">
+              O cliente monta o produto escolhendo entre grupos de opções (ex.: tamanho, sabores,
+              complementos). Ao ativar, os campos de <b>Tamanhos</b> e <b>Complementos</b> são
+              ignorados e o preço vem <b>somente</b> das opções configuradas abaixo.
+            </div>
+          </div>
+        </label>
+      </div>
+
+      {isCustom && (
+        <>
+          {groups.map((g, gi) => (
+            <div key={g.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  value={g.name}
+                  onChange={(e) => patch(gi, { name: e.target.value })}
+                  className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white"
+                  placeholder="Nome do grupo (ex.: Tamanho, Frutas, Cremes)"
+                />
+                <button
+                  onClick={() => moveGroup(gi, -1)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
+                  title="Subir"
+                >↑</button>
+                <button
+                  onClick={() => moveGroup(gi, 1)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
+                  title="Descer"
+                >↓</button>
+                <button
+                  onClick={() => removeGroup(gi)}
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                  title="Remover grupo"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Tipo</span>
+                  <select
+                    value={g.type}
+                    onChange={(e) => patch(gi, { type: e.target.value as OptionGroup["type"] })}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm"
+                  >
+                    <option value="single">Escolha única</option>
+                    <option value="multi">Múltipla escolha</option>
+                  </select>
+                </label>
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Obrigatório</span>
+                  <select
+                    value={g.required ? "1" : "0"}
+                    onChange={(e) => patch(gi, { required: e.target.value === "1" })}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm"
+                  >
+                    <option value="0">Não</option>
+                    <option value="1">Sim</option>
+                  </select>
+                </label>
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Grátis (qtd)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={g.freeCount ?? 0}
+                    onChange={(e) => patch(gi, { freeCount: Number(e.target.value) || 0 })}
+                    disabled={g.type === "single"}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm disabled:opacity-40"
+                  />
+                </label>
+                <label className="text-xs">
+                  <span className="mb-1 block text-white/60">Preço extra (R$)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.5"
+                    value={g.pricePerExtra ?? 0}
+                    onChange={(e) => patch(gi, { pricePerExtra: Number(e.target.value) || 0 })}
+                    disabled={g.type === "single"}
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm disabled:opacity-40"
+                  />
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[11px] uppercase tracking-widest text-white/50">Opções</div>
+                {g.options.map((o, oi) => (
+                  <div key={o.id} className="flex items-center gap-2">
+                    <input
+                      value={o.label}
+                      onChange={(e) => patchOption(gi, oi, { label: e.target.value })}
+                      className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"
+                      placeholder="Nome da opção"
+                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-white/50">R$</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.5"
+                        value={o.price}
+                        onChange={(e) => patchOption(gi, oi, { price: Number(e.target.value) || 0 })}
+                        className="w-20 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeOption(gi, oi)}
+                      className="grid h-9 w-9 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => addOption(gi)}
+                  className="w-full rounded-lg border border-dashed border-white/20 py-2 text-xs text-white/70 hover:bg-white/5"
+                >
+                  + Adicionar opção
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            onClick={addGroup}
+            className="w-full rounded-2xl border-2 border-dashed border-neon-cyan/40 py-3 text-sm font-bold text-neon-cyan hover:bg-neon-cyan/5"
+          >
+            + Adicionar grupo de escolhas
+          </button>
+
+          <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-white/60">
+            💡 <b>Como funciona o preço:</b> em cada grupo, o total soma os preços das opções
+            selecionadas. Se o grupo tiver <b>grátis</b>, as N primeiras escolhas ignoram o
+            <b> preço extra</b>; a partir da (N+1)ª, cobra-se o preço extra por item. Grupos de
+            escolha única simplesmente usam o preço da opção selecionada.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
