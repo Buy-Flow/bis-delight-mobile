@@ -104,8 +104,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       isAcaiOpen,
       openAcai: () => setAcaiOpen(true),
       closeAcai: () => setAcaiOpen(false),
+      editingItem,
+      openEdit: (item) => {
+        setCartOpen(false);
+        setEditingItem(item);
+      },
+      closeEdit: () => setEditingItem(null),
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
