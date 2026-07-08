@@ -4,23 +4,27 @@ const items = [
   {
     icon: Timer,
     color: "text-neon-pink",
+    anim: "animate-spin-slow",
     title: "Entrega rápida",
     sub: "em toda região",
   },
   {
     icon: GlassWater,
     color: "text-neon-cyan",
+    anim: "animate-bob",
     title: "Produtos",
     sub: "preparados com amor",
   },
   {
     icon: Heart,
     color: "text-neon-yellow",
+    anim: "animate-heartbeat",
     title: "Feito com amor",
     sub: "os melhores ingredientes",
   },
 
 ];
+
 
 export function Benefits() {
   return (
