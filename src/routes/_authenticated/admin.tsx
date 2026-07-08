@@ -78,6 +78,7 @@ import {
 
 import type { Product, Category, OptionGroup, OptionItem } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
+import { Hero } from "@/components/menu/Hero";
 import { getDefaultExtras } from "@/components/menu/ProductModal";
 import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
@@ -5245,38 +5246,14 @@ function HeroImagesSection({
         </p>
       </div>
 
-      {/* Live preview */}
-      <div>
+      {/* Live preview — real Hero, sticky while scrolling */}
+      <div className="sticky top-2 z-30">
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
           Preview real da tela inicial
         </div>
-        <div className="relative mx-auto h-[280px] w-full max-w-[420px] overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)]">
-          <img
-            aria-hidden
-            src={heroImages.left.url}
-            alt=""
-            className="pointer-events-none absolute bottom-0 h-[220px] w-[140px] object-contain object-right"
-            style={{
-              left: `${heroImages.left.offsetX * 0.5}px`,
-              bottom: `${-heroImages.left.offsetY * 0.5}px`,
-              transform: `scale(${heroImages.left.scale})`,
-              transformOrigin: "bottom right",
-            }}
-          />
-          <img
-            aria-hidden
-            src={heroImages.right.url}
-            alt=""
-            className="pointer-events-none absolute bottom-0 h-[200px] w-[140px] object-contain object-left"
-            style={{
-              right: `${heroImages.right.offsetX * 0.5}px`,
-              bottom: `${-heroImages.right.offsetY * 0.5}px`,
-              transform: `scale(${heroImages.right.scale})`,
-              transformOrigin: "bottom left",
-            }}
-          />
-          <div className="absolute inset-x-0 top-4 text-center font-display text-2xl font-black text-neon-yellow">
-            Hero
+        <div className="relative mx-auto w-[390px] max-w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]">
+          <div className="pointer-events-none h-[560px] w-[390px]">
+            <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
           </div>
         </div>
       </div>
