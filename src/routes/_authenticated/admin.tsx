@@ -84,6 +84,8 @@ import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
+import { OrdersTab } from "@/components/admin/OrdersTab";
+import { ClipboardList } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
