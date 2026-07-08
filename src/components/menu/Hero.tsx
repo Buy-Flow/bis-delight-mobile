@@ -128,16 +128,17 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         {/* Beautiful tagline strip */}
         <div className="mt-5 flex flex-col items-center gap-1.5">
           <div className="flex items-center gap-2">
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)] animate-sparkle" />
             <span className="h-px w-5 bg-linear-to-r from-transparent via-neon-yellow/60 to-neon-yellow" />
             <span
-              className="rounded-full border border-neon-yellow/50 bg-neon-yellow/10 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-neon-yellow shadow-[0_0_14px_rgba(255,215,60,0.4)] backdrop-blur-sm"
+              className="rounded-full border border-neon-yellow/50 bg-neon-yellow/10 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-neon-yellow shadow-[0_0_14px_rgba(255,215,60,0.4)] backdrop-blur-sm animate-pulse-glow"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
             >
               Quero Bis
             </span>
             <span className="h-px w-5 bg-linear-to-l from-transparent via-neon-yellow/60 to-neon-yellow" />
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)]" />
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)] animate-sparkle" style={{ animationDelay: "0.9s" }} />
+
           </div>
 
 
