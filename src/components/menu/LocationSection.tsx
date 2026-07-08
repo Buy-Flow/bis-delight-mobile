@@ -42,6 +42,24 @@ function toEmbedUrl(url: string): string {
   return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
 }
 
+function socialUrl(value: string | undefined | null, network: "instagram" | "facebook" | "tiktok"): string {
+  if (!value) return "";
+  const v = value.trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  const handle = v.replace(/^@/, "").replace(/^\/+/, "");
+  switch (network) {
+    case "instagram":
+      return `https://instagram.com/${handle}`;
+    case "facebook":
+      return `https://facebook.com/${handle}`;
+    case "tiktok":
+      return `https://tiktok.com/@${handle}`;
+  }
+}
+
+
+
 
 
 export function LocationSection() {
