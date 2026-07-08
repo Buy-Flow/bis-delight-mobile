@@ -2282,7 +2282,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
   const update = useUpdateSettings();
   const [s, setS] = useState<SiteSettings | null>(null);
   const [dirty, setDirty] = useState(false);
-  const [section, setSection] = useState<SettingsSection>("identity");
+  const [section, setSection] = useState<SettingsSection>(initialSection);
   const [logoBusy, setLogoBusy] = useState(false);
   const [textureBusy, setTextureBusy] = useState(false);
 
