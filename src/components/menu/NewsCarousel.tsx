@@ -29,6 +29,9 @@ export function NewsCarousel({
   const [activeIdx, setActiveIdx] = useState(0);
   const pausedRef = useRef(false);
 
+  // Duplica os itens para permitir loop infinito sempre para a direita
+  const loopItems = items.length > 1 ? [...items, ...items] : items;
+
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -37,13 +40,25 @@ export function NewsCarousel({
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
       const idx = Math.round(el.scrollLeft / step);
-      setActiveIdx(Math.min(items.length - 1, Math.max(0, idx)));
+      // Mapeia idx para o range real (0..items.length-1) por causa da duplicação
+      setActiveIdx(items.length ? ((idx % items.length) + items.length) % items.length : 0);
+
+      // Se o usuário arrastou até a segunda cópia, "teletransporta" para a mesma
+      // posição na primeira cópia sem animação — mantém a ilusão de loop.
+      if (items.length > 1) {
+        const setWidth = items.length * step;
+        if (el.scrollLeft >= setWidth * 2 - step / 2) {
+          el.scrollTo({ left: el.scrollLeft - setWidth, behavior: "auto" });
+        } else if (el.scrollLeft < 0) {
+          el.scrollTo({ left: el.scrollLeft + setWidth, behavior: "auto" });
+        }
+      }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, [items.length]);
 
-  // Autoplay: avança 1 card a cada 4s quando há mais de um item.
+  // Autoplay: avança 1 card a cada 4s, sempre para a direita, em loop infinito.
   useEffect(() => {
     if (items.length <= 1) return;
     const el = scrollerRef.current;
@@ -66,14 +81,17 @@ export function NewsCarousel({
       const first = node.firstElementChild as HTMLElement | null;
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
+      const setWidth = items.length * step;
       const currentIdx = Math.round(node.scrollLeft / step);
-      const nextIdx = currentIdx + 1;
-      if (nextIdx >= items.length) {
-        // Volta ao início sem animação, mantendo sempre a direção direita→esquerda no modo automático.
-        node.scrollTo({ left: 0, behavior: "auto" });
-      } else {
-        node.scrollTo({ left: nextIdx * step, behavior: "smooth" });
+
+      // Se estamos entrando na segunda cópia, primeiro "salta" silenciosamente
+      // de volta para a primeira cópia antes de animar — assim o próximo passo
+      // continua sempre indo para a direita sem "rewind" visível.
+      if (node.scrollLeft >= setWidth) {
+        node.scrollTo({ left: node.scrollLeft - setWidth, behavior: "auto" });
       }
+      const nextLeft = (currentIdx + 1) * step;
+      node.scrollTo({ left: nextLeft, behavior: "smooth" });
     }, 4000);
 
 
@@ -85,6 +103,7 @@ export function NewsCarousel({
       el.removeEventListener("mouseleave", resume);
     };
   }, [items.length]);
+
 
 
   return (
