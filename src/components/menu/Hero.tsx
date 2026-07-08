@@ -31,34 +31,38 @@ export function Hero({
         }}
       />
       {/* Side illustrations — configurable via admin (Início) */}
-      <img
-        aria-hidden="true"
-        src={heroImages.left.url}
-        alt=""
-        decoding="async"
-        fetchPriority="high"
-        className="pointer-events-none absolute bottom-0 z-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px]"
-        style={{
-          left: `${heroImages.left.offsetX}px`,
-          bottom: `${-heroImages.left.offsetY}px`,
-          transform: `scale(${heroImages.left.scale})`,
-          transformOrigin: "bottom right",
-        }}
-      />
-      <img
-        aria-hidden="true"
-        src={heroImages.right.url}
-        alt=""
-        decoding="async"
-        fetchPriority="high"
-        className="pointer-events-none absolute bottom-0 z-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px]"
-        style={{
-          right: `${heroImages.right.offsetX}px`,
-          bottom: `${-heroImages.right.offsetY}px`,
-          transform: `scale(${heroImages.right.scale})`,
-          transformOrigin: "bottom left",
-        }}
-      />
+      {heroImages && (
+        <>
+          <img
+            aria-hidden="true"
+            src={heroImages.left.url}
+            alt=""
+            decoding="async"
+            fetchPriority="high"
+            className="pointer-events-none absolute bottom-0 z-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px]"
+            style={{
+              left: `${heroImages.left.offsetX}px`,
+              bottom: `${-heroImages.left.offsetY}px`,
+              transform: `scale(${heroImages.left.scale})`,
+              transformOrigin: "bottom right",
+            }}
+          />
+          <img
+            aria-hidden="true"
+            src={heroImages.right.url}
+            alt=""
+            decoding="async"
+            fetchPriority="high"
+            className="pointer-events-none absolute bottom-0 z-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px]"
+            style={{
+              right: `${heroImages.right.offsetX}px`,
+              bottom: `${-heroImages.right.offsetY}px`,
+              transform: `scale(${heroImages.right.scale})`,
+              transformOrigin: "bottom left",
+            }}
+          />
+        </>
+      )}
 
 
 
