@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { X, Check, Sparkles, Minus, Plus } from "lucide-react";
+import { X, Check, Sparkles, Minus, Plus, ChevronsUpDown } from "lucide-react";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
