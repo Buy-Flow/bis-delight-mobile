@@ -45,6 +45,14 @@ export type SiteSettings = {
   newsTicker: string;
   newsProductIds: string[];
   globalExtras: ExtraOption[];
+  bgColor: string;
+  accentColor: string;
+  textureOpacity: number;
+  textureSize: "cover" | "contain" | "small" | "medium" | "large";
+  cardRadius: number;
+  cardBorder: boolean;
+  cardGlow: boolean;
+  titleFont: string;
 };
 
 
