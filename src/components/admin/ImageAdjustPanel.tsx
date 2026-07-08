@@ -113,7 +113,7 @@ export function ImageAdjustPanel({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
-            className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none [&_article]:!w-full [&_article]:!max-w-full"
+            className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none [&_article]:!w-full [&_article]:!max-w-full [&_img]:!transition-none"
             style={{ width: "100%", maxWidth: previewMaxWidth }}
           >
             {renderPreview(values)}
