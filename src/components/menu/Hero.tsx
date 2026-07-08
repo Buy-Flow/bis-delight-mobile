@@ -1,5 +1,5 @@
 import { useSiteSettings } from "@/lib/menu-data";
-import { DEFAULT_HERO_IMAGES, type HeroImagesConfig } from "@/lib/menu-data";
+import { type HeroImagesConfig } from "@/lib/menu-data";
 
 export function Hero({
   onScrollMenu,
