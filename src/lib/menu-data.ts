@@ -13,6 +13,52 @@ import {
 export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type DayHours = { day: WeekDay; closed: boolean; open: string; close: string };
 
+export type AcaiSize = { id: string; label: string; price: number };
+export type AcaiConfig = {
+  sizes: AcaiSize[];
+  fruits: string[];
+  creams: string[];
+  extras: ExtraOption[];
+  freeFruits: number;
+  freeCreams: number;
+  extraFruitPrice: number;
+  extraCreamPrice: number;
+};
+
+export const DEFAULT_ACAI_CONFIG: AcaiConfig = {
+  sizes: [
+    { id: "300", label: "300ml", price: 20 },
+    { id: "400", label: "400ml", price: 23 },
+    { id: "500", label: "500ml", price: 28 },
+    { id: "1000", label: "1 Litro", price: 43 },
+  ],
+  fruits: ["Morango", "Banana", "Mamão", "Maçã", "Kiwi", "Uva", "Abacaxi"],
+  creams: [
+    "Creme de Ninho",
+    "Creme de Leite",
+    "Leite Condensado",
+    "Calda Quente",
+    "Creme de Ovomaltine",
+    "Creme de Nutella",
+  ],
+  extras: [
+    { id: "granola", label: "Granola", price: 2 },
+    { id: "leite-condensado", label: "Leite condensado", price: 3 },
+    { id: "nutella", label: "Nutella", price: 5 },
+    { id: "ovomaltine", label: "Ovomaltine", price: 4 },
+    { id: "pacoca", label: "Paçoca", price: 3 },
+    { id: "amendoim", label: "Amendoim", price: 3 },
+    { id: "leite-po", label: "Leite em pó", price: 3 },
+    { id: "coco", label: "Coco ralado", price: 2 },
+    { id: "chocoball", label: "Chocoball", price: 4 },
+    { id: "mm", label: "M&Ms", price: 4 },
+  ],
+  freeFruits: 2,
+  freeCreams: 1,
+  extraFruitPrice: 2,
+  extraCreamPrice: 4,
+};
+
 export type SiteSettings = {
   name: string;
   tagline: string;
@@ -53,6 +99,7 @@ export type SiteSettings = {
   cardBorder: boolean;
   cardGlow: boolean;
   titleFont: string;
+  acaiConfig: AcaiConfig;
 };
 
 
