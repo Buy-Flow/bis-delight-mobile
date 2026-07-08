@@ -1,25 +1,33 @@
 import { useState } from "react";
 import { X, Check, Sparkles } from "lucide-react";
-import { ACAI_CREAMS, ACAI_EXTRAS, ACAI_FRUITS, ACAI_SIZES } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useSiteSettings } from "@/lib/menu-data";
+import { DEFAULT_ACAI_CONFIG } from "@/lib/menu-data";
 import acaiHero from "@/assets/monte-acai.png.asset.json";
 
 export function AcaiBuilder({ onClose }: { onClose: () => void }) {
   const { add } = useCart();
-  const [sizeId, setSizeId] = useState(ACAI_SIZES[1].id);
-  const [fruits, setFruits] = useState<string[]>(["Morango", "Banana"]);
-  const [creams, setCreams] = useState<string[]>(["Creme Ninho"]);
-  const [extras, setExtras] = useState<string[]>(["granola", "leite-condensado"]);
+  const { data: settings } = useSiteSettings();
+  const cfg = settings?.acaiConfig ?? DEFAULT_ACAI_CONFIG;
+  const SIZES = cfg.sizes.length ? cfg.sizes : DEFAULT_ACAI_CONFIG.sizes;
+  const FRUITS = cfg.fruits;
+  const CREAMS = cfg.creams;
+  const EXTRAS = cfg.extras;
 
-  const size = ACAI_SIZES.find((s) => s.id === sizeId)!;
-  const extrasSel = ACAI_EXTRAS.filter((e) => extras.includes(e.id));
+  const [sizeId, setSizeId] = useState(SIZES[Math.min(1, SIZES.length - 1)].id);
+  const [fruits, setFruits] = useState<string[]>(FRUITS.slice(0, Math.min(2, FRUITS.length)));
+  const [creams, setCreams] = useState<string[]>(CREAMS.slice(0, Math.min(1, CREAMS.length)));
+  const [extras, setExtras] = useState<string[]>([]);
+
+  const size = SIZES.find((s) => s.id === sizeId) ?? SIZES[0];
+  const extrasSel = EXTRAS.filter((e) => extras.includes(e.id));
   const unit =
     size.price +
     extrasSel.reduce((s, e) => s + e.price, 0) +
-    Math.max(0, fruits.length - 2) * 2 +
-    Math.max(0, creams.length - 1) * 4;
+    Math.max(0, fruits.length - cfg.freeFruits) * cfg.extraFruitPrice +
+    Math.max(0, creams.length - cfg.freeCreams) * cfg.extraCreamPrice;
 
   const toggle = (arr: string[], set: (a: string[]) => void, v: string) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
