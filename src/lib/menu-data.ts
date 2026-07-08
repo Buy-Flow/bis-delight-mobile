@@ -187,6 +187,14 @@ const DEFAULT_EXTRA: Pick<
   | "newsTicker"
   | "newsProductIds"
   | "globalExtras"
+  | "bgColor"
+  | "accentColor"
+  | "textureOpacity"
+  | "textureSize"
+  | "cardRadius"
+  | "cardBorder"
+  | "cardGlow"
+  | "titleFont"
 > = {
   instagram: "",
   facebook: "",
@@ -207,6 +215,14 @@ const DEFAULT_EXTRA: Pick<
   newsTicker: "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana",
   newsProductIds: [],
   globalExtras: [],
+  bgColor: "#0d0322",
+  accentColor: "#ffe600",
+  textureOpacity: 1,
+  textureSize: "cover",
+  cardRadius: 24,
+  cardBorder: true,
+  cardGlow: false,
+  titleFont: "Barlow Condensed",
 };
 
 
