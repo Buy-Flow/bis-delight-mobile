@@ -4494,16 +4494,20 @@ function CategoryExtrasSection() {
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-neon-pink/30 bg-neon-pink/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-pink">
-            Complementos por categoria
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos da categoria</b> selecionada, junto com os
-            complementos globais e do produto.
-          </p>
+    <div className="flex flex-col rounded-3xl border border-neon-pink/25 bg-gradient-to-b from-neon-pink/10 to-neon-pink/5 p-5 shadow-[0_0_0_1px_rgba(236,72,153,0.05)_inset]">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-neon-pink/40 bg-neon-pink/15 text-neon-pink">
+            <Tag className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display text-lg font-black text-neon-pink">
+              Por categoria
+            </h3>
+            <p className="text-[11px] leading-tight text-white/60">
+              Aparecem em <b>todos os produtos da categoria</b> selecionada.
+            </p>
+          </div>
         </div>
         {selected && (
           <button
@@ -4520,24 +4524,64 @@ function CategoryExtrasSection() {
         )}
       </div>
 
-      <select
-        value={selectedId}
-        onChange={(e) => {
-          setSelectedId(e.target.value);
-          setDraft(null);
-        }}
-        className={cn(inputCls, "mb-3")}
-      >
-        <option value="">Selecione uma categoria...</option>
-        {catList.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.emoji} {c.name} ({(c.extras ?? []).length})
-          </option>
-        ))}
-      </select>
+      {/* Category chips selector */}
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {catList.map((c) => {
+          const count = (c.extras ?? []).length;
+          const isActive = selectedId === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => {
+                setSelectedId(c.id);
+                setDraft(null);
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition",
+                isActive
+                  ? "border-neon-pink bg-neon-pink/25 text-white glow-pink"
+                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+              )}
+            >
+              <span>{c.emoji}</span>
+              <span>{c.name}</span>
+              <span
+                className={cn(
+                  "grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-black",
+                  count > 0 ? "bg-neon-pink text-white" : "bg-white/10 text-white/50",
+                )}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {!selected && (
+        <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 p-6 text-center text-[12px] text-white/50">
+          Selecione uma categoria acima para ver e editar seus complementos.
+        </div>
+      )}
 
       {selected && (
         <>
+          <div className="mb-2 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-white/40">
+            <span>
+              {list.length} item{list.length === 1 ? "" : "s"}
+              {usingDefaults && (
+                <span className="ml-1.5 rounded-full bg-neon-cyan/20 px-1.5 py-0.5 text-neon-cyan">
+                  padrões do site
+                </span>
+              )}
+            </span>
+            {isDirty && (
+              <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-neon-yellow">
+                Alterações não salvas
+              </span>
+            )}
+          </div>
+
           <RowList
             items={list}
             onChange={(v) => setDraft(v)}
