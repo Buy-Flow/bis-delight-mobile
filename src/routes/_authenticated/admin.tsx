@@ -4407,9 +4407,16 @@ function CategoryExtrasSection() {
   const [saving, setSaving] = useState(false);
 
   const selected = catList.find((c) => c.id === selectedId) ?? null;
-  const current = selected?.extras ?? [];
+  const stored = selected?.extras ?? [];
+  const siteDefaults = selected ? getDefaultExtras(selected.id) : [];
+  const usingDefaults = !!selected && stored.length === 0 && siteDefaults.length > 0;
+  const current = stored.length > 0 ? stored : siteDefaults;
   const list = draft ?? current;
-  const isDirty = selected ? JSON.stringify(list) !== JSON.stringify(current) : false;
+  const isDirty = selected
+    ? usingDefaults
+      ? draft !== null
+      : JSON.stringify(list) !== JSON.stringify(stored)
+    : false;
 
   const save = async () => {
     if (!selected) return;
