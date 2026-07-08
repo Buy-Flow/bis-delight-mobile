@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { X, Check, Sparkles, Minus, Plus } from "lucide-react";
+import { X, Check, Sparkles, Minus, Plus, ChevronsUpDown } from "lucide-react";
+import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -71,6 +72,7 @@ export function CustomProductBuilder({
 
   const [sel, setSel] = useState<Selection>(seededSelection);
   const [qty, setQty] = useState(editItem?.quantity ?? 1);
+  const [collapsed, setCollapsed] = useState(false);
 
   const unit = useMemo(() => computeUnit(groups, sel), [groups, sel]);
   const total = unit * qty;
@@ -142,31 +144,61 @@ export function CustomProductBuilder({
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
-        {/* Header */}
-        <div className="relative h-[220px] shrink-0 overflow-hidden">
+        {/* Header — colapsável para dar mais espaço à personalização */}
+        <div
+          className={cn(
+            "relative shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
+            collapsed ? "h-[72px]" : "h-[220px]",
+          )}
+        >
           <div className="absolute inset-0 noise-purple" />
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_60%,oklch(0.86_0.18_200_/_0.3),transparent_65%)]" />
-          {product.image && (
+          {product.image && !collapsed && (
             <img
               src={product.image}
               alt={product.name}
               className="absolute inset-0 mx-auto h-full w-full object-contain p-4 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
             />
           )}
+          <div className="absolute left-3 top-3 z-10 flex items-center gap-2">
+            <button
+              onClick={() => setCollapsed((v) => !v)}
+              aria-label={collapsed ? "Expandir imagem" : "Minimizar imagem"}
+              className="grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-sm active:scale-95"
+            >
+              <ChevronsUpDown className="h-5 w-5" />
+            </button>
+            <FavoriteButton
+              productId={product.id}
+              className="h-10 w-10 bg-black/50 backdrop-blur-sm"
+            />
+          </div>
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white"
+            className="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white"
           >
             <X className="h-5 w-5" />
           </button>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/70 to-transparent px-4 pb-4 pt-8">
-            <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
-              <Sparkles className="h-3 w-3" /> Personalizado
-            </div>
-            <h2 className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text leading-none">
+          <div
+            className={cn(
+              "absolute inset-x-0 bottom-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/70 to-transparent px-4 pb-3",
+              collapsed ? "pt-2" : "pt-8",
+            )}
+          >
+            {!collapsed && (
+              <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
+                <Sparkles className="h-3 w-3" /> Personalizado
+              </div>
+            )}
+            <h2
+              className={cn(
+                "font-display font-extrabold text-neon-yellow glow-yellow-text leading-none",
+                collapsed ? "text-lg" : "text-3xl",
+              )}
+            >
               {product.name}
             </h2>
-            {product.description && (
+            {!collapsed && product.description && (
               <p className="mt-1 text-[12px] text-white/70">{product.description}</p>
             )}
           </div>
