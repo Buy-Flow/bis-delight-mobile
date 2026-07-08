@@ -623,6 +623,7 @@ export function useUpdateSettings() {
         card_border: s.cardBorder,
         card_glow: s.cardGlow,
         title_font: s.titleFont,
+        acai_config: s.acaiConfig as unknown as never,
 
 
       }, { onConflict: "id" });
