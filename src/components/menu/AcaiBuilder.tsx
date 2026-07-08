@@ -1,25 +1,33 @@
 import { useState } from "react";
 import { X, Check, Sparkles } from "lucide-react";
-import { ACAI_CREAMS, ACAI_EXTRAS, ACAI_FRUITS, ACAI_SIZES } from "@/data/menu";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useSiteSettings } from "@/lib/menu-data";
+import { DEFAULT_ACAI_CONFIG } from "@/lib/menu-data";
 import acaiHero from "@/assets/monte-acai.png.asset.json";
 
 export function AcaiBuilder({ onClose }: { onClose: () => void }) {
   const { add } = useCart();
-  const [sizeId, setSizeId] = useState(ACAI_SIZES[1].id);
-  const [fruits, setFruits] = useState<string[]>(["Morango", "Banana"]);
-  const [creams, setCreams] = useState<string[]>(["Creme Ninho"]);
-  const [extras, setExtras] = useState<string[]>(["granola", "leite-condensado"]);
+  const { data: settings } = useSiteSettings();
+  const cfg = settings?.acaiConfig ?? DEFAULT_ACAI_CONFIG;
+  const SIZES = cfg.sizes.length ? cfg.sizes : DEFAULT_ACAI_CONFIG.sizes;
+  const FRUITS = cfg.fruits;
+  const CREAMS = cfg.creams;
+  const EXTRAS = cfg.extras;
 
-  const size = ACAI_SIZES.find((s) => s.id === sizeId)!;
-  const extrasSel = ACAI_EXTRAS.filter((e) => extras.includes(e.id));
+  const [sizeId, setSizeId] = useState(SIZES[Math.min(1, SIZES.length - 1)].id);
+  const [fruits, setFruits] = useState<string[]>(FRUITS.slice(0, Math.min(2, FRUITS.length)));
+  const [creams, setCreams] = useState<string[]>(CREAMS.slice(0, Math.min(1, CREAMS.length)));
+  const [extras, setExtras] = useState<string[]>([]);
+
+  const size = SIZES.find((s) => s.id === sizeId) ?? SIZES[0];
+  const extrasSel = EXTRAS.filter((e) => extras.includes(e.id));
   const unit =
     size.price +
     extrasSel.reduce((s, e) => s + e.price, 0) +
-    Math.max(0, fruits.length - 2) * 2 +
-    Math.max(0, creams.length - 1) * 4;
+    Math.max(0, fruits.length - cfg.freeFruits) * cfg.extraFruitPrice +
+    Math.max(0, creams.length - cfg.freeCreams) * cfg.extraCreamPrice;
 
   const toggle = (arr: string[], set: (a: string[]) => void, v: string) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -78,7 +86,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
         <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
           <Group title="1. Tamanho">
             <div className="grid grid-cols-2 gap-2">
-              {ACAI_SIZES.map((s) => (
+              {SIZES.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setSizeId(s.id)}
@@ -98,7 +106,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
 
           <Group title="2. Frutas" hint="2 grátis · extras + R$2">
             <Grid>
-              {ACAI_FRUITS.map((f) => (
+              {FRUITS.map((f) => (
                 <Pill key={f} active={fruits.includes(f)} onClick={() => toggle(fruits, setFruits, f)}>
                   {f}
                 </Pill>
@@ -108,7 +116,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
 
           <Group title="3. Cremes" hint="1 grátis · extras + R$4">
             <Grid>
-              {ACAI_CREAMS.map((c) => (
+              {CREAMS.map((c) => (
                 <Pill key={c} active={creams.includes(c)} onClick={() => toggle(creams, setCreams, c)}>
                   {c}
                 </Pill>
@@ -118,7 +126,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
 
           <Group title="4. Complementos">
             <div className="space-y-2">
-              {ACAI_EXTRAS.map((e) => {
+              {EXTRAS.map((e) => {
                 const on = extras.includes(e.id);
                 return (
                   <button

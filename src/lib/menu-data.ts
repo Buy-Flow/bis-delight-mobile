@@ -13,6 +13,52 @@ import {
 export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type DayHours = { day: WeekDay; closed: boolean; open: string; close: string };
 
+export type AcaiSize = { id: string; label: string; price: number };
+export type AcaiConfig = {
+  sizes: AcaiSize[];
+  fruits: string[];
+  creams: string[];
+  extras: ExtraOption[];
+  freeFruits: number;
+  freeCreams: number;
+  extraFruitPrice: number;
+  extraCreamPrice: number;
+};
+
+export const DEFAULT_ACAI_CONFIG: AcaiConfig = {
+  sizes: [
+    { id: "300", label: "300ml", price: 20 },
+    { id: "400", label: "400ml", price: 23 },
+    { id: "500", label: "500ml", price: 28 },
+    { id: "1000", label: "1 Litro", price: 43 },
+  ],
+  fruits: ["Morango", "Banana", "Mamão", "Maçã", "Kiwi", "Uva", "Abacaxi"],
+  creams: [
+    "Creme de Ninho",
+    "Creme de Leite",
+    "Leite Condensado",
+    "Calda Quente",
+    "Creme de Ovomaltine",
+    "Creme de Nutella",
+  ],
+  extras: [
+    { id: "granola", label: "Granola", price: 2 },
+    { id: "leite-condensado", label: "Leite condensado", price: 3 },
+    { id: "nutella", label: "Nutella", price: 5 },
+    { id: "ovomaltine", label: "Ovomaltine", price: 4 },
+    { id: "pacoca", label: "Paçoca", price: 3 },
+    { id: "amendoim", label: "Amendoim", price: 3 },
+    { id: "leite-po", label: "Leite em pó", price: 3 },
+    { id: "coco", label: "Coco ralado", price: 2 },
+    { id: "chocoball", label: "Chocoball", price: 4 },
+    { id: "mm", label: "M&Ms", price: 4 },
+  ],
+  freeFruits: 2,
+  freeCreams: 1,
+  extraFruitPrice: 2,
+  extraCreamPrice: 4,
+};
+
 export type SiteSettings = {
   name: string;
   tagline: string;
@@ -53,6 +99,7 @@ export type SiteSettings = {
   cardBorder: boolean;
   cardGlow: boolean;
   titleFont: string;
+  acaiConfig: AcaiConfig;
 };
 
 
@@ -99,6 +146,24 @@ function rowToCategory(row: Record<string, unknown>): Category {
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
     imageScale: row.image_scale !== undefined && row.image_scale !== null ? Number(row.image_scale) : 1,
     extras: Array.isArray(rawExtras) ? rawExtras : [],
+  };
+}
+
+function normalizeAcaiConfig(raw: unknown): AcaiConfig {
+  const r = (raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {}) as Record<string, unknown>;
+  const sizes = Array.isArray(r.sizes) && r.sizes.length ? (r.sizes as AcaiSize[]) : DEFAULT_ACAI_CONFIG.sizes;
+  const fruits = Array.isArray(r.fruits) && r.fruits.length ? (r.fruits as string[]) : DEFAULT_ACAI_CONFIG.fruits;
+  const creams = Array.isArray(r.creams) && r.creams.length ? (r.creams as string[]) : DEFAULT_ACAI_CONFIG.creams;
+  const extras = Array.isArray(r.extras) ? (r.extras as ExtraOption[]) : DEFAULT_ACAI_CONFIG.extras;
+  return {
+    sizes,
+    fruits,
+    creams,
+    extras,
+    freeFruits: Number(r.freeFruits ?? DEFAULT_ACAI_CONFIG.freeFruits),
+    freeCreams: Number(r.freeCreams ?? DEFAULT_ACAI_CONFIG.freeCreams),
+    extraFruitPrice: Number(r.extraFruitPrice ?? DEFAULT_ACAI_CONFIG.extraFruitPrice),
+    extraCreamPrice: Number(r.extraCreamPrice ?? DEFAULT_ACAI_CONFIG.extraCreamPrice),
   };
 }
 
@@ -195,6 +260,7 @@ const DEFAULT_EXTRA: Pick<
   | "cardBorder"
   | "cardGlow"
   | "titleFont"
+  | "acaiConfig"
 > = {
   instagram: "",
   facebook: "",
@@ -223,6 +289,7 @@ const DEFAULT_EXTRA: Pick<
   cardBorder: true,
   cardGlow: false,
   titleFont: "Barlow Condensed",
+  acaiConfig: DEFAULT_ACAI_CONFIG,
 };
 
 
@@ -294,8 +361,7 @@ export function useSiteSettings() {
         cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
         cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
         titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
-
-
+        acaiConfig: normalizeAcaiConfig((data as Record<string, unknown>).acai_config),
       };
     },
   });
@@ -557,6 +623,7 @@ export function useUpdateSettings() {
         card_border: s.cardBorder,
         card_glow: s.cardGlow,
         title_font: s.titleFont,
+        acai_config: s.acaiConfig as unknown as never,
 
 
       }, { onConflict: "id" });
