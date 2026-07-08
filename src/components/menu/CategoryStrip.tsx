@@ -160,10 +160,10 @@ export function CategoryChip({
           />
         </div>
 
-        <div className="absolute inset-x-0 bottom-1.5 px-1 text-center">
+        <div className="absolute inset-x-0 bottom-1 px-1 text-center">
           <div
-            className="truncate text-[8.5px] font-black uppercase tracking-[0.1em] text-white"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}
+            className="text-[8.5px] font-black uppercase leading-[1.05] tracking-[0.08em] text-white [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden"
+            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.6)", wordBreak: "break-word" }}
           >
             {category.name}
           </div>
