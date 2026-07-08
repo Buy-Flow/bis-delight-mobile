@@ -266,6 +266,8 @@ const DEFAULT_EXTRA: Pick<
   | "cardBorder"
   | "cardGlow"
   | "titleFont"
+  | "heroImages"
+
 > = {
   instagram: "",
   facebook: "",
