@@ -262,16 +262,38 @@ export function NewsPosterCard({
   const topLine = words.slice(0, Math.max(1, Math.ceil(words.length / 2))).join(" ");
   const bottomLine = words.slice(Math.ceil(words.length / 2)).join(" ");
 
+  // Fundo do card varia por índice para combinar com o badge (pink / cyan / yellow)
+  const cardBackgrounds = [
+    // 0 — Cyan / azul neon
+    "radial-gradient(120% 90% at 15% 12%, oklch(0.55 0.20 200) 0%, oklch(0.30 0.18 260) 38%, oklch(0.14 0.12 300) 78%, oklch(0.09 0.09 305) 100%)",
+    // 1 — Yellow / âmbar quente
+    "radial-gradient(120% 90% at 15% 12%, oklch(0.72 0.18 90) 0%, oklch(0.45 0.20 40) 35%, oklch(0.20 0.14 320) 75%, oklch(0.10 0.10 305) 100%)",
+    // 2 — Pink / magenta
+    "radial-gradient(120% 90% at 15% 12%, oklch(0.62 0.26 350) 0%, oklch(0.35 0.22 330) 38%, oklch(0.16 0.14 305) 78%, oklch(0.09 0.09 305) 100%)",
+  ];
+  const cardBg = cardBackgrounds[index % cardBackgrounds.length];
+
   return (
     <article className="group relative w-[85vw] max-w-[380px] shrink-0 snap-center">
       <button
         onClick={() => onOpen(product)}
-        className="relative block aspect-[3/4] w-full overflow-hidden rounded-[26px] bg-[oklch(0.12_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1"
+        className="relative block aspect-[3/4] w-full overflow-hidden rounded-[26px] text-left transition-transform duration-300 group-hover:-translate-y-1"
         style={{
+          background: cardBg,
           boxShadow:
             "0 0 0 1px oklch(0.72 0.26 350 / 0.35), 0 0 22px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -18px oklch(0.85 0.18 200 / 0.55), 0 24px 40px -20px rgba(0,0,0,0.8)",
         }}
       >
+        {/* Textura sutil de brilho por cima do gradiente */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 80% 20%, oklch(0.95 0.15 100 / 0.35), transparent 45%), radial-gradient(circle at 20% 90%, oklch(0.75 0.24 340 / 0.35), transparent 50%)",
+          }}
+        />
+
         {/* Foto ocupa tudo — object-contain preserva a taça sem cortar */}
         <img
           src={heroSrc}
@@ -283,6 +305,7 @@ export function NewsPosterCard({
             transformOrigin: "center",
           }}
         />
+
 
 
 
