@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { X, Check, Sparkles } from "lucide-react";
+import { X, Check, Sparkles, Minus, Plus } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -47,8 +47,10 @@ export function CustomProductBuilder({
   const { add } = useCart();
   const groups = useMemo(() => product.optionGroups ?? [], [product.optionGroups]);
   const [sel, setSel] = useState<Selection>(() => initialSelection(groups));
+  const [qty, setQty] = useState(1);
 
   const unit = useMemo(() => computeUnit(groups, sel), [groups, sel]);
+  const total = unit * qty;
 
   const toggle = (g: OptionGroup, optId: string) => {
     setSel((prev) => {
@@ -100,7 +102,7 @@ export function CustomProductBuilder({
       size: sizeLabel || undefined,
       extras,
       removed: [],
-      quantity: 1,
+      quantity: qty,
       unitPrice: unit,
     });
     toast.success("Adicionado ao carrinho! 🛒");
@@ -238,23 +240,34 @@ export function CustomProductBuilder({
           <div className="h-24" />
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="mb-3 flex items-end justify-between">
-            <div>
-              <div className="text-[10px] uppercase tracking-widest text-white/50">Total</div>
-              <div className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text">
-                {brl(unit)}
-              </div>
+        {/* Footer — padrão: stepper + pill rosa com o valor no botão */}
+        <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+              <button
+                onClick={() => setQty(Math.max(1, qty - 1))}
+                aria-label="Diminuir"
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white active:scale-95"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <div className="w-6 text-center text-base font-bold text-white">{qty}</div>
+              <button
+                onClick={() => setQty(qty + 1)}
+                aria-label="Aumentar"
+                className="grid h-9 w-9 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] active:scale-95"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
             </div>
+            <button
+              onClick={submit}
+              disabled={!canSubmit}
+              className="flex-1 rounded-2xl bg-neon-pink px-4 py-3 text-base font-extrabold text-white glow-pink touch-manipulation [-webkit-tap-highlight-color:transparent] will-change-transform transition-transform duration-100 ease-out active:scale-[.97] disabled:opacity-50"
+            >
+              {brl(total)}
+            </button>
           </div>
-          <button
-            onClick={submit}
-            disabled={!canSubmit}
-            className="w-full rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-50"
-          >
-            Adicionar ao carrinho
-          </button>
         </div>
       </div>
     </div>
