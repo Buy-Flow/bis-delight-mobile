@@ -3809,9 +3809,26 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
         )}
       </div>
 
+      {/* Foto & Posicionamento por produto */}
+      {selected.length > 0 && (
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+            <ImagePlus className="h-3.5 w-3.5 text-neon-cyan" /> Foto & posicionamento
+          </div>
+          <p className="mb-3 text-[11px] text-white/50">
+            Ajuste a imagem hero de cada produto do carrossel — arraste para reposicionar e use o zoom.
+          </p>
+          <div className="space-y-2">
+            {selected.map((p) => (
+              <HeroImageEditor key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Adicionar */}
       <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+
         <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
           <Plus className="h-3.5 w-3.5 text-neon-yellow" /> Adicionar produtos
         </div>
