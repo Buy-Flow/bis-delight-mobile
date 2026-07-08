@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart-context";
 import { ConfirmDialogHost } from "@/lib/confirm";
+import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
+import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
 
 
@@ -109,8 +111,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@700&display=swap",
+      },
+      {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@700&display=swap",
+      },
+      // LCP: preload hero images so they arrive before hydration
+      {
+        rel: "preload",
+        as: "image",
+        href: heroBgLeft.url,
+        fetchPriority: "high",
+      },
+      {
+        rel: "preload",
+        as: "image",
+        href: heroBgRight.url,
+        fetchPriority: "high",
       },
 
       { rel: "icon", href: "/favicon.png", type: "image/png" },
