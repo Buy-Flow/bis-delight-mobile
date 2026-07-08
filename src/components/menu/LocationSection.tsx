@@ -351,21 +351,6 @@ export function LocationSection() {
               </div>
             </div>
 
-            {/* Barcode-ish signature */}
-            <div className="pt-1">
-              <div className="flex items-end gap-[3px] opacity-40">
-                {Array.from({ length: 36 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-[2px] bg-white"
-                    style={{ height: `${6 + ((i * 7) % 14)}px` }}
-                  />
-                ))}
-                <div className="ml-2 text-[9px] font-black uppercase tracking-[.3em] text-white/40">
-                  {name}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
