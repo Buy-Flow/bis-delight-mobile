@@ -181,15 +181,19 @@ export function CheckoutSheet() {
             send();
           }}
         >
-          {/* Header simples e fluido */}
-          <div className="-mx-4 -mt-6 px-5 pb-4 pt-6">
-            <h3 className="text-[22px] font-black leading-tight text-white">
-              Finalizar pedido
+          {/* Header simples com detalhe */}
+          <div className="-mx-4 -mt-6 px-5 pb-4 pt-6 pr-16">
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-neon-cyan shadow-[0_0_8px_theme(colors.neon-cyan)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neon-cyan/90">Checkout</span>
+            </div>
+            <h3 className="mt-0.5 text-[22px] font-black leading-tight text-white">
+              Finalizar <span className="bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent">pedido</span>
             </h3>
             <p className="mt-1 text-[12px] text-white/60">
               Falta pouco — confira seus dados abaixo.
             </p>
-            <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <div className="mt-3 h-px w-full bg-gradient-to-r from-neon-cyan/50 via-neon-pink/30 to-transparent" />
           </div>
 
           {!authLoading && !isAuthenticated && (
