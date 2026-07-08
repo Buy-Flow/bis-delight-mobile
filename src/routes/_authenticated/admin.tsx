@@ -3723,7 +3723,24 @@ const TEXTURE_PRESETS = [
   },
 ];
 
-function NewsHeroEditor({ product, index }: { product: Product; index: number }) {
+function NewsHeroEditor({
+  product,
+  index,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
+}: {
+  product: Product;
+  index: number;
+  onRemove?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+}) {
+
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -3836,32 +3853,61 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-3 p-3 text-left"
-      >
-        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
-          <img src={draft.heroImage || product.image} className="h-full w-full object-cover" alt="" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
-            <div className="truncate text-sm font-bold">{product.name}</div>
-          </div>
-          <div className="text-[11px] text-white/50">
-            zoom {draft.scale.toFixed(2)}× · x {draft.posX.toFixed(0)}% · y {draft.posY.toFixed(0)}%
-          </div>
-        </div>
-        <span
-          className={cn(
-            "rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70",
-            open && "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/30",
-          )}
+      <div className="flex w-full items-center gap-2 p-3">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
         >
-          {open ? "Fechar" : "Ajustar"}
-        </span>
-      </button>
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+            <img src={draft.heroImage || product.image} className="h-full w-full object-cover" alt="" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="grid h-4 w-4 shrink-0 place-items-center rounded-md bg-neon-cyan/20 text-[9px] font-black text-neon-cyan">
+                {index + 1}
+              </span>
+              <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
+              <div className="truncate text-sm font-bold">{product.name}</div>
+            </div>
+            <div className="text-[11px] text-white/50">
+              zoom {draft.scale.toFixed(2)}× · x {draft.posX.toFixed(0)}% · y {draft.posY.toFixed(0)}%
+            </div>
+          </div>
+        </button>
+        {onMoveUp && (
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
+            aria-label="Mover para cima"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-30"
+          >
+            <ArrowUp className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {onMoveDown && (
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+            aria-label="Mover para baixo"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-30"
+          >
+            <ArrowDown className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Remover novidade"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
 
       {open && (
         <div
@@ -3881,6 +3927,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 <div className="text-[10.5px] text-white/50">
                   Ajuste a foto do card de Novidades{dirty ? " • alterações não salvas" : ""}
                 </div>
+
               </div>
               <button
                 type="button"
