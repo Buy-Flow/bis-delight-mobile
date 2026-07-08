@@ -384,7 +384,9 @@ export function useSiteSettings() {
         cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
         cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
         titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
+        heroImages: parseHeroImages((data as Record<string, unknown>).hero_images),
       };
+
     },
   });
 }
