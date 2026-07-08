@@ -430,12 +430,14 @@ function Chip({
   children,
   small,
   variant = "cyan",
+  className,
 }: {
   active?: boolean;
   onClick: () => void;
   children: React.ReactNode;
   small?: boolean;
   variant?: "cyan" | "pink";
+  className?: string;
 }) {
   const activeCls =
     variant === "cyan"
@@ -448,6 +450,7 @@ function Chip({
         "rounded-2xl border px-3 transition text-center",
         small ? "py-2 text-[13px]" : "py-3",
         active ? activeCls : "border-white/10 bg-white/5 text-white/80",
+        className,
       )}
     >
       {children}
