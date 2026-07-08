@@ -21,114 +21,29 @@ export function CartSheet() {
           <X className="h-5 w-5" />
         </button>
 
-        {/* Header title — banner com detalhes decorativos (sorvetes) */}
-        <div className="relative overflow-hidden">
-          {/* Fundo do banner */}
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(120deg, oklch(0.20 0.13 305) 0%, oklch(0.14 0.10 305) 55%, oklch(0.10 0.08 305) 100%)",
-            }}
-          />
-          {/* Risco/traço rosa correndo por trás */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(105deg, transparent 20%, oklch(0.72 0.26 350 / 0.35) 42%, oklch(0.86 0.18 200 / 0.25) 55%, transparent 78%)",
-              filter: "blur(14px)",
-            }}
-          />
-          {/* Estrelinhas / partículas */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-70"
-            style={{
-              backgroundImage: [
-                "radial-gradient(1.5px 1.5px at 12% 30%, rgba(255,255,255,.9), transparent 60%)",
-                "radial-gradient(1px 1px at 78% 18%, rgba(255,255,255,.8), transparent 60%)",
-                "radial-gradient(1.5px 1.5px at 34% 72%, rgba(255,255,255,.7), transparent 60%)",
-                "radial-gradient(1px 1px at 62% 55%, rgba(255,255,255,.75), transparent 60%)",
-                "radial-gradient(2px 2px at 88% 68%, rgba(255,255,255,.85), transparent 60%)",
-                "radial-gradient(1px 1px at 22% 88%, rgba(255,255,255,.65), transparent 60%)",
-                "radial-gradient(1.5px 1.5px at 48% 12%, rgba(255,255,255,.85), transparent 60%)",
-              ].join(","),
-            }}
-          />
-          {/* Açaí bowl ilustrado — imagem decorativa */}
-          <img
-            src={acaiBowlImg}
-            alt=""
-            aria-hidden
-            width={96}
-            height={96}
-            loading="lazy"
-            className="pointer-events-none absolute -left-3 -top-2 h-24 w-24 rotate-[-8deg] animate-float-slow select-none"
-            style={{ filter: "drop-shadow(0 8px 18px rgba(0,0,0,0.55))" }}
-          />
-          <img
-            src={acaiBowlImg}
-            alt=""
-            aria-hidden
-            width={56}
-            height={56}
-            loading="lazy"
-            className="pointer-events-none absolute right-24 top-4 h-14 w-14 rotate-[12deg] opacity-80 animate-float-med select-none"
-            style={{ filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.5))" }}
-          />
-
-
-          <div className="relative px-5 pb-5 pt-6">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <h3
-                  className="leading-[0.9] text-white"
-                  style={{
-                    fontFamily: "'Caveat', 'Fredoka', cursive",
-                    fontWeight: 700,
-                    fontSize: 44,
-                    textShadow: "0 3px 14px rgba(0,0,0,0.55)",
-                  }}
-                >
-                  Seu{" "}
-                  <span
-                    className="text-neon-yellow glow-yellow-text italic"
-                    style={{ fontFamily: "'Caveat', cursive", fontWeight: 700 }}
-                  >
-                    carrinho
-                  </span>
-                  <Heart
-                    className="ml-1 inline h-5 w-5 fill-neon-pink text-neon-pink align-baseline drop-shadow-[0_0_8px_rgba(255,60,140,0.7)]"
-                  />
-                </h3>
-                {/* Risquinho decorativo abaixo */}
-                <svg
-                  aria-hidden
-                  viewBox="0 0 160 14"
-                  className="mt-1 h-3 w-40 text-neon-pink drop-shadow-[0_0_6px_rgba(255,60,140,0.6)]"
-                  fill="none"
-                >
-                  <path
-                    d="M2 8 C 30 -2, 60 14, 90 6 S 150 8, 158 4"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-              <div className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-neon-yellow/15 border border-neon-yellow/40 shadow-[0_8px_20px_-8px_rgba(255,230,0,0.4)]">
-                <ShoppingBag className="h-6 w-6 text-neon-yellow" />
-                {items.length > 0 && (
-                  <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white shadow-[0_0_10px_rgba(255,60,140,0.7)]">
-                    {items.reduce((s, i) => s + i.quantity, 0)}
-                  </span>
-                )}
-              </div>
+        {/* Header simples e fluido */}
+        <div className="relative px-5 pb-4 pt-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-[22px] font-black leading-tight text-white">
+                Seu carrinho
+              </h3>
+              <p className="mt-0.5 text-[12px] text-white/60">
+                {items.length
+                  ? `${items.reduce((s, i) => s + i.quantity, 0)} ${items.reduce((s, i) => s + i.quantity, 0) === 1 ? "item" : "itens"}`
+                  : "Vazio por enquanto"}
+              </p>
+            </div>
+            <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/5 ring-1 ring-white/10">
+              <ShoppingBag className="h-5 w-5 text-neon-yellow" />
+              {items.length > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white">
+                  {items.reduce((s, i) => s + i.quantity, 0)}
+                </span>
+              )}
             </div>
           </div>
+          <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
 
 
