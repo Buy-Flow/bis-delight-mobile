@@ -3743,7 +3743,9 @@ const TEXTURE_PRESETS = [
 function NewsHeroEditor({ product, index }: { product: Product; index: number }) {
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const initialDraft = {
+    heroImage: product.heroImage ?? "",
     posX: product.heroImagePosX ?? 0,
     posY: product.heroImagePosY ?? 0,
     scale: product.heroImageScale ?? 1.2,
@@ -3752,19 +3754,23 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
 
   useEffect(() => {
     setDraft({
+      heroImage: product.heroImage ?? "",
       posX: product.heroImagePosX ?? 0,
       posY: product.heroImagePosY ?? 0,
       scale: product.heroImageScale ?? 1.2,
     });
-  }, [product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
+  }, [product.heroImage, product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
+
 
   const dirty =
+    draft.heroImage !== initialDraft.heroImage ||
     draft.posX !== initialDraft.posX ||
     draft.posY !== initialDraft.posY ||
     draft.scale !== initialDraft.scale;
 
   const previewProduct: Product = {
     ...product,
+    heroImage: draft.heroImage,
     heroImagePosX: draft.posX,
     heroImagePosY: draft.posY,
     heroImageScale: draft.scale,
@@ -3777,6 +3783,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
   const save = async () => {
     await update.mutateAsync({
       id: product.id,
+      heroImage: draft.heroImage,
       heroImagePosX: draft.posX,
       heroImagePosY: draft.posY,
       heroImageScale: draft.scale,
@@ -3789,6 +3796,25 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
     setDraft(initialDraft);
     setOpen(false);
   };
+
+  const onFile = async (file: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadProductImage(file);
+      patchDraft({ heroImage: url });
+      toast.success("Imagem pronta — clique em Salvar");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clearImage = async () => {
+    patchDraft({ heroImage: "" });
+    toast.success("Imagem removida — clique em Salvar");
+  };
+
 
   const reset = () => patchDraft({ posX: 0, posY: 0, scale: 1.2 });
 
@@ -3823,7 +3849,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
         className="flex w-full items-center gap-3 p-3 text-left"
       >
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
-          <img src={product.heroImage || product.image} className="h-full w-full object-cover" alt="" />
+          <img src={draft.heroImage || product.image} className="h-full w-full object-cover" alt="" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -3919,7 +3945,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 }}
               />
               <img
-                src={product.heroImage || product.image}
+                src={draft.heroImage || product.image}
                 alt=""
                 draggable={false}
                 className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
@@ -4009,7 +4035,25 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
               Resetar posição e zoom
             </button>
           </div>
+
+          {/* Imagem exclusiva da novidade */}
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Imagem exclusiva da novidade
             </div>
+            <ImageDropzone
+              url={draft.heroImage}
+              busy={busy}
+              onFile={onFile}
+              onClear={clearImage}
+            />
+            <p className="mt-1 text-[10.5px] text-white/40">
+              Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
+            </p>
+          </div>
+
+            </div>
+
             <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[oklch(0.10_0.08_300)] px-4 py-3">
               <div className="flex items-center gap-2 text-[11px] text-white/60">
                 {dirty ? <span className="h-2 w-2 rounded-full bg-neon-yellow" /> : null}
@@ -4026,7 +4070,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 <button
                   type="button"
                   onClick={save}
-                  disabled={!dirty || update.isPending}
+                  disabled={!dirty || update.isPending || busy}
                   className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
                 >
                   {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
