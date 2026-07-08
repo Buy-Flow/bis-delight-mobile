@@ -2026,7 +2026,7 @@ function HighlightsTab() {
   );
 }
 
-function HeroImageEditor({ product }: { product: Product }) {
+function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: () => void }) {
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
