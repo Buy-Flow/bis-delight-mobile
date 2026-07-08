@@ -286,6 +286,15 @@ export function useSiteSettings() {
         newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
         newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
         globalExtras: Array.isArray(rawGlobalExtras) ? rawGlobalExtras : [],
+        bgColor: String((data as Record<string, unknown>).bg_color ?? "#0d0322"),
+        accentColor: String((data as Record<string, unknown>).accent_color ?? "#ffe600"),
+        textureOpacity: Number((data as Record<string, unknown>).texture_opacity ?? 1),
+        textureSize: (String((data as Record<string, unknown>).texture_size ?? "cover") as SiteSettings["textureSize"]),
+        cardRadius: Number((data as Record<string, unknown>).card_radius ?? 24),
+        cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
+        cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
+        titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
+
 
       };
     },
