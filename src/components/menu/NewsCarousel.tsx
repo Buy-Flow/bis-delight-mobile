@@ -26,7 +26,6 @@ export function NewsCarousel({
   ticker?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
   const pausedRef = useRef(false);
 
   // Duplica os itens para permitir loop infinito sempre para a direita
