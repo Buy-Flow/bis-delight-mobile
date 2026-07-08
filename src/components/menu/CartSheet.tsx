@@ -3,7 +3,7 @@ import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
 export function CartSheet() {
-  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout } = useCart();
+  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit } = useCart();
   if (!isCartOpen) return null;
 
   const total = subtotal + (items.length ? BRAND.deliveryFee : 0);
@@ -45,7 +45,19 @@ export function CartSheet() {
           ) : (
             <div className="space-y-3">
               {items.map((it) => (
-                <div key={it.uid} className="flex gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div
+                  key={it.uid}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openEdit(it)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openEdit(it);
+                    }
+                  }}
+                  className="flex cursor-pointer gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition active:scale-[0.99] hover:border-white/20"
+                >
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[oklch(0.24_0.14_305)]">
                     <img src={it.image} alt={it.name} className="h-full w-full object-contain p-1" />
                   </div>
@@ -67,25 +79,37 @@ export function CartSheet() {
                           </div>
                         )}
                         {it.note && <div className="mt-1 text-[11px] italic text-white/60">"{it.note}"</div>}
+                        <div className="mt-1 text-[10px] uppercase tracking-wider text-white/40">
+                          Toque para editar
+                        </div>
                       </div>
                       <button
-                        onClick={() => remove(it.uid)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          remove(it.uid);
+                        }}
                         className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-white/60 active:scale-95"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-                    <div className="mt-2 flex items-center justify-between">
+                    <div className="mt-2 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
                         <button
-                          onClick={() => update(it.uid, { quantity: Math.max(1, it.quantity - 1) })}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            update(it.uid, { quantity: Math.max(1, it.quantity - 1) });
+                          }}
                           className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white"
                         >
                           <Minus className="h-3 w-3" />
                         </button>
                         <div className="w-6 text-center text-sm font-bold text-white">{it.quantity}</div>
                         <button
-                          onClick={() => update(it.uid, { quantity: it.quantity + 1 })}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            update(it.uid, { quantity: it.quantity + 1 });
+                          }}
                           className="grid h-7 w-7 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)]"
                         >
                           <Plus className="h-3 w-3" />

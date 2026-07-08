@@ -82,7 +82,7 @@ function Content() {
   const [query, setQuery] = useState("");
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [customProduct, setCustomProduct] = useState<Product | null>(null);
-  const { isCartOpen, isCheckoutOpen } = useCart();
+  const { isCartOpen, isCheckoutOpen, editingItem, closeEdit } = useCart();
 
   // Prefetch modais/checkout no idle — abertura instantânea sem impactar o FCP
   useEffect(() => {
@@ -438,6 +438,25 @@ function Content() {
             onClose={() => setCustomProduct(null)}
           />
         )}
+        {editingItem && (() => {
+          const p = products.find((x) => x.id === editingItem.productId);
+          if (!p) return null;
+          return p.isCustom ? (
+            <CustomProductBuilder
+              key={`edit-${editingItem.uid}`}
+              product={p}
+              editItem={editingItem}
+              onClose={closeEdit}
+            />
+          ) : (
+            <ProductModal
+              key={`edit-${editingItem.uid}`}
+              product={p}
+              editItem={editingItem}
+              onClose={closeEdit}
+            />
+          );
+        })()}
         {isCartOpen && <CartSheet />}
         {isCheckoutOpen && <CheckoutSheet />}
       </Suspense>

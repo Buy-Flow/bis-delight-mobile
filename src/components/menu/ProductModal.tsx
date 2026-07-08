@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Minus, Plus, X, Check, Sparkles } from "lucide-react";
 import type { ExtraOption, Product } from "@/data/menu";
-import { brl, useCart } from "@/lib/cart-context";
+import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSiteSettings, useCategories } from "@/lib/menu-data";
@@ -82,49 +82,78 @@ export function getDefaultExtras(category: string): ExtraOption[] {
 export function ProductModal({
   product,
   onClose,
+  editItem,
 }: {
   product: Product | null;
   onClose: () => void;
+  editItem?: CartItem | null;
 }) {
-  const { add } = useCart();
+  const { add, update } = useCart();
   const { data: settings } = useSiteSettings();
   const { data: categories = [] } = useCategories();
-  const [sizeId, setSizeId] = useState<string>(product?.sizes[0]?.id ?? "u");
-  const [flavor, setFlavor] = useState<string | undefined>(product?.flavors?.[0]);
-  const [extras, setExtras] = useState<string[]>([]);
-  const [removed, setRemoved] = useState<string[]>([]);
-  const [qty, setQty] = useState(1);
-  const [note, setNote] = useState("");
+
+  // Resolve extras pool up-front for initial state derivation
+  const resolveExtras = (p: Product): ExtraOption[] => {
+    const productExtras =
+      p.extras && p.extras.length > 0 ? p.extras : getDefaultExtras(p.category);
+    const globalExtras: ExtraOption[] = settings?.globalExtras ?? [];
+    const categoryExtras: ExtraOption[] =
+      categories.find((c) => c.id === p.category)?.extras ?? [];
+    const seen = new Set<string>();
+    const out: ExtraOption[] = [];
+    for (const e of [...globalExtras, ...categoryExtras, ...productExtras]) {
+      if (seen.has(e.id)) continue;
+      seen.add(e.id);
+      out.push(e);
+    }
+    return out;
+  };
+
+  const initialFromEdit = (p: Product) => {
+    if (!editItem) return null;
+    const pool = resolveExtras(p);
+    const sizeMatch = p.sizes.find((s) => s.label === editItem.size)?.id;
+    const extraIds = pool
+      .filter((e) => editItem.extras.some((x) => x.label === e.label))
+      .map((e) => e.id);
+    return {
+      sizeId: sizeMatch ?? p.sizes[0]?.id ?? "u",
+      flavor: editItem.flavor ?? p.flavors?.[0],
+      extras: extraIds,
+      removed: editItem.removed ?? [],
+      qty: editItem.quantity ?? 1,
+      note: editItem.note ?? "",
+    };
+  };
+
+  const seed = product ? initialFromEdit(product) : null;
+  const [sizeId, setSizeId] = useState<string>(
+    seed?.sizeId ?? product?.sizes[0]?.id ?? "u",
+  );
+  const [flavor, setFlavor] = useState<string | undefined>(
+    seed?.flavor ?? product?.flavors?.[0],
+  );
+  const [extras, setExtras] = useState<string[]>(seed?.extras ?? []);
+  const [removed, setRemoved] = useState<string[]>(seed?.removed ?? []);
+  const [qty, setQty] = useState(seed?.qty ?? 1);
+  const [note, setNote] = useState(seed?.note ?? "");
 
   useMemo(() => {
     if (product) {
-      setSizeId(product.sizes[0]?.id ?? "u");
-      setFlavor(product.flavors?.[0]);
-      setExtras([]);
-      setRemoved([]);
-      setQty(1);
-      setNote("");
+      const s = initialFromEdit(product);
+      setSizeId(s?.sizeId ?? product.sizes[0]?.id ?? "u");
+      setFlavor(s?.flavor ?? product.flavors?.[0]);
+      setExtras(s?.extras ?? []);
+      setRemoved(s?.removed ?? []);
+      setQty(s?.qty ?? 1);
+      setNote(s?.note ?? "");
     }
-  }, [product?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [product?.id, editItem?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!product) return null;
 
   // Rich customization pools with sensible fallbacks per category
-  const productExtras: ExtraOption[] =
-    product.extras && product.extras.length > 0
-      ? product.extras
-      : getDefaultExtras(product.category);
-  const globalExtras: ExtraOption[] = settings?.globalExtras ?? [];
-  const categoryExtras: ExtraOption[] =
-    categories.find((c) => c.id === product.category)?.extras ?? [];
-  // Merge globals + category + product extras (later entries with same id are ignored)
-  const seen = new Set<string>();
-  const availableExtras: ExtraOption[] = [];
-  for (const e of [...globalExtras, ...categoryExtras, ...productExtras]) {
-    if (seen.has(e.id)) continue;
-    seen.add(e.id);
-    availableExtras.push(e);
-  }
+  const availableExtras = resolveExtras(product);
 
   const removableList: string[] =
     product.removable && product.removable.length > 0
@@ -150,7 +179,7 @@ export function ProductModal({
     setRemoved((prev) => (prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]));
 
   const submit = () => {
-    add({
+    const payload = {
       productId: product.id,
       name: product.name,
       image: product.image,
@@ -161,8 +190,14 @@ export function ProductModal({
       note: note.trim() || undefined,
       quantity: qty,
       unitPrice: unit,
-    });
-    toast.success(`${product.name} adicionado ao carrinho!`);
+    };
+    if (editItem) {
+      update(editItem.uid, payload);
+      toast.success(`${product.name} atualizado!`);
+    } else {
+      add(payload);
+      toast.success(`${product.name} adicionado ao carrinho!`);
+    }
     onClose();
   };
 

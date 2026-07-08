@@ -31,6 +31,9 @@ type CartCtx = {
   isAcaiOpen: boolean;
   openAcai: () => void;
   closeAcai: () => void;
+  editingItem: CartItem | null;
+  openEdit: (item: CartItem) => void;
+  closeEdit: () => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
@@ -52,6 +55,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isCartOpen, setCartOpen] = useState(false);
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   const [isAcaiOpen, setAcaiOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
 
   // hydrate from localStorage on mount
   useEffect(() => {
@@ -100,8 +104,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       isAcaiOpen,
       openAcai: () => setAcaiOpen(true),
       closeAcai: () => setAcaiOpen(false),
+      editingItem,
+      openEdit: (item) => {
+        setCartOpen(false);
+        setEditingItem(item);
+      },
+      closeEdit: () => setEditingItem(null),
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
