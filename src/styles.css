@@ -297,6 +297,10 @@
   .animate-spin-slow  { animation: spin-slow 9s linear infinite; }
   .animate-sparkle    { animation: sparkle-pop 1.8s ease-in-out infinite; }
   .animate-bob        { animation: bob-soft 2.8s ease-in-out infinite; }
+  .animate-product-float { animation: product-float 4.2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-product-float { animation: none; }
+  }
   .animate-letter-wave{ animation: letter-wave 2.6s ease-in-out infinite; display: inline-block; }
   .animate-gradient   {
     background-size: 200% 200%;
