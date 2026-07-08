@@ -1,4 +1,5 @@
 import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck } from "lucide-react";
+import acaiBowlImg from "@/assets/acai-bowl-cute.png";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
