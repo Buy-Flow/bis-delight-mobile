@@ -67,11 +67,15 @@ import {
   useInvalidateMenu,
   uploadProductImage,
   DEFAULT_HOURS,
+  DEFAULT_HERO_IMAGES,
   type SiteSettings,
+  type HeroImagesConfig,
+  type HeroImageConfig,
   type DayHours,
   type WeekDay,
   type ProductInput,
 } from "@/lib/menu-data";
+
 import type { Product, Category, OptionGroup, OptionItem } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
 import { getDefaultExtras } from "@/components/menu/ProductModal";
