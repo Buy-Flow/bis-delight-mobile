@@ -5251,8 +5251,14 @@ function HeroImagesSection({
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
           Preview real da tela inicial
         </div>
-        <div className="relative mx-auto w-[390px] max-w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]">
-          <div className="pointer-events-none h-[560px] w-[390px]">
+        <div
+          className="relative mx-auto overflow-hidden rounded-3xl border border-white/10 bg-[#1a0538] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]"
+          style={{ width: 293, height: 495 /* 390 x ~660 scaled by 0.75 */ }}
+        >
+          <div
+            className="pointer-events-none absolute left-0 top-0"
+            style={{ width: 390, transform: "scale(0.75)", transformOrigin: "top left" }}
+          >
             <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
           </div>
         </div>
