@@ -3800,16 +3800,26 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
 
   const CARD_W = 300;
   const CARD_H = 400;
-  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number; w: number; h: number } | null>(null);
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    dragRef.current = { startX: e.clientX, startY: e.clientY, posX: draft.posX, posY: draft.posY };
+    const el = e.currentTarget as HTMLDivElement;
+    el.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect();
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      posX: draft.posX,
+      posY: draft.posY,
+      w: rect.width || CARD_W,
+      h: rect.height || CARD_H,
+    };
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     if (!d) return;
-    const dx = ((e.clientX - d.startX) / CARD_W) * 100;
-    const dy = ((e.clientY - d.startY) / CARD_H) * 100;
+    e.preventDefault();
+    const dx = ((e.clientX - d.startX) / d.w) * 100;
+    const dy = ((e.clientY - d.startY) / d.h) * 100;
     setDraft((prev) => ({
       ...prev,
       posX: clamp(d.posX + dx, -80, 80),
@@ -3817,9 +3827,9 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
     }));
   };
   const onPointerUp = () => {
-    if (!dragRef.current) return;
     dragRef.current = null;
   };
+
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
