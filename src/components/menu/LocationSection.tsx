@@ -1,15 +1,14 @@
-import { MapPin, Clock, Navigation, MessageCircle, Instagram, Facebook, Bike, Store, Sparkles } from "lucide-react";
+import { MapPin, Navigation, MessageCircle, Instagram, Facebook, Phone, Bike, Store } from "lucide-react";
 import { BRAND } from "@/data/menu";
 import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/lib/menu-data";
 import { useEffect, useState } from "react";
 
 const DAY_LABEL: Record<WeekDay, string> = {
-  mon: "Seg", tue: "Ter", wed: "Qua", thu: "Qui", fri: "Sex", sat: "Sáb", sun: "Dom",
+  mon: "SEG", tue: "TER", wed: "QUA", thu: "QUI", fri: "SEX", sat: "SÁB", sun: "DOM",
 };
 const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 function jsWeekdayToKey(d: number): WeekDay {
-  // JS: 0=Sun..6=Sat
   return (["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as WeekDay[])[d];
 }
 
@@ -23,9 +22,7 @@ function isOpenNow(hours: DayHours[], override: "auto" | "open" | "closed") {
   const [oh, om] = today.open.split(":").map(Number);
   const [ch, cm] = today.close.split(":").map(Number);
   const mins = now.getHours() * 60 + now.getMinutes();
-  const openMins = oh * 60 + om;
-  const closeMins = ch * 60 + cm;
-  return mins >= openMins && mins <= closeMins;
+  return mins >= oh * 60 + om && mins <= ch * 60 + cm;
 }
 
 export function LocationSection() {
@@ -52,234 +49,313 @@ export function LocationSection() {
 
   const open = mounted ? isOpenNow(hours, override) : false;
   const todayKey = mounted ? jsWeekdayToKey(new Date().getDay()) : "mon";
+  const todayHours = hours.find((h) => h.day === todayKey);
 
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá! Quero fazer um pedido 🍧")}`;
 
   return (
-    <section id="localizacao" className="relative px-4 py-10">
-      {/* Header */}
-      <div className="mb-5 flex items-end justify-between gap-3">
-        <div>
-          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-3 py-1 text-[10px] font-black uppercase tracking-[.18em] text-neon-pink">
-            <Sparkles className="h-3 w-3" /> Vem pra loja
-          </div>
-          <h2 className="font-display text-3xl font-black leading-none text-white">
-            Cola com a<br />
-            <span className="bg-gradient-to-r from-neon-pink via-fuchsia-400 to-neon-cyan bg-clip-text text-transparent">
-              gente 🍧
-            </span>
-          </h2>
-        </div>
+    <section id="localizacao" className="relative px-4 py-12">
+      {/* Ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      >
         <div
-          aria-hidden
-          className="relative h-16 w-16 shrink-0 rounded-2xl bg-white/5 p-2 ring-1 ring-white/10 backdrop-blur"
-          style={{ boxShadow: "0 8px 32px oklch(0.55 0.28 320 / 0.35)" }}
-        >
-          <img src={logo} alt="" className="h-full w-full object-contain" />
-        </div>
+          className="absolute -left-20 top-10 h-72 w-72 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, oklch(0.65 0.28 340 / 0.35), transparent 70%)" }}
+        />
+        <div
+          className="absolute -right-20 bottom-10 h-72 w-72 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, oklch(0.75 0.22 195 / 0.30), transparent 70%)" }}
+        />
       </div>
 
-      {/* Main card */}
-      <div
-        className="relative overflow-hidden rounded-[28px]"
-        style={{
-          background: "linear-gradient(180deg, oklch(0.14 0.10 305 / 0.85) 0%, oklch(0.08 0.06 305 / 0.95) 100%)",
-          boxShadow:
-            "0 20px 60px -20px oklch(0.55 0.28 320 / 0.5), inset 0 1px 0 oklch(1 0 0 / 0.08)",
-        }}
-      >
-        {/* Animated gradient border */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-[28px] p-[1.5px]"
-          style={{
-            background:
-              "conic-gradient(from 180deg at 50% 50%, oklch(0.75 0.25 340) 0%, oklch(0.85 0.20 190) 25%, oklch(0.75 0.25 340) 50%, oklch(0.85 0.20 190) 75%, oklch(0.75 0.25 340) 100%)",
-            WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-            opacity: 0.35,
-          }}
-        />
+      {/* Eyebrow */}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <span className="text-[10px] font-black uppercase tracking-[.35em] text-white/50">Nos visite</span>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      </div>
 
-        {/* Map with floating status */}
-        <div className="relative h-56 overflow-hidden">
-          <iframe
-            title={`Localização ${name}`}
-            src={mapEmbed}
-            className="h-full w-full grayscale-[.15]"
-            style={{ border: 0, filter: "hue-rotate(-10deg) saturate(1.1)" }}
-            loading="lazy"
-          />
-          {/* Bottom fade into card */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent 0%, oklch(0.08 0.06 305 / 0.75) 60%, oklch(0.08 0.06 305) 100%)",
-            }}
-          />
-          {/* Open/closed badge */}
-          <div className="absolute left-3 top-3">
-            <div
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-widest backdrop-blur-md ${
-                open
-                  ? "border border-emerald-300/50 bg-emerald-400/15 text-emerald-200"
-                  : "border border-rose-300/50 bg-rose-400/15 text-rose-200"
-              }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  open ? "bg-emerald-300 animate-pulse" : "bg-rose-300"
-                }`}
-              />
-              {open ? "Aberto agora" : "Fechado"}
-            </div>
-          </div>
-          {/* Modes */}
-          <div className="absolute right-3 top-3 flex gap-1.5">
-            {acceptsDelivery && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-neon-cyan/50 bg-neon-cyan/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan backdrop-blur">
-                <Bike className="h-3 w-3" /> Delivery
-              </span>
-            )}
-            {acceptsPickup && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-neon-pink/50 bg-neon-pink/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-pink backdrop-blur">
-                <Store className="h-3 w-3" /> Retirada
-              </span>
-            )}
+      {/* Ticket-style card */}
+      <div className="relative">
+        {/* Notches */}
+        <div className="pointer-events-none absolute left-1/2 top-[220px] z-20 -translate-x-1/2">
+          <div className="flex items-center">
+            <div className="h-5 w-5 rounded-full bg-[hsl(var(--background))]" style={{ boxShadow: "inset 0 0 0 1px oklch(1 0 0 / 0.08)" }} />
           </div>
         </div>
+        <div className="pointer-events-none absolute -left-4 top-[220px] z-20">
+          <div className="h-5 w-5 rounded-full bg-[hsl(var(--background))]" />
+        </div>
+        <div className="pointer-events-none absolute -right-4 top-[220px] z-20">
+          <div className="h-5 w-5 rounded-full bg-[hsl(var(--background))]" />
+        </div>
 
-        {/* Info */}
-        <div className="relative space-y-4 p-5">
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-[.22em] text-white/40">Onde estamos</div>
-            <div className="mt-1 flex items-start gap-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-neon-pink/15 text-neon-pink ring-1 ring-neon-pink/40">
-                <MapPin className="h-4 w-4" />
+        <div
+          className="relative overflow-hidden rounded-[32px]"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(0.12 0.09 305 / 0.85) 0%, oklch(0.06 0.05 305 / 0.98) 100%)",
+            boxShadow:
+              "0 30px 80px -30px oklch(0.55 0.28 320 / 0.6), inset 0 1px 0 oklch(1 0 0 / 0.10)",
+            border: "1px solid oklch(1 0 0 / 0.08)",
+          }}
+        >
+          {/* MAP TOP */}
+          <div className="relative h-[240px] overflow-hidden">
+            <iframe
+              title={`Localização ${name}`}
+              src={mapEmbed}
+              className="h-full w-full"
+              style={{ border: 0, filter: "saturate(1.15) contrast(1.05)" }}
+              loading="lazy"
+            />
+            {/* Vignette */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(120% 80% at 50% 40%, transparent 40%, oklch(0.06 0.05 305 / 0.55) 100%)",
+              }}
+            />
+            {/* Bottom fade */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
+              style={{
+                background:
+                  "linear-gradient(180deg, transparent 0%, oklch(0.06 0.05 305 / 0.9) 100%)",
+              }}
+            />
+
+            {/* Pin marker */}
+            <div className="absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2">
+              <div className="relative">
+                <div
+                  aria-hidden
+                  className="absolute inset-0 -m-4 animate-ping rounded-full bg-neon-pink/40"
+                />
+                <div
+                  className="relative grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-neon-pink to-fuchsia-500 ring-4 ring-neon-pink/30"
+                  style={{ boxShadow: "0 8px 24px oklch(0.65 0.28 340 / 0.6)" }}
+                >
+                  <img src={logo} alt="" className="h-6 w-6 object-contain" />
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-[15px] font-bold leading-tight text-white">{address}</div>
-                <div className="text-[12px] text-white/55">{city}</div>
+            </div>
+
+            {/* Live status pill */}
+            <div className="absolute left-4 top-4">
+              <div
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[.22em] backdrop-blur-md ${
+                  open
+                    ? "border border-emerald-300/50 bg-emerald-400/15 text-emerald-200"
+                    : "border border-rose-300/50 bg-rose-400/15 text-rose-200"
+                }`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-emerald-300 animate-pulse" : "bg-rose-300"}`} />
+                {open ? "Aberto" : "Fechado"}
               </div>
+            </div>
+
+            {/* Modes */}
+            <div className="absolute right-4 top-4 flex flex-col items-end gap-1.5">
+              {acceptsDelivery && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-neon-cyan/50 bg-neon-cyan/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-neon-cyan backdrop-blur">
+                  <Bike className="h-3 w-3" /> Delivery
+                </span>
+              )}
+              {acceptsPickup && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-neon-pink/50 bg-neon-pink/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-neon-pink backdrop-blur">
+                  <Store className="h-3 w-3" /> Retirada
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Weekly hours */}
-          <div>
-            <div className="mb-1.5 flex items-center gap-2">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-neon-cyan/15 text-neon-cyan ring-1 ring-neon-cyan/40">
-                <Clock className="h-4 w-4" />
+          {/* PERFORATED DIVIDER */}
+          <div className="relative h-4">
+            <div
+              aria-hidden
+              className="absolute inset-x-6 top-1/2 -translate-y-1/2 border-t border-dashed border-white/15"
+            />
+          </div>
+
+          {/* INFO BOTTOM */}
+          <div className="relative space-y-5 px-5 pb-6 pt-2">
+            {/* Title row */}
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[.28em] text-neon-pink/80">Endereço</div>
+              <div className="mt-1 flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-neon-pink" />
+                <div>
+                  <div className="text-[15px] font-black leading-tight text-white">{address}</div>
+                  <div className="text-[12px] text-white/55">{city}</div>
+                </div>
               </div>
-              <div className="text-[10px] font-black uppercase tracking-[.22em] text-white/40">Horário</div>
             </div>
-            <div className="grid grid-cols-7 gap-1">
+
+            {/* Today big + week compact */}
+            <div className="grid grid-cols-[1fr_auto] gap-3">
+              <div
+                className="rounded-2xl p-3"
+                style={{
+                  background:
+                    "linear-gradient(135deg, oklch(0.75 0.22 195 / 0.12), oklch(0.65 0.28 340 / 0.10))",
+                  border: "1px solid oklch(0.75 0.22 195 / 0.25)",
+                }}
+              >
+                <div className="text-[10px] font-black uppercase tracking-[.22em] text-neon-cyan">Hoje</div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <div className="font-display text-2xl font-black leading-none text-white">
+                    {todayHours?.closed
+                      ? "Fechado"
+                      : todayHours
+                      ? `${todayHours.open.slice(0, 5)}`
+                      : "—"}
+                  </div>
+                  {!todayHours?.closed && todayHours && (
+                    <>
+                      <span className="text-white/40">—</span>
+                      <div className="font-display text-2xl font-black leading-none text-white">
+                        {todayHours.close.slice(0, 5)}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Como chegar"
+                className="grid place-items-center rounded-2xl border border-white/10 bg-white/5 px-4 text-white/70 transition active:scale-95 hover:border-neon-cyan/50 hover:text-neon-cyan"
+              >
+                <Navigation className="h-5 w-5" />
+              </a>
+            </div>
+
+            {/* Week strip */}
+            <div className="flex gap-1">
               {DAY_ORDER.map((d) => {
                 const h = hours.find((x) => x.day === d);
                 const isToday = mounted && d === todayKey;
                 return (
                   <div
                     key={d}
-                    className={`rounded-xl px-1 py-2 text-center transition ${
+                    className={`flex-1 rounded-lg py-1.5 text-center text-[9px] font-black uppercase tracking-wider transition ${
                       isToday
-                        ? "bg-gradient-to-b from-neon-pink/25 to-neon-cyan/15 text-white ring-1 ring-neon-pink/50"
-                        : "bg-white/[.03] text-white/60 ring-1 ring-white/5"
+                        ? "bg-neon-pink text-white"
+                        : h?.closed
+                        ? "bg-white/[.03] text-white/25 line-through"
+                        : "bg-white/[.04] text-white/50"
                     }`}
                   >
-                    <div className="text-[9px] font-black uppercase tracking-wider">{DAY_LABEL[d]}</div>
-                    <div className="mt-0.5 text-[10px] font-bold leading-tight">
-                      {h?.closed ? "—" : h ? `${h.open.slice(0, 5)}` : "—"}
-                    </div>
-                    <div className="text-[9px] leading-tight text-white/45">
-                      {h?.closed ? "" : h ? h.close.slice(0, 5) : ""}
-                    </div>
+                    {DAY_LABEL[d]}
                   </div>
                 );
               })}
             </div>
-          </div>
 
-          {/* CTAs */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl border border-neon-cyan/60 bg-neon-cyan/10 px-3 py-3.5 text-sm font-black text-neon-cyan transition active:scale-[.97]"
-            >
-              <Navigation className="h-4 w-4" />
-              Abrir no Maps
-            </a>
+            {/* Big WhatsApp CTA */}
             <a
               href={waLink}
               target="_blank"
               rel="noreferrer"
-              className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-neon-pink to-fuchsia-500 px-3 py-3.5 text-sm font-black text-white shadow-lg shadow-neon-pink/40 transition active:scale-[.97]"
+              className="group relative flex items-center justify-between overflow-hidden rounded-2xl px-5 py-4 font-black text-white transition active:scale-[.98]"
+              style={{
+                background: "linear-gradient(135deg, oklch(0.65 0.28 340) 0%, oklch(0.60 0.22 15) 100%)",
+                boxShadow: "0 12px 32px -8px oklch(0.65 0.28 340 / 0.6)",
+              }}
             >
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp
+              <span className="relative z-10 flex items-center gap-3">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/20 backdrop-blur">
+                  <MessageCircle className="h-4 w-4" />
+                </span>
+                <span className="text-[15px]">Pedir no WhatsApp</span>
+              </span>
+              <span className="relative z-10 text-[11px] font-bold uppercase tracking-widest opacity-80">
+                →
+              </span>
+              {/* Shimmer */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+              />
             </a>
-          </div>
 
-          {/* Contact + socials */}
-          <div className="flex items-center justify-between gap-3 border-t border-white/5 pt-4">
-            <a
-              href={`tel:+${whatsapp}`}
-              className="text-[12px] font-bold text-white/70 transition hover:text-white"
-            >
-              {whatsappDisplay}
-            </a>
-            <div className="flex items-center gap-2">
-              {instagram && (
-                <a
-                  href={instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Instagram"
-                  className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-neon-pink/15 hover:text-neon-pink hover:ring-neon-pink/40"
-                >
-                  <Instagram className="h-4 w-4" />
-                </a>
-              )}
-              {facebook && (
-                <a
-                  href={facebook}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Facebook"
-                  className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-neon-cyan/15 hover:text-neon-cyan hover:ring-neon-cyan/40"
-                >
-                  <Facebook className="h-4 w-4" />
-                </a>
-              )}
-              {tiktok && (
-                <a
-                  href={tiktok}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="TikTok"
-                  className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/15 hover:text-white hover:ring-white/30"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
-                    <path d="M19.6 6.3a5.7 5.7 0 0 1-3.4-1.2 5.7 5.7 0 0 1-2.2-3.6h-3v14a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.9a5.7 5.7 0 1 0 4.8 5.6V9.2a8.7 8.7 0 0 0 5.6 2V6.3z" />
-                  </svg>
-                </a>
-              )}
+            {/* Contact + socials footer */}
+            <div className="flex items-center justify-between gap-3 border-t border-dashed border-white/10 pt-4">
+              <a
+                href={`tel:+${whatsapp}`}
+                className="inline-flex items-center gap-2 text-[12px] font-bold text-white/70 transition hover:text-white"
+              >
+                <Phone className="h-3.5 w-3.5" />
+                {whatsappDisplay}
+              </a>
+              <div className="flex items-center gap-1.5">
+                {instagram && (
+                  <a
+                    href={instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Instagram"
+                    className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-neon-pink/15 hover:text-neon-pink hover:ring-neon-pink/40"
+                  >
+                    <Instagram className="h-3.5 w-3.5" />
+                  </a>
+                )}
+                {facebook && (
+                  <a
+                    href={facebook}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Facebook"
+                    className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-neon-cyan/15 hover:text-neon-cyan hover:ring-neon-cyan/40"
+                  >
+                    <Facebook className="h-3.5 w-3.5" />
+                  </a>
+                )}
+                {tiktok && (
+                  <a
+                    href={tiktok}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="TikTok"
+                    className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/15 hover:text-white"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
+                      <path d="M19.6 6.3a5.7 5.7 0 0 1-3.4-1.2 5.7 5.7 0 0 1-2.2-3.6h-3v14a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.9a5.7 5.7 0 1 0 4.8 5.6V9.2a8.7 8.7 0 0 0 5.6 2V6.3z" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* Barcode-ish signature */}
+            <div className="pt-1">
+              <div className="flex items-end gap-[3px] opacity-40">
+                {Array.from({ length: 36 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-[2px] bg-white"
+                    style={{ height: `${6 + ((i * 7) % 14)}px` }}
+                  />
+                ))}
+                <div className="ml-2 text-[9px] font-black uppercase tracking-[.3em] text-white/40">
+                  {name}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Footer signature */}
-      <div className="mt-6 text-center">
-        <div className="text-[11px] font-bold uppercase tracking-[.22em] text-white/35">
-          {name} · {tagline}
-        </div>
-        <div className="mt-1 text-[10px] text-white/25">
-          feito com 💜 em {city.split(" - ")[0] || city}
-        </div>
+      {/* Tagline */}
+      <div className="mt-5 text-center text-[10px] font-bold uppercase tracking-[.28em] text-white/30">
+        {tagline}
       </div>
     </section>
   );
