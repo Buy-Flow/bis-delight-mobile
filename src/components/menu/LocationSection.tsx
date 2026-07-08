@@ -42,6 +42,24 @@ function toEmbedUrl(url: string): string {
   return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
 }
 
+function socialUrl(value: string | undefined | null, network: "instagram" | "facebook" | "tiktok"): string {
+  if (!value) return "";
+  const v = value.trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  const handle = v.replace(/^@/, "").replace(/^\/+/, "");
+  switch (network) {
+    case "instagram":
+      return `https://instagram.com/${handle}`;
+    case "facebook":
+      return `https://facebook.com/${handle}`;
+    case "tiktok":
+      return `https://tiktok.com/@${handle}`;
+  }
+}
+
+
+
 
 
 export function LocationSection() {
@@ -60,9 +78,10 @@ export function LocationSection() {
   const mapEmbed = toEmbedUrl(rawMapEmbed);
 
   const logo = settings?.logo || BRAND.logo;
-  const instagram = settings?.instagram || "";
-  const facebook = settings?.facebook || "";
-  const tiktok = settings?.tiktok || "";
+  const instagram = socialUrl(settings?.instagram, "instagram");
+  const facebook = socialUrl(settings?.facebook, "facebook");
+  const tiktok = socialUrl(settings?.tiktok, "tiktok");
+
   const acceptsDelivery = settings?.acceptsDelivery ?? true;
   const acceptsPickup = settings?.acceptsPickup ?? true;
   const hours = settings?.hoursJson?.length ? settings.hoursJson : DEFAULT_HOURS;
@@ -351,21 +370,6 @@ export function LocationSection() {
               </div>
             </div>
 
-            {/* Barcode-ish signature */}
-            <div className="pt-1">
-              <div className="flex items-end gap-[3px] opacity-40">
-                {Array.from({ length: 36 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-[2px] bg-white"
-                    style={{ height: `${6 + ((i * 7) % 14)}px` }}
-                  />
-                ))}
-                <div className="ml-2 text-[9px] font-black uppercase tracking-[.3em] text-white/40">
-                  {name}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
