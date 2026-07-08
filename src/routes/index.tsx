@@ -117,17 +117,44 @@ function Content() {
 
 
 
+  const textureSizeCss = (() => {
+    switch (settings?.textureSize) {
+      case "small": return "200px";
+      case "medium": return "400px";
+      case "large": return "800px";
+      case "contain": return "contain";
+      default: return "cover";
+    }
+  })();
+  const themeStyle = {
+    "--accent": settings?.accentColor ?? "#ffe600",
+    "--card-radius": `${settings?.cardRadius ?? 24}px`,
+    "--card-glow": settings?.cardGlow ? `0 0 24px ${settings?.accentColor ?? "#ffe600"}66` : "none",
+    "--card-border": settings?.cardBorder ? `1px solid ${(settings?.accentColor ?? "#ffe600")}55` : "1px solid transparent",
+    "--title-font": `'${settings?.titleFont ?? "Barlow Condensed"}', 'Poppins', sans-serif`,
+  } as React.CSSProperties;
+
   return (
     <div
       className="relative mx-auto min-h-screen w-full max-w-[520px]"
       style={{
-        backgroundColor: "#0d0322",
-        backgroundImage: `url(${heroTexture.url})`,
-        backgroundSize: "cover",
-        backgroundRepeat: "repeat",
-        backgroundAttachment: "scroll",
+        backgroundColor: settings?.bgColor ?? "#0d0322",
+        ...themeStyle,
       }}
     >
+      {/* Textura de fundo — camada separada para permitir opacidade */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{
+          backgroundImage: `url(${settings?.texture || heroTexture.url})`,
+          backgroundSize: textureSizeCss,
+          backgroundRepeat: textureSizeCss === "cover" || textureSizeCss === "contain" ? "no-repeat" : "repeat",
+          opacity: settings?.textureOpacity ?? 1,
+        }}
+      />
+      <div className="relative">
+
 
       {settings?.announcementActive && settings?.announcementText && (
         <div className="flex items-center justify-center gap-2 bg-neon-yellow px-4 py-2 text-center text-[12px] font-bold text-[oklch(0.15_0.10_305)]">
