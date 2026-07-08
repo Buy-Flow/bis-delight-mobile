@@ -4113,7 +4113,7 @@ function ExtrasEditorModal({
   title: string;
   subtitle?: string;
   initial: ExtraOpt[];
-  accent: "cyan" | "pink";
+  accent: "cyan" | "pink" | "yellow";
   onClose: () => void;
   onSave: (list: ExtraOpt[]) => Promise<void> | void;
 }) {
