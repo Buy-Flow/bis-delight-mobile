@@ -5246,39 +5246,28 @@ function HeroImagesSection({
         </p>
       </div>
 
-      {/* Live preview */}
-      <div>
+      {/* Live preview — real Hero, sticky while scrolling */}
+      <div className="sticky top-2 z-30 -mx-1">
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
           Preview real da tela inicial
         </div>
-        <div className="relative mx-auto h-[280px] w-full max-w-[420px] overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)]">
-          <img
-            aria-hidden
-            src={heroImages.left.url}
-            alt=""
-            className="pointer-events-none absolute bottom-0 h-[220px] w-[140px] object-contain object-right"
+        <div className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]">
+          {/* Scale a real 390px-wide mobile frame down to the preview width */}
+          <div
+            className="pointer-events-none origin-top-left"
             style={{
-              left: `${heroImages.left.offsetX * 0.5}px`,
-              bottom: `${-heroImages.left.offsetY * 0.5}px`,
-              transform: `scale(${heroImages.left.scale})`,
-              transformOrigin: "bottom right",
+              width: 390,
+              height: 560,
+              transform: "scale(calc(min(420px, 100%) / 390))",
+              transformOrigin: "top left",
             }}
-          />
-          <img
-            aria-hidden
-            src={heroImages.right.url}
-            alt=""
-            className="pointer-events-none absolute bottom-0 h-[200px] w-[140px] object-contain object-left"
-            style={{
-              right: `${heroImages.right.offsetX * 0.5}px`,
-              bottom: `${-heroImages.right.offsetY * 0.5}px`,
-              transform: `scale(${heroImages.right.scale})`,
-              transformOrigin: "bottom left",
-            }}
-          />
-          <div className="absolute inset-x-0 top-4 text-center font-display text-2xl font-black text-neon-yellow">
-            Hero
+          >
+            <div className="h-full w-[390px] overflow-hidden">
+              <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
+            </div>
           </div>
+          {/* Spacer to reserve the scaled height */}
+          <div aria-hidden style={{ height: "calc(560px * (min(420px, 100%) / 390))" }} />
         </div>
       </div>
 
