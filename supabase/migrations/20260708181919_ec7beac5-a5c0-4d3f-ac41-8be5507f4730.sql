@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.grant_loyalty_stamp() FROM PUBLIC, anon, authenticated;
