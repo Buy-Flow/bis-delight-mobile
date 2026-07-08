@@ -3945,7 +3945,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 }}
               />
               <img
-                src={product.heroImage || product.image}
+                src={draft.heroImage || product.image}
                 alt=""
                 draggable={false}
                 className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
