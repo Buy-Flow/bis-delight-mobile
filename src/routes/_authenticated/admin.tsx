@@ -1734,6 +1734,15 @@ function CategoryPhotoTab({
   const AREA_W = 72;
   const AREA_H = 68;
   const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number; w: number; h: number } | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const pendingRef = useRef<{ x: number; y: number } | null>(null);
+
+  const flushPending = () => {
+    rafRef.current = null;
+    const p = pendingRef.current;
+    pendingRef.current = null;
+    if (p) onChange({ imagePosX: p.x, imagePosY: p.y });
+  };
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const el = e.currentTarget as HTMLDivElement;
@@ -1754,14 +1763,23 @@ function CategoryPhotoTab({
     e.preventDefault();
     const dx = ((e.clientX - d.startX) / d.w) * 100;
     const dy = ((e.clientY - d.startY) / d.h) * 100;
-    onChange({
-      imagePosX: clamp(d.posX + dx, -80, 80),
-      imagePosY: clamp(d.posY + dy, -80, 80),
-    });
+    pendingRef.current = {
+      x: clamp(d.posX + dx, -80, 80),
+      y: clamp(d.posY + dy, -80, 80),
+    };
+    if (rafRef.current == null) {
+      rafRef.current = requestAnimationFrame(flushPending);
+    }
   };
   const onPointerUp = () => {
     dragRef.current = null;
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (pendingRef.current) flushPending();
   };
+
 
   const reset = () => onChange({ imagePosX: 0, imagePosY: 0, imageScale: 1 });
   const nudge = (dx: number, dy: number) =>
