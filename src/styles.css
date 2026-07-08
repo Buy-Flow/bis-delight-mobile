@@ -50,7 +50,7 @@
 :root {
   --radius: 1rem;
 
-  --background: #220D3C;
+  --background: oklch(0.18 0.11 305);
   --foreground: oklch(0.98 0.02 90);
   --card: oklch(0.22 0.13 305);
   --card-foreground: oklch(0.98 0.02 90);
@@ -86,7 +86,7 @@
 }
 
 .dark {
-  --background: #220D3C;
+  --background: oklch(0.13 0.08 305);
   --foreground: oklch(0.98 0.02 90);
 }
 
@@ -103,12 +103,15 @@
   }
 
   body {
-    background: #220D3C;
+    background:
+      radial-gradient(1200px 600px at 100% -10%, oklch(0.35 0.22 320 / 0.55), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, oklch(0.30 0.20 350 / 0.35), transparent 60%),
+      radial-gradient(700px 400px at 50% 100%, oklch(0.25 0.18 200 / 0.25), transparent 60%),
+      linear-gradient(180deg, oklch(0.16 0.10 305), oklch(0.10 0.07 305));
     background-attachment: scroll;
     min-height: 100vh;
     font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
   }
-
 }
 
 @layer utilities {

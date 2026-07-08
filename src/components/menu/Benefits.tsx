@@ -25,13 +25,7 @@ const items = [
 export function Benefits() {
   return (
     <section className="relative z-30 mt-2 px-4 pb-6">
-      <div
-        className="rounded-[32px] border border-white/10 px-3 py-4 shadow-lg backdrop-blur-xl"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.22 0.14 335 / 0.88) 0%, oklch(0.16 0.12 320 / 0.92) 100%)",
-        }}
-      >
+      <div className="rounded-[32px] border border-white/10 bg-white/5 px-3 py-4 shadow-lg backdrop-blur-md">
         <div className="grid grid-cols-3 items-center divide-x divide-white/20">
           {items.map((it) => (
             <div
