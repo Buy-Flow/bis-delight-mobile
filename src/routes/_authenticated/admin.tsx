@@ -3681,8 +3681,9 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
-              className="mx-auto touch-none select-none cursor-grab active:cursor-grabbing"
-              style={{ width: CARD_W }}
+              className="mx-auto touch-none select-none cursor-grab active:cursor-grabbing [&_article]:!w-full [&_article]:!max-w-none"
+              style={{ width: "100%", maxWidth: CARD_W }}
+
             >
               <NewsPosterCard
                 product={previewProduct}
