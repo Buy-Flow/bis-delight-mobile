@@ -1,9 +1,15 @@
 import { useSiteSettings } from "@/lib/menu-data";
-import { DEFAULT_HERO_IMAGES } from "@/lib/menu-data";
+import { DEFAULT_HERO_IMAGES, type HeroImagesConfig } from "@/lib/menu-data";
 
-export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
+export function Hero({
+  onScrollMenu,
+  heroImagesOverride,
+}: {
+  onScrollMenu: () => void;
+  heroImagesOverride?: HeroImagesConfig;
+}) {
   const { data: settings } = useSiteSettings();
-  const heroImages = settings?.heroImages ?? DEFAULT_HERO_IMAGES;
+  const heroImages = heroImagesOverride ?? settings?.heroImages ?? DEFAULT_HERO_IMAGES;
 
   return (
     <section className="relative overflow-hidden px-4 pb-0 pt-2">
