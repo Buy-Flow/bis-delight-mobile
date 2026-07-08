@@ -197,67 +197,63 @@ export function LocationSection() {
               </div>
             </div>
 
-            {/* Today big + week compact */}
-            <div className="grid grid-cols-[1fr_auto] gap-3">
-              <div
-                className="rounded-2xl p-3"
-                style={{
-                  background:
-                    "linear-gradient(135deg, oklch(0.75 0.22 195 / 0.12), oklch(0.65 0.28 340 / 0.10))",
-                  border: "1px solid oklch(0.75 0.22 195 / 0.25)",
-                }}
-              >
-                <div className="text-[10px] font-black uppercase tracking-[.22em] text-neon-cyan">Hoje</div>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <div className="font-display text-2xl font-black leading-none text-white">
-                    {todayHours?.closed
-                      ? "Fechado"
-                      : todayHours
-                      ? `${todayHours.open.slice(0, 5)}`
-                      : "—"}
-                  </div>
-                  {!todayHours?.closed && todayHours && (
-                    <>
-                      <span className="text-white/40">—</span>
-                      <div className="font-display text-2xl font-black leading-none text-white">
-                        {todayHours.close.slice(0, 5)}
-                      </div>
-                    </>
-                  )}
-                </div>
+            {/* Horários semana */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <div className="text-[10px] font-black uppercase tracking-[.28em] text-neon-cyan">Horário</div>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Como chegar"
+                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/70 transition hover:border-neon-cyan/50 hover:text-neon-cyan"
+                >
+                  <Navigation className="h-3 w-3" /> Rota
+                </a>
               </div>
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Como chegar"
-                className="grid place-items-center rounded-2xl border border-white/10 bg-white/5 px-4 text-white/70 transition active:scale-95 hover:border-neon-cyan/50 hover:text-neon-cyan"
-              >
-                <Navigation className="h-5 w-5" />
-              </a>
+              <div className="grid grid-cols-7 gap-1.5">
+                {DAY_ORDER.map((d) => {
+                  const h = hours.find((x) => x.day === d);
+                  const isToday = mounted && d === todayKey;
+                  const closed = !!h?.closed;
+                  return (
+                    <div
+                      key={d}
+                      className={`rounded-xl px-1 py-2 text-center transition ${
+                        isToday
+                          ? "bg-gradient-to-b from-neon-pink/30 to-neon-cyan/15 ring-1 ring-neon-pink/50"
+                          : "bg-white/[.04] ring-1 ring-white/5"
+                      }`}
+                    >
+                      <div
+                        className={`text-[9px] font-black uppercase tracking-wider ${
+                          isToday ? "text-white" : "text-white/55"
+                        }`}
+                      >
+                        {DAY_LABEL[d]}
+                      </div>
+                      {closed ? (
+                        <div className={`mt-1 text-[13px] font-black leading-none ${isToday ? "text-white/70" : "text-white/30"}`}>
+                          —
+                        </div>
+                      ) : h ? (
+                        <>
+                          <div className={`mt-1 text-[10px] font-bold leading-tight ${isToday ? "text-white" : "text-white/70"}`}>
+                            {h.open.slice(0, 5)}
+                          </div>
+                          <div className={`text-[10px] font-bold leading-tight ${isToday ? "text-white" : "text-white/55"}`}>
+                            {h.close.slice(0, 5)}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="mt-1 text-[13px] font-black leading-none text-white/30">—</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Week strip */}
-            <div className="flex gap-1">
-              {DAY_ORDER.map((d) => {
-                const h = hours.find((x) => x.day === d);
-                const isToday = mounted && d === todayKey;
-                return (
-                  <div
-                    key={d}
-                    className={`flex-1 rounded-lg py-1.5 text-center text-[9px] font-black uppercase tracking-wider transition ${
-                      isToday
-                        ? "bg-neon-pink text-white"
-                        : h?.closed
-                        ? "bg-white/[.03] text-white/25 line-through"
-                        : "bg-white/[.04] text-white/50"
-                    }`}
-                  >
-                    {DAY_LABEL[d]}
-                  </div>
-                );
-              })}
-            </div>
 
             {/* Big WhatsApp CTA */}
             <a
