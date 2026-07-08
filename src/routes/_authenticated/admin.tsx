@@ -4992,7 +4992,7 @@ function AcaiConfigEditor({ onClose }: { onClose: () => void }) {
   };
 
   const resetDefaults = async () => {
-    if (!(await confirmDialog({ title: "Restaurar padrão?", description: "As opções voltam ao padrão de fábrica." }))) return;
+    if (!(await confirmDialog({ title: "Restaurar padrão?", message: "As opções voltam ao padrão de fábrica.", confirmLabel: "Restaurar" }))) return;
     setCfg(DEFAULT_ACAI_CONFIG);
   };
 
