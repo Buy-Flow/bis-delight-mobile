@@ -2682,24 +2682,6 @@ function HoursSection({ s, set }: { s: SiteSettings; set: SetFn }) {
     <div className="space-y-4">
       <SectionTitle icon={Clock} title="Horários de funcionamento" sub="Define quando o site aparece como aberto no modo automático." />
 
-      <Field label="Status da loja">
-        <div className="grid grid-cols-3 gap-2">
-          {(["auto", "open", "closed"] as const).map((o) => (
-            <button
-              key={o}
-              onClick={() => set("openOverride", o)}
-              className={cn(
-                "rounded-xl border px-3 py-2 text-xs font-bold transition",
-                s.openOverride === o
-                  ? "border-neon-pink bg-neon-pink/20 text-white"
-                  : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
-              )}
-            >
-              {o === "auto" ? "Automático" : o === "open" ? "Forçar aberto" : "Forçar fechado"}
-            </button>
-          ))}
-        </div>
-      </Field>
 
       <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
         <div className="mb-2 flex items-center justify-between">
