@@ -562,11 +562,16 @@ function ProductEditor({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 overflow-x-auto border-b border-white/10 px-3 py-2">
+        <div className="flex flex-wrap gap-1 border-b border-white/10 px-3 py-2">
           {tabs.map((t) => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              type="button"
+              onClick={(e) => {
+                setTab(t.id);
+                // Impede o scrollIntoView padrão que empurra abas para fora da tela
+                (e.currentTarget as HTMLButtonElement).blur();
+              }}
               className={cn(
                 "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                 tab === t.id
