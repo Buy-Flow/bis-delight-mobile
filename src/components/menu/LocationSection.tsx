@@ -162,10 +162,26 @@ export function LocationSection() {
             <iframe
               title={`Localização ${name}`}
               src={mapEmbed}
-              className="h-full w-full"
+              className="pointer-events-none h-full w-full"
               style={{ border: 0, filter: "saturate(1.15) contrast(1.05)" }}
               loading="lazy"
             />
+            {/* Clique abre app de mapas nativo (Apple Maps no iOS, Google Maps nos demais) */}
+            <button
+              type="button"
+              aria-label={`Abrir ${name} no app de mapas`}
+              onClick={() => {
+                const ua = navigator.userAgent || "";
+                const isIOS = /iPad|iPhone|iPod/.test(ua) || (/(Macintosh)/.test(ua) && "ontouchend" in document);
+                const query = encodeURIComponent(`${name} ${address} ${city}`);
+                const url = isIOS
+                  ? `https://maps.apple.com/?q=${query}`
+                  : mapsUrl || `https://www.google.com/maps/search/?api=1&query=${query}`;
+                window.open(url, "_blank", "noopener,noreferrer");
+              }}
+              className="absolute inset-0 z-10 cursor-pointer"
+            />
+
             {/* Vignette */}
             <div
               aria-hidden
