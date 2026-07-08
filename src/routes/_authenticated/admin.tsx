@@ -3723,7 +3723,24 @@ const TEXTURE_PRESETS = [
   },
 ];
 
-function NewsHeroEditor({ product, index }: { product: Product; index: number }) {
+function NewsHeroEditor({
+  product,
+  index,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
+}: {
+  product: Product;
+  index: number;
+  onRemove?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+}) {
+
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -3836,32 +3853,61 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-3 p-3 text-left"
-      >
-        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
-          <img src={draft.heroImage || product.image} className="h-full w-full object-cover" alt="" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
-            <div className="truncate text-sm font-bold">{product.name}</div>
-          </div>
-          <div className="text-[11px] text-white/50">
-            zoom {draft.scale.toFixed(2)}× · x {draft.posX.toFixed(0)}% · y {draft.posY.toFixed(0)}%
-          </div>
-        </div>
-        <span
-          className={cn(
-            "rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70",
-            open && "bg-neon-cyan/15 text-neon-cyan border-neon-cyan/30",
-          )}
+      <div className="flex w-full items-center gap-2 p-3">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
         >
-          {open ? "Fechar" : "Ajustar"}
-        </span>
-      </button>
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+            <img src={draft.heroImage || product.image} className="h-full w-full object-cover" alt="" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="grid h-4 w-4 shrink-0 place-items-center rounded-md bg-neon-cyan/20 text-[9px] font-black text-neon-cyan">
+                {index + 1}
+              </span>
+              <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
+              <div className="truncate text-sm font-bold">{product.name}</div>
+            </div>
+            <div className="text-[11px] text-white/50">
+              zoom {draft.scale.toFixed(2)}× · x {draft.posX.toFixed(0)}% · y {draft.posY.toFixed(0)}%
+            </div>
+          </div>
+        </button>
+        {onMoveUp && (
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
+            aria-label="Mover para cima"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-30"
+          >
+            <ArrowUp className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {onMoveDown && (
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+            aria-label="Mover para baixo"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-30"
+          >
+            <ArrowDown className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {onRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Remover novidade"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
 
       {open && (
         <div
@@ -3881,6 +3927,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 <div className="text-[10.5px] text-white/50">
                   Ajuste a foto do card de Novidades{dirty ? " • alterações não salvas" : ""}
                 </div>
+
               </div>
               <button
                 type="button"
@@ -4050,7 +4097,9 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
 
 function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
   const { data: products = [] } = useAllProducts();
-  const [query, setQuery] = useState("");
+  const { data: categories = [] } = useCategories();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [styleOpen, setStyleOpen] = useState(false);
 
   const selectedIds = s.newsProductIds;
   const selectedSet = new Set(selectedIds);
@@ -4058,19 +4107,12 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
     .map((id) => products.find((p) => p.id === id))
     .filter((p): p is (typeof products)[number] => Boolean(p));
 
-  const q = query.trim().toLowerCase();
-  const filtered = q
-    ? products.filter(
-        (p) => !selectedSet.has(p.id) && p.name.toLowerCase().includes(q),
-      )
-    : products.filter((p) => !selectedSet.has(p.id)).slice(0, 12);
+  const remove = (id: string) =>
+    set("newsProductIds", selectedIds.filter((x) => x !== id));
 
-  const toggle = (id: string) => {
-    if (selectedSet.has(id)) {
-      set("newsProductIds", selectedIds.filter((x) => x !== id));
-    } else {
-      set("newsProductIds", [...selectedIds, id]);
-    }
+  const add = (id: string) => {
+    if (selectedSet.has(id)) return;
+    set("newsProductIds", [...selectedIds, id]);
   };
 
   const move = (idx: number, dir: -1 | 1) => {
@@ -4089,7 +4131,7 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
         sub="Carrossel que aparece antes de 'Nossos Destaques' na página inicial."
       />
 
-      {/* Status */}
+      {/* Top: status + toggle + editar estilo */}
       <div
         className={cn(
           "rounded-2xl border p-4 transition",
@@ -4098,7 +4140,7 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
             : "border-white/10 bg-black/20",
         )}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <div
             className={cn(
               "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition",
@@ -4112,16 +4154,15 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
               {s.newsActive ? "Novidades ativas" : "Novidades desativadas"}
             </div>
             <div className="text-[11px] text-white/50">
-              {s.newsActive
-                ? selected.length > 0
-                  ? `${selected.length} produto${selected.length === 1 ? "" : "s"} no carrossel.`
-                  : "Adicione produtos abaixo para o carrossel aparecer."
-                : "Ative para exibir o carrossel de novidades no topo."}
+              {selected.length > 0
+                ? `${selected.length} novidade${selected.length === 1 ? "" : "s"} no carrossel`
+                : "Nenhuma novidade adicionada"}
             </div>
           </div>
           <button
             type="button"
             onClick={() => set("newsActive", !s.newsActive)}
+            aria-label={s.newsActive ? "Desativar" : "Ativar"}
             className={cn(
               "relative h-6 w-11 shrink-0 rounded-full p-0.5 transition",
               s.newsActive ? "bg-neon-cyan" : "bg-white/15",
@@ -4135,222 +4176,290 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
             />
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => setStyleOpen(true)}
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10"
+        >
+          <Palette className="h-3.5 w-3.5 text-neon-cyan" />
+          Editar estilo (título, subtítulo e texto)
+        </button>
       </div>
 
-      {/* Título */}
-      <Field label="Título da seção" hint="Aparece grande no cardápio: 'Nossas [Título]'.">
-        <input
-          className={inputCls}
-          value={s.newsTitle}
-          onChange={(e) => set("newsTitle", e.target.value)}
-          placeholder="Novidades"
-          maxLength={24}
-        />
-      </Field>
-
-      {/* Subtítulo */}
-      <Field label="Subtítulo (frase escrita à mão)" hint="Aparece rotacionado ao lado do título. Deixe em branco para esconder.">
-        <input
-          className={inputCls}
-          value={s.newsSubtitle}
-          onChange={(e) => set("newsSubtitle", e.target.value)}
-          placeholder="acabou de sair!"
-          maxLength={40}
-        />
-      </Field>
-
-      {/* Ticker */}
-      <Field
-        label="Texto da faixa animada (ticker)"
-        hint="Separe cada item por vírgula. Deixe em branco para esconder a faixa."
-      >
-        <textarea
-          className={cn(inputCls, "min-h-[70px] resize-y py-2 leading-relaxed")}
-          value={s.newsTicker}
-          onChange={(e) => set("newsTicker", e.target.value)}
-          placeholder="Lançamento fresquinho, Edição limitada, Só na Quero Bis"
-        />
-      </Field>
-
-
-      {/* Selecionados */}
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      {/* Active novidades list + adicionar novidade */}
+      <div>
         <div className="mb-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
-            <Check className="h-3.5 w-3.5 text-neon-cyan" /> No carrossel
+            <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
+            No carrossel
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-white/40">
-              {selected.length} selecionado{selected.length === 1 ? "" : "s"}
-            </span>
-            {selected.length > 0 && (
-              <button
-                type="button"
-                onClick={async () => {
-                  if (await confirmDialog({ title: "Limpar carrossel", message: "Remover todos os produtos do carrossel?", confirmLabel: "Limpar" })) {
-                    set("newsProductIds", []);
-                  }
-                }}
-
-                className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-300 hover:bg-red-500/20"
-              >
-                <Eraser className="h-3 w-3" /> Limpar
-              </button>
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-neon-yellow px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-[oklch(0.15_0.10_305)] hover:brightness-110"
+          >
+            <Plus className="h-3.5 w-3.5" /> Adicionar novidade
+          </button>
         </div>
 
         {selected.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-6 text-center text-[11.5px] text-white/40">
-            Nenhum produto selecionado ainda.
+          <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+            <Sparkles className="mx-auto mb-2 h-8 w-8 text-white/20" />
+            <div className="text-sm font-bold text-white/80">Nenhuma novidade ainda</div>
+            <p className="mt-1 text-[11px] text-white/50">
+              Toque em <b className="text-neon-yellow">Adicionar novidade</b> para escolher os produtos.
+            </p>
           </div>
         ) : (
-          <ul className="space-y-1.5">
-            {selected.map((p, i) => {
-              const hasHero = Boolean(p.heroImage);
-              return (
-                <li
-                  key={p.id}
-                  className="flex items-center gap-2 rounded-xl bg-white/5 p-2"
-                >
-                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-neon-cyan/20 text-[10px] font-black text-neon-cyan">
-                    {i + 1}
-                  </span>
-                  {p.image ? (
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      className="h-10 w-10 shrink-0 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 shrink-0 rounded-lg bg-white/10" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[12.5px] font-semibold text-white">{p.name}</div>
-                    <div className="flex items-center gap-1.5 text-[10.5px] text-white/40">
-                      <span className="truncate">{p.category}</span>
-                      {!hasHero && (
-                        <span
-                          title="Sem imagem hero (heroImage). O card usará a imagem padrão do produto."
-                          className="inline-flex items-center gap-0.5 rounded-full bg-yellow-400/15 px-1.5 py-[1px] text-[9px] font-bold text-yellow-300"
-                        >
-                          <AlertTriangle className="h-2.5 w-2.5" /> sem hero
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => move(i, -1)}
-                      disabled={i === 0}
-                      className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
-                      aria-label="Mover para cima"
-                    >
-                      <ArrowUp className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => move(i, 1)}
-                      disabled={i === selected.length - 1}
-                      className="rounded-md border border-white/10 bg-white/5 p-1 text-white/60 hover:bg-white/10 disabled:opacity-30"
-                      aria-label="Mover para baixo"
-                    >
-                      <ArrowDown className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggle(p.id)}
-                      className="rounded-md border border-red-400/30 bg-red-500/10 p-1 text-red-300 hover:bg-red-500/20"
-                      aria-label="Remover"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="space-y-3">
+            {selected.map((p, i) => (
+              <NewsHeroEditor
+                key={p.id}
+                product={p}
+                index={i}
+                onRemove={async () => {
+                  if (
+                    await confirmDialog({
+                      title: "Remover novidade",
+                      message: `Remover "${p.name}" das novidades?`,
+                      confirmLabel: "Remover",
+                    })
+                  ) {
+                    remove(p.id);
+                  }
+                }}
+                onMoveUp={() => move(i, -1)}
+                onMoveDown={() => move(i, 1)}
+                canMoveUp={i > 0}
+                canMoveDown={i < selected.length - 1}
+              />
+            ))}
+          </div>
         )}
 
         {selected.length > 0 && selected.some((p) => !p.heroImage) && (
           <div className="mt-3 flex items-start gap-2 rounded-xl border border-yellow-400/25 bg-yellow-400/5 p-3 text-[11px] text-yellow-200">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>
-              Alguns produtos não têm <b>imagem hero</b> configurada. O carrossel fica muito melhor com ela — edite o produto em <b>Cardápio</b> e defina a imagem hero.
+              Alguns produtos não têm <b>imagem hero</b>. O carrossel fica melhor com ela — configure-a em <b>Cardápio</b>.
             </span>
           </div>
         )}
       </div>
 
-      {/* Foto & Posicionamento por produto */}
-      {selected.length > 0 && (
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
-            <ImagePlus className="h-3.5 w-3.5 text-neon-cyan" /> Foto & posicionamento
-          </div>
-          <p className="mb-3 text-[11px] text-white/50">
-            Prévia real do card de Novidades — arraste a foto para reposicionar e use o zoom.
-          </p>
-          <div className="space-y-3">
-            {selected.map((p, i) => (
-              <NewsHeroEditor key={p.id} product={p} index={i} />
-            ))}
-          </div>
-        </div>
+      {styleOpen && <NewsStyleModal s={s} set={set} onClose={() => setStyleOpen(false)} />}
+      {pickerOpen && (
+        <NewsPickerModal
+          products={products}
+          categories={categories}
+          selectedSet={selectedSet}
+          onPick={add}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
+    </div>
+  );
+}
 
-
-      {/* Adicionar */}
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-
-        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
-          <Plus className="h-3.5 w-3.5 text-neon-yellow" /> Adicionar produtos
-        </div>
-        <div className="relative mb-3">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
-          <input
-            className={cn(inputCls, "pl-9")}
-            placeholder="Buscar produto…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-        {filtered.length === 0 ? (
-          <div className="text-center text-[11.5px] text-white/40">
-            {q ? "Nenhum produto encontrado." : "Todos os produtos já foram adicionados."}
+function NewsStyleModal({
+  s,
+  set,
+  onClose,
+}: {
+  s: SiteSettings;
+  set: SetFn;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-bold">
+              <Palette className="h-4 w-4 text-neon-cyan" />
+              Editar estilo — Novidades
+            </div>
+            <div className="text-[10.5px] text-white/50">Título, subtítulo e faixa animada da seção.</div>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {filtered.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => toggle(p.id)}
-                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2 text-left transition hover:border-neon-cyan/40 hover:bg-neon-cyan/10"
-              >
-                {p.image ? (
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="h-9 w-9 shrink-0 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="h-9 w-9 shrink-0 rounded-lg bg-white/10" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[11.5px] font-semibold text-white">{p.name}</div>
-                  <div className="truncate text-[10px] text-white/40">{p.category}</div>
-                </div>
-                <Plus className="h-4 w-4 shrink-0 text-white/50" />
-              </button>
-            ))}
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 overflow-y-auto p-4">
+          <Field label="Título da seção" hint="Aparece grande no cardápio: 'Nossas [Título]'.">
+            <input
+              className={inputCls}
+              value={s.newsTitle}
+              onChange={(e) => set("newsTitle", e.target.value)}
+              placeholder="Novidades"
+              maxLength={24}
+            />
+          </Field>
+
+          <Field
+            label="Subtítulo (frase escrita à mão)"
+            hint="Aparece rotacionado ao lado do título. Deixe em branco para esconder."
+          >
+            <input
+              className={inputCls}
+              value={s.newsSubtitle}
+              onChange={(e) => set("newsSubtitle", e.target.value)}
+              placeholder="acabou de sair!"
+              maxLength={40}
+            />
+          </Field>
+
+          <Field
+            label="Texto da faixa animada (ticker)"
+            hint="Separe cada item por vírgula. Deixe em branco para esconder a faixa."
+          >
+            <textarea
+              className={cn(inputCls, "min-h-[80px] resize-y py-2 leading-relaxed")}
+              value={s.newsTicker}
+              onChange={(e) => set("newsTicker", e.target.value)}
+              placeholder="Lançamento fresquinho, Edição limitada, Só na Quero Bis"
+            />
+          </Field>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-white/10 bg-[oklch(0.10_0.08_300)] px-4 py-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink"
+          >
+            <Check className="h-3.5 w-3.5" />
+            Concluir
+          </button>
+        </div>
       </div>
     </div>
   );
 }
+
+function NewsPickerModal({
+  products,
+  categories,
+  selectedSet,
+  onPick,
+  onClose,
+}: {
+  products: Product[];
+  categories: Category[];
+  selectedSet: Set<string>;
+  onPick: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const catList = categories.filter((c) => c.id !== "all");
+
+  const available = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (selectedSet.has(p.id)) return false;
+      if (filter !== "all" && p.category !== filter) return false;
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [products, filter, search, selectedSet]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-bold">
+              <Sparkles className="h-4 w-4 text-neon-cyan" />
+              Adicionar novidade
+            </div>
+            <div className="text-[10.5px] text-white/50">Escolha um produto para o carrossel.</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-2 border-b border-white/5 px-4 py-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+            <input
+              className={cn(inputCls, "pl-9")}
+              placeholder="Buscar produto..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-1 overflow-x-auto pb-1">
+            <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
+              Tudo
+            </FilterChip>
+            {catList.map((c) => (
+              <FilterChip key={c.id} active={filter === c.id} onClick={() => setFilter(c.id)}>
+                <span>{c.emoji}</span> {c.name}
+              </FilterChip>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-y-auto p-3">
+          {available.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-[12px] text-white/50">
+              Nenhum produto disponível.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {available.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    onPick(p.id);
+                    onClose();
+                  }}
+                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2 text-left transition hover:border-neon-cyan/50 hover:bg-neon-cyan/10"
+                >
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+                    {p.image && <img src={p.image} className="h-full w-full object-cover" alt="" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold">{p.name}</div>
+                    <div className="text-[11px] text-white/50">{p.category}</div>
+                  </div>
+                  <Plus className="h-4 w-4 shrink-0 text-neon-cyan" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 
 function AppearanceSection({
