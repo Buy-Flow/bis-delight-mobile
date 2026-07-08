@@ -2086,6 +2086,7 @@ function ImageAdjustModal({
 /* ============================= Settings ============================= */
 type SettingsSection =
   | "identity"
+  | "hero"
   | "contact"
   | "hours"
   | "delivery"
@@ -2094,6 +2095,7 @@ type SettingsSection =
   | "announcement"
   | "news"
   | "appearance";
+
 
 const DAY_LABEL: Record<WeekDay, string> = {
   mon: "Segunda",
