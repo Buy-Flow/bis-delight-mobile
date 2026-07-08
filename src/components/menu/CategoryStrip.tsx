@@ -195,7 +195,7 @@ export function CategoryStrip({
   const CATEGORIES = data && data.length > 0 ? data : STATIC_CATEGORIES;
   return (
     <section id="categorias" className="pb-2">
-      <div className="hide-scrollbar flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-3 pt-1">
+      <div className="hide-scrollbar flex gap-2.5 overflow-x-auto scroll-px-4 px-4 pb-3 pt-1">
         {CATEGORIES.map((c) => (
           <CategoryChip
             key={c.id}
