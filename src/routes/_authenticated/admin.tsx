@@ -4235,26 +4235,50 @@ function ExtrasEditorModal({
   );
 }
 
-function ExtrasPreview({ list, emptyLabel }: { list: ExtraOpt[]; emptyLabel: string }) {
-  if (list.length === 0) {
-    return (
-      <div className="rounded-xl border border-dashed border-white/10 px-3 py-4 text-center text-[12px] text-white/40">
-        {emptyLabel}
-      </div>
-    );
-  }
+function SectionCard({
+  title,
+  description,
+  accent,
+  onEdit,
+  disabled,
+}: {
+  title: string;
+  description: string;
+  accent: "cyan" | "pink" | "yellow";
+  onEdit: () => void;
+  disabled?: boolean;
+}) {
+  const styles = {
+    cyan: {
+      wrap: "border-neon-cyan/30 bg-neon-cyan/5",
+      title: "text-neon-cyan",
+      btn: "bg-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/30",
+    },
+    pink: {
+      wrap: "border-neon-pink/30 bg-neon-pink/5",
+      title: "text-neon-pink",
+      btn: "bg-neon-pink/20 text-neon-pink hover:bg-neon-pink/30",
+    },
+    yellow: {
+      wrap: "border-neon-yellow/30 bg-neon-yellow/5",
+      title: "text-neon-yellow",
+      btn: "bg-neon-yellow/20 text-neon-yellow hover:bg-neon-yellow/30",
+    },
+  }[accent];
+
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {list.map((e) => (
-        <span
-          key={e.id}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/80"
-        >
-          <span className="truncate max-w-[140px]">{e.label}</span>
-          <span className="text-white/40">·</span>
-          <span className="font-semibold text-white/60">R$ {e.price.toFixed(2)}</span>
-        </span>
-      ))}
+    <div className={cn("mb-4 flex items-start justify-between gap-3 rounded-2xl border p-4", styles.wrap)}>
+      <div className="min-w-0">
+        <h3 className={cn("font-display text-lg font-black", styles.title)}>{title}</h3>
+        <p className="text-[11px] text-white/60">{description}</p>
+      </div>
+      <button
+        onClick={onEdit}
+        disabled={disabled}
+        className={cn("shrink-0 inline-flex items-center gap-1 rounded-full px-4 py-2 text-xs font-bold disabled:opacity-40", styles.btn)}
+      >
+        <Pencil className="h-3.5 w-3.5" /> Editar
+      </button>
     </div>
   );
 }
@@ -4276,28 +4300,14 @@ function GlobalExtrasSection() {
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-cyan">
-            Complementos globais
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos</b> automaticamente, junto com os complementos
-            individuais do produto.
-          </p>
-        </div>
-        <button
-          onClick={() => setOpen(true)}
-          disabled={!settings}
-          className="shrink-0 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30 disabled:opacity-40"
-        >
-          <Pencil className="h-3.5 w-3.5" /> Editar
-        </button>
-      </div>
-
-      <ExtrasPreview list={current} emptyLabel="Nenhum complemento global. Toque em Editar para adicionar." />
-
+    <>
+      <SectionCard
+        title="Complementos globais"
+        description="Aparecem em todos os produtos automaticamente."
+        accent="cyan"
+        disabled={!settings}
+        onEdit={() => setOpen(true)}
+      />
       {open && (
         <ExtrasEditorModal
           title="Complementos globais"
@@ -4308,7 +4318,7 @@ function GlobalExtrasSection() {
           onSave={save}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -4316,13 +4326,12 @@ function CategoryExtrasSection() {
   const { data: categories = [] } = useCategories();
   const upsert = useUpsertCategory();
   const catList = categories.filter((c) => c.id !== "all");
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [open, setOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const selected = catList.find((c) => c.id === selectedId) ?? null;
+  const selected = editingId ? catList.find((c) => c.id === editingId) ?? null : null;
   const stored = selected?.extras ?? [];
   const siteDefaults = selected ? getDefaultExtras(selected.id) : [];
-  const usingDefaults = !!selected && stored.length === 0 && siteDefaults.length > 0;
   const current = stored.length > 0 ? stored : siteDefaults;
 
   const save = async (list: ExtraOpt[]) => {
@@ -4348,64 +4357,235 @@ function CategoryExtrasSection() {
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-neon-pink/30 bg-neon-pink/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-pink">
-            Complementos por categoria
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos da categoria</b> selecionada, junto com os
-            complementos globais e do produto.
-          </p>
-        </div>
-        {selected && (
-          <button
-            onClick={() => setOpen(true)}
-            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-neon-pink/20 px-3 py-1.5 text-xs font-bold text-neon-pink hover:bg-neon-pink/30"
-          >
-            <Pencil className="h-3.5 w-3.5" /> Editar
-          </button>
-        )}
-      </div>
+    <>
+      <SectionCard
+        title="Complementos por categoria"
+        description="Aparecem em todos os produtos da categoria escolhida."
+        accent="pink"
+        onEdit={() => setPickerOpen(true)}
+      />
 
-      <select
-        value={selectedId}
-        onChange={(e) => setSelectedId(e.target.value)}
-        className={cn(inputCls, "mb-3")}
-      >
-        <option value="">Selecione uma categoria...</option>
-        {catList.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.emoji} {c.name} ({(c.extras ?? []).length})
-          </option>
-        ))}
-      </select>
-
-      {selected && (
-        <>
-          {usingDefaults && (
-            <div className="mb-2 rounded-lg border border-neon-yellow/30 bg-neon-yellow/5 px-3 py-2 text-[11px] text-neon-yellow/90">
-              Mostrando os complementos padrão desta categoria. Toque em <b>Editar</b> para personalizar.
-            </div>
-          )}
-          <ExtrasPreview list={current} emptyLabel="Nenhum complemento nesta categoria. Toque em Editar para adicionar." />
-        </>
+      {pickerOpen && (
+        <SimplePickerModal
+          title="Escolher categoria"
+          subtitle="Selecione a categoria para editar os complementos."
+          items={catList.map((c) => ({
+            id: c.id,
+            label: `${c.emoji} ${c.name}`,
+            hint: `${(c.extras ?? []).length} complemento${(c.extras ?? []).length === 1 ? "" : "s"}`,
+            image: c.image,
+          }))}
+          onClose={() => setPickerOpen(false)}
+          onPick={(id) => {
+            setPickerOpen(false);
+            setEditingId(id);
+          }}
+        />
       )}
 
-      {open && selected && (
+      {selected && (
         <ExtrasEditorModal
           title={`Complementos · ${selected.name}`}
           subtitle="Aparecem em todos os produtos desta categoria"
           initial={current}
           accent="pink"
-          onClose={() => setOpen(false)}
+          onClose={() => setEditingId(null)}
           onSave={save}
         />
       )}
+    </>
+  );
+}
+
+function ProductExtrasSection() {
+  const { data: products = [] } = useAllProducts();
+  const { data: categories = [] } = useCategories();
+  const update = useUpdateProductExtras();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const catList = categories.filter((c) => c.id !== "all");
+
+  const editing = editingId ? products.find((p) => p.id === editingId) ?? null : null;
+  const current = editing?.extras ?? [];
+
+  const save = async (list: ExtraOpt[]) => {
+    if (!editing) return;
+    try {
+      await update.mutateAsync({ id: editing.id, extras: list });
+      toast.success("Complementos salvos");
+    } catch {
+      toast.error("Falha ao salvar");
+    }
+  };
+
+  return (
+    <>
+      <SectionCard
+        title="Complementos por produto"
+        description="Aparecem apenas no produto escolhido."
+        accent="yellow"
+        onEdit={() => setPickerOpen(true)}
+      />
+
+      {pickerOpen && (
+        <SimplePickerModal
+          title="Escolher produto"
+          subtitle="Selecione o produto para editar os complementos."
+          searchable
+          items={products.map((p) => ({
+            id: p.id,
+            label: p.name,
+            hint: `${catList.find((c) => c.id === p.category)?.name ?? p.category} · ${(p.extras?.length ?? 0)} complemento${(p.extras?.length ?? 0) === 1 ? "" : "s"}`,
+            image: p.image,
+            category: p.category,
+          }))}
+          categories={catList.map((c) => ({ id: c.id, name: c.name }))}
+          onClose={() => setPickerOpen(false)}
+          onPick={(id) => {
+            setPickerOpen(false);
+            setEditingId(id);
+          }}
+        />
+      )}
+
+      {editing && (
+        <ExtrasEditorModal
+          title={`Complementos · ${editing.name}`}
+          subtitle="Aparecem apenas neste produto"
+          initial={current}
+          accent="yellow"
+          onClose={() => setEditingId(null)}
+          onSave={save}
+        />
+      )}
+    </>
+  );
+}
+
+type PickerItem = {
+  id: string;
+  label: string;
+  hint?: string;
+  image?: string;
+  category?: string;
+};
+
+function SimplePickerModal({
+  title,
+  subtitle,
+  items,
+  categories,
+  searchable,
+  onClose,
+  onPick,
+}: {
+  title: string;
+  subtitle?: string;
+  items: PickerItem[];
+  categories?: { id: string; name: string }[];
+  searchable?: boolean;
+  onClose: () => void;
+  onPick: (id: string) => void;
+}) {
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<string>("all");
+
+  const visible = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return items.filter((it) => {
+      if (filter !== "all" && it.category !== filter) return false;
+      if (s && !it.label.toLowerCase().includes(s)) return false;
+      return true;
+    });
+  }, [items, q, filter]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+          <div className="min-w-0">
+            <div className="text-sm font-bold">{title}</div>
+            {subtitle && <div className="truncate text-[11px] text-white/50">{subtitle}</div>}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {(searchable || categories) && (
+          <div className="space-y-2 border-b border-white/5 px-4 py-3">
+            {searchable && (
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Buscar..."
+                  className={cn(inputCls, "pl-9")}
+                />
+              </div>
+            )}
+            {categories && (
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className={inputCls}
+              >
+                <option value="all">Todas categorias</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
+        <div className="overflow-y-auto p-3">
+          {visible.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-[12px] text-white/50">
+              Nenhum resultado.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {visible.map((it) => (
+                <button
+                  key={it.id}
+                  onClick={() => onPick(it.id)}
+                  className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-left transition hover:border-neon-cyan/40 hover:bg-neon-cyan/5"
+                >
+                  {it.image ? (
+                    <img src={it.image} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-lg bg-white/5" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold">{it.label}</div>
+                    {it.hint && <div className="truncate text-[11px] text-white/50">{it.hint}</div>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
+
 
 
 /* ============================= UI helpers ============================= */
