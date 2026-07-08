@@ -138,6 +138,7 @@ export function ProductModal({
   const [removed, setRemoved] = useState<string[]>(seed?.removed ?? []);
   const [qty, setQty] = useState(seed?.qty ?? 1);
   const [note, setNote] = useState(seed?.note ?? "");
+  const [collapsed, setCollapsed] = useState(false);
 
   useMemo(() => {
     if (product) {
