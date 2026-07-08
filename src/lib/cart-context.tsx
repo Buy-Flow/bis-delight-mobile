@@ -31,6 +31,9 @@ type CartCtx = {
   isAcaiOpen: boolean;
   openAcai: () => void;
   closeAcai: () => void;
+  editingItem: CartItem | null;
+  openEdit: (item: CartItem) => void;
+  closeEdit: () => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
