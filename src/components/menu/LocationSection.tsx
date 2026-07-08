@@ -37,7 +37,9 @@ export function LocationSection() {
   const whatsapp = settings?.whatsapp || BRAND.whatsapp;
   const whatsappDisplay = settings?.whatsappDisplay || BRAND.whatsappDisplay;
   const mapsUrl = settings?.mapsUrl || BRAND.mapsUrl;
-  const mapEmbed = settings?.mapEmbed || BRAND.mapEmbed;
+  const rawMapEmbed = settings?.mapEmbed || BRAND.mapEmbed;
+  const mapEmbed = toEmbedUrl(rawMapEmbed);
+
   const logo = settings?.logo || BRAND.logo;
   const instagram = settings?.instagram || "";
   const facebook = settings?.facebook || "";
