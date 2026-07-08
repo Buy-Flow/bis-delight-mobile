@@ -71,6 +71,8 @@ import {
   type DayHours,
   type WeekDay,
   type ProductInput,
+  type AcaiConfig,
+  DEFAULT_ACAI_CONFIG,
 } from "@/lib/menu-data";
 import type { Product, Category } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
