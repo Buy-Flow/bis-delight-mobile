@@ -102,8 +102,8 @@ export function CategoryChip({
       aria-pressed={active}
       className={cn(
         "group relative snap-start shrink-0 w-[72px] h-[104px] rounded-[16px]",
-        "transition active:scale-95",
-        active && `${accent.glow}`,
+        "transition-all duration-300 active:scale-95 hover:-translate-y-0.5",
+        active && `${accent.glow} scale-[1.03]`,
       )}
       style={{
         boxShadow:
@@ -112,7 +112,7 @@ export function CategoryChip({
     >
       <div
         className={cn(
-          "relative h-full w-full overflow-hidden rounded-[14px]",
+          "relative h-full w-full overflow-hidden rounded-[14px] transition-all duration-300",
           "bg-[#2a0a5c]",
           active && `ring-2 ${accent.ring}`,
         )}
@@ -121,6 +121,7 @@ export function CategoryChip({
             "radial-gradient(circle at 50% 30%, oklch(0.28 0.16 305) 0%, #2a0a5c 55%, #1a0538 100%)",
         }}
       >
+
         <div
           className="relative h-[68px] w-full overflow-hidden"
           style={{
@@ -146,7 +147,10 @@ export function CategoryChip({
         </div>
 
         <div
-          className="absolute left-1/2 top-[68px] grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full"
+          className={cn(
+            "absolute left-1/2 top-[68px] grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full transition-transform duration-300",
+            active && "animate-wiggle",
+          )}
           style={{
             background:
               "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
@@ -159,6 +163,7 @@ export function CategoryChip({
             style={{ color: "#ffffff" }}
           />
         </div>
+
 
         <div className="absolute inset-x-0 bottom-1 px-1 text-center">
           <div

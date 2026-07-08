@@ -276,9 +276,10 @@ function Content() {
               <>
                 Nosso{" "}
                 <span className="relative inline-block">
-                  <span className="relative z-10 text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.45)]">
+                <span className="relative z-10 text-neon-yellow drop-shadow-[0_4px_14px_rgba(255,215,60,0.45)] animate-shimmer-text">
                     cardápio
                   </span>
+
                   <svg
                     aria-hidden="true"
                     viewBox="0 0 160 14"
