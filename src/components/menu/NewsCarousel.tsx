@@ -36,7 +36,7 @@ export function NewsCarousel({
   // sempre indo para a direita sem "rewind".
   useEffect(() => {
     const el = scrollerRef.current;
-    if (!el || items.length <= 1) return;
+    if (!el || items.length < 3) return;
     const onScroll = () => {
       const first = el.firstElementChild as HTMLElement | null;
       if (!first) return;
