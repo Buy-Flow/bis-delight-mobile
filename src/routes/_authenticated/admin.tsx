@@ -3410,7 +3410,8 @@ function NewsHeroEditor({
     setOpen(false);
   };
 
-  const discard = () => {
+  const discard = async () => {
+    if (dirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
     setDraft(initialDraft);
     setOpen(false);
   };
