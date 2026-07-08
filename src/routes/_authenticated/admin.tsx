@@ -187,7 +187,7 @@ function AdminPage() {
         {tab === "categories" && <CategoriesTab />}
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
-        {tab === "news" && <SettingsTab initialSection="news" />}
+        {tab === "news" && <NewsTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
