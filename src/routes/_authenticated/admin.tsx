@@ -865,7 +865,7 @@ function ProductEditor({
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink disabled:opacity-40"
           >
             {upsert.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isNew ? "Criar produto" : "Salvar alterações"}
+            {isNew ? "Criar produto" : "Salvar"}
           </button>
         </div>
       </div>
@@ -1715,7 +1715,7 @@ function CategoryEditor({
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink disabled:opacity-40"
           >
             {upsert.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isNew ? "Criar categoria" : "Salvar alterações"}
+            {isNew ? "Criar categoria" : "Salvar"}
           </button>
         </div>
       </div>
