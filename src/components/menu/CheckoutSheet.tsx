@@ -181,57 +181,15 @@ export function CheckoutSheet() {
             send();
           }}
         >
-          {/* Decorative header */}
-          <div className="relative -mx-4 -mt-6 overflow-hidden rounded-t-[28px] bg-gradient-to-br from-[oklch(0.32_0.14_305)] via-[oklch(0.28_0.16_310)] to-[oklch(0.22_0.14_300)] px-5 pb-5 pt-7">
-            {/* streaks */}
-            <div className="pointer-events-none absolute -left-6 top-4 h-16 w-40 rotate-[-8deg] rounded-full bg-gradient-to-r from-neon-pink/60 to-transparent blur-[14px]" />
-            <div className="pointer-events-none absolute -right-6 bottom-3 h-14 w-32 rotate-[6deg] rounded-full bg-gradient-to-l from-neon-yellow/50 to-transparent blur-[14px]" />
-            {/* particles */}
-            <div className="pointer-events-none absolute left-6 top-3 h-1.5 w-1.5 rounded-full bg-white/80 shadow-[0_0_10px_rgba(255,255,255,0.9)]" />
-            <div className="pointer-events-none absolute right-10 top-6 h-1 w-1 rounded-full bg-neon-yellow shadow-[0_0_10px_rgba(255,220,80,0.9)]" />
-            <div className="pointer-events-none absolute left-16 bottom-4 h-1 w-1 rounded-full bg-neon-pink shadow-[0_0_10px_rgba(255,60,140,0.9)]" />
-            <div className="pointer-events-none absolute right-24 bottom-6 h-1.5 w-1.5 rounded-full bg-white/70 shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
-            {/* floating ice cream */}
-            <div className="pointer-events-none absolute left-3 top-8 text-2xl animate-float-slow drop-shadow-[0_4px_12px_rgba(255,60,140,0.5)]">🍦</div>
-            <div className="pointer-events-none absolute right-3 bottom-4 text-2xl animate-float-med drop-shadow-[0_4px_12px_rgba(255,220,80,0.5)]">🍨</div>
-
-            <div className="relative text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Sparkles className="h-5 w-5 -scale-x-100 text-neon-yellow drop-shadow-[0_0_8px_rgba(255,220,80,0.8)]" />
-                <h3
-                  className="text-white"
-                  style={{
-                    fontFamily: "'Caveat', 'Fredoka', cursive",
-                    fontWeight: 700,
-                    fontSize: 44,
-                    lineHeight: 1,
-                    textShadow: "0 3px 14px rgba(0,0,0,0.55)",
-                  }}
-                >
-                  Finalizar <span className="text-neon-yellow" style={{ textShadow: "0 0 18px rgba(255,220,80,0.7)" }}>pedido</span>
-                </h3>
-                <Sparkles className="h-5 w-5 text-neon-yellow drop-shadow-[0_0_8px_rgba(255,220,80,0.8)]" />
-              </div>
-              {/* SVG underline */}
-              <svg
-                viewBox="0 0 220 12"
-                className="mx-auto mt-1 h-3 w-40"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M4 8 C 50 2, 110 12, 216 4"
-                  stroke="rgb(255,60,140)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  style={{ filter: "drop-shadow(0 0 6px rgba(255,60,140,0.8))" }}
-                />
-              </svg>
-              <p className="mt-2 text-[13px] text-white/85">
-                Falta pouco para a <span className="font-semibold text-neon-pink">felicidade</span> chegar!{" "}
-                <Heart className="inline h-3.5 w-3.5 fill-neon-pink text-neon-pink" />
-              </p>
-            </div>
+          {/* Header simples e fluido */}
+          <div className="-mx-4 -mt-6 px-5 pb-4 pt-6">
+            <h3 className="text-[22px] font-black leading-tight text-white">
+              Finalizar pedido
+            </h3>
+            <p className="mt-1 text-[12px] text-white/60">
+              Falta pouco — confira seus dados abaixo.
+            </p>
+            <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           </div>
 
           {!authLoading && !isAuthenticated && (
