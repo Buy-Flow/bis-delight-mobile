@@ -216,7 +216,7 @@ export function NewsCarousel({
   );
 }
 
-function NewsPosterCard({
+export function NewsPosterCard({
   product,
   onOpen,
   badge,
@@ -230,13 +230,13 @@ function NewsPosterCard({
   index: number;
 }) {
   const heroSrc = product.heroImage || product.image;
-  // As fotos são PNGs com fundo transparente (copo/taça). Usamos object-contain com
-  // um zoom leve para preencher bem, respeitando ajustes do admin quando houver.
-  const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
-  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
-  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.2) : 1.2;
+  // Sempre aplica pos/scale — assim o admin ajusta mesmo quando não há heroImage próprio.
+  const heroPosX = product.heroImagePosX ?? 0;
+  const heroPosY = product.heroImagePosY ?? 0;
+  const heroScale = product.heroImageScale ?? 1.2;
 
   // (issue label removed — cleaner card)
+
 
   // Split product name so we can stack it dramatically across two lines
   const words = product.name.trim().split(/\s+/);
