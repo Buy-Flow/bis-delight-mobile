@@ -41,9 +41,10 @@ export function Benefits() {
               className="flex items-center gap-1.5 px-1.5 first:pl-0 last:pr-0"
             >
               <it.icon
-                className={`h-7 w-7 shrink-0 ${it.color}`}
+                className={`h-7 w-7 shrink-0 ${it.color} ${it.anim}`}
                 strokeWidth={2.25}
               />
+
               <div className="min-w-0 text-[9px] font-medium leading-snug tracking-tight text-white">
                 <div className="font-semibold">{it.title}</div>
                 <div className="font-light text-white/70">{it.sub}</div>
