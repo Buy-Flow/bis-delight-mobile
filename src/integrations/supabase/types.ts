@@ -388,6 +388,7 @@ export type Database = {
           facebook: string
           free_delivery_threshold: number
           global_extras: Json
+          hero_images: Json | null
           hours: string
           hours_json: Json
           id: number
@@ -431,6 +432,7 @@ export type Database = {
           facebook?: string
           free_delivery_threshold?: number
           global_extras?: Json
+          hero_images?: Json | null
           hours?: string
           hours_json?: Json
           id?: number
@@ -474,6 +476,7 @@ export type Database = {
           facebook?: string
           free_delivery_threshold?: number
           global_extras?: Json
+          hero_images?: Json | null
           hours?: string
           hours_json?: Json
           id?: number
