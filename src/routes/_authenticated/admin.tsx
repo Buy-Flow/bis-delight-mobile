@@ -886,20 +886,29 @@ function PhotoTab({
   const posY = product.imagePosY ?? 0;
   const scale = product.imageScale ?? 1.1;
 
-  // The site's product card image area is 150px tall; use a matching real-size preview.
   const CARD_W = 220;
-  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+  const CARD_H = 150;
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number; w: number; h: number } | null>(null);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    dragRef.current = { startX: e.clientX, startY: e.clientY, posX, posY };
+    const el = e.currentTarget as HTMLDivElement;
+    el.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect();
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      posX,
+      posY,
+      w: rect.width || CARD_W,
+      h: rect.height || CARD_H,
+    };
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     if (!d) return;
-    // Convert px delta to % of the image container (approx CARD_W × 150).
-    const dx = ((e.clientX - d.startX) / CARD_W) * 100;
-    const dy = ((e.clientY - d.startY) / 150) * 100;
+    e.preventDefault();
+    const dx = ((e.clientX - d.startX) / d.w) * 100;
+    const dy = ((e.clientY - d.startY) / d.h) * 100;
     onChange({
       imagePosX: clamp(d.posX + dx, -80, 80),
       imagePosY: clamp(d.posY + dy, -80, 80),
@@ -933,52 +942,21 @@ function PhotoTab({
           Preview real — tamanho do card no site
         </div>
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
-          <div style={{ width: CARD_W }}>
+          <div
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none"
+            style={{ width: CARD_W }}
+          >
             <ProductCard product={product} onOpen={() => {}} />
           </div>
           <div className="text-[10px] text-white/40">Arraste a foto no card ou use os controles abaixo.</div>
         </div>
       </div>
 
-      {/* Dedicated drag surface — same dimensions as the card image area, for precise handling */}
-      <div>
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-          Área de ajuste (arraste)
-        </div>
-        <div
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[oklch(0.14_0.09_305)] cursor-grab active:cursor-grabbing"
-          style={{ width: CARD_W, height: 150 }}
-        >
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
-            }}
-          />
-          <img
-            src={product.image}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
-            style={{
-              transform: `translate(${posX}%, ${posY}%) scale(${scale})`,
-              transformOrigin: "center",
-            }}
-          />
-          {/* Center crosshair */}
-          <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="h-full w-px bg-white/10" />
-          </div>
-          <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="h-px w-full bg-white/10" />
-          </div>
-        </div>
-      </div>
+
 
       {/* Controls */}
       <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
@@ -1737,20 +1715,27 @@ function CategoryPhotoTab({
   // The site's category chip photo area is 72×68.
   const AREA_W = 72;
   const AREA_H = 68;
-  // Zoomed drag surface: 4× to make handling easier while preserving proportions.
-  const SURFACE_W = AREA_W * 4;
-  const SURFACE_H = AREA_H * 4;
-  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number; w: number; h: number } | null>(null);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    dragRef.current = { startX: e.clientX, startY: e.clientY, posX, posY };
+    const el = e.currentTarget as HTMLDivElement;
+    el.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect();
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      posX,
+      posY,
+      w: rect.width || AREA_W,
+      h: rect.height || AREA_H,
+    };
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     if (!d) return;
-    const dx = ((e.clientX - d.startX) / SURFACE_W) * 100;
-    const dy = ((e.clientY - d.startY) / SURFACE_H) * 100;
+    e.preventDefault();
+    const dx = ((e.clientX - d.startX) / d.w) * 100;
+    const dy = ((e.clientY - d.startY) / d.h) * 100;
     onChange({
       imagePosX: clamp(d.posX + dx, -80, 80),
       imagePosY: clamp(d.posY + dy, -80, 80),
@@ -1781,47 +1766,22 @@ function CategoryPhotoTab({
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
           Preview real — tamanho do card no cardápio
         </div>
-        <div className="grid place-items-center rounded-2xl border border-white/10 bg-black/40 p-4">
-          <CategoryChip category={category} active />
-          <div className="mt-2 text-[10px] text-white/40">Arraste na área abaixo ou use os controles.</div>
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
+          <div
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none"
+            style={{ transform: "scale(3)", transformOrigin: "center", margin: "40px 0" }}
+          >
+            <CategoryChip category={category} active />
+          </div>
+          <div className="text-[10px] text-white/40">Arraste a foto no card ou use os controles abaixo.</div>
         </div>
       </div>
 
-      <div>
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-          Área de ajuste (arraste)
-        </div>
-        <div
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[#2a0a5c] cursor-grab active:cursor-grabbing"
-          style={{
-            width: SURFACE_W,
-            height: SURFACE_H,
-            backgroundImage:
-              "radial-gradient(circle at 50% 30%, oklch(0.28 0.16 305) 0%, #2a0a5c 55%, #1a0538 100%)",
-          }}
-        >
-          <img
-            src={category.image}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-            style={{
-              transform: `translate(${posX}%, ${posY}%) scale(${scale})`,
-              transformOrigin: "center",
-            }}
-          />
-          <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="h-full w-px bg-white/10" />
-          </div>
-          <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="h-px w-full bg-white/10" />
-          </div>
-        </div>
-      </div>
+
 
       <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
         <div>
