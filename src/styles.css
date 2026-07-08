@@ -184,10 +184,47 @@
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  @keyframes pop-in {
+    0%   { opacity: 0; transform: scale(.85); }
+    60%  { opacity: 1; transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(0deg); }
+    25%     { transform: rotate(-3deg); }
+    75%     { transform: rotate(3deg); }
+  }
+  @keyframes shimmer-text {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes tilt {
+    0%,100% { transform: rotate(-1deg); }
+    50%     { transform: rotate(1deg); }
+  }
+  @keyframes gradient-shift {
+    0%,100% { background-position: 0% 50%; }
+    50%     { background-position: 100% 50%; }
+  }
   .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
   .animate-float-med  { animation: float-med 4.5s ease-in-out infinite; }
   .animate-pulse-glow { animation: pulse-glow 2.2s ease-out infinite; }
   .animate-rise-in    { animation: rise-in .6s cubic-bezier(.2,.7,.2,1) both; }
+  .animate-pop-in     { animation: pop-in .5s cubic-bezier(.34,1.56,.64,1) both; }
+  .animate-wiggle     { animation: wiggle 2.4s ease-in-out infinite; }
+  .animate-tilt       { animation: tilt 3.5s ease-in-out infinite; }
+  .animate-gradient   {
+    background-size: 200% 200%;
+    animation: gradient-shift 6s ease-in-out infinite;
+  }
+  .animate-shimmer-text {
+    background: linear-gradient(90deg, currentColor 0%, currentColor 40%, rgba(255,255,255,.95) 50%, currentColor 60%, currentColor 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer-text 3.2s linear infinite;
+  }
 
   .shine-strip {
     position: relative; overflow: hidden;
@@ -198,6 +235,22 @@
     transform: translateX(-100%);
     animation: shine 3.5s ease-in-out infinite;
     pointer-events: none;
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float-slow,
+    .animate-float-med,
+    .animate-pulse-glow,
+    .animate-rise-in,
+    .animate-pop-in,
+    .animate-wiggle,
+    .animate-tilt,
+    .animate-gradient,
+    .animate-shimmer-text,
+    .shine-strip::after {
+      animation: none !important;
+    }
   }
 }
 
