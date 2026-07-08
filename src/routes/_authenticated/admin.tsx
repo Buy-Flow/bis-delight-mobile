@@ -73,6 +73,7 @@ import {
 } from "@/lib/menu-data";
 import type { Product, Category } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
+import { getDefaultExtras } from "@/components/menu/ProductModal";
 import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
@@ -4407,9 +4408,16 @@ function CategoryExtrasSection() {
   const [saving, setSaving] = useState(false);
 
   const selected = catList.find((c) => c.id === selectedId) ?? null;
-  const current = selected?.extras ?? [];
+  const stored = selected?.extras ?? [];
+  const siteDefaults = selected ? getDefaultExtras(selected.id) : [];
+  const usingDefaults = !!selected && stored.length === 0 && siteDefaults.length > 0;
+  const current = stored.length > 0 ? stored : siteDefaults;
   const list = draft ?? current;
-  const isDirty = selected ? JSON.stringify(list) !== JSON.stringify(current) : false;
+  const isDirty = selected
+    ? usingDefaults
+      ? draft !== null
+      : JSON.stringify(list) !== JSON.stringify(stored)
+    : false;
 
   const save = async () => {
     if (!selected) return;

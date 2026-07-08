@@ -60,7 +60,7 @@ const DEFAULT_EXTRAS_MIX: ExtraOption[] = [
   { id: "m-pacoca", label: "Paçoca", price: 2 },
 ];
 
-function getDefaultExtras(category: string): ExtraOption[] {
+export function getDefaultExtras(category: string): ExtraOption[] {
   switch (category) {
     case "acai":
     case "copos":
