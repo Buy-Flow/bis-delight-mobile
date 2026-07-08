@@ -67,9 +67,15 @@ export function NewsCarousel({
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
       const currentIdx = Math.round(node.scrollLeft / step);
-      const nextIdx = (currentIdx + 1) % items.length;
-      node.scrollTo({ left: nextIdx * step, behavior: "smooth" });
+      const nextIdx = currentIdx + 1;
+      if (nextIdx >= items.length) {
+        // Volta ao início sem animação, mantendo sempre a direção direita→esquerda no modo automático.
+        node.scrollTo({ left: 0, behavior: "auto" });
+      } else {
+        node.scrollTo({ left: nextIdx * step, behavior: "smooth" });
+      }
     }, 4000);
+
 
     return () => {
       window.clearInterval(id);
