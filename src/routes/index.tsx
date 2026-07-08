@@ -334,20 +334,14 @@ function Content() {
       <LocationSection />
 
       <footer className="border-t border-white/5 px-4 py-8 text-center">
-        <img
-          src={settings?.logo ?? BRAND.logo}
-          alt={settings?.name ?? BRAND.name}
-          className="mx-auto h-24 w-auto drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
-        />
-        <div className="mt-4 text-[12px] text-white/60">{settings?.address ?? BRAND.address}</div>
-        <div className="mt-1 text-[12px] text-white/60">{settings?.whatsappDisplay ?? BRAND.whatsappDisplay}</div>
         <Link
           to="/admin"
-          className="mt-6 block text-[10px] text-white/30 transition-colors hover:text-white/60"
+          className="block text-[10px] text-white/30 transition-colors hover:text-white/60"
         >
           © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com 💜
         </Link>
       </footer>
+
 
 
       <FloatingActions />
