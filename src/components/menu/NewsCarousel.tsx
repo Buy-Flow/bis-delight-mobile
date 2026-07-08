@@ -230,9 +230,6 @@ function NewsPosterCard({
   index: number;
 }) {
   const heroSrc = product.heroImage || product.image;
-  const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
-  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
-  const heroScale = product.heroImage ? (product.heroImageScale ?? 1) : 1;
 
   // (issue label removed — cleaner card)
 
@@ -251,17 +248,15 @@ function NewsPosterCard({
             "0 0 0 1px oklch(0.72 0.26 350 / 0.35), 0 0 22px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -18px oklch(0.85 0.18 200 / 0.55), 0 24px 40px -20px rgba(0,0,0,0.8)",
         }}
       >
-        {/* Foto ocupa tudo — sem nada por cima */}
+        {/* Foto ocupa tudo — object-cover já preenche, sem zoom extra */}
         <img
           src={heroSrc}
           alt={product.name}
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-          style={{
-            transform: `translate(${heroPosX}%, ${heroPosY}%) scale(${heroScale})`,
-            transformOrigin: "center",
-          }}
         />
+
+
 
         {/* Badge canto superior direito */}
         <div className="absolute right-3 top-3 z-20">
