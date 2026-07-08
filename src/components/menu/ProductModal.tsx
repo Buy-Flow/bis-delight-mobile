@@ -314,11 +314,11 @@ export function ProductModal({
 
           {availableExtras.length > 0 && (
             <Section title="Complementos" hint="Adicione o que quiser">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col gap-2">
                 {availableExtras.map((e) => {
                   const on = extras.includes(e.id);
                   return (
-                    <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)}>
+                    <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)} className="w-full justify-between">
                       <span className="mr-1">{e.label}</span>
                       {e.price > 0 && (
                         <span className="text-[11px] text-white/60">+{brl(e.price)}</span>
@@ -430,12 +430,14 @@ function Chip({
   children,
   small,
   variant = "cyan",
+  className,
 }: {
   active?: boolean;
   onClick: () => void;
   children: React.ReactNode;
   small?: boolean;
   variant?: "cyan" | "pink";
+  className?: string;
 }) {
   const activeCls =
     variant === "cyan"
@@ -448,6 +450,7 @@ function Chip({
         "rounded-2xl border px-3 transition text-center",
         small ? "py-2 text-[13px]" : "py-3",
         active ? activeCls : "border-white/10 bg-white/5 text-white/80",
+        className,
       )}
     >
       {children}
