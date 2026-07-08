@@ -95,6 +95,8 @@ export function NewsCarousel({
   return (
     <section className="relative isolate overflow-visible py-8">
 
+      {/* Separador acima do header */}
+      <div className="mx-5 mb-5 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
 
       {/* Header — magazine style */}
       <div className="relative mb-3 flex items-baseline gap-3 px-5">
