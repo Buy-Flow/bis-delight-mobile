@@ -344,7 +344,7 @@ export function ProductModal({
             </div>
             <button
               onClick={submit}
-              className="flex-1 rounded-2xl bg-neon-pink px-4 py-3 text-base font-extrabold text-white glow-pink active:scale-[.98]"
+              className="flex-1 rounded-2xl bg-neon-pink px-4 py-3 text-base font-extrabold text-white glow-pink touch-manipulation [-webkit-tap-highlight-color:transparent] will-change-transform transition-transform duration-100 ease-out active:scale-[.97]"
             >
               {brl(total)}
             </button>
