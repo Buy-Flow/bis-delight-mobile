@@ -5131,31 +5131,32 @@ function CustomTab({
               <div className="space-y-2">
                 <div className="text-[11px] uppercase tracking-widest text-white/50">Opções</div>
                 {g.options.map((o, oi) => (
-                  <div key={o.id} className="flex items-center gap-2">
+                  <div key={o.id} className="flex items-center gap-1.5">
                     <input
                       value={o.label}
                       onChange={(e) => patchOption(gi, oi, { label: e.target.value })}
-                      className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"
+                      className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-sm text-white"
                       placeholder="Nome da opção"
                     />
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-white/50">R$</span>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className="text-[10px] text-white/50">R$</span>
                       <input
                         type="number"
                         min={0}
                         step="0.5"
                         value={o.price}
                         onChange={(e) => patchOption(gi, oi, { price: Number(e.target.value) || 0 })}
-                        className="w-20 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white"
+                        className="w-16 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white"
                       />
                     </div>
                     <button
                       onClick={() => removeOption(gi, oi)}
-                      className="grid h-9 w-9 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
+
                 ))}
                 <button
                   onClick={() => addOption(gi)}
