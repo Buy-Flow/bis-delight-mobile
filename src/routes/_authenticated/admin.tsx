@@ -3885,8 +3885,11 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
               Resetar posição e zoom
             </button>
           </div>
+            </div>
+          </div>
         </div>
       )}
+
 
     </div>
   );
