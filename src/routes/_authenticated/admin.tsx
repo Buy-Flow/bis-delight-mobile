@@ -5217,3 +5217,257 @@ function CustomTab({
     </div>
   );
 }
+
+/* ================= HERO IMAGES SECTION ================= */
+function HeroImagesSection({
+  s,
+  set,
+}: {
+  s: SiteSettings;
+  set: <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
+}) {
+  const heroImages = s.heroImages ?? DEFAULT_HERO_IMAGES;
+
+  const updateSide = (side: "left" | "right", patch: Partial<HeroImageConfig>) => {
+    set("heroImages", {
+      ...heroImages,
+      [side]: { ...heroImages[side], ...patch },
+    } as HeroImagesConfig);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h3 className="font-display text-lg font-black">Imagens da Tela Inicial</h3>
+        <p className="text-xs text-white/50">
+          Ajuste as duas imagens que aparecem nos cantos do hero. Você pode trocar a foto,
+          mover para dentro/fora, subir/descer e mudar o tamanho.
+        </p>
+      </div>
+
+      {/* Live preview */}
+      <div>
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          Preview real da tela inicial
+        </div>
+        <div className="relative mx-auto h-[280px] w-full max-w-[420px] overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[oklch(0.20_0.14_305)] to-[oklch(0.10_0.08_300)]">
+          <img
+            aria-hidden
+            src={heroImages.left.url}
+            alt=""
+            className="pointer-events-none absolute bottom-0 h-[220px] w-[140px] object-contain object-right"
+            style={{
+              left: `${heroImages.left.offsetX * 0.5}px`,
+              bottom: `${-heroImages.left.offsetY * 0.5}px`,
+              transform: `scale(${heroImages.left.scale})`,
+              transformOrigin: "bottom right",
+            }}
+          />
+          <img
+            aria-hidden
+            src={heroImages.right.url}
+            alt=""
+            className="pointer-events-none absolute bottom-0 h-[200px] w-[140px] object-contain object-left"
+            style={{
+              right: `${heroImages.right.offsetX * 0.5}px`,
+              bottom: `${-heroImages.right.offsetY * 0.5}px`,
+              transform: `scale(${heroImages.right.scale})`,
+              transformOrigin: "bottom left",
+            }}
+          />
+          <div className="absolute inset-x-0 top-4 text-center font-display text-2xl font-black text-neon-yellow">
+            Hero
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <HeroSideEditor
+          title="Imagem da Esquerda"
+          config={heroImages.left}
+          onChange={(patch) => updateSide("left", patch)}
+          defaults={DEFAULT_HERO_IMAGES.left}
+        />
+        <HeroSideEditor
+          title="Imagem da Direita"
+          config={heroImages.right}
+          onChange={(patch) => updateSide("right", patch)}
+          defaults={DEFAULT_HERO_IMAGES.right}
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={() => set("heroImages", DEFAULT_HERO_IMAGES)}
+        className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
+      >
+        Restaurar imagens padrão
+      </button>
+    </div>
+  );
+}
+
+function HeroSideEditor({
+  title,
+  config,
+  onChange,
+  defaults,
+}: {
+  title: string;
+  config: HeroImageConfig;
+  onChange: (patch: Partial<HeroImageConfig>) => void;
+  defaults: HeroImageConfig;
+}) {
+  const [busy, setBusy] = useState(false);
+  const inputId = `hero-upload-${title.replace(/\s+/g, "-")}`;
+
+  const upload = async (file: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadProductImage(file);
+      onChange({ url });
+      toast.success("Imagem enviada");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-extrabold text-white">{title}</div>
+        <button
+          type="button"
+          onClick={() => onChange(defaults)}
+          className="text-[11px] font-semibold text-white/60 hover:text-white"
+        >
+          Resetar
+        </button>
+      </div>
+
+      {/* Thumbnail + upload */}
+      <div className="flex items-center gap-3">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40">
+          {config.url ? (
+            <img src={config.url} alt="" className="h-full w-full object-contain" />
+          ) : (
+            <div className="grid h-full place-items-center text-[10px] text-white/40">Sem imagem</div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1 space-y-2">
+          <label
+            htmlFor={inputId}
+            className={cn(
+              "inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/10",
+              busy && "opacity-60",
+            )}
+          >
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+            Trocar imagem
+          </label>
+          <input
+            id={inputId}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) upload(f);
+              e.target.value = "";
+            }}
+          />
+          <input
+            type="text"
+            value={config.url}
+            onChange={(e) => onChange({ url: e.target.value })}
+            placeholder="Ou cole a URL da imagem"
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] text-white/80 outline-none focus:border-neon-cyan"
+          />
+        </div>
+      </div>
+
+      {/* Offset X */}
+      <SliderRow
+        label="Deslocamento horizontal"
+        hint="Negativo = para fora da tela"
+        value={config.offsetX}
+        min={-400}
+        max={200}
+        step={5}
+        unit="px"
+        onChange={(v) => onChange({ offsetX: v })}
+      />
+      {/* Offset Y */}
+      <SliderRow
+        label="Deslocamento vertical"
+        hint="Positivo = mais para baixo"
+        value={config.offsetY}
+        min={-200}
+        max={200}
+        step={5}
+        unit="px"
+        onChange={(v) => onChange({ offsetY: v })}
+      />
+      {/* Scale */}
+      <SliderRow
+        label="Tamanho"
+        value={config.scale}
+        min={0.5}
+        max={2}
+        step={0.05}
+        unit="×"
+        format={(v) => v.toFixed(2)}
+        onChange={(v) => onChange({ scale: v })}
+      />
+    </div>
+  );
+}
+
+function SliderRow({
+  label,
+  hint,
+  value,
+  min,
+  max,
+  step,
+  unit,
+  onChange,
+  format,
+}: {
+  label: string;
+  hint?: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  onChange: (v: number) => void;
+  format?: (v: number) => string;
+}) {
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+        <span>
+          {label}
+          {hint && <span className="ml-1 text-white/40">· {hint}</span>}
+        </span>
+        <span className="text-white/50">
+          {format ? format(value) : value.toFixed(0)}
+          {unit}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-neon-cyan"
+      />
+    </div>
+  );
+}
+
