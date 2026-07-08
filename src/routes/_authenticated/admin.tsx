@@ -2152,25 +2152,23 @@ function HeroImageEditor({ product }: { product: Product }) {
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-white/5 p-3">
-          {/* Live preview + drag surface */}
+        <div className="space-y-5 border-t border-white/5 p-3">
+          {/* Preview real */}
           <div>
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              Preview ao vivo — arraste a foto no card
+              Preview real — card de Destaque
             </div>
-            <div
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-              className="mx-auto touch-none select-none cursor-grab active:cursor-grabbing"
-              style={{ width: CARD_W, height: CARD_H }}
-            >
-              <HighlightCard product={previewProduct} onOpen={() => {}} />
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
+              <div style={{ width: "100%", maxWidth: CARD_W }}>
+                <HighlightCard product={previewProduct} onOpen={() => {}} />
+              </div>
+              <div className="text-[10px] text-white/40">
+                Arraste a foto abaixo ou use os controles.
+              </div>
             </div>
           </div>
 
-          {/* Image uploader */}
+          {/* Imagem exclusiva do destaque */}
           <div>
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
               Imagem exclusiva do destaque
@@ -2186,7 +2184,46 @@ function HeroImageEditor({ product }: { product: Product }) {
             </p>
           </div>
 
-          {/* Sliders */}
+          {/* Área de ajuste (arraste) */}
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Área de ajuste (arraste)
+            </div>
+            <div
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[oklch(0.14_0.09_305)] cursor-grab active:cursor-grabbing"
+              style={{ width: "100%", maxWidth: CARD_W, height: CARD_H }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
+                }}
+              />
+              <img
+                src={draft.heroImage || product.image}
+                alt=""
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
+                style={{
+                  transform: `translate(${draft.posX}%, ${draft.posY}%) scale(${draft.scale})`,
+                  transformOrigin: "center",
+                }}
+              />
+              <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                <div className="h-full w-px bg-white/10" />
+              </div>
+              <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                <div className="h-px w-full bg-white/10" />
+              </div>
+            </div>
+          </div>
+
+          {/* Controls */}
           <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
             <div>
               <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
@@ -2202,10 +2239,10 @@ function HeroImageEditor({ product }: { product: Product }) {
                 onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
                 onPointerUp={() => save({ scale: draft.scale })}
                 className="w-full accent-neon-cyan"
-                disabled={!draft.heroImage}
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
                   <span>Horizontal</span>
@@ -2220,7 +2257,6 @@ function HeroImageEditor({ product }: { product: Product }) {
                   onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
                   onPointerUp={() => save({ posX: draft.posX })}
                   className="w-full accent-neon-cyan"
-                  disabled={!draft.heroImage}
                 />
               </div>
               <div>
@@ -2237,21 +2273,34 @@ function HeroImageEditor({ product }: { product: Product }) {
                   onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
                   onPointerUp={() => save({ posY: draft.posY })}
                   className="w-full accent-neon-cyan"
-                  disabled={!draft.heroImage}
                 />
               </div>
+              <div className="flex flex-col items-stretch justify-end gap-1">
+                <div className="grid grid-cols-3 gap-1">
+                  <div />
+                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
+                  <div />
+                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
+                  <NudgeBtn onClick={reset}>◎</NudgeBtn>
+                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
+                  <div />
+                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
+                  <div />
+                </div>
+              </div>
             </div>
+
             <button
               type="button"
               onClick={reset}
-              disabled={!draft.heroImage}
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 disabled:opacity-40"
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
             >
               Resetar posição e zoom
             </button>
           </div>
         </div>
       )}
+
     </div>
   );
 }
@@ -3671,30 +3720,71 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-white/5 p-3">
+        <div className="space-y-5 border-t border-white/5 p-3">
+          {/* Preview real */}
           <div>
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              Prévia do card de Novidades — arraste para reposicionar
+              Preview real — card de Novidades
+            </div>
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
+              <div
+                className="[&_article]:!w-full [&_article]:!max-w-none"
+                style={{ width: "100%", maxWidth: CARD_W }}
+              >
+                <NewsPosterCard
+                  product={previewProduct}
+                  onOpen={() => {}}
+                  badge={NEWS_BADGES[index % NEWS_BADGES.length]}
+                  eyebrow={NEWS_EYEBROWS[index % NEWS_EYEBROWS.length]}
+                  index={index}
+                />
+              </div>
+              <div className="text-[10px] text-white/40">
+                Arraste a foto abaixo ou use os controles.
+              </div>
+            </div>
+          </div>
+
+          {/* Área de ajuste (arraste) */}
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Área de ajuste (arraste)
             </div>
             <div
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
-              className="mx-auto touch-none select-none cursor-grab active:cursor-grabbing [&_article]:!w-full [&_article]:!max-w-none"
-              style={{ width: "100%", maxWidth: CARD_W }}
-
+              className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[oklch(0.14_0.09_305)] cursor-grab active:cursor-grabbing"
+              style={{ width: "100%", maxWidth: CARD_W, aspectRatio: "3 / 4" }}
             >
-              <NewsPosterCard
-                product={previewProduct}
-                onOpen={() => {}}
-                badge={NEWS_BADGES[index % NEWS_BADGES.length]}
-                eyebrow={NEWS_EYEBROWS[index % NEWS_EYEBROWS.length]}
-                index={index}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
+                }}
               />
+              <img
+                src={product.heroImage || product.image}
+                alt=""
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
+                style={{
+                  transform: `translate(${draft.posX}%, ${draft.posY}%) scale(${draft.scale})`,
+                  transformOrigin: "center",
+                }}
+              />
+              <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                <div className="h-full w-px bg-white/10" />
+              </div>
+              <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                <div className="h-px w-full bg-white/10" />
+              </div>
             </div>
           </div>
 
+          {/* Controls */}
           <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
             <div>
               <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
@@ -3712,7 +3802,8 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 className="w-full accent-neon-cyan"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
                   <span>Horizontal</span>
@@ -3745,7 +3836,21 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                   className="w-full accent-neon-cyan"
                 />
               </div>
+              <div className="flex flex-col items-stretch justify-end gap-1">
+                <div className="grid grid-cols-3 gap-1">
+                  <div />
+                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
+                  <div />
+                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
+                  <NudgeBtn onClick={reset}>◎</NudgeBtn>
+                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
+                  <div />
+                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
+                  <div />
+                </div>
+              </div>
             </div>
+
             <button
               type="button"
               onClick={reset}
@@ -3756,6 +3861,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
           </div>
         </div>
       )}
+
     </div>
   );
 }
