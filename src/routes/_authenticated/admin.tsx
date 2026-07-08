@@ -8,6 +8,7 @@ import {
   Star,
   Settings,
   Sparkles,
+  Pencil,
   Plus,
   Trash2,
   Save,
@@ -4327,198 +4328,94 @@ function ExtrasTab() {
   );
 }
 
-function GlobalExtrasSection() {
-  const { data: settings } = useSiteSettings();
-  const update = useUpdateSettings();
-  const [draft, setDraft] = useState<import("@/data/menu").ExtraOption[] | null>(null);
+type ExtraOpt = import("@/data/menu").ExtraOption;
+
+function ExtrasEditorModal({
+  title,
+  subtitle,
+  initial,
+  accent,
+  onClose,
+  onSave,
+}: {
+  title: string;
+  subtitle?: string;
+  initial: ExtraOpt[];
+  accent: "cyan" | "pink";
+  onClose: () => void;
+  onSave: (list: ExtraOpt[]) => Promise<void> | void;
+}) {
+  const [list, setList] = useState<ExtraOpt[]>(initial);
   const [saving, setSaving] = useState(false);
+  const isDirty = JSON.stringify(list) !== JSON.stringify(initial);
 
-  const current = settings?.globalExtras ?? [];
-  const list = draft ?? current;
-  const isDirty = JSON.stringify(list) !== JSON.stringify(current);
+  const requestClose = async () => {
+    if (isDirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
+    onClose();
+  };
 
-  const save = async () => {
-    if (!settings) return;
+  const handleSave = async () => {
     setSaving(true);
     try {
-      await update.mutateAsync({ ...settings, globalExtras: list });
-      setDraft(null);
-      toast.success("Complementos globais salvos");
-    } catch {
-      toast.error("Falha ao salvar");
+      await onSave(list);
+      onClose();
     } finally {
       setSaving(false);
     }
   };
 
-  return (
-    <div className="mb-6 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-cyan">
-            Complementos globais
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos</b> automaticamente, junto com os complementos
-            individuais do produto.
-          </p>
-        </div>
-        <button
-          onClick={() =>
-            setDraft([
-              ...list,
-              { id: `g${Date.now()}`, label: "Novo complemento", price: 0 },
-            ])
-          }
-          className="shrink-0 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30"
-        >
-          <Plus className="h-3.5 w-3.5" /> Adicionar
-        </button>
-      </div>
+  const accentText = accent === "cyan" ? "text-neon-cyan" : "text-neon-pink";
+  const accentChipBg = accent === "cyan" ? "bg-neon-cyan/20 hover:bg-neon-cyan/30" : "bg-neon-pink/20 hover:bg-neon-pink/30";
+  const saveBg = accent === "cyan" ? "bg-neon-cyan text-[oklch(0.18_0.11_305)]" : "bg-neon-pink text-white glow-pink";
 
-      <RowList
-        items={list}
-        onChange={(v) => setDraft(v)}
-        render={(row, upd) => (
-          <>
-            <input
-              className={cn(inputCls, "flex-1")}
-              placeholder="Ex.: Leite Ninho"
-              value={row.label}
-              onChange={(e) => upd({ ...row, label: e.target.value })}
-            />
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] text-white/50">R$</span>
-              <input
-                type="number"
-                step="0.01"
-                className={cn(inputCls, "w-20")}
-                value={row.price}
-                onChange={(e) => upd({ ...row, price: Number(e.target.value) })}
-              />
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+      onClick={requestClose}
+    >
+      <div
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+          <div className="min-w-0">
+            <div className={cn("flex items-center gap-2 text-sm font-bold", accentText)}>
+              <Sparkles className="h-4 w-4" />
+              {title}
             </div>
-          </>
-        )}
-        emptyLabel="Nenhum complemento global. Clique em Adicionar."
-      />
-
-      {isDirty && (
-        <div className="mt-3 flex items-center justify-end gap-2">
+            {subtitle && <div className="truncate text-[11px] text-white/50">{subtitle}</div>}
+          </div>
           <button
-            onClick={() => setDraft(null)}
-            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:bg-white/10"
+            type="button"
+            onClick={requestClose}
+            aria-label="Fechar"
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
           >
-            Descartar
-          </button>
-          <button
-            onClick={save}
-            disabled={saving}
-            className="rounded-full bg-neon-cyan px-4 py-1.5 text-xs font-black uppercase tracking-wider text-[oklch(0.18_0.11_305)] disabled:opacity-50"
-          >
-            {saving ? "Salvando..." : "Salvar"}
+            <X className="h-4 w-4" />
           </button>
         </div>
-      )}
-    </div>
-  );
-}
 
-
-
-function CategoryExtrasSection() {
-  const { data: categories = [] } = useCategories();
-  const upsert = useUpsertCategory();
-  const catList = categories.filter((c) => c.id !== "all");
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [draft, setDraft] = useState<import("@/data/menu").ExtraOption[] | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const selected = catList.find((c) => c.id === selectedId) ?? null;
-  const stored = selected?.extras ?? [];
-  const siteDefaults = selected ? getDefaultExtras(selected.id) : [];
-  const usingDefaults = !!selected && stored.length === 0 && siteDefaults.length > 0;
-  const current = stored.length > 0 ? stored : siteDefaults;
-  const list = draft ?? current;
-  const isDirty = selected
-    ? usingDefaults
-      ? draft !== null
-      : JSON.stringify(list) !== JSON.stringify(stored)
-    : false;
-
-  const save = async () => {
-    if (!selected) return;
-    setSaving(true);
-    try {
-      await upsert.mutateAsync({
-        id: selected.id,
-        name: selected.name,
-        emoji: selected.emoji,
-        icon: selected.icon ?? null,
-        image_url: selected.image || null,
-        sort_order: 0,
-        active: true,
-        image_pos_x: Number(selected.imagePosX ?? 0),
-        image_pos_y: Number(selected.imagePosY ?? 0),
-        image_scale: Number(selected.imageScale ?? 1),
-        extras: list,
-      });
-      setDraft(null);
-      toast.success("Complementos da categoria salvos");
-    } catch {
-      toast.error("Falha ao salvar");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="mb-6 rounded-2xl border border-neon-pink/30 bg-neon-pink/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-pink">
-            Complementos por categoria
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos da categoria</b> selecionada, junto com os
-            complementos globais e do produto.
-          </p>
-        </div>
-        {selected && (
+        <div className="flex items-center justify-between gap-2 border-b border-white/5 px-4 py-2">
+          <div className="text-[11px] text-white/50">
+            Nome exibido e preço unitário do adicional.
+          </div>
           <button
             onClick={() =>
-              setDraft([
+              setList([
                 ...list,
-                { id: `c${Date.now()}`, label: "Novo complemento", price: 0 },
+                { id: `x${Date.now()}`, label: "Novo complemento", price: 0 },
               ])
             }
-            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-neon-pink/20 px-3 py-1.5 text-xs font-bold text-neon-pink hover:bg-neon-pink/30"
+            className={cn("inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold", accentChipBg, accentText)}
           >
             <Plus className="h-3.5 w-3.5" /> Adicionar
           </button>
-        )}
-      </div>
+        </div>
 
-      <select
-        value={selectedId}
-        onChange={(e) => {
-          setSelectedId(e.target.value);
-          setDraft(null);
-        }}
-        className={cn(inputCls, "mb-3")}
-      >
-        <option value="">Selecione uma categoria...</option>
-        {catList.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.emoji} {c.name} ({(c.extras ?? []).length})
-          </option>
-        ))}
-      </select>
-
-      {selected && (
-        <>
+        <div className="overflow-y-auto p-3">
           <RowList
             items={list}
-            onChange={(v) => setDraft(v)}
+            onChange={setList}
             render={(row, upd) => (
               <>
                 <input
@@ -4539,27 +4436,200 @@ function CategoryExtrasSection() {
                 </div>
               </>
             )}
-            emptyLabel="Nenhum complemento nesta categoria. Clique em Adicionar."
+            emptyLabel="Nenhum complemento cadastrado."
           />
+        </div>
 
-          {isDirty && (
-            <div className="mt-3 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setDraft(null)}
-                className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:bg-white/10"
-              >
-                Descartar
-              </button>
-              <button
-                onClick={save}
-                disabled={saving}
-                className="rounded-full bg-neon-pink px-4 py-1.5 text-xs font-black uppercase tracking-wider text-white glow-pink disabled:opacity-50"
-              >
-                {saving ? "Salvando..." : "Salvar"}
-              </button>
+        <div className="flex items-center justify-end gap-2 border-t border-white/5 px-4 py-3">
+          <button
+            type="button"
+            onClick={requestClose}
+            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/80 hover:bg-white/10"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!isDirty || saving}
+            className={cn("inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-black disabled:opacity-40", saveBg)}
+          >
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExtrasPreview({ list, emptyLabel }: { list: ExtraOpt[]; emptyLabel: string }) {
+  if (list.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-white/10 px-3 py-4 text-center text-[12px] text-white/40">
+        {emptyLabel}
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {list.map((e) => (
+        <span
+          key={e.id}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/80"
+        >
+          <span className="truncate max-w-[140px]">{e.label}</span>
+          <span className="text-white/40">·</span>
+          <span className="font-semibold text-white/60">R$ {e.price.toFixed(2)}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function GlobalExtrasSection() {
+  const { data: settings } = useSiteSettings();
+  const update = useUpdateSettings();
+  const [open, setOpen] = useState(false);
+  const current = settings?.globalExtras ?? [];
+
+  const save = async (list: ExtraOpt[]) => {
+    if (!settings) return;
+    try {
+      await update.mutateAsync({ ...settings, globalExtras: list });
+      toast.success("Complementos globais salvos");
+    } catch {
+      toast.error("Falha ao salvar");
+    }
+  };
+
+  return (
+    <div className="mb-6 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-black text-neon-cyan">
+            Complementos globais
+          </h3>
+          <p className="text-[11px] text-white/60">
+            Aparecem em <b>todos os produtos</b> automaticamente, junto com os complementos
+            individuais do produto.
+          </p>
+        </div>
+        <button
+          onClick={() => setOpen(true)}
+          disabled={!settings}
+          className="shrink-0 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30 disabled:opacity-40"
+        >
+          <Pencil className="h-3.5 w-3.5" /> Editar
+        </button>
+      </div>
+
+      <ExtrasPreview list={current} emptyLabel="Nenhum complemento global. Toque em Editar para adicionar." />
+
+      {open && (
+        <ExtrasEditorModal
+          title="Complementos globais"
+          subtitle="Válidos para todos os produtos"
+          initial={current}
+          accent="cyan"
+          onClose={() => setOpen(false)}
+          onSave={save}
+        />
+      )}
+    </div>
+  );
+}
+
+function CategoryExtrasSection() {
+  const { data: categories = [] } = useCategories();
+  const upsert = useUpsertCategory();
+  const catList = categories.filter((c) => c.id !== "all");
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [open, setOpen] = useState(false);
+
+  const selected = catList.find((c) => c.id === selectedId) ?? null;
+  const stored = selected?.extras ?? [];
+  const siteDefaults = selected ? getDefaultExtras(selected.id) : [];
+  const usingDefaults = !!selected && stored.length === 0 && siteDefaults.length > 0;
+  const current = stored.length > 0 ? stored : siteDefaults;
+
+  const save = async (list: ExtraOpt[]) => {
+    if (!selected) return;
+    try {
+      await upsert.mutateAsync({
+        id: selected.id,
+        name: selected.name,
+        emoji: selected.emoji,
+        icon: selected.icon ?? null,
+        image_url: selected.image || null,
+        sort_order: 0,
+        active: true,
+        image_pos_x: Number(selected.imagePosX ?? 0),
+        image_pos_y: Number(selected.imagePosY ?? 0),
+        image_scale: Number(selected.imageScale ?? 1),
+        extras: list,
+      });
+      toast.success("Complementos da categoria salvos");
+    } catch {
+      toast.error("Falha ao salvar");
+    }
+  };
+
+  return (
+    <div className="mb-6 rounded-2xl border border-neon-pink/30 bg-neon-pink/5 p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-black text-neon-pink">
+            Complementos por categoria
+          </h3>
+          <p className="text-[11px] text-white/60">
+            Aparecem em <b>todos os produtos da categoria</b> selecionada, junto com os
+            complementos globais e do produto.
+          </p>
+        </div>
+        {selected && (
+          <button
+            onClick={() => setOpen(true)}
+            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-neon-pink/20 px-3 py-1.5 text-xs font-bold text-neon-pink hover:bg-neon-pink/30"
+          >
+            <Pencil className="h-3.5 w-3.5" /> Editar
+          </button>
+        )}
+      </div>
+
+      <select
+        value={selectedId}
+        onChange={(e) => setSelectedId(e.target.value)}
+        className={cn(inputCls, "mb-3")}
+      >
+        <option value="">Selecione uma categoria...</option>
+        {catList.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.emoji} {c.name} ({(c.extras ?? []).length})
+          </option>
+        ))}
+      </select>
+
+      {selected && (
+        <>
+          {usingDefaults && (
+            <div className="mb-2 rounded-lg border border-neon-yellow/30 bg-neon-yellow/5 px-3 py-2 text-[11px] text-neon-yellow/90">
+              Mostrando os complementos padrão desta categoria. Toque em <b>Editar</b> para personalizar.
             </div>
           )}
+          <ExtrasPreview list={current} emptyLabel="Nenhum complemento nesta categoria. Toque em Editar para adicionar." />
         </>
+      )}
+
+      {open && selected && (
+        <ExtrasEditorModal
+          title={`Complementos · ${selected.name}`}
+          subtitle="Aparecem em todos os produtos desta categoria"
+          initial={current}
+          accent="pink"
+          onClose={() => setOpen(false)}
+          onSave={save}
+        />
       )}
     </div>
   );
