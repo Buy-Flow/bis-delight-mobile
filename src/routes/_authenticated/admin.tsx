@@ -85,7 +85,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "extras" | "settings";
+type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -129,6 +129,7 @@ function AdminPage() {
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "highlights", label: "Destaques", icon: Star },
     { id: "extras", label: "Complementos", icon: Plus },
+    { id: "news", label: "Novidades", icon: Sparkles },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
@@ -186,6 +187,7 @@ function AdminPage() {
         {tab === "categories" && <CategoriesTab />}
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
+        {tab === "news" && <SettingsTab initialSection="news" />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
@@ -2275,12 +2277,12 @@ const DAY_LABEL: Record<WeekDay, string> = {
   sun: "Domingo",
 };
 
-function SettingsTab() {
+function SettingsTab({ initialSection = "identity" }: { initialSection?: SettingsSection } = {}) {
   const { data } = useSiteSettings();
   const update = useUpdateSettings();
   const [s, setS] = useState<SiteSettings | null>(null);
   const [dirty, setDirty] = useState(false);
-  const [section, setSection] = useState<SettingsSection>("identity");
+  const [section, setSection] = useState<SettingsSection>(initialSection);
   const [logoBusy, setLogoBusy] = useState(false);
   const [textureBusy, setTextureBusy] = useState(false);
 
