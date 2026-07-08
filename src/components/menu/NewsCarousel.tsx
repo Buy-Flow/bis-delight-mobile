@@ -95,33 +95,22 @@ export function NewsCarousel({
   return (
     <section className="relative isolate overflow-visible py-8">
       {/* Brilhos coloridos no fundo — destaque das novidades */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-x-28 -inset-y-32 -z-10 overflow-hidden opacity-90"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(180deg, transparent 0%, black 24%, black 76%, transparent 100%), linear-gradient(90deg, transparent 0%, black 18%, black 82%, transparent 100%)",
-          WebkitMaskComposite: "source-in",
-          maskImage:
-            "linear-gradient(180deg, transparent 0%, black 24%, black 76%, transparent 100%), linear-gradient(90deg, transparent 0%, black 18%, black 82%, transparent 100%)",
-          maskComposite: "intersect",
-        }}
-      >
+      <div aria-hidden className="pointer-events-none absolute -inset-x-40 -inset-y-28 -z-10 overflow-visible">
         <div
-          className="absolute top-8 -left-8 h-72 w-72 rounded-full opacity-36 blur-3xl animate-float-slow"
-          style={{ background: "radial-gradient(circle, oklch(0.72 0.26 350 / 0.36), transparent 74%)" }}
+          className="absolute top-16 left-10 h-80 w-80 rounded-full opacity-24 blur-3xl animate-float-slow"
+          style={{ background: "radial-gradient(circle, oklch(0.72 0.26 350 / 0.30), transparent 76%)" }}
         />
         <div
-          className="absolute top-24 -right-6 h-80 w-80 rounded-full opacity-32 blur-3xl animate-float-med"
-          style={{ background: "radial-gradient(circle, oklch(0.86 0.18 200 / 0.34), transparent 74%)" }}
+          className="absolute top-24 right-6 h-80 w-80 rounded-full opacity-22 blur-3xl animate-float-med"
+          style={{ background: "radial-gradient(circle, oklch(0.86 0.18 200 / 0.28), transparent 76%)" }}
         />
         <div
-          className="absolute bottom-16 left-1/3 h-72 w-72 rounded-full opacity-26 blur-3xl animate-float-slow"
-          style={{ background: "radial-gradient(circle, oklch(0.82 0.19 90 / 0.24), transparent 76%)", animationDelay: "1.5s" }}
+          className="absolute bottom-16 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full opacity-18 blur-3xl animate-float-slow"
+          style={{ background: "radial-gradient(circle, oklch(0.82 0.19 90 / 0.20), transparent 78%)", animationDelay: "1.5s" }}
         />
         <div
-          className="absolute top-1/3 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full opacity-22 blur-3xl animate-pulse-glow"
-          style={{ background: "radial-gradient(circle, oklch(0.75 0.20 305 / 0.28), transparent 78%)" }}
+          className="absolute top-1/3 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full opacity-16 blur-3xl animate-pulse-glow"
+          style={{ background: "radial-gradient(circle, oklch(0.75 0.20 305 / 0.22), transparent 80%)" }}
         />
       </div>
 

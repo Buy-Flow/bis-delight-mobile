@@ -162,9 +162,9 @@ function Content() {
             backgroundSize: "cover",
             backgroundPosition: "center top",
             backgroundRepeat: "no-repeat",
-            opacity: Math.min(settings?.textureOpacity ?? 0.28, 0.28),
-            filter: "blur(18px) saturate(0.92)",
-            transform: "scale(1.08)",
+            opacity: Math.min(settings?.textureOpacity ?? 0.10, 0.10),
+            filter: "blur(32px) saturate(0.75)",
+            transform: "scale(1.16)",
           }}
         />
       </div>
@@ -177,15 +177,6 @@ function Content() {
             "linear-gradient(180deg, oklch(0.13 0.09 305 / 0.42) 0%, oklch(0.18 0.12 305 / 0.18) 26%, oklch(0.16 0.11 305 / 0.12) 58%, oklch(0.10 0.07 305 / 0.48) 100%), radial-gradient(150% 980px at 50% 18%, oklch(0.28 0.16 305 / 0.22), transparent 76%), radial-gradient(150% 980px at 50% 58%, oklch(0.20 0.13 305 / 0.18), transparent 78%)",
         }}
       />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-[360px] h-[760px]"
-        aria-hidden="true"
-        style={{
-          background:
-            "linear-gradient(180deg, transparent 0%, oklch(0.17 0.11 305 / 0.34) 22%, oklch(0.18 0.12 305 / 0.30) 58%, transparent 100%)",
-        }}
-      />
-
 
 
       <div className="relative">
