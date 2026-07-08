@@ -202,7 +202,7 @@ function SeedButton() {
   const [loading, setLoading] = useState(false);
   const invalidate = useInvalidateMenu();
   const run = async () => {
-    if (!confirm("Isso vai importar (ou atualizar) os produtos, categorias e configurações padrão. Continuar?")) return;
+    if (!(await confirmDialog({ title: "Importar dados padrão", message: "Isso vai importar (ou atualizar) os produtos, categorias e configurações padrão. Continuar?", confirmLabel: "Importar", tone: "default" }))) return;
     setLoading(true);
     try {
       const r = await seedInitialMenu();
@@ -525,7 +525,7 @@ function ProductEditor({
   };
 
   const remove = async () => {
-    if (!confirm(`Remover "${p.name}"? Essa ação não pode ser desfeita.`)) return;
+    if (!(await confirmDialog({ title: "Remover produto", message: `Remover "${p.name}"? Essa ação não pode ser desfeita.`, confirmLabel: "Remover" }))) return;
     await del.mutateAsync(p.id);
     toast.success("Produto removido");
     onClose();
@@ -543,10 +543,11 @@ function ProductEditor({
     }
   };
 
-  const requestClose = () => {
-    if (dirty && !confirm("Você tem alterações não salvas. Descartar?")) return;
+  const requestClose = async () => {
+    if (dirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
     onClose();
   };
+
 
   const tabs: { id: EditorTab; label: string }[] = [
     { id: "basic", label: "Básico" },
@@ -1548,7 +1549,7 @@ function CategoryEditor({
   };
 
   const remove = async () => {
-    if (!confirm(`Remover categoria "${c.name}"?`)) return;
+    if (!(await confirmDialog({ title: "Remover categoria", message: `Remover categoria "${c.name}"?`, confirmLabel: "Remover" }))) return;
     await del.mutateAsync(c.id);
     toast.success("Categoria removida");
     onClose();
@@ -1566,10 +1567,11 @@ function CategoryEditor({
     }
   };
 
-  const requestClose = () => {
-    if (dirty && !confirm("Você tem alterações não salvas. Descartar?")) return;
+  const requestClose = async () => {
+    if (dirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
     onClose();
   };
+
 
   const tabs: { id: CategoryEditorTab; label: string }[] = [
     { id: "basic", label: "Básico" },
@@ -1938,11 +1940,12 @@ function HighlightsTab() {
             <HeroImageEditor
               key={p.id}
               product={p}
-              onRemove={() => {
-                if (confirm(`Remover "${p.name}" dos destaques?`)) {
+              onRemove={async () => {
+                if (await confirmDialog({ title: "Remover dos destaques", message: `Remover "${p.name}" dos destaques?`, confirmLabel: "Remover" })) {
                   toggle.mutate({ id: p.id, hero: false });
                 }
               }}
+
             />
           ))}
         </div>
@@ -2450,12 +2453,13 @@ function NewsTab() {
     setDirty(false);
   };
 
-  const discard = () => {
+  const discard = async () => {
     if (!data) return;
-    if (dirty && !confirm("Descartar alterações não salvas?")) return;
+    if (dirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
     setS(data);
     setDirty(false);
   };
+
 
   return (
     <div className="pb-24">
@@ -2539,12 +2543,13 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
     setDirty(false);
   };
 
-  const discard = () => {
+  const discard = async () => {
     if (!data) return;
-    if (dirty && !confirm("Descartar alterações não salvas?")) return;
+    if (dirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
     setS(data);
     setDirty(false);
   };
+
 
   const uploadLogo = async (file: File) => {
     setLogoBusy(true);
@@ -4181,11 +4186,12 @@ function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
             {selected.length > 0 && (
               <button
                 type="button"
-                onClick={() => {
-                  if (confirm("Remover todos os produtos do carrossel?")) {
+                onClick={async () => {
+                  if (await confirmDialog({ title: "Limpar carrossel", message: "Remover todos os produtos do carrossel?", confirmLabel: "Limpar" })) {
                     set("newsProductIds", []);
                   }
                 }}
+
                 className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-300 hover:bg-red-500/20"
               >
                 <Eraser className="h-3 w-3" /> Limpar
