@@ -92,6 +92,15 @@ export function AccountButton() {
                     navigate({ to: "/admin" });
                   }}
                 />
+                <MenuItem
+                  icon={ClipboardList}
+                  label="Pedidos"
+                  accent
+                  onClick={() => {
+                    setOpen(false);
+                    navigate({ to: "/pedidos" });
+                  }}
+                />
               </div>
             )}
 
