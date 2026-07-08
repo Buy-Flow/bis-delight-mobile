@@ -403,7 +403,7 @@ function Content() {
           {filtered.map((p, i) => (
             <div
               key={p.id}
-              className="animate-rise-in h-full"
+              className="animate-rise-in h-full cv-auto-sm"
               style={{ animationDelay: `${Math.min(i * 40, 300)}ms` }}
             >
               <ProductCard product={p} onOpen={openProduct} />
@@ -412,7 +412,9 @@ function Content() {
         </div>
       </section>
 
-      <LocationSection />
+      <div className="cv-auto">
+        <LocationSection />
+      </div>
 
       <footer className="border-t border-white/5 px-4 py-8 text-center">
         <Link
