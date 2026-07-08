@@ -25,6 +25,25 @@ function isOpenNow(hours: DayHours[], override: "auto" | "open" | "closed") {
   return mins >= oh * 60 + om && mins <= ch * 60 + cm;
 }
 
+/**
+ * Google Maps só permite iframe via /maps/embed. URLs regulares (maps/place/...) retornam
+ * "conexão recusada" (X-Frame-Options: DENY). Convertemos extraindo lat/lng do formato
+ * "@lat,lng,zoom" e usando o embed sem chave "?output=embed".
+ */
+function toEmbedUrl(url: string): string {
+  if (!url) return url;
+  if (/\/maps\/embed/.test(url) || /output=embed/.test(url)) return url;
+  const coord = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (coord) {
+    const lat = coord[1];
+    const lng = coord[2];
+    return `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+  }
+  return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
+}
+
+
+
 export function LocationSection() {
   const { data: settings } = useSiteSettings();
   const [mounted, setMounted] = useState(false);
