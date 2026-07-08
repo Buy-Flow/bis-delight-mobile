@@ -3918,6 +3918,49 @@ function NewsPickerModal({
 
 
 
+const BG_PRESETS = [
+  { label: "Roxo Neon", value: "#0d0322" },
+  { label: "Preto", value: "#0a0a0a" },
+  { label: "Azul Noite", value: "#020b1f" },
+  { label: "Vinho", value: "#1a0510" },
+  { label: "Verde Escuro", value: "#02150e" },
+  { label: "Cinza Grafite", value: "#1a1a1f" },
+];
+
+const ACCENT_PRESETS = [
+  { label: "Amarelo Neon", value: "#ffe600" },
+  { label: "Rosa Neon", value: "#ff2ea6" },
+  { label: "Ciano", value: "#00e5ff" },
+  { label: "Verde Lima", value: "#b0ff2e" },
+  { label: "Laranja", value: "#ff8a00" },
+  { label: "Roxo", value: "#a855f7" },
+];
+
+const TITLE_FONTS = [
+  { label: "Barlow Condensed", value: "Barlow Condensed", sample: "QUERO BIS" },
+  { label: "Fredoka", value: "Fredoka", sample: "Quero Bis" },
+  { label: "Poppins", value: "Poppins", sample: "Quero Bis" },
+  { label: "Caveat", value: "Caveat", sample: "Quero Bis" },
+];
+
+const TEXTURE_SIZES: { label: string; value: SiteSettings["textureSize"] }[] = [
+  { label: "Cobrir", value: "cover" },
+  { label: "Pequeno", value: "small" },
+  { label: "Médio", value: "medium" },
+  { label: "Grande", value: "large" },
+  { label: "Ajustar", value: "contain" },
+];
+
+function textureSizeToCss(size: SiteSettings["textureSize"]) {
+  switch (size) {
+    case "small": return "200px";
+    case "medium": return "400px";
+    case "large": return "800px";
+    case "contain": return "contain";
+    default: return "cover";
+  }
+}
+
 function AppearanceSection({
   s,
   set,
@@ -3929,41 +3972,133 @@ function AppearanceSection({
   onTexture: (f: File) => void;
   textureBusy: boolean;
 }) {
+  const bgSize = textureSizeToCss(s.textureSize);
   return (
     <div className="space-y-5">
-      <SectionTitle icon={Palette} title="Aparência" sub="Como o fundo do cardápio aparece." />
+      <SectionTitle icon={Palette} title="Aparência" sub="Personalize cores, textura, cards e tipografia." />
 
       {/* Prévia ao vivo */}
       <div>
         <div className="mb-1.5 flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-wider text-white/50">
-          <Sparkles className="h-3 w-3 text-neon-yellow" /> Prévia ao vivo
+          <Sparkles className="h-3 w-3" style={{ color: s.accentColor }} /> Prévia ao vivo
         </div>
         <div
-          className="relative h-40 overflow-hidden rounded-2xl border border-white/10"
+          className="relative h-48 overflow-hidden border border-white/10"
           style={{
-            backgroundColor: "#0d0322",
-            backgroundImage: s.texture ? `url(${s.texture})` : undefined,
-            backgroundSize: "cover",
-            backgroundRepeat: "repeat",
+            backgroundColor: s.bgColor,
+            borderRadius: s.cardRadius,
           }}
         >
+          {s.texture && (
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url(${s.texture})`,
+                backgroundSize: bgSize,
+                backgroundRepeat: bgSize === "cover" || bgSize === "contain" ? "no-repeat" : "repeat",
+                opacity: s.textureOpacity,
+              }}
+            />
+          )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-black/40" />
           <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
             <div
-              className="font-display text-lg font-black uppercase text-white drop-shadow-lg"
-              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+              className="text-lg font-black uppercase text-white drop-shadow-lg"
+              style={{ fontFamily: `'${s.titleFont}', 'Poppins', sans-serif` }}
             >
               {s.name || "Sua loja"}
             </div>
-            <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[10px] font-black uppercase text-[oklch(0.15_0.10_305)]">
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
+              style={{ backgroundColor: s.accentColor, color: s.bgColor }}
+            >
               Aberto
             </span>
           </div>
-          {!s.texture && (
-            <div className="absolute inset-0 flex items-center justify-center text-[11px] text-white/40">
-              Sem textura — fundo roxo padrão
-            </div>
-          )}
+          {/* Card demo */}
+          <div
+            className="absolute left-3 top-3 h-16 w-24 bg-white/10 backdrop-blur"
+            style={{
+              borderRadius: s.cardRadius,
+              border: s.cardBorder ? `1px solid ${s.accentColor}55` : "none",
+              boxShadow: s.cardGlow ? `0 0 24px ${s.accentColor}88` : "none",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Cores */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <Palette className="h-3.5 w-3.5 text-neon-pink" /> Cores
+        </div>
+
+        <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-white/40">Cor de fundo</div>
+        <div className="mb-3 flex items-center gap-2">
+          <input
+            type="color"
+            value={s.bgColor}
+            onChange={(e) => set("bgColor", e.target.value)}
+            className="h-9 w-12 cursor-pointer rounded-lg border border-white/10 bg-transparent"
+          />
+          <input
+            className={cn(inputCls, "h-9 flex-1 text-xs")}
+            value={s.bgColor}
+            onChange={(e) => set("bgColor", e.target.value)}
+            placeholder="#0d0322"
+          />
+        </div>
+        <div className="mb-4 grid grid-cols-6 gap-1.5">
+          {BG_PRESETS.map((p) => {
+            const active = s.bgColor.toLowerCase() === p.value.toLowerCase();
+            return (
+              <button
+                key={p.value}
+                type="button"
+                onClick={() => set("bgColor", p.value)}
+                title={p.label}
+                className={cn(
+                  "aspect-square rounded-lg border transition",
+                  active ? "border-white ring-2 ring-white/50" : "border-white/10 hover:border-white/30",
+                )}
+                style={{ backgroundColor: p.value }}
+              />
+            );
+          })}
+        </div>
+
+        <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-white/40">Cor de destaque</div>
+        <div className="mb-3 flex items-center gap-2">
+          <input
+            type="color"
+            value={s.accentColor}
+            onChange={(e) => set("accentColor", e.target.value)}
+            className="h-9 w-12 cursor-pointer rounded-lg border border-white/10 bg-transparent"
+          />
+          <input
+            className={cn(inputCls, "h-9 flex-1 text-xs")}
+            value={s.accentColor}
+            onChange={(e) => set("accentColor", e.target.value)}
+            placeholder="#ffe600"
+          />
+        </div>
+        <div className="grid grid-cols-6 gap-1.5">
+          {ACCENT_PRESETS.map((p) => {
+            const active = s.accentColor.toLowerCase() === p.value.toLowerCase();
+            return (
+              <button
+                key={p.value}
+                type="button"
+                onClick={() => set("accentColor", p.value)}
+                title={p.label}
+                className={cn(
+                  "aspect-square rounded-lg border transition",
+                  active ? "border-white ring-2 ring-white/50" : "border-white/10 hover:border-white/30",
+                )}
+                style={{ backgroundColor: p.value }}
+              />
+            );
+          })}
         </div>
       </div>
 
@@ -3991,6 +4126,48 @@ function AppearanceSection({
           />
         </div>
 
+        {/* Opacidade */}
+        <div className="mt-4">
+          <div className="mb-1.5 flex items-center justify-between text-[10.5px] uppercase tracking-wider text-white/40">
+            <span>Opacidade</span>
+            <span className="text-white/70">{Math.round(s.textureOpacity * 100)}%</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={s.textureOpacity}
+            onChange={(e) => set("textureOpacity", Number(e.target.value))}
+            className="w-full accent-neon-pink"
+          />
+        </div>
+
+        {/* Tamanho */}
+        <div className="mt-4">
+          <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-white/40">Tamanho</div>
+          <div className="grid grid-cols-5 gap-1.5">
+            {TEXTURE_SIZES.map((t) => {
+              const active = s.textureSize === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => set("textureSize", t.value)}
+                  className={cn(
+                    "rounded-lg border px-2 py-2 text-[10.5px] font-semibold transition",
+                    active
+                      ? "border-neon-yellow bg-neon-yellow/10 text-neon-yellow"
+                      : "border-white/10 text-white/60 hover:border-white/30",
+                  )}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Presets */}
         <div className="mt-4">
           <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-white/40">Presets</div>
@@ -4009,7 +4186,7 @@ function AppearanceSection({
                       : "border-white/10 hover:border-white/30",
                   )}
                   style={{
-                    backgroundColor: "#0d0322",
+                    backgroundColor: s.bgColor,
                     backgroundImage: p.url ? `url(${p.url})` : undefined,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
@@ -4028,6 +4205,91 @@ function AppearanceSection({
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* Cards */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <Palette className="h-3.5 w-3.5 text-neon-cyan" /> Estilo dos cards
+        </div>
+
+        <div className="mb-4">
+          <div className="mb-1.5 flex items-center justify-between text-[10.5px] uppercase tracking-wider text-white/40">
+            <span>Arredondamento</span>
+            <span className="text-white/70">{s.cardRadius}px</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={40}
+            step={1}
+            value={s.cardRadius}
+            onChange={(e) => set("cardRadius", Number(e.target.value))}
+            className="w-full accent-neon-cyan"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => set("cardBorder", !s.cardBorder)}
+            className={cn(
+              "rounded-xl border px-3 py-3 text-left transition",
+              s.cardBorder
+                ? "border-neon-yellow bg-neon-yellow/10"
+                : "border-white/10 hover:border-white/30",
+            )}
+          >
+            <div className="text-[11px] font-bold text-white">Borda neon</div>
+            <div className="text-[10px] text-white/50">{s.cardBorder ? "Ativa" : "Desativada"}</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => set("cardGlow", !s.cardGlow)}
+            className={cn(
+              "rounded-xl border px-3 py-3 text-left transition",
+              s.cardGlow
+                ? "border-neon-pink bg-neon-pink/10"
+                : "border-white/10 hover:border-white/30",
+            )}
+          >
+            <div className="text-[11px] font-bold text-white">Brilho neon</div>
+            <div className="text-[10px] text-white/50">{s.cardGlow ? "Ativo" : "Desativado"}</div>
+          </button>
+        </div>
+      </div>
+
+      {/* Tipografia */}
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
+          <Sparkles className="h-3.5 w-3.5 text-neon-yellow" /> Fonte do título da loja
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {TITLE_FONTS.map((f) => {
+            const active = s.titleFont === f.value;
+            return (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => set("titleFont", f.value)}
+                className={cn(
+                  "rounded-xl border px-3 py-3 text-left transition",
+                  active
+                    ? "border-neon-yellow bg-neon-yellow/10"
+                    : "border-white/10 hover:border-white/30",
+                )}
+              >
+                <div
+                  className="text-lg font-black uppercase text-white"
+                  style={{ fontFamily: `'${f.value}', 'Poppins', sans-serif` }}
+                >
+                  {f.sample}
+                </div>
+                <div className="mt-0.5 text-[10px] text-white/50">{f.label}</div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
