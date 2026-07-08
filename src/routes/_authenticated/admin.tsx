@@ -3763,12 +3763,14 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
 
 
   const dirty =
+    draft.heroImage !== initialDraft.heroImage ||
     draft.posX !== initialDraft.posX ||
     draft.posY !== initialDraft.posY ||
     draft.scale !== initialDraft.scale;
 
   const previewProduct: Product = {
     ...product,
+    heroImage: draft.heroImage,
     heroImagePosX: draft.posX,
     heroImagePosY: draft.posY,
     heroImageScale: draft.scale,
@@ -3781,6 +3783,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
   const save = async () => {
     await update.mutateAsync({
       id: product.id,
+      heroImage: draft.heroImage,
       heroImagePosX: draft.posX,
       heroImagePosY: draft.posY,
       heroImageScale: draft.scale,
@@ -3793,6 +3796,25 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
     setDraft(initialDraft);
     setOpen(false);
   };
+
+  const onFile = async (file: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadProductImage(file);
+      patchDraft({ heroImage: url });
+      toast.success("Imagem pronta — clique em Salvar");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clearImage = async () => {
+    patchDraft({ heroImage: "" });
+    toast.success("Imagem removida — clique em Salvar");
+  };
+
 
   const reset = () => patchDraft({ posX: 0, posY: 0, scale: 1.2 });
 
