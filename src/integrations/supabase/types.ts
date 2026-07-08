@@ -367,11 +367,16 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          accent_color: string
           accepts_delivery: boolean
           accepts_pickup: boolean
           address: string
           announcement_active: boolean
           announcement_text: string
+          bg_color: string
+          card_border: boolean
+          card_glow: boolean
+          card_radius: number
           city: string
           delivery_fee: number
           facebook: string
@@ -395,18 +400,26 @@ export type Database = {
           payment_methods: Json
           pix_key: string
           tagline: string
+          texture_opacity: number
+          texture_size: string
           texture_url: string | null
           tiktok: string
+          title_font: string
           updated_at: string
           whatsapp: string
           whatsapp_display: string
         }
         Insert: {
+          accent_color?: string
           accepts_delivery?: boolean
           accepts_pickup?: boolean
           address?: string
           announcement_active?: boolean
           announcement_text?: string
+          bg_color?: string
+          card_border?: boolean
+          card_glow?: boolean
+          card_radius?: number
           city?: string
           delivery_fee?: number
           facebook?: string
@@ -430,18 +443,26 @@ export type Database = {
           payment_methods?: Json
           pix_key?: string
           tagline?: string
+          texture_opacity?: number
+          texture_size?: string
           texture_url?: string | null
           tiktok?: string
+          title_font?: string
           updated_at?: string
           whatsapp?: string
           whatsapp_display?: string
         }
         Update: {
+          accent_color?: string
           accepts_delivery?: boolean
           accepts_pickup?: boolean
           address?: string
           announcement_active?: boolean
           announcement_text?: string
+          bg_color?: string
+          card_border?: boolean
+          card_glow?: boolean
+          card_radius?: number
           city?: string
           delivery_fee?: number
           facebook?: string
@@ -465,8 +486,11 @@ export type Database = {
           payment_methods?: Json
           pix_key?: string
           tagline?: string
+          texture_opacity?: number
+          texture_size?: string
           texture_url?: string | null
           tiktok?: string
+          title_font?: string
           updated_at?: string
           whatsapp?: string
           whatsapp_display?: string

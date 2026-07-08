@@ -45,6 +45,14 @@ export type SiteSettings = {
   newsTicker: string;
   newsProductIds: string[];
   globalExtras: ExtraOption[];
+  bgColor: string;
+  accentColor: string;
+  textureOpacity: number;
+  textureSize: "cover" | "contain" | "small" | "medium" | "large";
+  cardRadius: number;
+  cardBorder: boolean;
+  cardGlow: boolean;
+  titleFont: string;
 };
 
 
@@ -179,6 +187,14 @@ const DEFAULT_EXTRA: Pick<
   | "newsTicker"
   | "newsProductIds"
   | "globalExtras"
+  | "bgColor"
+  | "accentColor"
+  | "textureOpacity"
+  | "textureSize"
+  | "cardRadius"
+  | "cardBorder"
+  | "cardGlow"
+  | "titleFont"
 > = {
   instagram: "",
   facebook: "",
@@ -199,6 +215,14 @@ const DEFAULT_EXTRA: Pick<
   newsTicker: "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana",
   newsProductIds: [],
   globalExtras: [],
+  bgColor: "#0d0322",
+  accentColor: "#ffe600",
+  textureOpacity: 1,
+  textureSize: "cover",
+  cardRadius: 24,
+  cardBorder: true,
+  cardGlow: false,
+  titleFont: "Barlow Condensed",
 };
 
 
@@ -262,6 +286,15 @@ export function useSiteSettings() {
         newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
         newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
         globalExtras: Array.isArray(rawGlobalExtras) ? rawGlobalExtras : [],
+        bgColor: String((data as Record<string, unknown>).bg_color ?? "#0d0322"),
+        accentColor: String((data as Record<string, unknown>).accent_color ?? "#ffe600"),
+        textureOpacity: Number((data as Record<string, unknown>).texture_opacity ?? 1),
+        textureSize: (String((data as Record<string, unknown>).texture_size ?? "cover") as SiteSettings["textureSize"]),
+        cardRadius: Number((data as Record<string, unknown>).card_radius ?? 24),
+        cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
+        cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
+        titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
+
 
       };
     },
@@ -516,6 +549,15 @@ export function useUpdateSettings() {
         news_ticker: s.newsTicker,
         news_product_ids: s.newsProductIds,
         global_extras: s.globalExtras,
+        bg_color: s.bgColor,
+        accent_color: s.accentColor,
+        texture_opacity: s.textureOpacity,
+        texture_size: s.textureSize,
+        card_radius: s.cardRadius,
+        card_border: s.cardBorder,
+        card_glow: s.cardGlow,
+        title_font: s.titleFont,
+
 
       }, { onConflict: "id" });
       if (error) throw error;
