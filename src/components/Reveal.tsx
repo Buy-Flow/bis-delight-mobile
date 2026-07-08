@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type Direction = "up" | "down" | "left" | "right" | "none";
+
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export function Reveal({
   children,
@@ -25,6 +27,19 @@ export function Reveal({
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
+  // Se o elemento já estiver visível no primeiro paint (above-the-fold),
+  // marca como visível de forma síncrona para evitar o "flash" de conteúdo
+  // aparecendo em pedaços no carregamento inicial.
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < vh && rect.bottom > 0) {
+      setVisible(true);
+    }
+  }, []);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -43,11 +58,12 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" },
+      { threshold: 0.05, rootMargin: "0px 0px 10% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
   }, [once]);
+
 
   const offset =
     direction === "up"
