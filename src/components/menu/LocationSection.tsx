@@ -1,12 +1,9 @@
-import { MapPin, Navigation, MessageCircle, Instagram, Facebook, Phone, Bike, Store } from "lucide-react";
+import { MapPin, Navigation, MessageCircle, Instagram, Church, Clock, Bike } from "lucide-react";
 import { BRAND } from "@/data/menu";
 import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/lib/menu-data";
 import { useEffect, useState } from "react";
 
-const DAY_LABEL: Record<WeekDay, string> = {
-  mon: "SEG", tue: "TER", wed: "QUA", thu: "QUI", fri: "SEX", sat: "SÁB", sun: "DOM",
-};
-const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const _DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 function jsWeekdayToKey(d: number): WeekDay {
   return (["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as WeekDay[])[d];
@@ -26,25 +23,17 @@ export function isOpenNow(hours: DayHours[], override: "auto" | "open" | "closed
     const [ch, cm] = day.close.split(":").map(Number);
     const openMin = oh * 60 + om;
     let closeMin = ch * 60 + cm;
-    if (closeMin <= openMin) closeMin += 24 * 60; // spans midnight
+    if (closeMin <= openMin) closeMin += 24 * 60;
     let cur = curMins;
     if (cur < openMin) cur += 24 * 60;
     return cur >= openMin && cur < closeMin;
   };
 
-  // Current-day window
   if (check(hours.find((h) => h.day === todayKey), mins)) return true;
-  // Yesterday's overnight window still open past midnight
   if (check(hours.find((h) => h.day === yestKey), mins + 24 * 60)) return true;
   return false;
 }
 
-
-/**
- * Google Maps só permite iframe via /maps/embed. URLs regulares (maps/place/...) retornam
- * "conexão recusada" (X-Frame-Options: DENY). Convertemos extraindo lat/lng do formato
- * "@lat,lng,zoom" e usando o embed sem chave "?output=embed".
- */
 function toEmbedUrl(url: string): string {
   if (!url) return url;
   if (/\/maps\/embed/.test(url) || /output=embed/.test(url)) return url;
@@ -57,25 +46,14 @@ function toEmbedUrl(url: string): string {
   return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
 }
 
-function socialUrl(value: string | undefined | null, network: "instagram" | "facebook" | "tiktok"): string {
+function socialUrl(value: string | undefined | null, network: "instagram"): string {
   if (!value) return "";
   const v = value.trim();
   if (!v) return "";
   if (/^https?:\/\//i.test(v)) return v;
   const handle = v.replace(/^@/, "").replace(/^\/+/, "");
-  switch (network) {
-    case "instagram":
-      return `https://instagram.com/${handle}`;
-    case "facebook":
-      return `https://facebook.com/${handle}`;
-    case "tiktok":
-      return `https://tiktok.com/@${handle}`;
-  }
+  return `https://instagram.com/${handle}`;
 }
-
-
-
-
 
 export function LocationSection() {
   const { data: settings } = useSiteSettings();
@@ -83,338 +61,265 @@ export function LocationSection() {
   useEffect(() => setMounted(true), []);
 
   const name = settings?.name || BRAND.name;
-  const tagline = settings?.tagline || BRAND.tagline;
   const address = settings?.address || BRAND.address;
   const city = settings?.city || BRAND.city;
   const whatsapp = settings?.whatsapp || BRAND.whatsapp;
-  const whatsappDisplay = settings?.whatsappDisplay || BRAND.whatsappDisplay;
   const mapsUrl = settings?.mapsUrl || BRAND.mapsUrl;
   const rawMapEmbed = settings?.mapEmbed || BRAND.mapEmbed;
   const mapEmbed = toEmbedUrl(rawMapEmbed);
-
-  const logo = settings?.logo || BRAND.logo;
   const instagram = socialUrl(settings?.instagram, "instagram");
-  const facebook = socialUrl(settings?.facebook, "facebook");
-  const tiktok = socialUrl(settings?.tiktok, "tiktok");
-
-  const acceptsDelivery = settings?.acceptsDelivery ?? true;
-  const acceptsPickup = settings?.acceptsPickup ?? true;
   const hours = settings?.hoursJson?.length ? settings.hoursJson : DEFAULT_HOURS;
   const override = settings?.openOverride ?? "auto";
 
   const open = mounted ? isOpenNow(hours, override) : false;
   const todayKey = mounted ? jsWeekdayToKey(new Date().getDay()) : "mon";
   const todayHours = hours.find((h) => h.day === todayKey);
+  const todayLabel =
+    todayHours && !todayHours.closed
+      ? `${todayHours.open.slice(0, 5)} às ${todayHours.close.slice(0, 5)}`
+      : "Fechado hoje";
 
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá! Quero fazer um pedido 🍧")}`;
 
+  const openNativeMaps = () => {
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (/(Macintosh)/.test(ua) && "ontouchend" in document);
+    const query = encodeURIComponent(`${name} ${address} ${city}`);
+    const url = isIOS
+      ? `https://maps.apple.com/?q=${query}`
+      : mapsUrl || `https://www.google.com/maps/search/?api=1&query=${query}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
-    <section id="localizacao" className="relative px-4 py-12">
-      {/* Ambient glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-      >
+    <section id="localizacao" className="relative overflow-hidden px-5 py-10">
+      {/* Ambient decorations */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-4 top-6 grid grid-cols-4 gap-2 opacity-40">
+          {Array.from({ length: 16 }).map((_, i) => (
+            <span key={i} className="h-1 w-1 rounded-full bg-neon-pink" />
+          ))}
+        </div>
         <div
-          className="absolute -left-20 top-10 h-72 w-72 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, oklch(0.65 0.28 340 / 0.35), transparent 70%)" }}
-        />
-        <div
-          className="absolute -right-20 bottom-10 h-72 w-72 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, oklch(0.75 0.22 195 / 0.30), transparent 70%)" }}
+          className="absolute -right-12 -top-10 h-56 w-56 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, oklch(0.60 0.28 340 / 0.35), transparent 70%)" }}
         />
       </div>
 
-      {/* Eyebrow */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        <span className="text-[10px] font-black uppercase tracking-[.35em] text-white/50">Nos visite</span>
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      </div>
-
-      {/* Ticket-style card */}
-      <div className="relative">
-        {/* Notches */}
-        <div className="pointer-events-none absolute left-1/2 top-[220px] z-20 -translate-x-1/2">
-          <div className="flex items-center">
-            <div className="h-5 w-5 rounded-full bg-[hsl(var(--background))]" style={{ boxShadow: "inset 0 0 0 1px oklch(1 0 0 / 0.08)" }} />
+      {/* Heading — script "Pertinho de você" with heart pin */}
+      <div className="relative mb-7 text-center">
+        <div className="relative inline-block">
+          <div
+            aria-hidden
+            className="absolute -top-6 left-1/2 -translate-x-1/2 text-neon-pink drop-shadow-[0_0_10px_rgba(255,60,140,0.7)]"
+          >
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="currentColor">
+              <path d="M12 2C7.6 2 4 5.4 4 9.6c0 5.6 8 12.4 8 12.4s8-6.8 8-12.4C20 5.4 16.4 2 12 2zm0 10.8a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+            </svg>
+          </div>
+          <h2
+            className="text-white glow-yellow-text"
+            style={{
+              fontFamily: "'Caveat', cursive",
+              fontWeight: 700,
+              fontSize: 52,
+              lineHeight: 0.9,
+              textShadow: "0 3px 12px rgba(0,0,0,0.5)",
+            }}
+          >
+            Pertinho
+          </h2>
+          <div
+            className="-mt-2 text-neon-yellow"
+            style={{
+              fontFamily: "'Caveat', cursive",
+              fontWeight: 700,
+              fontSize: 42,
+              lineHeight: 0.9,
+              transform: "rotate(-3deg)",
+              textShadow: "0 3px 12px rgba(0,0,0,0.5)",
+            }}
+          >
+            de você
           </div>
         </div>
-        <div className="pointer-events-none absolute -left-4 top-[220px] z-20">
-          <div className="h-5 w-5 rounded-full bg-[hsl(var(--background))]" />
-        </div>
-        <div className="pointer-events-none absolute -right-4 top-[220px] z-20">
-          <div className="h-5 w-5 rounded-full bg-[hsl(var(--background))]" />
-        </div>
+      </div>
 
-        <div
-          className="relative overflow-hidden rounded-[32px]"
+      {/* Address card */}
+      <div className="mb-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+        <div className="flex items-start gap-3">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-neon-pink/20 ring-1 ring-neon-pink/40">
+            <MapPin className="h-5 w-5 text-neon-pink" strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[15px] font-black leading-tight text-white">{address}</div>
+            <div className="text-[12px] text-white/60">{city}</div>
+          </div>
+        </div>
+        <div className="mt-3 flex items-start gap-3">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5 ring-1 ring-white/10">
+            <Church className="h-4 w-4 text-neon-yellow" strokeWidth={2.25} />
+          </div>
+          <p className="pt-1 text-[12px] leading-snug text-white/70">
+            Esquina com a JK,
+            <br />
+            próximo à Igreja Matriz
+          </p>
+        </div>
+      </div>
+
+      {/* Map preview card */}
+      <button
+        type="button"
+        onClick={openNativeMaps}
+        aria-label="Abrir mapa"
+        className="mb-5 block w-full overflow-hidden rounded-3xl border border-white/10 bg-black/40 shadow-[0_20px_60px_-20px_rgba(180,60,220,0.5)] active:scale-[0.99] transition"
+      >
+        <div className="relative h-[190px]">
+          <iframe
+            title={`Localização ${name}`}
+            src={mapEmbed}
+            className="pointer-events-none h-full w-full"
+            style={{ border: 0, filter: "saturate(1.2) contrast(1.05) hue-rotate(200deg) brightness(0.85)" }}
+            loading="lazy"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(120% 80% at 50% 40%, transparent 40%, oklch(0.10 0.08 305 / 0.6) 100%)",
+            }}
+          />
+          <div className="absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2">
+            <div className="relative">
+              <div aria-hidden className="absolute inset-0 -m-3 animate-ping rounded-full bg-neon-pink/40" />
+              <div
+                className="relative grid h-10 w-10 place-items-center rounded-full bg-neon-pink text-white ring-4 ring-neon-pink/30"
+                style={{ boxShadow: "0 8px 24px oklch(0.65 0.28 340 / 0.6)" }}
+              >
+                <MapPin className="h-5 w-5" strokeWidth={2.5} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </button>
+
+      {/* Big action buttons */}
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={openNativeMaps}
+          className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left font-black text-white shadow-[0_10px_30px_-10px_rgba(255,60,140,0.6)] active:scale-[0.98] transition"
           style={{
             background:
-              "linear-gradient(180deg, oklch(0.12 0.09 305 / 0.85) 0%, oklch(0.06 0.05 305 / 0.98) 100%)",
-            boxShadow:
-              "0 30px 80px -30px oklch(0.55 0.28 320 / 0.6), inset 0 1px 0 oklch(1 0 0 / 0.10)",
-            border: "1px solid oklch(1 0 0 / 0.08)",
+              "linear-gradient(135deg, oklch(0.62 0.26 340) 0%, oklch(0.50 0.22 320) 100%)",
           }}
         >
-          {/* MAP TOP */}
-          <div className="relative h-[240px] overflow-hidden">
-            <iframe
-              title={`Localização ${name}`}
-              src={mapEmbed}
-              className="pointer-events-none h-full w-full"
-              style={{ border: 0, filter: "saturate(1.15) contrast(1.05)" }}
-              loading="lazy"
-            />
-            {/* Clique abre app de mapas nativo (Apple Maps no iOS, Google Maps nos demais) */}
-            <button
-              type="button"
-              aria-label={`Abrir ${name} no app de mapas`}
-              onClick={() => {
-                const ua = navigator.userAgent || "";
-                const isIOS = /iPad|iPhone|iPod/.test(ua) || (/(Macintosh)/.test(ua) && "ontouchend" in document);
-                const query = encodeURIComponent(`${name} ${address} ${city}`);
-                const url = isIOS
-                  ? `https://maps.apple.com/?q=${query}`
-                  : mapsUrl || `https://www.google.com/maps/search/?api=1&query=${query}`;
-                window.open(url, "_blank", "noopener,noreferrer");
-              }}
-              className="absolute inset-0 z-10 cursor-pointer"
-            />
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
+            <Navigation className="h-5 w-5" strokeWidth={2.5} />
+          </span>
+          <span className="flex-1 text-[15px]">Abrir no Maps</span>
+          <span className="text-white/70">›</span>
+        </button>
 
-            {/* Vignette */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(120% 80% at 50% 40%, transparent 40%, oklch(0.06 0.05 305 / 0.55) 100%)",
-              }}
-            />
-            {/* Bottom fade */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-16"
-              style={{
-                background:
-                  "linear-gradient(180deg, transparent 0%, oklch(0.06 0.05 305 / 0.9) 100%)",
-              }}
-            />
+        <a
+          href={waLink}
+          target="_blank"
+          rel="noreferrer"
+          className="group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl px-4 py-3.5 font-black text-white shadow-[0_10px_30px_-10px_rgba(37,211,102,0.6)] active:scale-[0.98] transition"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.68 0.20 145) 0%, oklch(0.55 0.19 145) 100%)",
+          }}
+        >
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
+            <MessageCircle className="h-5 w-5" strokeWidth={2.5} />
+          </span>
+          <span className="flex-1 text-[15px]">Pedir no WhatsApp</span>
+          <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-[oklch(0.20_0.10_305)]">
+            ⚡ Mais rápido
+          </span>
+          <span className="text-white/80">›</span>
+        </a>
 
-            {/* Pin marker */}
-            <div className="absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2">
-              <div className="relative">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 -m-4 animate-ping rounded-full bg-neon-pink/40"
-                />
-                <div
-                  className="relative grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-neon-pink to-fuchsia-500 ring-4 ring-neon-pink/30"
-                  style={{ boxShadow: "0 8px 24px oklch(0.65 0.28 340 / 0.6)" }}
-                >
-                  <img src={logo} alt="" className="h-6 w-6 object-contain" />
-                </div>
-              </div>
-            </div>
+        {instagram && (
+          <a
+            href={instagram}
+            target="_blank"
+            rel="noreferrer"
+            className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 font-black text-white shadow-[0_10px_30px_-10px_rgba(200,60,180,0.6)] active:scale-[0.98] transition"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.55 0.24 320) 0%, oklch(0.45 0.22 310) 100%)",
+            }}
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
+              <Instagram className="h-5 w-5" strokeWidth={2.5} />
+            </span>
+            <span className="flex-1 text-[15px]">Instagram</span>
+            <span className="text-white/70">›</span>
+          </a>
+        )}
+      </div>
 
-            {/* Live status pill */}
-            <div className="absolute left-4 top-4">
-              <div
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[.22em] shadow-lg backdrop-blur-md ${
-                  open
-                    ? "border border-emerald-300 bg-emerald-500/90 text-white"
-                    : "border border-rose-300 bg-rose-600/90 text-white"
-                }`}
-              >
-                <span className={`h-1.5 w-1.5 rounded-full ${open ? "bg-white animate-pulse" : "bg-white"}`} />
-                {open ? "Aberto" : "Fechado"}
-              </div>
-            </div>
-
-            {/* Modes */}
-            <div className="absolute right-4 top-4 flex flex-col items-end gap-1.5">
-              {acceptsDelivery && (
-                <span
-                  className="inline-flex items-center gap-1 rounded-full border border-neon-cyan px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur"
-                  style={{ backgroundColor: "oklch(0.55 0.20 200 / 0.92)" }}
-                >
-                  <Bike className="h-3 w-3" /> Delivery
-                </span>
-              )}
-              {acceptsPickup && (
-                <span
-                  className="inline-flex items-center gap-1 rounded-full border border-neon-pink px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur"
-                  style={{ backgroundColor: "oklch(0.60 0.26 340 / 0.92)" }}
-                >
-                  <Store className="h-3 w-3" /> Retirada
-                </span>
-              )}
+      {/* Status pills row */}
+      <div className="mt-5 flex items-center justify-center gap-3">
+        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur">
+          <span
+            className={`grid h-6 w-6 place-items-center rounded-full ${
+              open ? "bg-emerald-500" : "bg-rose-500"
+            }`}
+          >
+            <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+          </span>
+          <div className="text-[11px] leading-tight">
+            <div className="font-black text-white">{open ? "Aberto hoje" : "Fechado agora"}</div>
+            <div className="flex items-center gap-1 text-white/60">
+              <Clock className="h-3 w-3" />
+              {todayLabel}
             </div>
           </div>
+        </div>
 
-
-          {/* PERFORATED DIVIDER */}
-          <div className="relative h-4">
-            <div
-              aria-hidden
-              className="absolute inset-x-6 top-1/2 -translate-y-1/2 border-t border-dashed border-white/15"
-            />
-          </div>
-
-          {/* INFO BOTTOM */}
-          <div className="relative space-y-5 px-5 pb-6 pt-2">
-            {/* Title row */}
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-[.28em] text-neon-pink/80">Endereço</div>
-              <div className="mt-1 flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-neon-pink" />
-                <div>
-                  <div className="text-[15px] font-black leading-tight text-white">{address}</div>
-                  <div className="text-[12px] text-white/55">{city}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Horários semana */}
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-[10px] font-black uppercase tracking-[.28em] text-neon-cyan">Horário</div>
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="Como chegar"
-                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/70 transition hover:border-neon-cyan/50 hover:text-neon-cyan"
-                >
-                  <Navigation className="h-3 w-3" /> Rota
-                </a>
-              </div>
-              <div className="grid grid-cols-7 gap-1.5">
-                {DAY_ORDER.map((d) => {
-                  const h = hours.find((x) => x.day === d);
-                  const isToday = mounted && d === todayKey;
-                  const closed = !!h?.closed;
-                  return (
-                    <div
-                      key={d}
-                      className={`rounded-xl px-1 py-2 text-center transition ${
-                        isToday
-                          ? "bg-gradient-to-b from-neon-pink/30 to-neon-cyan/15 ring-1 ring-neon-pink/50"
-                          : "bg-white/[.04] ring-1 ring-white/5"
-                      }`}
-                    >
-                      <div
-                        className={`text-[9px] font-black uppercase tracking-wider ${
-                          isToday ? "text-white" : "text-white/55"
-                        }`}
-                      >
-                        {DAY_LABEL[d]}
-                      </div>
-                      {closed ? (
-                        <div className={`mt-1 text-[13px] font-black leading-none ${isToday ? "text-white/70" : "text-white/30"}`}>
-                          —
-                        </div>
-                      ) : h ? (
-                        <>
-                          <div className={`mt-1 text-[10px] font-bold leading-tight ${isToday ? "text-white" : "text-white/70"}`}>
-                            {h.open.slice(0, 5)}
-                          </div>
-                          <div className={`text-[10px] font-bold leading-tight ${isToday ? "text-white" : "text-white/55"}`}>
-                            {h.close.slice(0, 5)}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="mt-1 text-[13px] font-black leading-none text-white/30">—</div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-
-            {/* Big WhatsApp CTA */}
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noreferrer"
-              className="group relative flex items-center justify-between overflow-hidden rounded-2xl px-5 py-4 font-black text-white transition active:scale-[.98]"
-              style={{
-                background: "linear-gradient(135deg, oklch(0.65 0.28 340) 0%, oklch(0.60 0.22 15) 100%)",
-                boxShadow: "0 12px 32px -8px oklch(0.65 0.28 340 / 0.6)",
-              }}
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/20 backdrop-blur">
-                  <MessageCircle className="h-4 w-4" />
-                </span>
-                <span className="text-[15px]">Pedir no WhatsApp</span>
-              </span>
-              <span className="relative z-10 text-[11px] font-bold uppercase tracking-widest opacity-80">
-                →
-              </span>
-              {/* Shimmer */}
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full"
-              />
-            </a>
-
-            {/* Contact + socials footer */}
-            <div className="flex items-center justify-between gap-3 border-t border-dashed border-white/10 pt-4">
-              <a
-                href={`tel:+${whatsapp}`}
-                className="inline-flex items-center gap-2 text-[12px] font-bold text-white/70 transition hover:text-white"
-              >
-                <Phone className="h-3.5 w-3.5" />
-                {whatsappDisplay}
-              </a>
-              <div className="flex items-center gap-1.5">
-                {instagram && (
-                  <a
-                    href={instagram}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Instagram"
-                    className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-neon-pink/15 hover:text-neon-pink hover:ring-neon-pink/40"
-                  >
-                    <Instagram className="h-3.5 w-3.5" />
-                  </a>
-                )}
-                {facebook && (
-                  <a
-                    href={facebook}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Facebook"
-                    className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-neon-cyan/15 hover:text-neon-cyan hover:ring-neon-cyan/40"
-                  >
-                    <Facebook className="h-3.5 w-3.5" />
-                  </a>
-                )}
-                {tiktok && (
-                  <a
-                    href={tiktok}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="TikTok"
-                    className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/15 hover:text-white"
-                  >
-                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
-                      <path d="M19.6 6.3a5.7 5.7 0 0 1-3.4-1.2 5.7 5.7 0 0 1-2.2-3.6h-3v14a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.9a5.7 5.7 0 1 0 4.8 5.6V9.2a8.7 8.7 0 0 0 5.6 2V6.3z" />
-                    </svg>
-                  </a>
-                )}
-              </div>
-            </div>
-
+        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur">
+          <span className="grid h-6 w-6 place-items-center rounded-full bg-neon-pink/20 text-neon-pink">
+            <Bike className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </span>
+          <div className="text-[11px] leading-tight">
+            <div className="font-black text-white">Delivery pelo</div>
+            <div className="font-black text-emerald-400">WhatsApp</div>
           </div>
         </div>
       </div>
 
-      {/* Tagline */}
-      <div className="mt-5 text-center text-[10px] font-bold uppercase tracking-[.28em] text-white/30">
-        {tagline}
+      {/* Brand footer */}
+      <div className="mt-10 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-neon-pink animate-sparkle">✦</span>
+          <div
+            className="text-white"
+            style={{
+              fontFamily: "'Caveat', cursive",
+              fontWeight: 700,
+              fontSize: 44,
+              lineHeight: 0.9,
+            }}
+          >
+            Quero <span className="text-neon-yellow">Bis</span>
+          </div>
+          <span className="text-neon-cyan animate-sparkle" style={{ animationDelay: "0.4s" }}>
+            ✦
+          </span>
+        </div>
+        <div className="mt-1 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[.32em] text-white/60">
+          <span className="h-px w-6 bg-white/20" />
+          Sorveteria e Açaí
+          <span className="h-px w-6 bg-white/20" />
+        </div>
+        <div className="mt-2 text-[11px] text-white/50">
+          Feito com carinho pra você <span className="text-neon-pink">♥</span>
+        </div>
       </div>
     </section>
   );
