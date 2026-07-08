@@ -367,6 +367,7 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          acai_config: Json | null
           accent_color: string
           accepts_delivery: boolean
           accepts_pickup: boolean
@@ -410,6 +411,7 @@ export type Database = {
           whatsapp_display: string
         }
         Insert: {
+          acai_config?: Json | null
           accent_color?: string
           accepts_delivery?: boolean
           accepts_pickup?: boolean
@@ -453,6 +455,7 @@ export type Database = {
           whatsapp_display?: string
         }
         Update: {
+          acai_config?: Json | null
           accent_color?: string
           accepts_delivery?: boolean
           accepts_pickup?: boolean
