@@ -84,6 +84,22 @@ function Content() {
   const [customProduct, setCustomProduct] = useState<Product | null>(null);
   const { isCartOpen, isCheckoutOpen } = useCart();
 
+  // Prefetch modais/checkout no idle — abertura instantânea sem impactar o FCP
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    };
+    const run = () => {
+      import("@/components/menu/ProductModal");
+      import("@/components/menu/CustomProductBuilder");
+      import("@/components/menu/CheckoutSheet");
+    };
+    if (w.requestIdleCallback) w.requestIdleCallback(run, { timeout: 2500 });
+    else setTimeout(run, 1500);
+  }, []);
+
+
   const openProduct = (p: Product) => {
     if (p.isCustom) setCustomProduct(p);
     else setModalProduct(p);
