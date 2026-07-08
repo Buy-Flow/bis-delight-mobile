@@ -2277,6 +2277,92 @@ const DAY_LABEL: Record<WeekDay, string> = {
   sun: "Domingo",
 };
 
+function NewsTab() {
+  const { data } = useSiteSettings();
+  const update = useUpdateSettings();
+  const [s, setS] = useState<SiteSettings | null>(null);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (data && !s) setS(data);
+  }, [data, s]);
+
+  if (!s) {
+    return (
+      <div className="grid place-items-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+      </div>
+    );
+  }
+
+  const set = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => {
+    setS((prev) => (prev ? { ...prev, [k]: v } : prev));
+    setDirty(true);
+  };
+
+  const save = async () => {
+    if (!s) return;
+    await update.mutateAsync(s);
+    toast.success("Novidades salvas");
+    setDirty(false);
+  };
+
+  const discard = () => {
+    if (!data) return;
+    if (dirty && !confirm("Descartar alterações não salvas?")) return;
+    setS(data);
+    setDirty(false);
+  };
+
+  return (
+    <div className="pb-24">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-display text-2xl font-black">Novidades</h2>
+          <p className="text-xs text-white/50">
+            Gerencie o carrossel de novidades que aparece na home.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/70">
+          <Sparkles className="h-3.5 w-3.5 text-neon-yellow" />
+          {s.newsActive ? "Ativo" : "Desativado"}
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
+        <NewsSection s={s} set={set} />
+      </div>
+
+      {dirty && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[oklch(0.12_0.09_305)]/95 backdrop-blur">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="h-2 w-2 rounded-full bg-neon-yellow" />
+              <span className="text-white/70">Você tem alterações não salvas</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={discard}
+                className="rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/5"
+              >
+                Descartar
+              </button>
+              <button
+                onClick={save}
+                disabled={update.isPending}
+                className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
+              >
+                {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SettingsTab({ initialSection = "identity" }: { initialSection?: SettingsSection } = {}) {
   const { data } = useSiteSettings();
   const update = useUpdateSettings();
