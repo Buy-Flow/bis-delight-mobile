@@ -2237,7 +2237,6 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
     { id: "payment", label: "Pagamento", icon: CreditCard },
     { id: "social", label: "Redes sociais", icon: Globe },
     { id: "announcement", label: "Anúncio", icon: Megaphone },
-    { id: "news", label: "Novidades", icon: Sparkles },
     { id: "appearance", label: "Aparência", icon: Palette },
   ];
 
