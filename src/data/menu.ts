@@ -63,6 +63,26 @@ export const CATEGORIES: Category[] = [
 export type SizeOption = { id: string; label: string; priceDelta: number };
 export type ExtraOption = { id: string; label: string; price: number };
 
+/** Item dentro de um grupo de opções (produto personalizado). */
+export type OptionItem = { id: string; label: string; price: number };
+
+/**
+ * Grupo de opções configurável para produtos personalizados.
+ * - `single`: escolha única (ex.: Tamanho). O preço é `option.price`.
+ * - `multi`: várias escolhas (ex.: Frutas, Cremes, Complementos).
+ *     Preço final = soma de `option.price` dos selecionados
+ *                 + max(0, qtd - freeCount) * pricePerExtra
+ */
+export type OptionGroup = {
+  id: string;
+  name: string;
+  type: "single" | "multi";
+  required?: boolean;
+  freeCount?: number;
+  pricePerExtra?: number;
+  options: OptionItem[];
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -85,6 +105,9 @@ export type Product = {
   heroImagePosX?: number;
   heroImagePosY?: number;
   heroImageScale?: number;
+  /** Produto personalizado — usa `optionGroups` no lugar de sizes/extras. */
+  isCustom?: boolean;
+  optionGroups?: OptionGroup[];
 };
 
 /* Reusable size presets */

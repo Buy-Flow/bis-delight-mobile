@@ -15,7 +15,6 @@ import { Reveal } from "@/components/Reveal";
 import { BRAND, type Product } from "@/data/menu";
 import { useProducts, useSiteSettings } from "@/lib/menu-data";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
-import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
 import { Search, Sparkles, X, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 // CartSheet is eager-loaded so tapping "Ver carrinho" on mobile is instant
@@ -24,8 +23,8 @@ import { CartSheet } from "@/components/menu/CartSheet";
 const ProductModal = lazy(() =>
   import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
 );
-const AcaiBuilder = lazy(() =>
-  import("@/components/menu/AcaiBuilder").then((m) => ({ default: m.AcaiBuilder })),
+const CustomProductBuilder = lazy(() =>
+  import("@/components/menu/CustomProductBuilder").then((m) => ({ default: m.CustomProductBuilder })),
 );
 const CheckoutSheet = lazy(() =>
   import("@/components/menu/CheckoutSheet").then((m) => ({ default: m.CheckoutSheet })),
@@ -81,7 +80,13 @@ function Content() {
   const [activeCat, setActiveCat] = useState("all");
   const [query, setQuery] = useState("");
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
-  const { isAcaiOpen, openAcai, closeAcai, isCartOpen, isCheckoutOpen } = useCart();
+  const [customProduct, setCustomProduct] = useState<Product | null>(null);
+  const { isCartOpen, isCheckoutOpen } = useCart();
+
+  const openProduct = (p: Product) => {
+    if (p.isCustom) setCustomProduct(p);
+    else setModalProduct(p);
+  };
   const menuRef = useRef<HTMLDivElement>(null);
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
@@ -188,7 +193,7 @@ function Content() {
           ) : newsItems.length > 0 ? (
             <NewsCarousel
               items={newsItems}
-              onOpen={setModalProduct}
+              onOpen={openProduct}
               title={settings.newsTitle || "Novidades"}
               subtitle={settings.newsSubtitle}
               ticker={settings.newsTicker}
@@ -204,37 +209,11 @@ function Content() {
 
 
       {/* Highlights */}
-      <Reveal><HighlightsCarousel highlights={highlights} onOpen={setModalProduct} /></Reveal>
+      <Reveal><HighlightsCarousel highlights={highlights} onOpen={openProduct} /></Reveal>
 
 
-      {/* Monte seu açaí banner */}
-      <Reveal as="section" className="overflow-visible px-4 py-6" direction="left">
-        <button
-          onClick={openAcai}
-          className="shine-strip group relative flex w-full items-center gap-4 rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
-        >
-          <div className="relative z-10">
-            <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
-              <Sparkles className="h-3 w-3" /> Novo
-            </div>
-            <div className="font-display text-2xl font-extrabold leading-tight text-white">
-              Monte seu <span className="text-neon-pink">açaí</span>
-            </div>
-            <div className="text-[12px] text-white/70">Escolha frutas, cremes e complementos.</div>
-            <div className="mt-3 inline-block rounded-full bg-neon-cyan px-3 py-1.5 text-[12px] font-extrabold text-[oklch(0.18_0.11_305)]">
-              Começar →
-            </div>
-          </div>
-          <img
-            src={monteAcaiImg.url}
-            alt="Monte seu açaí"
-            loading="lazy"
-            width={1024}
-            height={1024}
-            className="ml-auto h-32 w-32 shrink-0 object-contain drop-shadow-[0_15px_20px_rgba(0,0,0,0.5)] animate-float-slow"
-          />
-        </button>
-      </Reveal>
+
+
 
 
 
@@ -352,7 +331,7 @@ function Content() {
               className="animate-rise-in h-full"
               style={{ animationDelay: `${Math.min(i * 40, 300)}ms` }}
             >
-              <ProductCard product={p} onOpen={setModalProduct} />
+              <ProductCard product={p} onOpen={openProduct} />
             </div>
           ))}
         </div>
@@ -376,7 +355,12 @@ function Content() {
         {modalProduct && (
           <ProductModal product={modalProduct} onClose={() => setModalProduct(null)} />
         )}
-        {isAcaiOpen && <AcaiBuilder onClose={closeAcai} />}
+        {customProduct && (
+          <CustomProductBuilder
+            product={customProduct}
+            onClose={() => setCustomProduct(null)}
+          />
+        )}
         {isCartOpen && <CartSheet />}
         {isCheckoutOpen && <CheckoutSheet />}
       </Suspense>
