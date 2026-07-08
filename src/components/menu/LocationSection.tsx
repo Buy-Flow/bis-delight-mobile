@@ -216,42 +216,89 @@ export function LocationSection() {
         </div>
       </button>
 
-      {/* Big action buttons */}
-      <div className="space-y-3">
+      {/* Horário header with rota button */}
+      <div className="mb-3 flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-neon-pink drop-shadow-[0_0_8px_rgba(255,60,140,0.7)]">✦</span>
+          <span className="text-[11px] font-black uppercase tracking-[.3em] text-white">Horário</span>
+        </div>
         <button
           type="button"
           onClick={openNativeMaps}
-          className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left font-black text-white shadow-[0_10px_30px_-10px_rgba(255,60,140,0.6)] active:scale-[0.98] transition"
-          style={{
-            background:
-              "linear-gradient(135deg, oklch(0.62 0.26 340) 0%, oklch(0.50 0.22 320) 100%)",
-          }}
+          className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[11px] font-black text-white backdrop-blur active:scale-95 transition"
         >
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
-            <Navigation className="h-5 w-5" strokeWidth={2.5} />
-          </span>
-          <span className="flex-1 text-[15px]">Abrir no Maps</span>
-          <span className="text-white/70">›</span>
+          <Navigation className="h-3.5 w-3.5" strokeWidth={2.5} />
+          ROTA
         </button>
+      </div>
 
+      {/* Days grid */}
+      <div className="mb-5 grid grid-cols-7 gap-1.5">
+        {DAY_ORDER.map((key) => {
+          const d = hours.find((h) => h.day === key);
+          const isToday = mounted && key === todayKey;
+          const closed = !d || d.closed;
+          return (
+            <div
+              key={key}
+              className={`relative flex flex-col items-center rounded-xl px-1 py-2 text-center ${
+                isToday
+                  ? "text-white shadow-[0_8px_20px_-8px_rgba(255,60,140,0.7)]"
+                  : "border border-white/10 bg-white/[0.04] text-white/85"
+              }`}
+              style={
+                isToday
+                  ? {
+                      background:
+                        "linear-gradient(160deg, oklch(0.60 0.28 340) 0%, oklch(0.45 0.24 310) 100%)",
+                    }
+                  : undefined
+              }
+            >
+              <div className={`text-[9px] font-black uppercase tracking-[.15em] ${isToday ? "text-white" : "text-white/60"}`}>
+                {DAY_LABEL[key]}
+              </div>
+              {closed ? (
+                <div className={`mt-1 text-[13px] font-black ${isToday ? "text-white" : "text-white/40"}`}>—</div>
+              ) : (
+                <>
+                  <div className="mt-1 text-[12px] font-black leading-tight">{d!.open.slice(0, 5)}</div>
+                  <div className="text-[12px] font-black leading-tight">{d!.close.slice(0, 5)}</div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Big WhatsApp CTA */}
+      <a
+        href={waLink}
+        target="_blank"
+        rel="noreferrer"
+        className="relative mb-4 flex w-full items-center gap-3 overflow-hidden rounded-[28px] px-5 py-4 font-black text-white active:scale-[0.98] transition"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.68 0.26 350) 0%, oklch(0.55 0.28 340) 55%, oklch(0.45 0.24 315) 100%)",
+          boxShadow:
+            "0 20px 45px -15px oklch(0.60 0.28 340 / 0.75), inset 0 1px 0 rgba(255,255,255,0.25)",
+        }}
+      >
+        <span className="grid h-11 w-11 place-items-center rounded-full bg-white/25 ring-1 ring-white/30">
+          <MessageCircle className="h-5 w-5" strokeWidth={2.5} />
+        </span>
+        <span className="flex-1 text-center text-[17px] tracking-wide">Pedir no WhatsApp</span>
+        <span className="text-white/85">›</span>
+      </a>
+
+      {/* Phone row */}
+      <div className="flex items-center justify-between px-1">
         <a
-          href={waLink}
-          target="_blank"
-          rel="noreferrer"
-          className="group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl px-4 py-3.5 font-black text-white shadow-[0_10px_30px_-10px_rgba(37,211,102,0.6)] active:scale-[0.98] transition"
-          style={{
-            background:
-              "linear-gradient(135deg, oklch(0.68 0.20 145) 0%, oklch(0.55 0.19 145) 100%)",
-          }}
+          href={`tel:+${whatsapp}`}
+          className="flex items-center gap-2 text-white/85 active:scale-95 transition"
         >
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
-            <MessageCircle className="h-5 w-5" strokeWidth={2.5} />
-          </span>
-          <span className="flex-1 text-[15px]">Pedir no WhatsApp</span>
-          <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-[oklch(0.20_0.10_305)]">
-            ⚡ Mais rápido
-          </span>
-          <span className="text-white/80">›</span>
+          <Phone className="h-4 w-4 text-neon-pink" strokeWidth={2.5} />
+          <span className="text-[15px] font-black">{formatPhone(whatsapp)}</span>
         </a>
 
         {instagram && (
@@ -259,50 +306,29 @@ export function LocationSection() {
             href={instagram}
             target="_blank"
             rel="noreferrer"
-            className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 font-black text-white shadow-[0_10px_30px_-10px_rgba(200,60,180,0.6)] active:scale-[0.98] transition"
+            aria-label="Instagram"
+            className="grid h-10 w-10 place-items-center rounded-2xl text-white shadow-[0_10px_25px_-10px_rgba(255,60,140,0.7)] active:scale-95 transition"
             style={{
               background:
-                "linear-gradient(135deg, oklch(0.55 0.24 320) 0%, oklch(0.45 0.22 310) 100%)",
+                "linear-gradient(135deg, oklch(0.65 0.22 60) 0%, oklch(0.58 0.26 350) 50%, oklch(0.50 0.24 300) 100%)",
             }}
           >
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
-              <Instagram className="h-5 w-5" strokeWidth={2.5} />
-            </span>
-            <span className="flex-1 text-[15px]">Instagram</span>
-            <span className="text-white/70">›</span>
+            <Instagram className="h-5 w-5" strokeWidth={2.5} />
           </a>
         )}
       </div>
 
-      {/* Status pills row */}
-      <div className="mt-5 flex items-center justify-center gap-3">
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur">
-          <span
-            className={`grid h-6 w-6 place-items-center rounded-full ${
-              open ? "bg-emerald-500" : "bg-rose-500"
-            }`}
-          >
-            <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
-          </span>
-          <div className="text-[11px] leading-tight">
-            <div className="font-black text-white">{open ? "Aberto hoje" : "Fechado agora"}</div>
-            <div className="flex items-center gap-1 text-white/60">
-              <Clock className="h-3 w-3" />
-              {todayLabel}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur">
-          <span className="grid h-6 w-6 place-items-center rounded-full bg-neon-pink/20 text-neon-pink">
-            <Bike className="h-3.5 w-3.5" strokeWidth={2.5} />
-          </span>
-          <div className="text-[11px] leading-tight">
-            <div className="font-black text-white">Delivery pelo</div>
-            <div className="font-black text-emerald-400">WhatsApp</div>
-          </div>
-        </div>
+      {/* Status indicator */}
+      <div className="mt-4 flex items-center justify-center gap-2 text-[11px]">
+        <span
+          className={`grid h-5 w-5 place-items-center rounded-full ${open ? "bg-emerald-500" : "bg-rose-500"}`}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+        </span>
+        <span className="font-black text-white">{open ? "Aberto agora" : "Fechado agora"}</span>
+        <span className="text-white/50">· {todayLabel}</span>
       </div>
+
 
       {/* Brand footer */}
       <div className="mt-10 text-center">
