@@ -3743,7 +3743,9 @@ const TEXTURE_PRESETS = [
 function NewsHeroEditor({ product, index }: { product: Product; index: number }) {
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const initialDraft = {
+    heroImage: product.heroImage ?? "",
     posX: product.heroImagePosX ?? 0,
     posY: product.heroImagePosY ?? 0,
     scale: product.heroImageScale ?? 1.2,
@@ -3752,11 +3754,13 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
 
   useEffect(() => {
     setDraft({
+      heroImage: product.heroImage ?? "",
       posX: product.heroImagePosX ?? 0,
       posY: product.heroImagePosY ?? 0,
       scale: product.heroImageScale ?? 1.2,
     });
-  }, [product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
+  }, [product.heroImage, product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
+
 
   const dirty =
     draft.posX !== initialDraft.posX ||
