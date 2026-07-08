@@ -1,4 +1,4 @@
-import { MapPin, Navigation, MessageCircle, Instagram, Church, Phone } from "lucide-react";
+import { MapPin, Navigation, MessageCircle, Instagram, Church, Phone, Bike, ShoppingBag } from "lucide-react";
 import { BRAND } from "@/data/menu";
 import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/lib/menu-data";
 import { useEffect, useState } from "react";
@@ -179,42 +179,68 @@ export function LocationSection() {
         </div>
       </div>
 
-      {/* Map preview card */}
+      {/* Map preview card — modelo claro com pills flutuantes */}
       <button
         type="button"
         onClick={openNativeMaps}
         aria-label="Abrir mapa"
-        className="mb-5 block w-full overflow-hidden rounded-3xl border border-white/10 bg-black/40 shadow-[0_20px_60px_-20px_rgba(180,60,220,0.5)] active:scale-[0.99] transition"
+        className="mb-5 block w-full overflow-hidden rounded-3xl border border-white/10 bg-white shadow-[0_20px_60px_-20px_rgba(180,60,220,0.5)] active:scale-[0.99] transition"
       >
-        <div className="relative h-[190px]">
+        <div className="relative h-[210px]">
           <iframe
             title={`Localização ${name}`}
             src={mapEmbed}
             className="pointer-events-none h-full w-full"
-            style={{ border: 0, filter: "saturate(1.2) contrast(1.05) hue-rotate(200deg) brightness(0.85)" }}
+            style={{ border: 0 }}
             loading="lazy"
           />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
+
+          {/* Pill: Aberto/Fechado (top-left) */}
+          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-white shadow-[0_6px_18px_-6px_rgba(0,0,0,0.35)]"
             style={{
-              background:
-                "radial-gradient(120% 80% at 50% 40%, transparent 40%, oklch(0.10 0.08 305 / 0.6) 100%)",
+              background: open
+                ? "linear-gradient(135deg, oklch(0.72 0.19 155), oklch(0.58 0.18 155))"
+                : "linear-gradient(135deg, oklch(0.68 0.22 25), oklch(0.55 0.22 25))",
             }}
-          />
-          <div className="absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2">
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+            <span className="text-[11px] font-black uppercase tracking-widest">
+              {open ? "Aberto" : "Fechado"}
+            </span>
+          </div>
+
+          {/* Pills lado direito: Delivery + Retirada */}
+          <div className="absolute right-3 top-3 flex flex-col gap-2">
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-white shadow-[0_6px_18px_-6px_rgba(0,0,0,0.35)]"
+              style={{ background: "linear-gradient(135deg, oklch(0.58 0.14 210), oklch(0.42 0.12 220))" }}
+            >
+              <Bike className="h-3.5 w-3.5" strokeWidth={2.75} />
+              <span className="text-[11px] font-black uppercase tracking-widest">Delivery</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-white shadow-[0_6px_18px_-6px_rgba(0,0,0,0.35)]"
+              style={{ background: "linear-gradient(135deg, oklch(0.60 0.16 200), oklch(0.44 0.14 215))" }}
+            >
+              <ShoppingBag className="h-3.5 w-3.5" strokeWidth={2.75} />
+              <span className="text-[11px] font-black uppercase tracking-widest">Retirada</span>
+            </div>
+          </div>
+
+          {/* Marker rosa pulsante no centro */}
+          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="relative">
-              <div aria-hidden className="absolute inset-0 -m-3 animate-ping rounded-full bg-neon-pink/40" />
+              <div aria-hidden className="absolute inset-0 -m-6 animate-ping rounded-full bg-neon-pink/40" />
+              <div aria-hidden className="absolute inset-0 -m-4 rounded-full bg-neon-pink/30 blur-md" />
               <div
-                className="relative grid h-10 w-10 place-items-center rounded-full bg-neon-pink text-white ring-4 ring-neon-pink/30"
-                style={{ boxShadow: "0 8px 24px oklch(0.65 0.28 340 / 0.6)" }}
+                className="relative grid h-12 w-12 place-items-center rounded-full bg-neon-pink text-white ring-4 ring-neon-pink/40"
+                style={{ boxShadow: "0 10px 30px oklch(0.65 0.28 340 / 0.7)" }}
               >
-                <MapPin className="h-5 w-5" strokeWidth={2.5} />
+                <MapPin className="h-5 w-5" strokeWidth={2.75} />
               </div>
             </div>
           </div>
         </div>
       </button>
+
 
       {/* Horário header with rota button */}
       <div className="mb-3 flex items-center justify-between px-1">
