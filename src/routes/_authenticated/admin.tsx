@@ -3849,7 +3849,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
         className="flex w-full items-center gap-3 p-3 text-left"
       >
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
-          <img src={product.heroImage || product.image} className="h-full w-full object-cover" alt="" />
+          <img src={draft.heroImage || product.image} className="h-full w-full object-cover" alt="" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
