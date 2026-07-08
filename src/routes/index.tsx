@@ -452,14 +452,7 @@ function Content() {
         {editingItem && (() => {
           const p = products.find((x) => x.id === editingItem.productId);
           if (!p) return null;
-          return p.isCustom ? (
-            <CustomProductBuilder
-              key={`edit-${editingItem.uid}`}
-              product={p}
-              editItem={editingItem}
-              onClose={closeEdit}
-            />
-          ) : (
+          return (
             <ProductModal
               key={`edit-${editingItem.uid}`}
               product={p}
