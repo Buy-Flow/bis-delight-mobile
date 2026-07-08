@@ -129,6 +129,7 @@ function AdminPage() {
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "highlights", label: "Destaques", icon: Star },
     { id: "extras", label: "Complementos", icon: Plus },
+    { id: "news", label: "Novidades", icon: Sparkles },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
