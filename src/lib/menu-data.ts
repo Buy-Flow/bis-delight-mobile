@@ -549,6 +549,15 @@ export function useUpdateSettings() {
         news_ticker: s.newsTicker,
         news_product_ids: s.newsProductIds,
         global_extras: s.globalExtras,
+        bg_color: s.bgColor,
+        accent_color: s.accentColor,
+        texture_opacity: s.textureOpacity,
+        texture_size: s.textureSize,
+        card_radius: s.cardRadius,
+        card_border: s.cardBorder,
+        card_glow: s.cardGlow,
+        title_font: s.titleFont,
+
 
       }, { onConflict: "id" });
       if (error) throw error;
