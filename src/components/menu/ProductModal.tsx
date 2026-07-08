@@ -167,12 +167,13 @@ export function ProductModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50 [-webkit-tap-highlight-color:transparent]">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in"
+        className="absolute inset-0 bg-black/70 animate-in fade-in duration-150"
         onClick={onClose}
       />
-      <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
+      <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+
         {/* Header — mesmo estilo do "Monte seu açaí" */}
         <div className="relative h-[220px] shrink-0 overflow-hidden">
           <div className="absolute inset-0 noise-purple" />
@@ -343,7 +344,7 @@ export function ProductModal({
             </div>
             <button
               onClick={submit}
-              className="flex-1 rounded-2xl bg-neon-pink px-4 py-3 text-base font-extrabold text-white glow-pink active:scale-[.98]"
+              className="flex-1 rounded-2xl bg-neon-pink px-4 py-3 text-base font-extrabold text-white glow-pink touch-manipulation [-webkit-tap-highlight-color:transparent] will-change-transform transition-transform duration-100 ease-out active:scale-[.97]"
             >
               {brl(total)}
             </button>
