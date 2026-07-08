@@ -5052,32 +5052,33 @@ function CustomTab({
       {isCustom && (
         <>
           {groups.map((g, gi) => (
-            <div key={g.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
-              <div className="flex items-center gap-2">
+            <div key={g.id} className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4 space-y-3">
+              <div className="flex items-center gap-1.5">
                 <input
                   value={g.name}
                   onChange={(e) => patch(gi, { name: e.target.value })}
-                  className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white"
-                  placeholder="Nome do grupo (ex.: Tamanho, Frutas, Cremes)"
+                  className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-sm font-bold text-white"
+                  placeholder="Nome do grupo"
                 />
                 <button
                   onClick={() => moveGroup(gi, -1)}
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
                   title="Subir"
                 >↑</button>
                 <button
                   onClick={() => moveGroup(gi, 1)}
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 hover:bg-white/10"
                   title="Descer"
                 >↓</button>
                 <button
                   onClick={() => removeGroup(gi)}
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
                   title="Remover grupo"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
+
 
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <label className="text-xs">
