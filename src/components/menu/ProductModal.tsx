@@ -280,67 +280,56 @@ export function ProductModal({
 
         {/* Scroll body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
-          <GroupCard
-            index={1}
-            title="Tamanho"
-            selectedLabel={size?.label}
-          >
-            <div className="grid grid-cols-4 gap-2">
+          <Section title="Tamanho">
+            <div className="grid grid-cols-2 gap-2">
               {product.sizes.map((s) => {
                 const active = s.id === sizeId;
                 return (
-                  <OptionCard
-                    key={s.id}
-                    active={active}
-                    image={product.image}
-                    label={s.label}
-                    priceHint={s.priceDelta > 0 ? `+R$ ${s.priceDelta.toFixed(2).replace(".", ",")}` : "+R$ 0,00"}
-                    onClick={() => setSizeId(s.id)}
-                  />
+                  <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
+                    <div className="flex flex-col items-center">
+                      <span className="text-sm font-extrabold">{s.label}</span>
+                      {s.priceDelta > 0 && (
+                        <span className="text-[11px] text-white/60">
+                          +{brl(s.priceDelta)}
+                        </span>
+                      )}
+                    </div>
+                  </Chip>
                 );
               })}
             </div>
-          </GroupCard>
+          </Section>
 
           {flavorList && (
-            <GroupCard index={2} title="Sabor" selectedLabel={flavor}>
-              <div className="grid grid-cols-4 gap-2">
+            <Section title="Sabor">
+              <div className="grid grid-cols-2 gap-2">
                 {flavorList.map((f) => (
-                  <OptionCard
-                    key={f}
-                    active={f === flavor}
-                    image={product.image}
-                    label={f}
-                    onClick={() => setFlavor(f)}
-                  />
+                  <Chip key={f} active={f === flavor} onClick={() => setFlavor(f)}>
+                    <span className="text-sm font-bold">{f}</span>
+                  </Chip>
                 ))}
               </div>
-            </GroupCard>
+            </Section>
           )}
 
           {availableExtras.length > 0 && (
-            <GroupCard
-              index={flavorList ? 3 : 2}
-              title="Complementos"
-              hint="Adicione o que quiser"
-            >
-              <div className="grid grid-cols-4 gap-2">
+            <Section title="Complementos" hint="Adicione o que quiser">
+              <div className="flex flex-wrap gap-2">
                 {availableExtras.map((e) => {
                   const on = extras.includes(e.id);
                   return (
-                    <OptionCard
-                      key={e.id}
-                      active={on}
-                      image={e.image || product.image}
-                      label={e.label}
-                      priceHint={e.price > 0 ? `+ ${brl(e.price)}` : undefined}
-                      onClick={() => toggleExtra(e.id)}
-                    />
+                    <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)}>
+                      <span className="mr-1">{e.label}</span>
+                      {e.price > 0 && (
+                        <span className="text-[11px] text-white/60">+{brl(e.price)}</span>
+                      )}
+                    </Chip>
                   );
                 })}
               </div>
-            </GroupCard>
+            </Section>
           )}
+
 
 
           {removableList.length > 0 && (
