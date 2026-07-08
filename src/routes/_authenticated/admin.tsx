@@ -1602,68 +1602,6 @@ function CategoryPhotoTab({
   category: Category;
   onChange: (patch: Partial<Category>) => void;
 }) {
-  const posX = category.imagePosX ?? 0;
-  const posY = category.imagePosY ?? 0;
-  const scale = category.imageScale ?? 1;
-
-  // The site's category chip photo area is 72×68.
-  const AREA_W = 72;
-  const AREA_H = 68;
-  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number; w: number; h: number } | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const pendingRef = useRef<{ x: number; y: number } | null>(null);
-
-  const flushPending = () => {
-    rafRef.current = null;
-    const p = pendingRef.current;
-    pendingRef.current = null;
-    if (p) onChange({ imagePosX: p.x, imagePosY: p.y });
-  };
-
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = e.currentTarget as HTMLDivElement;
-    el.setPointerCapture(e.pointerId);
-    const rect = el.getBoundingClientRect();
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      posX,
-      posY,
-      w: rect.width || AREA_W,
-      h: rect.height || AREA_H,
-    };
-  };
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = dragRef.current;
-    if (!d) return;
-    e.preventDefault();
-    const dx = ((e.clientX - d.startX) / d.w) * 100;
-    const dy = ((e.clientY - d.startY) / d.h) * 100;
-    pendingRef.current = {
-      x: clamp(d.posX + dx, -80, 80),
-      y: clamp(d.posY + dy, -80, 80),
-    };
-    if (rafRef.current == null) {
-      rafRef.current = requestAnimationFrame(flushPending);
-    }
-  };
-  const onPointerUp = () => {
-    dragRef.current = null;
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    if (pendingRef.current) flushPending();
-  };
-
-
-  const reset = () => onChange({ imagePosX: 0, imagePosY: 0, imageScale: 1 });
-  const nudge = (dx: number, dy: number) =>
-    onChange({
-      imagePosX: clamp(posX + dx, -80, 80),
-      imagePosY: clamp(posY + dy, -80, 80),
-    });
-
   if (!category.image) {
     return (
       <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/60">
@@ -1673,101 +1611,34 @@ function CategoryPhotoTab({
   }
 
   return (
-    <div className="space-y-5">
-      <div>
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-          Preview real — tamanho do card no cardápio
-        </div>
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
-          <div
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none"
-            style={{ transform: "scale(3)", transformOrigin: "center", margin: "40px 0" }}
-          >
-            <CategoryChip category={category} active />
-          </div>
-          <div className="text-[10px] text-white/40">Arraste a foto no card ou use os controles abaixo.</div>
-        </div>
-      </div>
-
-
-
-      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-        <div>
-          <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-            <span>Zoom</span>
-            <span className="text-white/50">{scale.toFixed(2)}×</span>
-          </div>
-          <input
-            type="range"
-            min={0.5}
-            max={2.5}
-            step={0.05}
-            value={scale}
-            onChange={(e) => onChange({ imageScale: Number(e.target.value) })}
-            className="w-full accent-neon-cyan"
+    <ImageAdjustPanel
+      values={{
+        posX: category.imagePosX ?? 0,
+        posY: category.imagePosY ?? 0,
+        scale: category.imageScale ?? 1,
+      }}
+      onChange={(patch) =>
+        onChange({
+          ...(patch.posX !== undefined ? { imagePosX: patch.posX } : {}),
+          ...(patch.posY !== undefined ? { imagePosY: patch.posY } : {}),
+          ...(patch.scale !== undefined ? { imageScale: patch.scale } : {}),
+        })
+      }
+      defaults={{ posX: 0, posY: 0, scale: 1 }}
+      previewMaxWidth={220}
+      previewLabel="Preview real — tamanho do card no cardápio"
+      renderPreview={(v) => (
+        <div style={{ transform: "scale(3)", transformOrigin: "center", margin: "40px 0" }}>
+          <CategoryChip
+            category={{ ...category, imagePosX: v.posX, imagePosY: v.posY, imageScale: v.scale }}
+            active
           />
         </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          <div>
-            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-              <span>Horizontal</span>
-              <span className="text-white/50">{posX.toFixed(0)}%</span>
-            </div>
-            <input
-              type="range"
-              min={-80}
-              max={80}
-              step={1}
-              value={posX}
-              onChange={(e) => onChange({ imagePosX: Number(e.target.value) })}
-              className="w-full accent-neon-cyan"
-            />
-          </div>
-          <div>
-            <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-              <span>Vertical</span>
-              <span className="text-white/50">{posY.toFixed(0)}%</span>
-            </div>
-            <input
-              type="range"
-              min={-80}
-              max={80}
-              step={1}
-              value={posY}
-              onChange={(e) => onChange({ imagePosY: Number(e.target.value) })}
-              className="w-full accent-neon-cyan"
-            />
-          </div>
-          <div className="flex flex-col items-stretch justify-end gap-1">
-            <div className="grid grid-cols-3 gap-1">
-              <div />
-              <NudgeBtn onClick={() => nudge(0, -3)}>↑</NudgeBtn>
-              <div />
-              <NudgeBtn onClick={() => nudge(-3, 0)}>←</NudgeBtn>
-              <NudgeBtn onClick={reset}>◎</NudgeBtn>
-              <NudgeBtn onClick={() => nudge(3, 0)}>→</NudgeBtn>
-              <div />
-              <NudgeBtn onClick={() => nudge(0, 3)}>↓</NudgeBtn>
-              <div />
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={reset}
-          className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
-        >
-          Resetar posição e zoom
-        </button>
-      </div>
-    </div>
+      )}
+    />
   );
 }
+
 
 
 /* ============================= Highlights ============================= */
