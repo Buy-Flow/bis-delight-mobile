@@ -1,32 +1,34 @@
-import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
-import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
+import heroBgLeft from "@/assets/hero-cone.png.asset.json";
+import heroBgRight from "@/assets/hero-cup.png.asset.json";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
 
   return (
-    <section className="relative overflow-visible px-4 pb-0 pt-2">
-      {/* Side ice cream illustrations */}
+    <section className="relative overflow-hidden px-4 pb-0 pt-2">
+      {/* Side illustrations — half peeking in from the sides, aligned at the bottom */}
       <img
         aria-hidden="true"
         src={heroBgLeft.url}
         alt=""
-        width={600}
-        height={980}
+        width={220}
+        height={360}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -left-6 -top-10 z-0 h-[980px] w-auto max-w-none select-none object-contain object-left"
+        className="pointer-events-none absolute -left-[110px] bottom-0 z-0 h-[360px] w-[220px] max-w-none select-none object-contain object-right sm:-left-[130px] sm:h-[420px] sm:w-[260px]"
       />
       <img
         aria-hidden="true"
         src={heroBgRight.url}
         alt=""
-        width={600}
-        height={980}
+        width={220}
+        height={300}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -right-6 -top-28 z-0 h-[980px] w-auto max-w-none select-none object-contain object-right"
+        className="pointer-events-none absolute -right-[110px] bottom-0 z-0 h-[300px] w-[220px] max-w-none select-none object-contain object-left sm:-right-[130px] sm:h-[360px] sm:w-[260px]"
       />
+
+
 
 
 
