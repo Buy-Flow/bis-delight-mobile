@@ -4,13 +4,13 @@ import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 
-const BADGE_STYLES = [
+export const BADGE_STYLES = [
   { bg: "bg-neon-cyan", text: "text-[oklch(0.18_0.11_305)]", shadow: "shadow-[0_4px_0_0_oklch(0.55_0.20_200)]", rotate: "-rotate-[5deg]", label: "Novo" },
   { bg: "bg-neon-yellow", text: "text-[oklch(0.18_0.11_305)]", shadow: "shadow-[0_4px_0_0_oklch(0.65_0.18_90)]", rotate: "rotate-[4deg]", label: "Top" },
   { bg: "bg-neon-pink", text: "text-white", shadow: "shadow-[0_4px_0_0_oklch(0.45_0.24_355)]", rotate: "-rotate-[3deg]", label: "Hit" },
 ];
 
-const EYEBROWS = ["Edição Limitada", "Artesanal", "Recém-chegado", "Sabor do mês"];
+export const EYEBROWS = ["Edição Limitada", "Artesanal", "Recém-chegado", "Sabor do mês"];
 
 export function NewsCarousel({
   items,
@@ -216,7 +216,7 @@ export function NewsCarousel({
   );
 }
 
-function NewsPosterCard({
+export function NewsPosterCard({
   product,
   onOpen,
   badge,
@@ -230,13 +230,13 @@ function NewsPosterCard({
   index: number;
 }) {
   const heroSrc = product.heroImage || product.image;
-  // As fotos são PNGs com fundo transparente (copo/taça). Usamos object-contain com
-  // um zoom leve para preencher bem, respeitando ajustes do admin quando houver.
-  const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
-  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
-  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.2) : 1.2;
+  // Sempre aplica pos/scale — assim o admin ajusta mesmo quando não há heroImage próprio.
+  const heroPosX = product.heroImagePosX ?? 0;
+  const heroPosY = product.heroImagePosY ?? 0;
+  const heroScale = product.heroImageScale ?? 1.2;
 
   // (issue label removed — cleaner card)
+
 
   // Split product name so we can stack it dramatically across two lines
   const words = product.name.trim().split(/\s+/);
