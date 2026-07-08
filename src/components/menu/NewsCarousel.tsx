@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Plus, Sparkles } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
