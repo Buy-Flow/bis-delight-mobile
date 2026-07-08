@@ -252,7 +252,7 @@ function Content() {
         <button
           onClick={() => {
             const monte = products.find((p) => p.id === "monte-acai" || p.isCustom);
-            if (monte) setCustomProduct(monte);
+            if (monte) openProduct(monte);
           }}
           className="shine-strip group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
         >
