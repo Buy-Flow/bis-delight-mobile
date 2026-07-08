@@ -78,7 +78,7 @@ export function NewsCarousel({
       // Sempre anda 1 card para a direita a partir da posição atual.
       // O onScroll cuida do teleport invisível quando ultrapassa a primeira cópia.
       node.scrollBy({ left: step, behavior: "smooth" });
-    }, 4000);
+    }, 3000);
 
     return () => {
       window.clearInterval(id);
