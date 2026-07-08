@@ -4380,12 +4380,16 @@ function CategoryExtrasSection() {
         <SimplePickerModal
           title="Escolher categoria"
           subtitle="Selecione a categoria para editar os complementos."
-          items={catList.map((c) => ({
-            id: c.id,
-            label: `${c.emoji} ${c.name}`,
-            hint: `${(c.extras ?? []).length} complemento${(c.extras ?? []).length === 1 ? "" : "s"}`,
-            image: c.image,
-          }))}
+          items={catList.map((c) => {
+            const stored = c.extras ?? [];
+            const n = stored.length > 0 ? stored.length : getDefaultExtras(c.id).length;
+            return {
+              id: c.id,
+              label: `${c.emoji} ${c.name}`,
+              hint: `${n} complemento${n === 1 ? "" : "s"}`,
+              image: c.image,
+            };
+          })}
           onClose={() => setPickerOpen(false)}
           onPick={(id) => {
             setPickerOpen(false);
