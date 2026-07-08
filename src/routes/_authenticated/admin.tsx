@@ -3498,7 +3498,7 @@ function NewsHeroEditor({
           icon={<Sparkles className="h-3.5 w-3.5 text-neon-cyan" />}
           dirty={dirty}
           saving={update.isPending || busy}
-          onClose={() => setOpen(false)}
+          
           onCancel={discard}
           onSave={save}
         >
