@@ -12,18 +12,33 @@ function jsWeekdayToKey(d: number): WeekDay {
   return (["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as WeekDay[])[d];
 }
 
-function isOpenNow(hours: DayHours[], override: "auto" | "open" | "closed") {
+export function isOpenNow(hours: DayHours[], override: "auto" | "open" | "closed") {
   if (override === "open") return true;
   if (override === "closed") return false;
   const now = new Date();
-  const key = jsWeekdayToKey(now.getDay());
-  const today = hours.find((h) => h.day === key);
-  if (!today || today.closed) return false;
-  const [oh, om] = today.open.split(":").map(Number);
-  const [ch, cm] = today.close.split(":").map(Number);
   const mins = now.getHours() * 60 + now.getMinutes();
-  return mins >= oh * 60 + om && mins <= ch * 60 + cm;
+  const todayKey = jsWeekdayToKey(now.getDay());
+  const yestKey = jsWeekdayToKey((now.getDay() + 6) % 7);
+
+  const check = (day: DayHours | undefined, curMins: number) => {
+    if (!day || day.closed) return false;
+    const [oh, om] = day.open.split(":").map(Number);
+    const [ch, cm] = day.close.split(":").map(Number);
+    const openMin = oh * 60 + om;
+    let closeMin = ch * 60 + cm;
+    if (closeMin <= openMin) closeMin += 24 * 60; // spans midnight
+    let cur = curMins;
+    if (cur < openMin) cur += 24 * 60;
+    return cur >= openMin && cur < closeMin;
+  };
+
+  // Current-day window
+  if (check(hours.find((h) => h.day === todayKey), mins)) return true;
+  // Yesterday's overnight window still open past midnight
+  if (check(hours.find((h) => h.day === yestKey), mins + 24 * 60)) return true;
+  return false;
 }
+
 
 /**
  * Google Maps só permite iframe via /maps/embed. URLs regulares (maps/place/...) retornam
