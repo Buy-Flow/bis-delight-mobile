@@ -4892,18 +4892,33 @@ function IconPicker({
   }, [q]);
 
   const Current = getCategoryIcon(value);
+  const selectedRef = useRef<HTMLButtonElement | null>(null);
+
+  // Ao abrir / mudar o valor, rola até o ícone já escolhido para ele ficar visível.
+  useEffect(() => {
+    if (!value) return;
+    const el = selectedRef.current;
+    if (el) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [value, q]);
 
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-2">
       <div className="mb-2 flex items-center gap-2">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-black/40 text-neon-cyan">
-          {Current ? <Current className="h-5 w-5" /> : <Sparkles className="h-5 w-5 text-white/30" />}
+        <div
+          className={cn(
+            "grid h-10 w-10 shrink-0 place-items-center rounded-lg",
+            value ? "bg-neon-pink/20 text-neon-pink ring-1 ring-neon-pink/60" : "bg-black/40 text-white/30",
+          )}
+        >
+          {Current ? <Current className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
         </div>
         <div className="min-w-0 flex-1">
           <div className="truncate text-xs font-semibold text-white/80">
-            {value ?? "Nenhum ícone selecionado"}
+            {value ? `Selecionado: ${value}` : "Nenhum ícone selecionado"}
           </div>
-          <div className="text-[10px] text-white/40">Escolha um ícone da biblioteca abaixo.</div>
+          <div className="text-[10px] text-white/40">
+            {value ? "Toque em outro ícone para trocar." : "Escolha um ícone da biblioteca abaixo."}
+          </div>
         </div>
         {value && (
           <button
@@ -4932,13 +4947,14 @@ function IconPicker({
           return (
             <button
               key={name}
+              ref={selected ? selectedRef : undefined}
               type="button"
               title={name}
               onClick={() => onChange(name)}
               className={cn(
                 "grid aspect-square place-items-center rounded-md border transition",
                 selected
-                  ? "border-neon-pink bg-neon-pink/20 text-neon-pink"
+                  ? "border-neon-pink bg-neon-pink/25 text-neon-pink ring-2 ring-neon-pink/60 shadow-[0_0_12px_oklch(0.72_0.22_340/0.5)]"
                   : "border-transparent text-white/70 hover:border-white/10 hover:bg-white/10 hover:text-white",
               )}
             >
