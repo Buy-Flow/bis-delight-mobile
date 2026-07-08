@@ -13,6 +13,23 @@ export function Hero({
 
   return (
     <section className="relative px-4 pb-0 pt-2">
+      {/* Pink/magenta glow behind hero images — matches the bg tone */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-8 -left-16 z-0 h-[380px] w-[380px] rounded-full blur-3xl"
+        style={{
+          background:
+            "radial-gradient(closest-side, oklch(0.58 0.28 320 / 0.85), oklch(0.48 0.24 315 / 0.5) 50%, transparent 78%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-8 -right-16 z-0 h-[340px] w-[340px] rounded-full blur-3xl"
+        style={{
+          background:
+            "radial-gradient(closest-side, oklch(0.58 0.28 320 / 0.85), oklch(0.48 0.24 315 / 0.5) 50%, transparent 78%)",
+        }}
+      />
       {/* Side illustrations — configurable via admin (Início) */}
       <img
         aria-hidden="true"
