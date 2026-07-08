@@ -98,10 +98,15 @@ export function CategoryChip({
   const Icon = CustomIcon ?? accent.icon;
   return (
     <button
-      onClick={onClick}
+      type="button"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={(e) => {
+        e.currentTarget.blur();
+        onClick?.();
+      }}
       aria-pressed={active}
       className={cn(
-        "group relative snap-start shrink-0 w-[72px] h-[104px] rounded-[16px]",
+        "group relative shrink-0 w-[72px] h-[104px] rounded-[16px]",
         "transition-all duration-300 active:scale-95 hover:-translate-y-0.5",
         active && `${accent.glow} scale-[1.03]`,
       )}
