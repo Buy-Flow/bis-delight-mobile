@@ -159,6 +159,17 @@ function Content() {
           opacity: settings?.textureOpacity ?? 1,
         }}
       />
+      {/* Blend suave — remove faixas duras entre repetições da textura e transições de seção */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.20 0.12 305 / 0.35) 0%, oklch(0.14 0.10 305 / 0.10) 20%, oklch(0.12 0.09 305 / 0) 50%, oklch(0.10 0.08 305 / 0.20) 80%, oklch(0.08 0.07 305 / 0.55) 100%), radial-gradient(140% 70% at 50% 15%, oklch(0.32 0.18 305 / 0.28), transparent 65%), radial-gradient(140% 70% at 50% 100%, oklch(0.06 0.06 305 / 0.45), transparent 60%)",
+        }}
+      />
+
+
       <div className="relative">
 
 
