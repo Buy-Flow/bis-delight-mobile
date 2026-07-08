@@ -438,6 +438,25 @@ function Content() {
             onClose={() => setCustomProduct(null)}
           />
         )}
+        {editingItem && (() => {
+          const p = products.find((x) => x.id === editingItem.productId);
+          if (!p) return null;
+          return p.isCustom ? (
+            <CustomProductBuilder
+              key={`edit-${editingItem.uid}`}
+              product={p}
+              editItem={editingItem}
+              onClose={closeEdit}
+            />
+          ) : (
+            <ProductModal
+              key={`edit-${editingItem.uid}`}
+              product={p}
+              editItem={editingItem}
+              onClose={closeEdit}
+            />
+          );
+        })()}
         {isCartOpen && <CartSheet />}
         {isCheckoutOpen && <CheckoutSheet />}
       </Suspense>
