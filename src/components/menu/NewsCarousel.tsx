@@ -78,7 +78,7 @@ export function NewsCarousel({
       // Sempre anda 1 card para a direita a partir da posição atual.
       // O onScroll cuida do teleport invisível quando ultrapassa a primeira cópia.
       node.scrollBy({ left: step, behavior: "smooth" });
-    }, 4000);
+    }, 3000);
 
     return () => {
       window.clearInterval(id);
@@ -204,16 +204,10 @@ export function NewsPosterCard({
   const topLine = words.slice(0, Math.max(1, Math.ceil(words.length / 2))).join(" ");
   const bottomLine = words.slice(Math.ceil(words.length / 2)).join(" ");
 
-  // Fundo do card varia por índice para combinar com o badge (pink / cyan / yellow)
-  const cardBackgrounds = [
-    // 0 — Cyan / azul neon
-    "radial-gradient(120% 90% at 15% 12%, oklch(0.55 0.20 200) 0%, oklch(0.30 0.18 260) 38%, oklch(0.14 0.12 300) 78%, oklch(0.09 0.09 305) 100%)",
-    // 1 — Yellow / âmbar quente
-    "radial-gradient(120% 90% at 15% 12%, oklch(0.72 0.18 90) 0%, oklch(0.45 0.20 40) 35%, oklch(0.20 0.14 320) 75%, oklch(0.10 0.10 305) 100%)",
-    // 2 — Pink / magenta
-    "radial-gradient(120% 90% at 15% 12%, oklch(0.62 0.26 350) 0%, oklch(0.35 0.22 330) 38%, oklch(0.16 0.14 305) 78%, oklch(0.09 0.09 305) 100%)",
-  ];
-  const cardBg = cardBackgrounds[index % cardBackgrounds.length];
+  // Fundo do card: roxo com degradê (mais claro em cima, escuro embaixo),
+  // brilho suave no topo e "estrelinhas" espalhadas.
+  const cardBg =
+    "linear-gradient(180deg, oklch(0.34 0.16 305) 0%, oklch(0.22 0.14 305) 45%, oklch(0.12 0.10 305) 100%)";
 
   return (
     <article className="group relative w-[85vw] max-w-[380px] shrink-0 snap-center">
@@ -223,18 +217,40 @@ export function NewsPosterCard({
         style={{
           background: cardBg,
           boxShadow:
-            "0 0 0 1px oklch(0.72 0.26 350 / 0.35), 0 0 22px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -18px oklch(0.85 0.18 200 / 0.55), 0 24px 40px -20px rgba(0,0,0,0.8)",
+            "0 0 0 1px oklch(0.55 0.18 305 / 0.35), 0 0 22px -4px oklch(0.55 0.18 305 / 0.45), 0 24px 40px -20px rgba(0,0,0,0.8)",
         }}
       >
-        {/* Textura sutil de brilho por cima do gradiente */}
+        {/* Brilho suave (halo) no topo do card */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen"
+          className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 80% 20%, oklch(0.95 0.15 100 / 0.35), transparent 45%), radial-gradient(circle at 20% 90%, oklch(0.75 0.24 340 / 0.35), transparent 50%)",
+            background:
+              "radial-gradient(70% 45% at 50% 0%, oklch(0.75 0.18 305 / 0.35), transparent 70%)",
           }}
         />
+
+        {/* Estrelinhas / partículas sutis */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            backgroundImage: [
+              "radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,0.9), transparent 60%)",
+              "radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,0.8), transparent 60%)",
+              "radial-gradient(1.5px 1.5px at 34% 32%, rgba(255,255,255,0.7), transparent 60%)",
+              "radial-gradient(1px 1px at 62% 42%, rgba(255,255,255,0.75), transparent 60%)",
+              "radial-gradient(2px 2px at 88% 28%, rgba(255,255,255,0.85), transparent 60%)",
+              "radial-gradient(1px 1px at 22% 58%, rgba(255,255,255,0.65), transparent 60%)",
+              "radial-gradient(1.5px 1.5px at 48% 8%, rgba(255,255,255,0.85), transparent 60%)",
+              "radial-gradient(1px 1px at 8% 42%, rgba(255,255,255,0.6), transparent 60%)",
+              "radial-gradient(1.5px 1.5px at 72% 62%, rgba(255,255,255,0.7), transparent 60%)",
+              "radial-gradient(1px 1px at 94% 52%, rgba(255,255,255,0.55), transparent 60%)",
+              "radial-gradient(1px 1px at 40% 72%, rgba(255,255,255,0.5), transparent 60%)",
+            ].join(","),
+          }}
+        />
+
 
         {/* Foto ocupa tudo — object-contain preserva a taça sem cortar */}
         <img
