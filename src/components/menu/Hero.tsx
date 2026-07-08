@@ -13,6 +13,25 @@ export function Hero({
 
   return (
     <section className="relative overflow-hidden px-4 pb-0 pt-2">
+      {/* Blending glows behind hero images to soften color mismatch with page bg */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-0 z-0 h-[520px] w-[360px] blur-2xl"
+        style={{
+          background:
+            "radial-gradient(closest-side, oklch(0.45 0.22 320 / 0.75), oklch(0.32 0.18 310 / 0.45) 45%, transparent 75%)",
+          mixBlendMode: "screen",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 right-0 z-0 h-[480px] w-[360px] blur-2xl"
+        style={{
+          background:
+            "radial-gradient(closest-side, oklch(0.48 0.24 330 / 0.75), oklch(0.32 0.18 310 / 0.45) 45%, transparent 75%)",
+          mixBlendMode: "screen",
+        }}
+      />
       {/* Side illustrations — configurable via admin (Início) */}
       <img
         aria-hidden="true"
