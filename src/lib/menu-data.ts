@@ -72,7 +72,35 @@ export type SiteSettings = {
   cardBorder: boolean;
   cardGlow: boolean;
   titleFont: string;
+  heroImages: HeroImagesConfig;
 };
+
+export type HeroImageConfig = {
+  url: string;
+  offsetX: number; // px, negative = further off-screen
+  offsetY: number; // px, positive = further down from bottom
+  scale: number;   // 0.5 – 2
+};
+export type HeroImagesConfig = {
+  left: HeroImageConfig;
+  right: HeroImageConfig;
+};
+
+export const DEFAULT_HERO_IMAGES: HeroImagesConfig = {
+  left: {
+    url: "/__l5e/assets-v1/3938053a-a2e5-4efa-85e2-8f14f1d2b385/hero-cone.png",
+    offsetX: -150,
+    offsetY: 0,
+    scale: 1,
+  },
+  right: {
+    url: "/__l5e/assets-v1/50109a13-b5ba-4abf-843c-a2169900dc7c/hero-cup.png",
+    offsetX: -150,
+    offsetY: 0,
+    scale: 1,
+  },
+};
+
 
 
 function rowToProduct(row: Record<string, unknown>): Product {
@@ -238,6 +266,8 @@ const DEFAULT_EXTRA: Pick<
   | "cardBorder"
   | "cardGlow"
   | "titleFont"
+  | "heroImages"
+
 > = {
   instagram: "",
   facebook: "",
@@ -266,7 +296,24 @@ const DEFAULT_EXTRA: Pick<
   cardBorder: true,
   cardGlow: false,
   titleFont: "Barlow Condensed",
+  heroImages: DEFAULT_HERO_IMAGES,
 };
+
+function parseHeroImages(raw: unknown): HeroImagesConfig {
+  if (!raw || typeof raw !== "object") return DEFAULT_HERO_IMAGES;
+  const r = raw as { left?: Partial<HeroImageConfig>; right?: Partial<HeroImageConfig> };
+  const merge = (side: HeroImageConfig, patch?: Partial<HeroImageConfig>): HeroImageConfig => ({
+    url: typeof patch?.url === "string" && patch.url ? patch.url : side.url,
+    offsetX: Number.isFinite(patch?.offsetX as number) ? Number(patch!.offsetX) : side.offsetX,
+    offsetY: Number.isFinite(patch?.offsetY as number) ? Number(patch!.offsetY) : side.offsetY,
+    scale: Number.isFinite(patch?.scale as number) ? Number(patch!.scale) : side.scale,
+  });
+  return {
+    left: merge(DEFAULT_HERO_IMAGES.left, r.left),
+    right: merge(DEFAULT_HERO_IMAGES.right, r.right),
+  };
+}
+
 
 
 export function useSiteSettings() {
@@ -337,7 +384,9 @@ export function useSiteSettings() {
         cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
         cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
         titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
+        heroImages: parseHeroImages((data as Record<string, unknown>).hero_images),
       };
+
     },
   });
 }
@@ -600,6 +649,8 @@ export function useUpdateSettings() {
         card_border: s.cardBorder,
         card_glow: s.cardGlow,
         title_font: s.titleFont,
+        hero_images: s.heroImages,
+
 
 
       }, { onConflict: "id" });
