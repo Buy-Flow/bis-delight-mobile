@@ -2084,7 +2084,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     scale: product.heroImageScale ?? 1.4,
   });
 
-  // Sync when data reloads
   useEffect(() => {
     setDraft({
       heroImage: product.heroImage ?? "",
@@ -2102,45 +2101,23 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     heroImageScale: draft.scale,
   };
 
-  const initial = {
-    heroImage: product.heroImage ?? "",
-    posX: product.heroImagePosX ?? 0,
-    posY: product.heroImagePosY ?? 0,
-    scale: product.heroImageScale ?? 1.4,
-  };
-  const dirty =
-    draft.heroImage !== initial.heroImage ||
-    Math.abs(draft.posX - initial.posX) > 0.01 ||
-    Math.abs(draft.posY - initial.posY) > 0.01 ||
-    Math.abs(draft.scale - initial.scale) > 0.001;
-
-  const persist = async (values: typeof draft) => {
+  const save = async (patch: Partial<typeof draft>) => {
+    const next = { ...draft, ...patch };
+    setDraft(next);
     await update.mutateAsync({
       id: product.id,
-      heroImage: values.heroImage,
-      heroImagePosX: values.posX,
-      heroImagePosY: values.posY,
-      heroImageScale: values.scale,
+      heroImage: next.heroImage,
+      heroImagePosX: next.posX,
+      heroImagePosY: next.posY,
+      heroImageScale: next.scale,
     });
-  };
-
-  const handleSave = async () => {
-    try {
-      await persist(draft);
-      toast.success("Destaque salvo");
-      setOpen(false);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao salvar");
-    }
   };
 
   const onFile = async (file: File) => {
     setBusy(true);
     try {
       const url = await uploadProductImage(file);
-      const next = { ...draft, heroImage: url };
-      setDraft(next);
-      await persist(next);
+      await save({ heroImage: url });
       toast.success("Imagem do destaque atualizada");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
@@ -2150,40 +2127,24 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
   };
 
   const clearImage = async () => {
-    const next = { ...draft, heroImage: "" };
-    setDraft(next);
-    await persist(next);
+    await save({ heroImage: "" });
     toast.success("Imagem removida — voltou para a foto do produto");
   };
 
-  const reset = () => setDraft((p) => ({ ...p, posX: 0, posY: 0, scale: 1.4 }));
+  const reset = () => save({ posX: 0, posY: 0, scale: 1.4 });
 
-  // Drag directly on the preview
-  const dragRef = useRef<{
-    startX: number;
-    startY: number;
-    posX: number;
-    posY: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const CARD_W = 320;
+  const CARD_H = 148;
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      posX: draft.posX,
-      posY: draft.posY,
-      width: rect.width,
-      height: rect.height,
-    };
+    dragRef.current = { startX: e.clientX, startY: e.clientY, posX: draft.posX, posY: draft.posY };
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     if (!d) return;
-    const dx = ((e.clientX - d.startX) / d.width) * 100;
-    const dy = ((e.clientY - d.startY) / d.height) * 100;
+    const dx = ((e.clientX - d.startX) / CARD_W) * 100;
+    const dy = ((e.clientY - d.startY) / CARD_H) * 100;
     setDraft((prev) => ({
       ...prev,
       posX: clamp(d.posX + dx, -80, 80),
@@ -2191,9 +2152,14 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     }));
   };
   const onPointerUp = () => {
+    if (!dragRef.current) return;
     dragRef.current = null;
+    void update.mutateAsync({
+      id: product.id,
+      heroImagePosX: draft.posX,
+      heroImagePosY: draft.posY,
+    });
   };
-
 
   return (
     <div className="relative rounded-2xl border border-white/10 bg-white/[0.03]">
@@ -2232,9 +2198,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
         )}
       </div>
 
-
-
-
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
@@ -2261,151 +2224,162 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex-1 space-y-5 overflow-y-auto p-4">
+            <div className="space-y-5 overflow-y-auto p-4">
 
-          {/* Preview real (arraste para reposicionar) */}
-          <div>
-            <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              <span>Preview real — arraste a foto</span>
-              {dirty && <span className="text-neon-yellow normal-case tracking-normal">• alterações não salvas</span>}
-            </div>
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
-              <div
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                onPointerCancel={onPointerUp}
-                className="w-full max-w-[320px] touch-none select-none cursor-grab active:cursor-grabbing"
-              >
-                <HighlightCard product={previewProduct} onOpen={() => {}} />
-              </div>
-              <div className="text-[10px] text-white/40">
-                Arraste diretamente sobre a foto acima ou use os controles.
-              </div>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-            <div>
-              <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-                <span>Zoom</span>
-                <span className="text-white/50">{draft.scale.toFixed(2)}×</span>
-              </div>
-              <input
-                type="range"
-                min={0.5}
-                max={2.5}
-                step={0.05}
-                value={draft.scale}
-                onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
-                className="w-full accent-neon-cyan"
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
+              {/* Preview real */}
               <div>
-                <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-                  <span>Horizontal</span>
-                  <span className="text-white/50">{draft.posX.toFixed(0)}%</span>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                  Preview real — card de Destaque
                 </div>
-                <input
-                  type="range"
-                  min={-80}
-                  max={80}
-                  step={1}
-                  value={draft.posX}
-                  onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
-                  className="w-full accent-neon-cyan"
-                />
+                <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
+                  <div style={{ width: "100%", maxWidth: CARD_W }}>
+                    <HighlightCard product={previewProduct} onOpen={() => {}} />
+                  </div>
+                  <div className="text-[10px] text-white/40">
+                    Arraste a foto abaixo ou use os controles.
+                  </div>
+                </div>
               </div>
+
+              {/* Área de ajuste (arraste) */}
               <div>
-                <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-                  <span>Vertical</span>
-                  <span className="text-white/50">{draft.posY.toFixed(0)}%</span>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                  Área de ajuste (arraste)
                 </div>
-                <input
-                  type="range"
-                  min={-80}
-                  max={80}
-                  step={1}
-                  value={draft.posY}
-                  onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
-                  className="w-full accent-neon-cyan"
+                <div
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
+                  onPointerCancel={onPointerUp}
+                  className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[oklch(0.14_0.09_305)] cursor-grab active:cursor-grabbing"
+                  style={{ width: "100%", maxWidth: CARD_W, height: CARD_H }}
+                >
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
+                    }}
+                  />
+                  <img
+                    src={draft.heroImage || product.image}
+                    alt=""
+                    draggable={false}
+                    className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
+                    style={{
+                      transform: `translate(${draft.posX}%, ${draft.posY}%) scale(${draft.scale})`,
+                      transformOrigin: "center",
+                    }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                    <div className="h-full w-px bg-white/10" />
+                  </div>
+                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                    <div className="h-px w-full bg-white/10" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div>
+                  <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                    <span>Zoom</span>
+                    <span className="text-white/50">{draft.scale.toFixed(2)}×</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0.5}
+                    max={2.5}
+                    step={0.05}
+                    value={draft.scale}
+                    onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
+                    onPointerUp={() => save({ scale: draft.scale })}
+                    className="w-full accent-neon-cyan"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                      <span>Horizontal</span>
+                      <span className="text-white/50">{draft.posX.toFixed(0)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={-80}
+                      max={80}
+                      step={1}
+                      value={draft.posX}
+                      onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
+                      onPointerUp={() => save({ posX: draft.posX })}
+                      className="w-full accent-neon-cyan"
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
+                      <span>Vertical</span>
+                      <span className="text-white/50">{draft.posY.toFixed(0)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={-80}
+                      max={80}
+                      step={1}
+                      value={draft.posY}
+                      onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
+                      onPointerUp={() => save({ posY: draft.posY })}
+                      className="w-full accent-neon-cyan"
+                    />
+                  </div>
+                  <div className="flex flex-col items-stretch justify-end gap-1">
+                    <div className="grid grid-cols-3 gap-1">
+                      <div />
+                      <NudgeBtn onClick={() => save({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
+                      <div />
+                      <NudgeBtn onClick={() => save({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
+                      <NudgeBtn onClick={reset}>◎</NudgeBtn>
+                      <NudgeBtn onClick={() => save({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
+                      <div />
+                      <NudgeBtn onClick={() => save({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
+                      <div />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
+                >
+                  Resetar posição e zoom
+                </button>
+              </div>
+
+              {/* Imagem exclusiva do destaque */}
+              <div>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                  Imagem exclusiva do destaque
+                </div>
+                <ImageDropzone
+                  url={draft.heroImage}
+                  busy={busy}
+                  onFile={onFile}
+                  onClear={clearImage}
                 />
+                <p className="mt-1 text-[10.5px] text-white/40">
+                  Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
+                </p>
               </div>
-              <div className="flex flex-col items-stretch justify-end gap-1">
-                <div className="grid grid-cols-3 gap-1">
-                  <div />
-                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posY: clamp(p.posY - 3, -80, 80) }))}>↑</NudgeBtn>
-                  <div />
-                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posX: clamp(p.posX - 3, -80, 80) }))}>←</NudgeBtn>
-                  <NudgeBtn onClick={reset}>◎</NudgeBtn>
-                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posX: clamp(p.posX + 3, -80, 80) }))}>→</NudgeBtn>
-                  <div />
-                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posY: clamp(p.posY + 3, -80, 80) }))}>↓</NudgeBtn>
-                  <div />
-                </div>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={reset}
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
-            >
-              Resetar posição e zoom
-            </button>
-          </div>
-
-          {/* Imagem exclusiva do destaque */}
-          <div>
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              Imagem exclusiva do destaque
-            </div>
-            <ImageDropzone
-              url={draft.heroImage}
-              busy={busy}
-              onFile={onFile}
-              onClear={clearImage}
-            />
-            <p className="mt-1 text-[10.5px] text-white/40">
-              Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
-            </p>
-          </div>
-
-            </div>
-
-            {/* Save footer */}
-            <div className="flex items-center gap-2 border-t border-white/5 bg-black/40 p-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setDraft(initial);
-                  setOpen(false);
-                }}
-                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-white/70 hover:bg-white/10"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={!dirty || update.isPending}
-                className="flex-[2] rounded-xl bg-neon-cyan py-2.5 text-sm font-black text-black shadow-lg shadow-neon-cyan/30 transition disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {update.isPending ? "Salvando..." : dirty ? "Salvar alterações" : "Sem alterações"}
-              </button>
             </div>
           </div>
         </div>
       )}
-
-
-
     </div>
   );
 }
+
 
 /* ============================= Settings ============================= */
 type SettingsSection =
