@@ -11,9 +11,10 @@ export function HighlightCard({
 }) {
   const chips = product.ingredients.slice(0, 3);
   const heroSrc = product.heroImage || product.image;
-  const heroPosX = product.heroImage ? (product.heroImagePosX ?? 0) : 0;
-  const heroPosY = product.heroImage ? (product.heroImagePosY ?? 0) : 0;
-  const heroScale = product.heroImage ? (product.heroImageScale ?? 1.4) : 1.4;
+  const heroPosX = product.heroImagePosX ?? 0;
+  const heroPosY = product.heroImagePosY ?? 0;
+  const heroScale = product.heroImageScale ?? 1.4;
+
 
   return (
     <div
