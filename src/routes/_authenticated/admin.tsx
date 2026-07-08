@@ -2261,61 +2261,26 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="space-y-5 overflow-y-auto p-4">
+            <div className="flex-1 space-y-5 overflow-y-auto p-4">
 
-          {/* Preview real */}
+          {/* Preview real (arraste para reposicionar) */}
           <div>
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              Preview real — card de Destaque
+            <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              <span>Preview real — arraste a foto</span>
+              {dirty && <span className="text-neon-yellow normal-case tracking-normal">• alterações não salvas</span>}
             </div>
             <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
-              <div style={{ width: "100%", maxWidth: CARD_W }}>
+              <div
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerUp}
+                className="w-full max-w-[320px] touch-none select-none cursor-grab active:cursor-grabbing"
+              >
                 <HighlightCard product={previewProduct} onOpen={() => {}} />
               </div>
               <div className="text-[10px] text-white/40">
-                Arraste a foto abaixo ou use os controles.
-              </div>
-            </div>
-          </div>
-
-
-
-
-          {/* Área de ajuste (arraste) */}
-          <div>
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              Área de ajuste (arraste)
-            </div>
-            <div
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-              className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[oklch(0.14_0.09_305)] cursor-grab active:cursor-grabbing"
-              style={{ width: "100%", maxWidth: CARD_W, height: CARD_H }}
-            >
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
-                }}
-              />
-              <img
-                src={draft.heroImage || product.image}
-                alt=""
-                draggable={false}
-                className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
-                style={{
-                  transform: `translate(${draft.posX}%, ${draft.posY}%) scale(${draft.scale})`,
-                  transformOrigin: "center",
-                }}
-              />
-              <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                <div className="h-full w-px bg-white/10" />
-              </div>
-              <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                <div className="h-px w-full bg-white/10" />
+                Arraste diretamente sobre a foto acima ou use os controles.
               </div>
             </div>
           </div>
@@ -2334,7 +2299,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                 step={0.05}
                 value={draft.scale}
                 onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
-                onPointerUp={() => save({ scale: draft.scale })}
                 className="w-full accent-neon-cyan"
               />
             </div>
@@ -2352,7 +2316,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                   step={1}
                   value={draft.posX}
                   onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
-                  onPointerUp={() => save({ posX: draft.posX })}
                   className="w-full accent-neon-cyan"
                 />
               </div>
@@ -2368,20 +2331,19 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                   step={1}
                   value={draft.posY}
                   onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
-                  onPointerUp={() => save({ posY: draft.posY })}
                   className="w-full accent-neon-cyan"
                 />
               </div>
               <div className="flex flex-col items-stretch justify-end gap-1">
                 <div className="grid grid-cols-3 gap-1">
                   <div />
-                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
+                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posY: clamp(p.posY - 3, -80, 80) }))}>↑</NudgeBtn>
                   <div />
-                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
+                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posX: clamp(p.posX - 3, -80, 80) }))}>←</NudgeBtn>
                   <NudgeBtn onClick={reset}>◎</NudgeBtn>
-                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
+                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posX: clamp(p.posX + 3, -80, 80) }))}>→</NudgeBtn>
                   <div />
-                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
+                  <NudgeBtn onClick={() => setDraft((p) => ({ ...p, posY: clamp(p.posY + 3, -80, 80) }))}>↓</NudgeBtn>
                   <div />
                 </div>
               </div>
@@ -2413,9 +2375,32 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
           </div>
 
             </div>
+
+            {/* Save footer */}
+            <div className="flex items-center gap-2 border-t border-white/5 bg-black/40 p-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDraft(initial);
+                  setOpen(false);
+                }}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-white/70 hover:bg-white/10"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={!dirty || update.isPending}
+                className="flex-[2] rounded-xl bg-neon-cyan py-2.5 text-sm font-black text-black shadow-lg shadow-neon-cyan/30 transition disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {update.isPending ? "Salvando..." : dirty ? "Salvar alterações" : "Sem alterações"}
+              </button>
+            </div>
           </div>
         </div>
       )}
+
 
 
     </div>
