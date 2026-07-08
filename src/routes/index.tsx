@@ -381,7 +381,7 @@ function Content() {
           to="/admin"
           className="block text-[10px] text-white/30 transition-colors hover:text-white/60"
         >
-          © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com 💜
+          © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com <span className="inline-block animate-heartbeat">💜</span>
         </Link>
       </footer>
 
