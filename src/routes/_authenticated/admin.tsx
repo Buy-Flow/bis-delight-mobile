@@ -1978,7 +1978,7 @@ function ImageAdjustModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
+      onClick={onCancel}
     >
       <div
         className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
@@ -1994,7 +1994,7 @@ function ImageAdjustModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={onCancel}
             aria-label="Fechar"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
           >
