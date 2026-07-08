@@ -2126,6 +2126,7 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
       heroImageScale: draft.scale,
     });
     toast.success("Destaque salvo");
+    setOpen(false);
   };
 
   const discard = () => {
