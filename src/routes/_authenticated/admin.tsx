@@ -2258,6 +2258,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
 
   const sections: { id: SettingsSection; label: string; icon: React.ElementType }[] = [
     { id: "identity", label: "Identidade", icon: Store },
+    { id: "hero", label: "Início (Hero)", icon: Home },
     { id: "contact", label: "Contato & Local", icon: MapPin },
     { id: "hours", label: "Horários", icon: Clock },
     { id: "delivery", label: "Entrega", icon: Truck },
@@ -2266,6 +2267,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
     { id: "announcement", label: "Anúncio", icon: Megaphone },
     { id: "appearance", label: "Aparência", icon: Palette },
   ];
+
 
   return (
     <div className="pb-24">
