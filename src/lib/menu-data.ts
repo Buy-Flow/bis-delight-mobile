@@ -242,6 +242,7 @@ const DEFAULT_EXTRA: Pick<
   | "cardBorder"
   | "cardGlow"
   | "titleFont"
+  | "acaiConfig"
 > = {
   instagram: "",
   facebook: "",
@@ -270,6 +271,7 @@ const DEFAULT_EXTRA: Pick<
   cardBorder: true,
   cardGlow: false,
   titleFont: "Barlow Condensed",
+  acaiConfig: DEFAULT_ACAI_CONFIG,
 };
 
 
