@@ -4645,6 +4645,8 @@ function ExtrasTab() {
 
       <GlobalExtrasSection />
 
+      <CategoryExtrasSection />
+
 
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
