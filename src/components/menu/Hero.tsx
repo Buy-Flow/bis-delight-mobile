@@ -11,22 +11,23 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         aria-hidden="true"
         src={heroBgLeft.url}
         alt=""
-        width={220}
-        height={360}
+        width={300}
+        height={480}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -left-[110px] bottom-0 z-0 h-[360px] w-[220px] max-w-none select-none object-contain object-right sm:-left-[130px] sm:h-[420px] sm:w-[260px]"
+        className="pointer-events-none absolute -left-[150px] bottom-0 z-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:-left-[170px] sm:h-[560px] sm:w-[340px]"
       />
       <img
         aria-hidden="true"
         src={heroBgRight.url}
         alt=""
-        width={220}
-        height={300}
+        width={300}
+        height={410}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -right-[110px] bottom-0 z-0 h-[300px] w-[220px] max-w-none select-none object-contain object-left sm:-right-[130px] sm:h-[360px] sm:w-[260px]"
+        className="pointer-events-none absolute -right-[150px] bottom-0 z-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:-right-[170px] sm:h-[480px] sm:w-[340px]"
       />
+
 
 
 
