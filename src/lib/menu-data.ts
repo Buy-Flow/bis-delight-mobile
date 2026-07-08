@@ -72,7 +72,35 @@ export type SiteSettings = {
   cardBorder: boolean;
   cardGlow: boolean;
   titleFont: string;
+  heroImages: HeroImagesConfig;
 };
+
+export type HeroImageConfig = {
+  url: string;
+  offsetX: number; // px, negative = further off-screen
+  offsetY: number; // px, positive = further down from bottom
+  scale: number;   // 0.5 – 2
+};
+export type HeroImagesConfig = {
+  left: HeroImageConfig;
+  right: HeroImageConfig;
+};
+
+export const DEFAULT_HERO_IMAGES: HeroImagesConfig = {
+  left: {
+    url: "/__l5e/assets-v1/3938053a-a2e5-4efa-85e2-8f14f1d2b385/hero-cone.png",
+    offsetX: -150,
+    offsetY: 0,
+    scale: 1,
+  },
+  right: {
+    url: "/__l5e/assets-v1/50109a13-b5ba-4abf-843c-a2169900dc7c/hero-cup.png",
+    offsetX: -150,
+    offsetY: 0,
+    scale: 1,
+  },
+};
+
 
 
 function rowToProduct(row: Record<string, unknown>): Product {
