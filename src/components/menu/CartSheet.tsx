@@ -1,4 +1,4 @@
-import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
@@ -6,26 +6,42 @@ export function CartSheet() {
   const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit } = useCart();
   if (!isCartOpen) return null;
 
-  const total = subtotal + (items.length ? BRAND.deliveryFee : 0);
+  const fee = items.length ? BRAND.deliveryFee : 0;
+  const total = subtotal + fee;
 
   return (
     <div className="fixed inset-0 z-50 [-webkit-tap-highlight-color:transparent]">
       <div className="absolute inset-0 bg-black/70 animate-in fade-in duration-150" onClick={closeCart} />
       <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+        <button
+          onClick={closeCart}
+          className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white backdrop-blur"
+        >
+          <X className="h-5 w-5" />
+        </button>
 
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
-          <div>
-            <h3 className="font-display text-xl font-extrabold text-white">Seu carrinho</h3>
-            <p className="text-[11px] text-white/60">
-              {items.length ? `${items.length} item${items.length > 1 ? "s" : ""}` : "vazio"}
-            </p>
+        {/* Header title */}
+        <div className="px-5 pb-4 pt-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="font-display text-4xl font-extrabold leading-none text-white">
+                Seu <span className="text-neon-yellow glow-yellow-text">carrinho</span>
+                <Heart className="ml-1 inline h-5 w-5 fill-neon-pink text-neon-pink align-baseline" />
+              </h3>
+              <div className="mt-2 h-1 w-24 rounded-full bg-gradient-to-r from-neon-pink to-transparent" />
+            </div>
+            <div className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-neon-yellow/15 border border-neon-yellow/40">
+              <ShoppingBag className="h-6 w-6 text-neon-yellow" />
+              {items.length > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white">
+                  {items.reduce((s, i) => s + i.quantity, 0)}
+                </span>
+              )}
+            </div>
           </div>
-          <button onClick={closeCart} className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white">
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
               <div className="grid h-16 w-16 place-items-center rounded-full bg-white/5">
@@ -56,86 +72,102 @@ export function CartSheet() {
                       openEdit(it);
                     }
                   }}
-                  className="flex cursor-pointer gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition active:scale-[0.99] hover:border-white/20"
+                  className="relative flex cursor-pointer gap-3 rounded-3xl border border-white/10 bg-white/[0.04] p-3 transition active:scale-[0.99] hover:border-white/20"
                 >
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[oklch(0.24_0.14_305)]">
-                    <img src={it.image} alt={it.name} className="h-full w-full object-contain p-1" />
+                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-[oklch(0.24_0.14_305)]">
+                    <img src={it.image} alt={it.name} className="h-full w-full object-cover" loading="lazy" />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-bold text-white">{it.name}</div>
-                        <div className="text-[11px] text-white/60">
-                          {[it.size, it.flavor].filter(Boolean).join(" · ")}
-                        </div>
-                        {it.extras.length > 0 && (
-                          <div className="mt-1 text-[11px] text-neon-cyan/90 line-clamp-2">
-                            + {it.extras.map((e) => e.label).join(", ")}
-                          </div>
-                        )}
-                        {it.removed.length > 0 && (
-                          <div className="text-[11px] text-neon-pink/90">
-                            Sem: {it.removed.join(", ")}
-                          </div>
-                        )}
-                        {it.note && <div className="mt-1 text-[11px] italic text-white/60">"{it.note}"</div>}
-                        <div className="mt-1 text-[10px] uppercase tracking-wider text-white/40">
-                          Toque para editar
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          remove(it.uid);
-                        }}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-white/60 active:scale-95"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+
+                  <div className="min-w-0 flex-1 pr-8">
+                    <div className="truncate font-display text-lg font-extrabold leading-tight text-white">
+                      {it.name}
                     </div>
-                    <div className="mt-2 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+                    <div className="mt-0.5 line-clamp-2 text-[12px] text-white/60">
+                      {[it.size, it.flavor, ...it.extras.map((e) => e.label)].filter(Boolean).join(", ") || "\u00a0"}
+                    </div>
+                    {it.removed.length > 0 && (
+                      <div className="mt-0.5 truncate text-[11px] text-neon-pink/80">
+                        sem {it.removed.join(", ")}
+                      </div>
+                    )}
+
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <div className="font-display text-lg font-extrabold text-neon-pink">
+                        {brl(it.unitPrice * it.quantity)}
+                      </div>
+                      <div
+                        className="flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-1 py-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            update(it.uid, { quantity: Math.max(1, it.quantity - 1) });
+                            if (it.quantity <= 1) {
+                              remove(it.uid);
+                            } else {
+                              update(it.uid, { quantity: it.quantity - 1 });
+                            }
                           }}
-                          className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white"
+                          className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white active:scale-95"
+                          aria-label="Diminuir"
                         >
-                          <Minus className="h-3 w-3" />
+                          {it.quantity <= 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                         </button>
-                        <div className="w-6 text-center text-sm font-bold text-white">{it.quantity}</div>
+                        <div className="w-5 text-center text-sm font-extrabold text-white">{it.quantity}</div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             update(it.uid, { quantity: it.quantity + 1 });
                           }}
-                          className="grid h-7 w-7 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)]"
+                          className="grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white glow-pink active:scale-95"
+                          aria-label="Aumentar"
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus className="h-3.5 w-3.5" />
                         </button>
-                      </div>
-                      <div className="font-display text-base font-extrabold text-neon-yellow">
-                        {brl(it.unitPrice * it.quantity)}
                       </div>
                     </div>
                   </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(it);
+                    }}
+                    className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80 active:scale-95"
+                    aria-label="Editar"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               ))}
+
+              {/* Adicionar mais itens */}
+              <button
+                onClick={closeCart}
+                className="flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-neon-pink/50 bg-neon-pink/5 px-4 py-3.5 text-sm font-extrabold text-white transition hover:border-neon-pink active:scale-[.99]"
+              >
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white">
+                  <Plus className="h-4 w-4" />
+                </span>
+                Adicionar mais itens
+              </button>
             </div>
           )}
         </div>
 
         {items.length > 0 && (
-          <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <div className="mb-3 space-y-1 text-sm">
-              <Row label="Subtotal" value={brl(subtotal)} />
-              <Row label="Taxa de entrega" value={brl(BRAND.deliveryFee)} muted />
-              <div className="mt-2 flex items-end justify-between">
-                <span className="text-[11px] uppercase tracking-widest text-white/50">Total</span>
-                <span className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text">
-                  {brl(total)}
-                </span>
+          <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="mb-4 space-y-2.5">
+              <SummaryRow icon={ShoppingBag} label="Subtotal" value={brl(subtotal)} />
+              <SummaryRow icon={Truck} label="Entrega" value={fee > 0 ? brl(fee) : "R$ 0,00"} />
+              <div className="mt-2 flex items-end justify-between border-t border-white/10 pt-3">
+                <span className="font-display text-2xl font-extrabold text-white">Total</span>
+                <div className="text-right">
+                  <div className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">
+                    {brl(total)}
+                  </div>
+                  <div className="ml-auto mt-1 h-1 w-20 rounded-full bg-gradient-to-r from-transparent to-neon-pink" />
+                </div>
               </div>
             </div>
             <button
@@ -151,11 +183,16 @@ export function CartSheet() {
   );
 }
 
-function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+function SummaryRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className={muted ? "text-white/60" : "text-white/80"}>{label}</span>
-      <span className={muted ? "text-white/70" : "text-white font-semibold"}>{value}</span>
+      <div className="flex items-center gap-2.5">
+        <div className="grid h-8 w-8 place-items-center rounded-xl bg-white/5 text-neon-yellow">
+          <Icon className="h-4 w-4" />
+        </div>
+        <span className="text-sm font-semibold text-white/80">{label}</span>
+      </div>
+      <span className="text-sm font-bold text-white">{value}</span>
     </div>
   );
 }
