@@ -1844,7 +1844,8 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     setOpen(false);
   };
 
-  const discard = () => {
+  const discard = async () => {
+    if (dirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
     setDraft(initialDraft);
     setOpen(false);
   };
@@ -1911,7 +1912,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
           icon={<Star className="h-3.5 w-3.5 fill-neon-yellow text-neon-yellow" />}
           dirty={dirty}
           saving={update.isPending || busy}
-          onClose={() => setOpen(false)}
           onCancel={discard}
           onSave={save}
         >
@@ -1960,7 +1960,6 @@ function ImageAdjustModal({
   icon,
   dirty,
   saving,
-  onClose,
   onCancel,
   onSave,
   children,
@@ -1970,7 +1969,6 @@ function ImageAdjustModal({
   icon?: React.ReactNode;
   dirty: boolean;
   saving?: boolean;
-  onClose: () => void;
   onCancel: () => void;
   onSave: () => void;
   children: React.ReactNode;
@@ -1978,7 +1976,7 @@ function ImageAdjustModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
+      onClick={onCancel}
     >
       <div
         className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
@@ -1994,7 +1992,7 @@ function ImageAdjustModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={onCancel}
             aria-label="Fechar"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
           >
@@ -3412,7 +3410,8 @@ function NewsHeroEditor({
     setOpen(false);
   };
 
-  const discard = () => {
+  const discard = async () => {
+    if (dirty && !(await confirmDialog({ title: "Descartar alterações?", message: "Você tem alterações não salvas. Deseja descartar?", confirmLabel: "Descartar" }))) return;
     setDraft(initialDraft);
     setOpen(false);
   };
@@ -3500,7 +3499,7 @@ function NewsHeroEditor({
           icon={<Sparkles className="h-3.5 w-3.5 text-neon-cyan" />}
           dirty={dirty}
           saving={update.isPending || busy}
-          onClose={() => setOpen(false)}
+          
           onCancel={discard}
           onSave={save}
         >
