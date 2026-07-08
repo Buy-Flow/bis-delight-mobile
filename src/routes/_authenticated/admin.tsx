@@ -212,6 +212,7 @@ function ProductsTab() {
   const toggleActive = useToggleProductActive();
   const upsert = useUpsertProduct();
   const [editing, setEditing] = useState<Product | null>(null);
+  const [editingAcai, setEditingAcai] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
