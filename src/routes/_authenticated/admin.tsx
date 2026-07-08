@@ -1960,7 +1960,6 @@ function ImageAdjustModal({
   icon,
   dirty,
   saving,
-  onClose,
   onCancel,
   onSave,
   children,
@@ -1970,7 +1969,6 @@ function ImageAdjustModal({
   icon?: React.ReactNode;
   dirty: boolean;
   saving?: boolean;
-  onClose: () => void;
   onCancel: () => void;
   onSave: () => void;
   children: React.ReactNode;
