@@ -200,34 +200,6 @@ function AdminPage() {
   );
 }
 
-/* ============================= Seed helper ============================= */
-function SeedButton() {
-  const [loading, setLoading] = useState(false);
-  const invalidate = useInvalidateMenu();
-  const run = async () => {
-    if (!(await confirmDialog({ title: "Importar dados padrão", message: "Isso vai importar (ou atualizar) os produtos, categorias e configurações padrão. Continuar?", confirmLabel: "Importar", tone: "default" }))) return;
-    setLoading(true);
-    try {
-      const r = await seedInitialMenu();
-      toast.success(`Importado: ${r.products} produtos, ${r.categories} categorias.`);
-      invalidate();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao importar");
-    } finally {
-      setLoading(false);
-    }
-  };
-  return (
-    <button
-      onClick={run}
-      disabled={loading}
-      className="inline-flex items-center gap-1.5 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-1.5 text-xs font-semibold text-neon-cyan hover:bg-neon-cyan/20 disabled:opacity-60"
-    >
-      {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-      Importar dados iniciais
-    </button>
-  );
-}
 
 /* =============================== Products =============================== */
 function ProductsTab() {
