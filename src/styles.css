@@ -176,6 +176,11 @@
     0%,100% { box-shadow: 0 0 0 0 oklch(0.72 0.26 350 / 0.7); }
     50%     { box-shadow: 0 0 0 14px oklch(0.72 0.26 350 / 0); }
   }
+  @keyframes pulse-glow-yellow-sm {
+    0%,100% { box-shadow: 0 0 0 0 oklch(0.90 0.20 90 / 0.75); }
+    50%     { box-shadow: 0 0 0 5px oklch(0.90 0.20 90 / 0); }
+  }
+
   @keyframes shine {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(200%); }
