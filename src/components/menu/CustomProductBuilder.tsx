@@ -40,14 +40,37 @@ function initialSelection(groups: OptionGroup[]): Selection {
 export function CustomProductBuilder({
   product,
   onClose,
+  editItem,
 }: {
   product: Product;
   onClose: () => void;
+  editItem?: CartItem | null;
 }) {
-  const { add } = useCart();
+  const { add, update } = useCart();
   const groups = useMemo(() => product.optionGroups ?? [], [product.optionGroups]);
-  const [sel, setSel] = useState<Selection>(() => initialSelection(groups));
-  const [qty, setQty] = useState(1);
+
+  const seededSelection = useMemo<Selection>(() => {
+    if (!editItem) return initialSelection(groups);
+    const sel: Selection = {};
+    const extraLabels = new Set(editItem.extras.map((e) => e.label));
+    for (const g of groups) {
+      if (g.type === "single") {
+        // Try to match by editItem.size
+        const match = g.options.find((o) => o.label === editItem.size);
+        if (match) sel[g.id] = [match.id];
+        else if (g.required && g.options[0]) sel[g.id] = [g.options[0].id];
+        else sel[g.id] = [];
+      } else {
+        sel[g.id] = g.options
+          .filter((o) => extraLabels.has(`${g.name}: ${o.label}`))
+          .map((o) => o.id);
+      }
+    }
+    return sel;
+  }, [groups, editItem]);
+
+  const [sel, setSel] = useState<Selection>(seededSelection);
+  const [qty, setQty] = useState(editItem?.quantity ?? 1);
 
   const unit = useMemo(() => computeUnit(groups, sel), [groups, sel]);
   const total = unit * qty;
@@ -95,7 +118,7 @@ export function CustomProductBuilder({
         });
       });
     }
-    add({
+    const payload = {
       productId: product.id,
       name: sizeLabel ? `${product.name} — ${sizeLabel}` : product.name,
       image: product.image,
@@ -104,8 +127,14 @@ export function CustomProductBuilder({
       removed: [],
       quantity: qty,
       unitPrice: unit,
-    });
-    toast.success("Adicionado ao carrinho! 🛒");
+    };
+    if (editItem) {
+      update(editItem.uid, payload);
+      toast.success("Item atualizado! ✨");
+    } else {
+      add(payload);
+      toast.success("Adicionado ao carrinho! 🛒");
+    }
     onClose();
   };
 
