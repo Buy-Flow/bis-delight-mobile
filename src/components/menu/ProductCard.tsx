@@ -139,7 +139,7 @@ export function ProductCard({
           ))}
         </div>
 
-        {/* Price block — modelo padrão: label + valor amarelo */}
+        {/* Price + compact add button */}
         <div className="mt-3 flex items-end justify-between gap-2">
           <div className="flex flex-col leading-none">
             <span
@@ -159,32 +159,25 @@ export function ProductCard({
               {brl(product.basePrice)}
             </span>
           </div>
-        </div>
 
-        {/* Full-width pink CTA pill — padrão do modelo */}
-        <div className="mt-3">
           <div
+            aria-label="Adicionar"
             className={cn(
-              "flex items-center justify-center gap-2 rounded-full px-4 py-3",
+              "grid h-10 w-10 shrink-0 place-items-center rounded-full",
               "transition-transform duration-150 ease-out will-change-transform",
-              "group-active:scale-[.97]",
+              "group-active:scale-90",
             )}
             style={{
               background:
                 "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.60 0.28 350) 100%)",
               boxShadow:
-                "0 10px 22px -8px oklch(0.60 0.28 350 / 0.75), inset 0 1px 0 rgba(255,255,255,0.35)",
+                "0 8px 18px -6px oklch(0.60 0.28 350 / 0.75), inset 0 1px 0 rgba(255,255,255,0.35)",
             }}
           >
-            <Plus className="h-4 w-4 text-white" strokeWidth={3.2} />
-            <span
-              className="text-[11px] font-black uppercase tracking-[0.18em] text-white"
-              style={{ fontFamily: "'Poppins', sans-serif" }}
-            >
-              Adicionar
-            </span>
+            <Plus className="h-5 w-5 text-white" strokeWidth={3.4} />
           </div>
         </div>
+
       </div>
     </button>
   );
