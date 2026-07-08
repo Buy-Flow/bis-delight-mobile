@@ -2244,59 +2244,29 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
             </div>
             <div className="space-y-5 overflow-y-auto p-4">
 
-              {/* Preview real */}
+              {/* Preview real (arraste para posicionar) */}
               <div>
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
                   Preview real — card de Destaque
                 </div>
                 <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
-                  <div style={{ width: "100%", maxWidth: CARD_W }}>
+                  <div
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    onPointerCancel={onPointerUp}
+                    className="touch-none select-none cursor-grab active:cursor-grabbing"
+                    style={{ width: "100%", maxWidth: CARD_W }}
+                  >
                     <HighlightCard product={previewProduct} onOpen={() => {}} />
                   </div>
                   <div className="text-[10px] text-white/40">
-                    Arraste a foto abaixo ou use os controles e salve no final.
+                    Arraste a foto ou use os controles e salve no final.
                   </div>
                 </div>
               </div>
 
-              {/* Área de ajuste (arraste) */}
-              <div>
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                  Área de ajuste (arraste)
-                </div>
-                <div
-                  onPointerDown={onPointerDown}
-                  onPointerMove={onPointerMove}
-                  onPointerUp={onPointerUp}
-                  onPointerCancel={onPointerUp}
-                  className="relative mx-auto touch-none select-none overflow-hidden rounded-2xl border border-neon-cyan/30 bg-[oklch(0.14_0.09_305)] cursor-grab active:cursor-grabbing"
-                  style={{ width: "100%", maxWidth: CARD_W, height: CARD_H }}
-                >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
-                    }}
-                  />
-                  <img
-                    src={draft.heroImage || product.image}
-                    alt=""
-                    draggable={false}
-                    className="absolute inset-0 h-full w-full object-contain p-3 pointer-events-none"
-                    style={{
-                      transform: `translate(${draft.posX}%, ${draft.posY}%) scale(${draft.scale})`,
-                      transformOrigin: "center",
-                    }}
-                  />
-                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                    <div className="h-full w-px bg-white/10" />
-                  </div>
-                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                    <div className="h-px w-full bg-white/10" />
-                  </div>
-                </div>
-              </div>
+
 
               {/* Controls */}
               <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
