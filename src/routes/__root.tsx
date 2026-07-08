@@ -113,11 +113,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "preload",
         as: "style",
-        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@600;700&display=swap",
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@600;700&display=swap",
       },
       // LCP: preload hero images so they arrive before hydration
       {
