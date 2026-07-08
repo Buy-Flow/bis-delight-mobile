@@ -275,7 +275,7 @@ function Content() {
 
 
       {/* Product list */}
-      <section ref={menuRef} className="px-4 pb-6">
+      <section ref={menuRef} className="px-4 pb-28">
 
         <div id="feito-com-amor" className="mb-4 scroll-mt-20">
 

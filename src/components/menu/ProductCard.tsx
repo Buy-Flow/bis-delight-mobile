@@ -40,23 +40,16 @@ export function ProductCard({
     >
       {/* Full-bleed product image top */}
       <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px]">
-        {/* Diagonal neon streaks */}
+        {/* Smooth radial glow background — no diagonal stripes */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(135deg, oklch(0.45 0.28 340) 0%, oklch(0.28 0.22 305) 45%, oklch(0.14 0.10 300) 100%)",
+              "radial-gradient(120% 90% at 30% 20%, oklch(0.42 0.24 340) 0%, oklch(0.26 0.18 315) 45%, oklch(0.14 0.09 300) 100%)",
           }}
         />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-40"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(45deg, transparent 0px, transparent 14px, rgba(255,255,255,0.06) 14px, rgba(255,255,255,0.06) 15px)",
-          }}
-        />
-        <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-neon-cyan/40 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-neon-pink/40 blur-2xl" />
+        <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-neon-cyan/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-neon-pink/25 blur-3xl" />
 
         {/* Image wrapper handles hover/tap animation so we don't clash with the
             inline transform used for positioning */}
