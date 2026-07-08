@@ -2265,7 +2265,7 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     onPointerCancel={onPointerUp}
-                    className="touch-none select-none cursor-grab active:cursor-grabbing"
+                    className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none"
                     style={{ width: "100%", maxWidth: CARD_W }}
                   >
                     <HighlightCard product={previewProduct} onOpen={() => {}} />
@@ -3891,7 +3891,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 onPointerCancel={onPointerUp}
-                className="touch-none select-none cursor-grab active:cursor-grabbing [&_article]:!w-full [&_article]:!max-w-none"
+                className="touch-none select-none cursor-grab active:cursor-grabbing [&_article]:!w-full [&_article]:!max-w-none [&_*]:pointer-events-none"
                 style={{ width: "100%", maxWidth: CARD_W }}
               >
                 <NewsPosterCard
