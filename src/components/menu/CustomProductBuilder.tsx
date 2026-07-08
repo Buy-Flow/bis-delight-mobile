@@ -222,81 +222,99 @@ export function CustomProductBuilder({
                 : g.required
                   ? "obrigatório"
                   : undefined;
+
+            const anyActive = picked.length > 0;
+            const activeLabel =
+              g.type === "single" && picked[0]
+                ? g.options.find((o) => o.id === picked[0])?.label
+                : undefined;
+
             return (
-              <div key={g.id}>
-                <div className="mb-2 flex items-baseline justify-between">
-                  <h4 className="font-display text-[15px] font-extrabold uppercase tracking-wide text-white">
-                    {gi + 1}. {g.name}
-                  </h4>
-                  {hint && <span className="text-[10px] text-white/50">{hint}</span>}
+              <div key={g.id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="mb-3 flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "grid h-6 w-6 place-items-center rounded-full text-[11px] font-black",
+                        anyActive
+                          ? "bg-neon-pink text-white shadow-[0_0_12px_rgba(255,60,140,0.5)]"
+                          : "bg-white/10 text-white/80",
+                      )}
+                    >
+                      {gi + 1}
+                    </span>
+                    <h4 className="font-display text-[15px] font-extrabold uppercase tracking-wide text-white">
+                      {g.name}
+                    </h4>
+                  </div>
+                  {activeLabel ? (
+                    <div className="flex items-center gap-1 rounded-full bg-neon-yellow/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neon-yellow ring-1 ring-neon-yellow/40">
+                      <span className="opacity-70">Selecionado</span>
+                      <span>{activeLabel}</span>
+                    </div>
+                  ) : hint ? (
+                    <span className="text-[10px] uppercase tracking-widest text-white/50">
+                      {hint}
+                    </span>
+                  ) : null}
                 </div>
 
-                {g.type === "single" ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {g.options.map((o) => {
-                      const active = picked[0] === o.id;
-                      return (
-                        <button
-                          key={o.id}
-                          onClick={() => toggle(g, o.id)}
-                          className={cn(
-                            "rounded-2xl border px-3 py-3 text-left transition",
-                            active
-                              ? "border-neon-cyan bg-neon-cyan/10 glow-cyan"
-                              : "border-white/10 bg-white/5",
-                          )}
-                        >
-                          <div className="text-sm font-bold text-white">{o.label}</div>
-                          {o.price > 0 && (
-                            <div className="text-neon-yellow text-lg font-extrabold">
-                              {brl(o.price)}
+                <div className="grid grid-cols-4 gap-2">
+                  {g.options.map((o) => {
+                    const active =
+                      g.type === "single" ? picked[0] === o.id : picked.includes(o.id);
+                    const img = o.image || product.image;
+                    return (
+                      <button
+                        key={o.id}
+                        onClick={() => toggle(g, o.id)}
+                        className={cn(
+                          "group relative flex flex-col items-center overflow-hidden rounded-2xl border p-1.5 pb-2 text-center transition",
+                          active
+                            ? "border-neon-cyan bg-neon-cyan/10 shadow-[0_0_0_2px_var(--neon-cyan),0_8px_24px_-8px_var(--neon-cyan)]"
+                            : "border-white/10 bg-black/30 hover:border-white/25",
+                        )}
+                      >
+                        {active && (
+                          <span className="absolute right-1.5 top-1.5 z-10 grid h-5 w-5 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] shadow-[0_0_10px_var(--neon-cyan)]">
+                            <Check className="h-3 w-3" strokeWidth={3} />
+                          </span>
+                        )}
+                        <div className="relative mb-1 aspect-square w-full overflow-hidden rounded-xl bg-white/5">
+                          {img ? (
+                            <img
+                              src={img}
+                              alt={o.label}
+                              className="h-full w-full object-contain p-1 drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)]"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="grid h-full place-items-center text-lg opacity-60">
+                              ✨
                             </div>
                           )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {g.options.map((o) => {
-                      const on = picked.includes(o.id);
-                      return (
-                        <button
-                          key={o.id}
-                          onClick={() => toggle(g, o.id)}
+                        </div>
+                        <div
                           className={cn(
-                            "flex w-full items-center justify-between rounded-2xl border px-3 py-3 transition",
-                            on
-                              ? "border-neon-cyan bg-neon-cyan/10 glow-cyan"
-                              : "border-white/10 bg-white/5",
+                            "line-clamp-2 min-h-[26px] text-[11px] font-bold leading-tight",
+                            active ? "text-neon-cyan" : "text-white",
                           )}
                         >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={cn(
-                                "grid h-6 w-6 place-items-center rounded-md border",
-                                on
-                                  ? "border-neon-cyan bg-neon-cyan text-[oklch(0.18_0.11_305)]"
-                                  : "border-white/30",
-                              )}
-                            >
-                              {on && <Check className="h-4 w-4" />}
-                            </div>
-                            <span className="text-sm font-medium text-white">{o.label}</span>
+                          {o.label}
+                        </div>
+                        {o.price > 0 && (
+                          <div className="mt-0.5 text-[10px] font-extrabold text-neon-yellow">
+                            + {brl(o.price)}
                           </div>
-                          {o.price > 0 && (
-                            <span className="text-sm font-bold text-neon-yellow">
-                              + {brl(o.price)}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
+
 
           <div className="h-24" />
         </div>

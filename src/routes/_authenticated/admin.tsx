@@ -5164,11 +5164,30 @@ function CustomTab({
                 <div className="text-[11px] uppercase tracking-widest text-white/50">Opções</div>
                 {g.options.map((o, oi) => (
                   <div key={o.id} className="flex items-center gap-1.5">
+                    <div className="relative shrink-0">
+                      {o.image ? (
+                        <img
+                          src={o.image}
+                          alt=""
+                          className="h-10 w-10 rounded-lg border border-white/10 bg-black/40 object-contain"
+                        />
+                      ) : (
+                        <div className="grid h-10 w-10 place-items-center rounded-lg border border-dashed border-white/20 bg-black/30 text-[9px] text-white/40">
+                          sem img
+                        </div>
+                      )}
+                    </div>
                     <input
                       value={o.label}
                       onChange={(e) => patchOption(gi, oi, { label: e.target.value })}
                       className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-sm text-white"
-                      placeholder="Nome da opção"
+                      placeholder="Nome"
+                    />
+                    <input
+                      value={o.image ?? ""}
+                      onChange={(e) => patchOption(gi, oi, { image: e.target.value || undefined })}
+                      className="w-28 min-w-0 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-[11px] text-white"
+                      placeholder="URL imagem"
                     />
                     <div className="flex shrink-0 items-center gap-1">
                       <span className="text-[10px] text-white/50">R$</span>
@@ -5178,7 +5197,7 @@ function CustomTab({
                         step="0.5"
                         value={o.price}
                         onChange={(e) => patchOption(gi, oi, { price: Number(e.target.value) || 0 })}
-                        className="w-16 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white"
+                        className="w-14 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white"
                       />
                     </div>
                     <button

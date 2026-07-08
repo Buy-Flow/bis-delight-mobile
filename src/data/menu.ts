@@ -64,7 +64,7 @@ export type SizeOption = { id: string; label: string; priceDelta: number };
 export type ExtraOption = { id: string; label: string; price: number };
 
 /** Item dentro de um grupo de opções (produto personalizado). */
-export type OptionItem = { id: string; label: string; price: number };
+export type OptionItem = { id: string; label: string; price: number; image?: string };
 
 /**
  * Grupo de opções configurável para produtos personalizados.
