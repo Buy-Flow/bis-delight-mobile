@@ -3743,11 +3743,12 @@ const TEXTURE_PRESETS = [
 function NewsHeroEditor({ product, index }: { product: Product; index: number }) {
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState({
+  const initialDraft = {
     posX: product.heroImagePosX ?? 0,
     posY: product.heroImagePosY ?? 0,
     scale: product.heroImageScale ?? 1.2,
-  });
+  };
+  const [draft, setDraft] = useState(initialDraft);
 
   useEffect(() => {
     setDraft({
@@ -3757,6 +3758,11 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
     });
   }, [product.heroImagePosX, product.heroImagePosY, product.heroImageScale]);
 
+  const dirty =
+    draft.posX !== initialDraft.posX ||
+    draft.posY !== initialDraft.posY ||
+    draft.scale !== initialDraft.scale;
+
   const previewProduct: Product = {
     ...product,
     heroImagePosX: draft.posX,
@@ -3764,18 +3770,27 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
     heroImageScale: draft.scale,
   };
 
-  const save = async (patch: Partial<typeof draft>) => {
-    const next = { ...draft, ...patch };
-    setDraft(next);
-    await update.mutateAsync({
-      id: product.id,
-      heroImagePosX: next.posX,
-      heroImagePosY: next.posY,
-      heroImageScale: next.scale,
-    });
+  const patchDraft = (patch: Partial<typeof draft>) => {
+    setDraft((prev) => ({ ...prev, ...patch }));
   };
 
-  const reset = () => save({ posX: 0, posY: 0, scale: 1.2 });
+  const save = async () => {
+    await update.mutateAsync({
+      id: product.id,
+      heroImagePosX: draft.posX,
+      heroImagePosY: draft.posY,
+      heroImageScale: draft.scale,
+    });
+    toast.success("Novidade salva");
+    setOpen(false);
+  };
+
+  const discard = () => {
+    setDraft(initialDraft);
+    setOpen(false);
+  };
+
+  const reset = () => patchDraft({ posX: 0, posY: 0, scale: 1.2 });
 
   const CARD_W = 300;
   const CARD_H = 400;
@@ -3798,11 +3813,6 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
   const onPointerUp = () => {
     if (!dragRef.current) return;
     dragRef.current = null;
-    void update.mutateAsync({
-      id: product.id,
-      heroImagePosX: draft.posX,
-      heroImagePosY: draft.posY,
-    });
   };
 
   return (
@@ -3849,7 +3859,9 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                   <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
                   <div className="truncate text-sm font-bold">{product.name}</div>
                 </div>
-                <div className="text-[10.5px] text-white/50">Ajuste a foto do card de Novidades</div>
+                <div className="text-[10.5px] text-white/50">
+                  Ajuste a foto do card de Novidades{dirty ? " • alterações não salvas" : ""}
+                </div>
               </div>
               <button
                 type="button"
@@ -3881,7 +3893,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 />
               </div>
               <div className="text-[10px] text-white/40">
-                Arraste a foto abaixo ou use os controles.
+                Arraste a foto abaixo ou use os controles e salve no final.
               </div>
             </div>
           </div>
@@ -3939,7 +3951,6 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                 step={0.05}
                 value={draft.scale}
                 onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
-                onPointerUp={() => save({ scale: draft.scale })}
                 className="w-full accent-neon-cyan"
               />
             </div>
@@ -3957,7 +3968,6 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                   step={1}
                   value={draft.posX}
                   onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
-                  onPointerUp={() => save({ posX: draft.posX })}
                   className="w-full accent-neon-cyan"
                 />
               </div>
@@ -3973,20 +3983,19 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
                   step={1}
                   value={draft.posY}
                   onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
-                  onPointerUp={() => save({ posY: draft.posY })}
                   className="w-full accent-neon-cyan"
                 />
               </div>
               <div className="flex flex-col items-stretch justify-end gap-1">
                 <div className="grid grid-cols-3 gap-1">
                   <div />
-                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
+                  <NudgeBtn onClick={() => patchDraft({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
                   <div />
-                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
+                  <NudgeBtn onClick={() => patchDraft({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
                   <NudgeBtn onClick={reset}>◎</NudgeBtn>
-                  <NudgeBtn onClick={() => save({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
+                  <NudgeBtn onClick={() => patchDraft({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
                   <div />
-                  <NudgeBtn onClick={() => save({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
+                  <NudgeBtn onClick={() => patchDraft({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
                   <div />
                 </div>
               </div>
@@ -4001,6 +4010,30 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
             </button>
           </div>
             </div>
+            <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[oklch(0.10_0.08_300)] px-4 py-3">
+              <div className="flex items-center gap-2 text-[11px] text-white/60">
+                {dirty ? <span className="h-2 w-2 rounded-full bg-neon-yellow" /> : null}
+                {dirty ? "Alterações não salvas" : "Sem alterações"}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={discard}
+                  className="rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/5"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={save}
+                  disabled={!dirty || update.isPending}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
+                >
+                  {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  Salvar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -4009,6 +4042,7 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
     </div>
   );
 }
+
 
 function NewsSection({ s, set }: { s: SiteSettings; set: SetFn }) {
   const { data: products = [] } = useAllProducts();
