@@ -111,37 +111,8 @@ export function ProductCard({
         </svg>
       </div>
 
-      {/* Price tag sticker — diagonal, sits on the wave */}
-      <div
-        className={cn(
-          "absolute right-3 top-[147px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none",
-          "transition-transform duration-200 ease-out will-change-transform",
-          "[@media(hover:hover)]:group-hover:rotate-[10deg] [@media(hover:hover)]:group-hover:scale-[1.04]",
-        )}
-        style={{
-          background:
-            "linear-gradient(180deg, oklch(0.94 0.19 100) 0%, oklch(0.82 0.22 90) 100%)",
-          boxShadow:
-            "0 10px 20px -6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.55), 0 0 0 2px oklch(0.16 0.11 305)",
-        }}
-      >
-        <span
-          className="block text-[7px] font-bold uppercase tracking-[0.2em] text-[oklch(0.22_0.14_305)]"
-          style={{ fontFamily: "'Poppins', sans-serif" }}
-        >
-          a partir de
-        </span>
-        <span
-          className="mt-[2px] block whitespace-nowrap text-[15px] font-black text-[oklch(0.16_0.11_305)]"
-          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-        >
-          {brl(product.basePrice)}
-        </span>
-      </div>
-
-
-      {/* Content */}
-      <div className="relative flex flex-1 flex-col px-3 pb-3 pt-8">
+      {/* Content — abaixo do "papel" ondulado */}
+      <div className="relative flex flex-1 flex-col px-3 pb-3 pt-3">
         <h3
           className="pr-1 text-[13.5px] font-black uppercase leading-tight text-white"
           style={{
@@ -151,7 +122,6 @@ export function ProductCard({
         >
           {product.name}
         </h3>
-
 
         {/* Ingredients — full list, wrapped */}
         <div className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
@@ -169,43 +139,49 @@ export function ProductCard({
           ))}
         </div>
 
+        {/* Price block — modelo padrão: label + valor amarelo */}
+        <div className="mt-3 flex items-end justify-between gap-2">
+          <div className="flex flex-col leading-none">
+            <span
+              className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/60"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              A partir de
+            </span>
+            <span
+              className="mt-1 text-[22px] font-black text-neon-yellow drop-shadow-[0_2px_8px_rgba(255,215,60,0.35)]"
+              style={{
+                fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
+                letterSpacing: "0.01em",
+                lineHeight: 1,
+              }}
+            >
+              {brl(product.basePrice)}
+            </span>
+          </div>
+        </div>
 
-        {/* Chunky floating CTA — full width */}
-        <div className="mt-auto pt-3">
+        {/* Full-width pink CTA pill — padrão do modelo */}
+        <div className="mt-3">
           <div
             className={cn(
-              "flex items-center justify-between gap-2 rounded-full pl-3.5 pr-1 py-1",
-              "transition-[background,transform] duration-200 ease-out will-change-transform",
-              "group-active:scale-[.98]",
+              "flex items-center justify-center gap-2 rounded-full px-4 py-3",
+              "transition-transform duration-150 ease-out will-change-transform",
+              "group-active:scale-[.97]",
             )}
             style={{
               background:
-                "linear-gradient(90deg, oklch(0.28 0.18 305) 0%, oklch(0.20 0.14 305) 100%)",
+                "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.60 0.28 350) 100%)",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 0 1px rgba(255,255,255,0.08)",
+                "0 10px 22px -8px oklch(0.60 0.28 350 / 0.75), inset 0 1px 0 rgba(255,255,255,0.35)",
             }}
           >
+            <Plus className="h-4 w-4 text-white" strokeWidth={3.2} />
             <span
-              className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/85"
+              className="text-[11px] font-black uppercase tracking-[0.18em] text-white"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              Personalizar
-            </span>
-            <span
-              className={cn(
-                "grid h-8 w-8 place-items-center rounded-full text-white will-change-transform",
-                "transition-transform duration-200 ease-out",
-                "[@media(hover:hover)]:group-hover:rotate-90",
-                "group-active:scale-90 group-active:duration-100",
-              )}
-              style={{
-                background:
-                  "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.60 0.28 350) 100%)",
-                boxShadow:
-                  "0 6px 14px -3px oklch(0.60 0.28 350 / 0.7), inset 0 1px 0 rgba(255,255,255,0.35)",
-              }}
-            >
-              <Plus className="h-4 w-4" strokeWidth={3.2} />
+              Adicionar
             </span>
           </div>
         </div>
