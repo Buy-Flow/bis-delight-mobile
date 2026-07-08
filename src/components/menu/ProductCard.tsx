@@ -20,7 +20,17 @@ export function ProductCard({
   return (
     <button
       onClick={() => onOpen(product)}
-      className="group relative flex h-full w-full flex-col overflow-visible rounded-[22px] text-left transition active:scale-[.98]"
+      className={cn(
+        "group relative flex h-full w-full flex-col overflow-visible rounded-[22px] text-left select-none",
+        // Fluid mobile touch: no 300ms delay, no blue tap highlight
+        "touch-manipulation [-webkit-tap-highlight-color:transparent]",
+        // GPU-friendly transform-only transition
+        "transition-transform duration-150 ease-out will-change-transform",
+        // Tap feedback (works on touch)
+        "active:scale-[.97] active:duration-75",
+        // Desktop hover lift (skipped on touch devices)
+        "[@media(hover:hover)]:hover:-translate-y-0.5",
+      )}
       style={{
         background:
           "linear-gradient(180deg, oklch(0.22 0.15 305) 0%, oklch(0.12 0.08 300) 100%)",
@@ -48,16 +58,28 @@ export function ProductCard({
         <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-neon-cyan/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-neon-pink/40 blur-2xl" />
 
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)] transition-transform duration-500 group-hover:rotate-3"
-          style={{
-            transform: `translate(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%) scale(${product.imageScale ?? 1.5})`,
-            transformOrigin: "center",
-          }}
-        />
+        {/* Image wrapper handles hover/tap animation so we don't clash with the
+            inline transform used for positioning */}
+        <div
+          className={cn(
+            "absolute inset-0 will-change-transform transition-transform duration-300 ease-out",
+            "[@media(hover:hover)]:group-hover:rotate-2 [@media(hover:hover)]:group-hover:scale-[1.03]",
+            "group-active:scale-[.98] group-active:duration-100",
+          )}
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)]"
+            style={{
+              transform: `translate3d(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%, 0) scale(${product.imageScale ?? 1.5})`,
+              transformOrigin: "center",
+            }}
+          />
+        </div>
 
 
         {/* Badge sticker tilted */}
@@ -98,7 +120,11 @@ export function ProductCard({
 
       {/* Price tag sticker — diagonal, sits on the wave */}
       <div
-        className="absolute right-3 top-[147px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none"
+        className={cn(
+          "absolute right-3 top-[147px] z-30 rotate-[6deg] rounded-lg px-2.5 py-1.5 leading-none",
+          "transition-transform duration-200 ease-out will-change-transform",
+          "[@media(hover:hover)]:group-hover:rotate-[10deg] [@media(hover:hover)]:group-hover:scale-[1.04]",
+        )}
         style={{
           background:
             "linear-gradient(180deg, oklch(0.94 0.19 100) 0%, oklch(0.82 0.22 90) 100%)",
@@ -154,7 +180,11 @@ export function ProductCard({
         {/* Chunky floating CTA — full width */}
         <div className="mt-auto pt-3">
           <div
-            className="flex items-center justify-between gap-2 rounded-full pl-3.5 pr-1 py-1"
+            className={cn(
+              "flex items-center justify-between gap-2 rounded-full pl-3.5 pr-1 py-1",
+              "transition-[background,transform] duration-200 ease-out will-change-transform",
+              "group-active:scale-[.98]",
+            )}
             style={{
               background:
                 "linear-gradient(90deg, oklch(0.28 0.18 305) 0%, oklch(0.20 0.14 305) 100%)",
@@ -169,7 +199,12 @@ export function ProductCard({
               Personalizar
             </span>
             <span
-              className="grid h-8 w-8 place-items-center rounded-full text-white transition group-hover:rotate-90"
+              className={cn(
+                "grid h-8 w-8 place-items-center rounded-full text-white will-change-transform",
+                "transition-transform duration-200 ease-out",
+                "[@media(hover:hover)]:group-hover:rotate-90",
+                "group-active:scale-90 group-active:duration-100",
+              )}
               style={{
                 background:
                   "linear-gradient(180deg, oklch(0.78 0.26 350) 0%, oklch(0.60 0.28 350) 100%)",
