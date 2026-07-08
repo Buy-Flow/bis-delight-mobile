@@ -149,6 +149,24 @@ function rowToCategory(row: Record<string, unknown>): Category {
   };
 }
 
+function normalizeAcaiConfig(raw: unknown): AcaiConfig {
+  const r = (raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {}) as Record<string, unknown>;
+  const sizes = Array.isArray(r.sizes) && r.sizes.length ? (r.sizes as AcaiSize[]) : DEFAULT_ACAI_CONFIG.sizes;
+  const fruits = Array.isArray(r.fruits) && r.fruits.length ? (r.fruits as string[]) : DEFAULT_ACAI_CONFIG.fruits;
+  const creams = Array.isArray(r.creams) && r.creams.length ? (r.creams as string[]) : DEFAULT_ACAI_CONFIG.creams;
+  const extras = Array.isArray(r.extras) ? (r.extras as ExtraOption[]) : DEFAULT_ACAI_CONFIG.extras;
+  return {
+    sizes,
+    fruits,
+    creams,
+    extras,
+    freeFruits: Number(r.freeFruits ?? DEFAULT_ACAI_CONFIG.freeFruits),
+    freeCreams: Number(r.freeCreams ?? DEFAULT_ACAI_CONFIG.freeCreams),
+    extraFruitPrice: Number(r.extraFruitPrice ?? DEFAULT_ACAI_CONFIG.extraFruitPrice),
+    extraCreamPrice: Number(r.extraCreamPrice ?? DEFAULT_ACAI_CONFIG.extraCreamPrice),
+  };
+}
+
 export function useProducts() {
   return useQuery({
     queryKey: ["products"],
