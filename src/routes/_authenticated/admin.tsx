@@ -2150,6 +2150,17 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
           {open ? "Fechar" : "Ajustar"}
         </span>
       </button>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Remover destaque"
+          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+
 
       {open && (
         <div
