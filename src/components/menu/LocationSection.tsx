@@ -1,4 +1,4 @@
-import { MapPin, Navigation, MessageCircle, Instagram, Church, Phone } from "lucide-react";
+import { MapPin, Navigation, MessageCircle, Instagram, Church, Phone, Bike, ShoppingBag } from "lucide-react";
 import { BRAND } from "@/data/menu";
 import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/lib/menu-data";
 import { useEffect, useState } from "react";
