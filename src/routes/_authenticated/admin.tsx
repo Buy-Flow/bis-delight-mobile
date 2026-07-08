@@ -2102,23 +2102,45 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     heroImageScale: draft.scale,
   };
 
-  const save = async (patch: Partial<typeof draft>) => {
-    const next = { ...draft, ...patch };
-    setDraft(next);
+  const initial = {
+    heroImage: product.heroImage ?? "",
+    posX: product.heroImagePosX ?? 0,
+    posY: product.heroImagePosY ?? 0,
+    scale: product.heroImageScale ?? 1.4,
+  };
+  const dirty =
+    draft.heroImage !== initial.heroImage ||
+    Math.abs(draft.posX - initial.posX) > 0.01 ||
+    Math.abs(draft.posY - initial.posY) > 0.01 ||
+    Math.abs(draft.scale - initial.scale) > 0.001;
+
+  const persist = async (values: typeof draft) => {
     await update.mutateAsync({
       id: product.id,
-      heroImage: next.heroImage,
-      heroImagePosX: next.posX,
-      heroImagePosY: next.posY,
-      heroImageScale: next.scale,
+      heroImage: values.heroImage,
+      heroImagePosX: values.posX,
+      heroImagePosY: values.posY,
+      heroImageScale: values.scale,
     });
+  };
+
+  const handleSave = async () => {
+    try {
+      await persist(draft);
+      toast.success("Destaque salvo");
+      setOpen(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao salvar");
+    }
   };
 
   const onFile = async (file: File) => {
     setBusy(true);
     try {
       const url = await uploadProductImage(file);
-      await save({ heroImage: url });
+      const next = { ...draft, heroImage: url };
+      setDraft(next);
+      await persist(next);
       toast.success("Imagem do destaque atualizada");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
@@ -2128,26 +2150,40 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
   };
 
   const clearImage = async () => {
-    await save({ heroImage: "" });
+    const next = { ...draft, heroImage: "" };
+    setDraft(next);
+    await persist(next);
     toast.success("Imagem removida — voltou para a foto do produto");
   };
 
-  const reset = () => save({ posX: 0, posY: 0, scale: 1.4 });
+  const reset = () => setDraft((p) => ({ ...p, posX: 0, posY: 0, scale: 1.4 }));
 
-  // Drag on preview
-  const CARD_W = 320;
-  const CARD_H = 148;
-  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+  // Drag directly on the preview
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    posX: number;
+    posY: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!draft.heroImage) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    dragRef.current = { startX: e.clientX, startY: e.clientY, posX: draft.posX, posY: draft.posY };
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      posX: draft.posX,
+      posY: draft.posY,
+      width: rect.width,
+      height: rect.height,
+    };
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     if (!d) return;
-    const dx = ((e.clientX - d.startX) / (CARD_W * 0.44)) * 100;
-    const dy = ((e.clientY - d.startY) / CARD_H) * 100;
+    const dx = ((e.clientX - d.startX) / d.width) * 100;
+    const dy = ((e.clientY - d.startY) / d.height) * 100;
     setDraft((prev) => ({
       ...prev,
       posX: clamp(d.posX + dx, -80, 80),
@@ -2155,15 +2191,9 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     }));
   };
   const onPointerUp = () => {
-    if (!dragRef.current) return;
     dragRef.current = null;
-    // Persist on release
-    void update.mutateAsync({
-      id: product.id,
-      heroImagePosX: draft.posX,
-      heroImagePosY: draft.posY,
-    });
   };
+
 
   return (
     <div className="relative rounded-2xl border border-white/10 bg-white/[0.03]">
