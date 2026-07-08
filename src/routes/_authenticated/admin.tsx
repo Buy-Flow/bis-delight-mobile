@@ -2277,7 +2277,7 @@ const DAY_LABEL: Record<WeekDay, string> = {
   sun: "Domingo",
 };
 
-function SettingsTab() {
+function SettingsTab({ initialSection = "identity" }: { initialSection?: SettingsSection } = {}) {
   const { data } = useSiteSettings();
   const update = useUpdateSettings();
   const [s, setS] = useState<SiteSettings | null>(null);
