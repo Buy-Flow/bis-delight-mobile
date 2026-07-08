@@ -4136,9 +4136,20 @@ function ExtrasEditorModal({
     }
   };
 
-  const accentText = accent === "cyan" ? "text-neon-cyan" : "text-neon-pink";
-  const accentChipBg = accent === "cyan" ? "bg-neon-cyan/20 hover:bg-neon-cyan/30" : "bg-neon-pink/20 hover:bg-neon-pink/30";
-  const saveBg = accent === "cyan" ? "bg-neon-cyan text-[oklch(0.18_0.11_305)]" : "bg-neon-pink text-white glow-pink";
+  const accentText =
+    accent === "cyan" ? "text-neon-cyan" : accent === "pink" ? "text-neon-pink" : "text-neon-yellow";
+  const accentChipBg =
+    accent === "cyan"
+      ? "bg-neon-cyan/20 hover:bg-neon-cyan/30"
+      : accent === "pink"
+        ? "bg-neon-pink/20 hover:bg-neon-pink/30"
+        : "bg-neon-yellow/20 hover:bg-neon-yellow/30";
+  const saveBg =
+    accent === "cyan"
+      ? "bg-neon-cyan text-[oklch(0.18_0.11_305)]"
+      : accent === "pink"
+        ? "bg-neon-pink text-white glow-pink"
+        : "bg-neon-yellow text-black";
 
   return (
     <div
