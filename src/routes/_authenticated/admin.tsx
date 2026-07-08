@@ -4136,18 +4136,53 @@ function ExtrasTab() {
       return n;
     });
 
+  const totalGlobal = 0; // computed in section
+  const totalWithOwn = products.filter((p) => (p.extras?.length ?? 0) > 0).length;
+  const totalCatWith = catList.filter((c) => (c.extras?.length ?? 0) > 0).length;
+  void totalGlobal;
+
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="font-display text-2xl font-black">Complementos</h2>
-        <p className="text-xs text-white/50">
-          Adicione, edite ou remova os adicionais pagos de cada produto.
-        </p>
+      {/* Hero header */}
+      <div className="mb-5 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-pink/15 via-neon-cyan/10 to-neon-yellow/10 p-5">
+        <div className="flex items-start gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink to-neon-cyan text-white shadow-lg">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-display text-2xl font-black leading-tight">Complementos</h2>
+            <p className="mt-0.5 text-[12px] text-white/60">
+              Configure adicionais em <b>três camadas</b>: globais, por categoria e por produto.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neon-cyan">
+                <Globe className="h-3 w-3" /> Globais
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-neon-pink/30 bg-neon-pink/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neon-pink">
+                <Tag className="h-3 w-3" /> {totalCatWith} categoria{totalCatWith === 1 ? "" : "s"}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-neon-yellow/30 bg-neon-yellow/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neon-yellow">
+                <Package className="h-3 w-3" /> {totalWithOwn} produto{totalWithOwn === 1 ? "" : "s"}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <GlobalExtrasSection />
+      {/* Two-column layer editors */}
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <GlobalExtrasSection />
+        <CategoryExtrasSection />
+      </div>
 
-      <CategoryExtrasSection />
+      {/* Products list section header */}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-black">Por produto</h3>
+          <p className="text-[11px] text-white/50">Adicionais exclusivos de um item específico.</p>
+        </div>
+      </div>
+
 
 
 
@@ -4326,16 +4361,20 @@ function GlobalExtrasSection() {
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-cyan">
-            Complementos globais
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos</b> automaticamente, junto com os complementos
-            individuais do produto.
-          </p>
+    <div className="flex flex-col rounded-3xl border border-neon-cyan/25 bg-gradient-to-b from-neon-cyan/10 to-neon-cyan/5 p-5 shadow-[0_0_0_1px_rgba(34,211,238,0.05)_inset]">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-neon-cyan/40 bg-neon-cyan/15 text-neon-cyan">
+            <Globe className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display text-lg font-black text-neon-cyan">
+              Globais
+            </h3>
+            <p className="text-[11px] leading-tight text-white/60">
+              Aparecem em <b>todos os produtos</b> do cardápio.
+            </p>
+          </div>
         </div>
         <button
           onClick={() =>
@@ -4348,6 +4387,15 @@ function GlobalExtrasSection() {
         >
           <Plus className="h-3.5 w-3.5" /> Adicionar
         </button>
+      </div>
+
+      <div className="mb-2 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-white/40">
+        <span>{list.length} item{list.length === 1 ? "" : "s"}</span>
+        {isDirty && (
+          <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-neon-yellow">
+            Alterações não salvas
+          </span>
+        )}
       </div>
 
       <RowList
@@ -4446,16 +4494,20 @@ function CategoryExtrasSection() {
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-neon-pink/30 bg-neon-pink/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-pink">
-            Complementos por categoria
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos da categoria</b> selecionada, junto com os
-            complementos globais e do produto.
-          </p>
+    <div className="flex flex-col rounded-3xl border border-neon-pink/25 bg-gradient-to-b from-neon-pink/10 to-neon-pink/5 p-5 shadow-[0_0_0_1px_rgba(236,72,153,0.05)_inset]">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-neon-pink/40 bg-neon-pink/15 text-neon-pink">
+            <Tag className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display text-lg font-black text-neon-pink">
+              Por categoria
+            </h3>
+            <p className="text-[11px] leading-tight text-white/60">
+              Aparecem em <b>todos os produtos da categoria</b> selecionada.
+            </p>
+          </div>
         </div>
         {selected && (
           <button
@@ -4472,24 +4524,64 @@ function CategoryExtrasSection() {
         )}
       </div>
 
-      <select
-        value={selectedId}
-        onChange={(e) => {
-          setSelectedId(e.target.value);
-          setDraft(null);
-        }}
-        className={cn(inputCls, "mb-3")}
-      >
-        <option value="">Selecione uma categoria...</option>
-        {catList.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.emoji} {c.name} ({(c.extras ?? []).length})
-          </option>
-        ))}
-      </select>
+      {/* Category chips selector */}
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {catList.map((c) => {
+          const count = (c.extras ?? []).length;
+          const isActive = selectedId === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => {
+                setSelectedId(c.id);
+                setDraft(null);
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition",
+                isActive
+                  ? "border-neon-pink bg-neon-pink/25 text-white glow-pink"
+                  : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+              )}
+            >
+              <span>{c.emoji}</span>
+              <span>{c.name}</span>
+              <span
+                className={cn(
+                  "grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-black",
+                  count > 0 ? "bg-neon-pink text-white" : "bg-white/10 text-white/50",
+                )}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {!selected && (
+        <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 p-6 text-center text-[12px] text-white/50">
+          Selecione uma categoria acima para ver e editar seus complementos.
+        </div>
+      )}
 
       {selected && (
         <>
+          <div className="mb-2 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-white/40">
+            <span>
+              {list.length} item{list.length === 1 ? "" : "s"}
+              {usingDefaults && (
+                <span className="ml-1.5 rounded-full bg-neon-cyan/20 px-1.5 py-0.5 text-neon-cyan">
+                  padrões do site
+                </span>
+              )}
+            </span>
+            {isDirty && (
+              <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-neon-yellow">
+                Alterações não salvas
+              </span>
+            )}
+          </div>
+
           <RowList
             items={list}
             onChange={(v) => setDraft(v)}
