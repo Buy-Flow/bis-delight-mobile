@@ -120,6 +120,27 @@
     letter-spacing: -0.01em;
   }
 
+  /* Otimização de render: seções abaixo do viewport não são pintadas até chegarem perto.
+     Reduz drasticamente o custo de layout/paint no primeiro carregamento. */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 800px;
+  }
+  .cv-auto-sm {
+    content-visibility: auto;
+    contain-intrinsic-size: 400px;
+  }
+
+  /* Reduz motion para usuários que preferem — bom p/ perf e acessibilidade */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+
   .text-neon-yellow { color: var(--neon-yellow); }
   .text-neon-pink { color: var(--neon-pink); }
   .text-neon-cyan { color: var(--neon-cyan); }
