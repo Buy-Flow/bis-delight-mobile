@@ -6,27 +6,28 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
 
   return (
     <section className="relative overflow-hidden px-4 pb-0 pt-2">
-      {/* Side ice cream illustrations — only half peeking in from the sides, aligned at the bottom */}
+      {/* Side illustrations — half peeking in from the sides, aligned at the bottom */}
       <img
         aria-hidden="true"
         src={heroBgLeft.url}
         alt=""
-        width={400}
-        height={640}
+        width={220}
+        height={360}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -left-[45%] bottom-0 z-0 h-[420px] w-auto max-w-none select-none object-contain object-right sm:-left-[22%] sm:h-[520px]"
+        className="pointer-events-none absolute -left-[110px] bottom-0 z-0 h-[360px] w-[220px] max-w-none select-none object-contain object-right sm:-left-[130px] sm:h-[420px] sm:w-[260px]"
       />
       <img
         aria-hidden="true"
         src={heroBgRight.url}
         alt=""
-        width={400}
-        height={520}
+        width={220}
+        height={300}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -right-[45%] bottom-0 z-0 h-[420px] w-auto max-w-none select-none object-contain object-left sm:-right-[22%] sm:h-[520px]"
+        className="pointer-events-none absolute -right-[110px] bottom-0 z-0 h-[300px] w-[220px] max-w-none select-none object-contain object-left sm:-right-[130px] sm:h-[360px] sm:w-[260px]"
       />
+
 
 
 
