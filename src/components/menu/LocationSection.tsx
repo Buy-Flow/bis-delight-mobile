@@ -318,46 +318,6 @@ export function LocationSection() {
         )}
       </div>
 
-      {/* Status indicator */}
-      <div className="mt-4 flex items-center justify-center gap-2 text-[11px]">
-        <span
-          className={`grid h-5 w-5 place-items-center rounded-full ${open ? "bg-emerald-500" : "bg-rose-500"}`}
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-        </span>
-        <span className="font-black text-white">{open ? "Aberto agora" : "Fechado agora"}</span>
-        <span className="text-white/50">· {todayLabel}</span>
-      </div>
-
-
-      {/* Brand footer */}
-      <div className="mt-10 text-center">
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-neon-pink animate-sparkle">✦</span>
-          <div
-            className="text-white"
-            style={{
-              fontFamily: "'Caveat', cursive",
-              fontWeight: 700,
-              fontSize: 44,
-              lineHeight: 0.9,
-            }}
-          >
-            Quero <span className="text-neon-yellow">Bis</span>
-          </div>
-          <span className="text-neon-cyan animate-sparkle" style={{ animationDelay: "0.4s" }}>
-            ✦
-          </span>
-        </div>
-        <div className="mt-1 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[.32em] text-white/60">
-          <span className="h-px w-6 bg-white/20" />
-          Sorveteria e Açaí
-          <span className="h-px w-6 bg-white/20" />
-        </div>
-        <div className="mt-2 text-[11px] text-white/50">
-          Feito com carinho pra você <span className="text-neon-pink">♥</span>
-        </div>
-      </div>
     </section>
   );
 }
