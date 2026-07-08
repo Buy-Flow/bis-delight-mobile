@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Truck, Store, Sparkles, LogIn, Loader2 } from "lucide-react";
+import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
@@ -37,7 +37,7 @@ function formatPhone(v: string) {
 }
 
 export function CheckoutSheet() {
-  const { isCheckoutOpen, closeCheckout, items, subtotal, clear } = useCart();
+  const { isCheckoutOpen, closeCheckout, items, update, subtotal, clear } = useCart();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -47,23 +47,16 @@ export function CheckoutSheet() {
   const [address, setAddress] = useState("");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
-  const [hasSaved, setHasSaved] = useState(false);
   const [sending, setSending] = useState(false);
 
-  // Pré-carrega dados salvos + do perfil quando abre
   useEffect(() => {
     if (!isCheckoutOpen) return;
     const saved = loadSaved();
-    const any = !!(saved.name || saved.phone || saved.address);
-    setHasSaved(any);
-    if (any) {
-      if (saved.name && !name) setName(saved.name);
-      if (saved.phone && !phone) setPhone(saved.phone);
-      if (saved.address && !address) setAddress(saved.address);
-      if (saved.reference && !reference) setReference(saved.reference);
-    }
+    if (saved.name && !name) setName(saved.name);
+    if (saved.phone && !phone) setPhone(saved.phone);
+    if (saved.address && !address) setAddress(saved.address);
+    if (saved.reference && !reference) setReference(saved.reference);
 
-    // Se logado, tenta puxar do perfil
     if (user) {
       supabase
         .from("profiles")
@@ -85,19 +78,7 @@ export function CheckoutSheet() {
 
   const fee = mode === "entrega" ? BRAND.deliveryFee : 0;
   const total = subtotal + fee;
-
-  const fillFromSaved = () => {
-    const s = loadSaved();
-    if (!s.name && !s.phone && !s.address) {
-      toast.info("Nenhum dado salvo ainda.");
-      return;
-    }
-    setName(s.name || "");
-    setPhone(s.phone || "");
-    setAddress(s.address || "");
-    setReference(s.reference || "");
-    toast.success("Dados preenchidos!");
-  };
+  const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
   const goLogin = () => {
     sessionStorage.setItem("querobis:resume_checkout", "1");
@@ -116,7 +97,6 @@ export function CheckoutSheet() {
     }
     setSending(true);
     try {
-      // Save order to DB
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -150,7 +130,6 @@ export function CheckoutSheet() {
       const { error: itemsErr } = await supabase.from("order_items").insert(itemsPayload);
       if (itemsErr) throw itemsErr;
 
-      // Update profile with latest info for future orders
       await supabase.from("profiles").upsert({
         id: user.id,
         full_name: name.trim(),
@@ -159,7 +138,6 @@ export function CheckoutSheet() {
         reference: reference.trim() || null,
       });
 
-      // Save locally too
       try {
         localStorage.setItem(
           STORAGE_KEY,
@@ -167,7 +145,6 @@ export function CheckoutSheet() {
         );
       } catch {}
 
-      // Open WhatsApp
       const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total });
       const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
       window.open(url, "_blank");
@@ -188,26 +165,37 @@ export function CheckoutSheet() {
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={closeCheckout} />
       <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
-          <div>
-            <h3 className="font-display text-xl font-extrabold text-white">Finalizar pedido</h3>
-            <p className="text-[11px] text-white/60">
-              {isAuthenticated ? "Envie direto pro WhatsApp da loja" : "Entre para finalizar e acumular selos"}
-            </p>
-          </div>
-          <button onClick={closeCheckout} className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+        {/* Close button */}
+        <button
+          onClick={closeCheckout}
+          className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white backdrop-blur"
+        >
+          <X className="h-5 w-5" />
+        </button>
 
         <form
-          className="flex-1 space-y-5 overflow-y-auto px-4 py-5"
+          className="flex-1 space-y-5 overflow-y-auto px-4 pb-6 pt-6"
           autoComplete="on"
           onSubmit={(e) => {
             e.preventDefault();
             send();
           }}
         >
+          {/* Title with sparkles */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles className="h-5 w-5 -scale-x-100 text-neon-yellow" />
+              <h3 className="font-display text-3xl font-extrabold text-white">
+                Finalizar <span className="text-neon-yellow glow-yellow-text">pedido</span>
+              </h3>
+              <Sparkles className="h-5 w-5 text-neon-yellow" />
+            </div>
+            <p className="mt-1 text-[13px] text-white/70">
+              Falta pouco para a felicidade chegar!{" "}
+              <Heart className="inline h-3.5 w-3.5 fill-neon-pink text-neon-pink" />
+            </p>
+          </div>
+
           {!authLoading && !isAuthenticated && (
             <div className="rounded-2xl border border-neon-yellow/40 bg-neon-yellow/10 p-4">
               <div className="flex items-start gap-3">
@@ -232,59 +220,136 @@ export function CheckoutSheet() {
             </div>
           )}
 
-          <div>
-            <h4 className="mb-2 font-display text-[15px] font-extrabold uppercase tracking-wide text-white">
-              Como quer receber?
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              <ModeBtn active={mode === "entrega"} onClick={() => setMode("entrega")} icon={Truck} label="Entrega" sub={brl(BRAND.deliveryFee)} />
-              <ModeBtn active={mode === "retirada"} onClick={() => setMode("retirada")} icon={Store} label="Retirada" sub="Grátis" />
-            </div>
+          {/* Mode tabs — Retirada / Entrega */}
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5">
+            <ModeTab active={mode === "retirada"} onClick={() => setMode("retirada")} icon={Store} label="Retirada" />
+            <ModeTab active={mode === "entrega"} onClick={() => setMode("entrega")} icon={Truck} label="Entrega" />
           </div>
 
-          {hasSaved && (
-            <button
-              type="button"
-              onClick={fillFromSaved}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-neon-cyan/50 bg-neon-cyan/10 px-3 py-3 text-sm font-bold text-neon-cyan active:scale-[.98]"
-            >
-              <Sparkles className="h-4 w-4" />
-              Preencher com meus dados salvos
-            </button>
-          )}
+          {/* Form fields with icons */}
+          <div className="space-y-2.5">
+            <IconField
+              icon={User}
+              label="Nome"
+              value={name}
+              onChange={setName}
+              placeholder="Seu nome completo"
+              autoComplete="name"
+              name="name"
+            />
+            <IconField
+              icon={Phone}
+              label="Telefone"
+              value={phone}
+              onChange={(v) => setPhone(formatPhone(v))}
+              placeholder="(69) 99999-9999"
+              autoComplete="tel"
+              name="tel"
+              type="tel"
+              inputMode="tel"
+              trailing={<div className="grid h-8 w-8 place-items-center rounded-full bg-[#25D366] text-white"><MessageCircle className="h-4 w-4" /></div>}
+            />
+            {mode === "entrega" && (
+              <>
+                <IconField
+                  icon={MapPin}
+                  label="Endereço"
+                  value={address}
+                  onChange={setAddress}
+                  placeholder="Rua, número, bairro"
+                  autoComplete="street-address"
+                  name="street-address"
+                  trailing={<div className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80"><Settings className="h-4 w-4" /></div>}
+                />
+                <IconField
+                  icon={MapPin}
+                  label="Referência"
+                  value={reference}
+                  onChange={setReference}
+                  placeholder="Ex: Próximo à igreja, mercado, etc."
+                  autoComplete="address-line2"
+                  name="address-line2"
+                />
+              </>
+            )}
+            <IconField
+              icon={MessageCircle}
+              label="Observação"
+              value={note}
+              onChange={setNote}
+              placeholder="Alguma observação do pedido? (opcional)"
+              autoComplete="off"
+            />
+          </div>
 
-          <Field label="Seu nome *" value={name} onChange={setName} placeholder="Como te chamamos?" autoComplete="name" name="name" />
-          <Field label="Telefone *" value={phone} onChange={(v) => setPhone(formatPhone(v))} placeholder="(69) 9 9999-9999" autoComplete="tel" name="tel" type="tel" inputMode="tel" />
-          {mode === "entrega" && (
-            <>
-              <Field label="Endereço *" value={address} onChange={setAddress} placeholder="Rua, número, bairro" autoComplete="street-address" name="street-address" />
-              <Field label="Ponto de referência" value={reference} onChange={setReference} placeholder="Próximo a…" autoComplete="address-line2" name="address-line2" />
-            </>
-          )}
-          <Field label="Observação do pedido" value={note} onChange={setNote} placeholder="Alguma preferência?" multiline autoComplete="off" />
+          {/* Resumo */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="grid h-8 w-8 place-items-center rounded-xl bg-white/10">
+                  <ShoppingBag className="h-4 w-4 text-white" />
+                </div>
+                <h4 className="font-display text-base font-extrabold text-white">Resumo</h4>
+              </div>
+              <span className="text-xs font-bold text-neon-yellow">
+                {itemCount} {itemCount === 1 ? "item" : "itens"}
+              </span>
+            </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-            <h4 className="mb-2 font-display text-[13px] font-extrabold uppercase tracking-wide text-white">Resumo</h4>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {items.map((it) => (
-                <div key={it.uid} className="flex justify-between gap-2 text-[13px]">
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold text-white">{it.quantity}× {it.name}</div>
-                    <div className="truncate text-[11px] text-white/60">{[it.size, it.flavor].filter(Boolean).join(" · ")}</div>
+                <div key={it.uid} className="flex items-center gap-3 rounded-2xl bg-white/[0.04] p-2.5">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[oklch(0.24_0.14_305)]">
+                    <img src={it.image} alt={it.name} className="h-full w-full object-contain p-1" loading="lazy" />
                   </div>
-                  <div className="whitespace-nowrap font-bold text-neon-yellow">{brl(it.unitPrice * it.quantity)}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-white">{it.name}</div>
+                    <div className="truncate text-[11px] text-white/60">
+                      {[it.size, it.flavor, ...it.extras.map((e) => e.label)].filter(Boolean).join(" · ") || "\u00a0"}
+                    </div>
+                    {it.removed.length > 0 && (
+                      <div className="truncate text-[11px] text-neon-pink/80">sem {it.removed.join(", ")}</div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <div className="font-display text-sm font-extrabold text-neon-yellow whitespace-nowrap">
+                      {brl(it.unitPrice * it.quantity)}
+                    </div>
+                    <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => update(it.uid, { quantity: Math.max(1, it.quantity - 1) })}
+                        className="grid h-6 w-6 place-items-center rounded-full bg-white/10 text-white active:scale-95"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <div className="w-5 text-center text-xs font-bold text-white">{it.quantity}</div>
+                      <button
+                        type="button"
+                        onClick={() => update(it.uid, { quantity: it.quantity + 1 })}
+                        className="grid h-6 w-6 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] active:scale-95"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
+
             <div className="mt-3 space-y-1 border-t border-white/10 pt-3 text-sm">
               <div className="flex justify-between text-white/70"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
-              <div className="flex justify-between text-white/70"><span>{mode === "entrega" ? "Taxa de entrega" : "Retirada na loja"}</span><span>{fee > 0 ? brl(fee) : "Grátis"}</span></div>
+              <div className="flex justify-between text-white/70">
+                <span>{mode === "entrega" ? "Taxa de entrega" : "Retirada na loja"}</span>
+                <span>{fee > 0 ? brl(fee) : "Grátis"}</span>
+              </div>
               <div className="mt-2 flex items-end justify-between">
-                <span className="text-[11px] uppercase tracking-widest text-white/50">Total</span>
-                <span className="font-display text-2xl font-extrabold text-neon-yellow glow-yellow-text">{brl(total)}</span>
+                <span className="font-display text-lg font-extrabold text-white">Total</span>
+                <span className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">{brl(total)}</span>
               </div>
             </div>
           </div>
+
           <div className="h-20" />
 
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
@@ -305,75 +370,74 @@ export function CheckoutSheet() {
   );
 }
 
-function Field({
+function IconField({
+  icon: Icon,
   label,
   value,
   onChange,
   placeholder,
-  multiline,
   autoComplete,
   name,
   type,
   inputMode,
+  trailing,
 }: {
+  icon: any;
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  multiline?: boolean;
   autoComplete?: string;
   name?: string;
   type?: string;
   inputMode?: "text" | "tel" | "email" | "numeric" | "search" | "url" | "none" | "decimal";
+  trailing?: React.ReactNode;
 }) {
-  const Comp: any = multiline ? "textarea" : "input";
   return (
-    <label className="block">
-      <span className="mb-1 block text-[12px] font-semibold text-white/80">{label}</span>
-      <Comp
-        value={value}
-        onChange={(e: any) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={multiline ? 3 : undefined}
-        name={name}
-        type={type}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-      />
+    <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 focus-within:border-neon-cyan/60 transition">
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-white/80">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[11px] font-bold uppercase tracking-wide text-white/60">{label}</div>
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          name={name}
+          type={type}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+        />
+      </div>
+      {trailing}
     </label>
   );
 }
 
-function ModeBtn({
+function ModeTab({
   active,
   onClick,
   icon: Icon,
   label,
-  sub,
 }: {
   active: boolean;
   onClick: () => void;
   icon: any;
   label: string;
-  sub: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition",
-        active ? "border-neon-cyan bg-neon-cyan/10 glow-cyan" : "border-white/10 bg-white/5",
+        "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-extrabold transition",
+        active ? "border border-neon-cyan bg-neon-cyan/10 text-white glow-cyan" : "text-white/70",
       )}
     >
-      <div className={cn("grid h-10 w-10 place-items-center rounded-xl", active ? "bg-neon-cyan text-[oklch(0.18_0.11_305)]" : "bg-white/10 text-white")}>
-        <Icon className="h-5 w-5" />
-      </div>
-      <div>
-        <div className="text-sm font-bold text-white">{label}</div>
-        <div className="text-[11px] text-white/60">{sub}</div>
-      </div>
+      <Icon className="h-4 w-4" />
+      {label}
     </button>
   );
 }
