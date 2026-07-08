@@ -13,7 +13,7 @@ import {
   Trash2,
   Save,
   Loader2,
-  Upload,
+  
   Home,
   Search,
   GripVertical,
