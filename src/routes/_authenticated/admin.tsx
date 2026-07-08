@@ -2152,7 +2152,33 @@ function HeroImageEditor({ product }: { product: Product }) {
       </button>
 
       {open && (
-        <div className="space-y-5 border-t border-white/5 p-3">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <Star className="h-3.5 w-3.5 fill-neon-yellow text-neon-yellow" />
+                  <div className="truncate text-sm font-bold">{product.name}</div>
+                </div>
+                <div className="text-[10.5px] text-white/50">Ajuste a foto do card de Destaque</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Fechar"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-5 overflow-y-auto p-4">
+
           {/* Preview real */}
           <div>
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
@@ -2298,8 +2324,11 @@ function HeroImageEditor({ product }: { product: Product }) {
               Resetar posição e zoom
             </button>
           </div>
+            </div>
+          </div>
         </div>
       )}
+
 
     </div>
   );
@@ -3720,7 +3749,33 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
       </button>
 
       {open && (
-        <div className="space-y-5 border-t border-white/5 p-3">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-neon-cyan" />
+                  <div className="truncate text-sm font-bold">{product.name}</div>
+                </div>
+                <div className="text-[10.5px] text-white/50">Ajuste a foto do card de Novidades</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Fechar"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-5 overflow-y-auto p-4">
+
           {/* Preview real */}
           <div>
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
@@ -3859,8 +3914,11 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
               Resetar posição e zoom
             </button>
           </div>
+            </div>
+          </div>
         </div>
       )}
+
 
     </div>
   );
