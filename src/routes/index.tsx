@@ -101,8 +101,7 @@ function Content() {
 
 
   const openProduct = (p: Product) => {
-    if (p.isCustom) setCustomProduct(p);
-    else setModalProduct(p);
+    setModalProduct(p);
   };
   const menuRef = useRef<HTMLDivElement>(null);
 
