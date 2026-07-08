@@ -132,10 +132,10 @@ function AdminPage() {
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "products", label: "Produtos", icon: Package },
-    { id: "categories", label: "Categorias", icon: Tag },
     { id: "highlights", label: "Destaques", icon: Star },
-    { id: "extras", label: "Complementos", icon: Plus },
     { id: "news", label: "Novidades", icon: Sparkles },
+    { id: "extras", label: "Complementos", icon: Plus },
+    { id: "categories", label: "Categorias", icon: Tag },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
