@@ -419,6 +419,7 @@ function ProductsTab() {
           onClose={() => setEditing(null)}
         />
       )}
+      {editingAcai && <AcaiConfigEditor onClose={() => setEditingAcai(false)} />}
     </div>
   );
 }
