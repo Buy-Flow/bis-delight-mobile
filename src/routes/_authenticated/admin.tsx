@@ -5253,16 +5253,14 @@ function HeroImagesSection({
         </div>
         <div
           className="relative mx-auto overflow-hidden rounded-3xl border border-white/10 bg-[#1a0538] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]"
-          style={{ width: 293 /* 390 * 0.75 */ }}
+          style={{ width: 293, height: 495 /* 390 x ~660 scaled by 0.75 */ }}
         >
           <div
-            className="pointer-events-none"
+            className="pointer-events-none absolute left-0 top-0"
             style={{ width: 390, transform: "scale(0.75)", transformOrigin: "top left" }}
           >
             <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
           </div>
-          {/* Reserve scaled height so the container matches the transformed content */}
-          <HeroPreviewSpacer />
         </div>
       </div>
 
