@@ -9,7 +9,7 @@ export function Hero({
   heroImagesOverride?: HeroImagesConfig;
 }) {
   const { data: settings } = useSiteSettings();
-  const heroImages = heroImagesOverride ?? settings?.heroImages ?? DEFAULT_HERO_IMAGES;
+  const heroImages = heroImagesOverride ?? settings?.heroImages ?? null;
 
   return (
     <section className="relative px-4 pb-0 pt-2">
