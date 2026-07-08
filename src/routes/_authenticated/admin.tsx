@@ -1685,7 +1685,10 @@ function HighlightsTab() {
           products={products}
           categories={categories}
           onClose={() => setPickerOpen(false)}
-          onPick={(id) => toggle.mutate({ id, hero: true })}
+          onConfirm={(ids) => {
+            ids.forEach((id) => toggle.mutate({ id, hero: true }));
+            setPickerOpen(false);
+          }}
         />
       )}
     </div>
@@ -1696,15 +1699,16 @@ function HighlightPickerModal({
   products,
   categories,
   onClose,
-  onPick,
+  onConfirm,
 }: {
   products: Product[];
   categories: Category[];
   onClose: () => void;
-  onPick: (id: string) => void;
+  onConfirm: (ids: string[]) => void;
 }) {
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const catList = categories.filter((c) => c.id !== "all");
 
   const available = useMemo(() => {
@@ -1716,6 +1720,17 @@ function HighlightPickerModal({
       return true;
     });
   }, [products, filter, search]);
+
+  const toggleId = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const count = selected.size;
 
   return (
     <div
@@ -1732,7 +1747,7 @@ function HighlightPickerModal({
               <Star className="h-4 w-4 fill-neon-yellow text-neon-yellow" />
               Adicionar destaque
             </div>
-            <div className="text-[10.5px] text-white/50">Escolha um produto para o carrossel.</div>
+            <div className="text-[10.5px] text-white/50">Selecione um ou mais produtos.</div>
           </div>
           <button
             type="button"
@@ -1773,28 +1788,66 @@ function HighlightPickerModal({
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {available.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => {
-                    onPick(p.id);
-                    onClose();
-                  }}
-                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2 text-left transition hover:border-neon-yellow/50 hover:bg-neon-yellow/10"
-                >
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
-                    {p.image && <img src={p.image} className="h-full w-full object-cover" alt="" />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold">{p.name}</div>
-                    <div className="text-[11px] text-white/50">{p.category}</div>
-                  </div>
-                  <Plus className="h-4 w-4 shrink-0 text-neon-yellow" />
-                </button>
-              ))}
+              {available.map((p) => {
+                const isSel = selected.has(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => toggleId(p.id)}
+                    aria-pressed={isSel}
+                    className={cn(
+                      "flex items-center gap-3 rounded-2xl border p-2 text-left transition",
+                      isSel
+                        ? "border-neon-yellow bg-neon-yellow/15"
+                        : "border-white/10 bg-white/5 hover:border-neon-yellow/50 hover:bg-neon-yellow/10",
+                    )}
+                  >
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+                      {p.image && <img src={p.image} className="h-full w-full object-cover" alt="" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold">{p.name}</div>
+                      <div className="text-[11px] text-white/50">{p.category}</div>
+                    </div>
+                    <div
+                      className={cn(
+                        "grid h-5 w-5 shrink-0 place-items-center rounded-md border",
+                        isSel
+                          ? "border-neon-yellow bg-neon-yellow text-black"
+                          : "border-white/20 bg-black/30 text-transparent",
+                      )}
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-t border-white/5 px-4 py-3">
+          <div className="text-[11px] text-white/60">
+            {count === 0 ? "Nenhum selecionado" : `${count} selecionado${count === 1 ? "" : "s"}`}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/80 hover:bg-white/10"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={count === 0}
+              onClick={() => onConfirm(Array.from(selected))}
+              className="rounded-full bg-neon-yellow px-4 py-2 text-xs font-black text-black disabled:opacity-40"
+            >
+              Salvar
+            </button>
+          </div>
         </div>
       </div>
     </div>
