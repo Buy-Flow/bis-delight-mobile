@@ -88,6 +88,7 @@ export function ProductModal({
 }) {
   const { add } = useCart();
   const { data: settings } = useSiteSettings();
+  const { data: categories = [] } = useCategories();
   const [sizeId, setSizeId] = useState<string>(product?.sizes[0]?.id ?? "u");
   const [flavor, setFlavor] = useState<string | undefined>(product?.flavors?.[0]);
   const [extras, setExtras] = useState<string[]>([]);
