@@ -31,26 +31,21 @@ export function NewsCarousel({
   // Duplica os itens para permitir loop infinito sempre para a direita
   const loopItems = items.length > 1 ? [...items, ...items] : items;
 
+  // Loop invisível: quando o scroll passa da primeira cópia (setWidth), volta
+  // silenciosamente para a mesma posição na primeira — mantém o movimento
+  // sempre indo para a direita sem "rewind".
   useEffect(() => {
     const el = scrollerRef.current;
-    if (!el) return;
+    if (!el || items.length <= 1) return;
     const onScroll = () => {
       const first = el.firstElementChild as HTMLElement | null;
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
-      const idx = Math.round(el.scrollLeft / step);
-      // Mapeia idx para o range real (0..items.length-1) por causa da duplicação
-      setActiveIdx(items.length ? ((idx % items.length) + items.length) % items.length : 0);
-
-      // Se o usuário arrastou até a segunda cópia, "teletransporta" para a mesma
-      // posição na primeira cópia sem animação — mantém a ilusão de loop.
-      if (items.length > 1) {
-        const setWidth = items.length * step;
-        if (el.scrollLeft >= setWidth * 2 - step / 2) {
-          el.scrollTo({ left: el.scrollLeft - setWidth, behavior: "auto" });
-        } else if (el.scrollLeft < 0) {
-          el.scrollTo({ left: el.scrollLeft + setWidth, behavior: "auto" });
-        }
+      const setWidth = items.length * step;
+      if (el.scrollLeft >= setWidth) {
+        el.scrollTo({ left: el.scrollLeft - setWidth, behavior: "auto" });
+      } else if (el.scrollLeft < 0) {
+        el.scrollTo({ left: el.scrollLeft + setWidth, behavior: "auto" });
       }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -80,19 +75,10 @@ export function NewsCarousel({
       const first = node.firstElementChild as HTMLElement | null;
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
-      const setWidth = items.length * step;
-      const currentIdx = Math.round(node.scrollLeft / step);
-
-      // Se estamos entrando na segunda cópia, primeiro "salta" silenciosamente
-      // de volta para a primeira cópia antes de animar — assim o próximo passo
-      // continua sempre indo para a direita sem "rewind" visível.
-      if (node.scrollLeft >= setWidth) {
-        node.scrollTo({ left: node.scrollLeft - setWidth, behavior: "auto" });
-      }
-      const nextLeft = (currentIdx + 1) * step;
-      node.scrollTo({ left: nextLeft, behavior: "smooth" });
+      // Sempre anda 1 card para a direita a partir da posição atual.
+      // O onScroll cuida do teleport invisível quando ultrapassa a primeira cópia.
+      node.scrollBy({ left: step, behavior: "smooth" });
     }, 4000);
-
 
     return () => {
       window.clearInterval(id);
@@ -102,6 +88,7 @@ export function NewsCarousel({
       el.removeEventListener("mouseleave", resume);
     };
   }, [items.length]);
+
 
 
 
