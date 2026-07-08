@@ -198,14 +198,14 @@ export function NewsCarousel({
         ref={scrollerRef}
         className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto py-6 px-[7.5vw] scroll-px-[7.5vw]"
       >
-        {items.map((p, i) => (
+        {loopItems.map((p, i) => (
           <NewsPosterCard
-            key={p.id}
+            key={`${p.id}-${i}`}
             product={p}
             onOpen={onOpen}
             badge={BADGE_STYLES[i % BADGE_STYLES.length]}
             eyebrow={EYEBROWS[i % EYEBROWS.length]}
-            index={i}
+            index={i % Math.max(1, items.length)}
           />
         ))}
       </div>
