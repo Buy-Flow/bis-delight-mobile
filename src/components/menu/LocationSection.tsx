@@ -60,9 +60,10 @@ export function LocationSection() {
   const mapEmbed = toEmbedUrl(rawMapEmbed);
 
   const logo = settings?.logo || BRAND.logo;
-  const instagram = settings?.instagram || "";
-  const facebook = settings?.facebook || "";
-  const tiktok = settings?.tiktok || "";
+  const instagram = socialUrl(settings?.instagram, "instagram");
+  const facebook = socialUrl(settings?.facebook, "facebook");
+  const tiktok = socialUrl(settings?.tiktok, "tiktok");
+
   const acceptsDelivery = settings?.acceptsDelivery ?? true;
   const acceptsPickup = settings?.acceptsPickup ?? true;
   const hours = settings?.hoursJson?.length ? settings.hoursJson : DEFAULT_HOURS;
