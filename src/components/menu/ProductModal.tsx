@@ -279,84 +279,69 @@ export function ProductModal({
 
 
         {/* Scroll body */}
-        <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
-          <Section title="Tamanho">
-            <div className="grid grid-cols-3 gap-2">
-              {product.sizes.map((s) => (
-                <Chip
-                  key={s.id}
-                  active={s.id === sizeId}
-                  onClick={() => setSizeId(s.id)}
-                >
-                  <div className="text-sm font-bold">{s.label}</div>
-                  <div className="text-[10px] opacity-70">
-                    +{brl(s.priceDelta)}
-                  </div>
-                </Chip>
-              ))}
+        <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
+          <GroupCard
+            index={1}
+            title="Tamanho"
+            selectedLabel={size?.label}
+          >
+            <div className="grid grid-cols-4 gap-2">
+              {product.sizes.map((s) => {
+                const active = s.id === sizeId;
+                return (
+                  <OptionCard
+                    key={s.id}
+                    active={active}
+                    image={product.image}
+                    label={s.label}
+                    priceHint={s.priceDelta > 0 ? `+R$ ${s.priceDelta.toFixed(2).replace(".", ",")}` : "+R$ 0,00"}
+                    onClick={() => setSizeId(s.id)}
+                  />
+                );
+              })}
             </div>
-          </Section>
+          </GroupCard>
 
           {flavorList && (
-            <Section title="Sabor">
-              <div className="flex flex-wrap gap-2">
+            <GroupCard index={2} title="Sabor" selectedLabel={flavor}>
+              <div className="grid grid-cols-4 gap-2">
                 {flavorList.map((f) => (
-                  <Chip
+                  <OptionCard
                     key={f}
-                    small
                     active={f === flavor}
+                    image={product.image}
+                    label={f}
                     onClick={() => setFlavor(f)}
-                  >
-                    {f}
-                  </Chip>
+                  />
                 ))}
               </div>
-            </Section>
+            </GroupCard>
           )}
 
           {availableExtras.length > 0 && (
-            <Section
+            <GroupCard
+              index={flavorList ? 3 : 2}
               title="Complementos"
-              hint={`Adicione o que quiser`}
+              hint="Adicione o que quiser"
             >
-              <div className="space-y-2">
+              <div className="grid grid-cols-4 gap-2">
                 {availableExtras.map((e) => {
                   const on = extras.includes(e.id);
                   return (
-                    <button
+                    <OptionCard
                       key={e.id}
+                      active={on}
+                      image={e.image || product.image}
+                      label={e.label}
+                      priceHint={e.price > 0 ? `+ ${brl(e.price)}` : undefined}
                       onClick={() => toggleExtra(e.id)}
-                      className={cn(
-                        "flex w-full items-center justify-between rounded-2xl border px-3 py-3 text-left transition",
-                        on
-                          ? "border-neon-cyan bg-neon-cyan/10 glow-cyan"
-                          : "border-white/10 bg-white/5",
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={cn(
-                            "grid h-6 w-6 place-items-center rounded-md border",
-                            on
-                              ? "border-neon-cyan bg-neon-cyan text-[oklch(0.18_0.11_305)]"
-                              : "border-white/30",
-                          )}
-                        >
-                          {on && <Check className="h-4 w-4" />}
-                        </div>
-                        <span className="text-sm font-medium text-white">
-                          {e.label}
-                        </span>
-                      </div>
-                      <span className="text-sm font-bold text-neon-yellow">
-                        {e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
-                      </span>
-                    </button>
+                    />
                   );
                 })}
               </div>
-            </Section>
+            </GroupCard>
           )}
+
 
           {removableList.length > 0 && (
             <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
