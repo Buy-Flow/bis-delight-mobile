@@ -1,32 +1,42 @@
-import heroBgLeft from "@/assets/hero-cone.png.asset.json";
-import heroBgRight from "@/assets/hero-cup.png.asset.json";
+import { useSiteSettings } from "@/lib/menu-data";
+import { DEFAULT_HERO_IMAGES } from "@/lib/menu-data";
 
 export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
-
+  const { data: settings } = useSiteSettings();
+  const heroImages = settings?.heroImages ?? DEFAULT_HERO_IMAGES;
 
   return (
     <section className="relative overflow-hidden px-4 pb-0 pt-2">
-      {/* Side illustrations — half peeking in from the sides, aligned at the bottom */}
+      {/* Side illustrations — configurable via admin (Início) */}
       <img
         aria-hidden="true"
-        src={heroBgLeft.url}
+        src={heroImages.left.url}
         alt=""
-        width={300}
-        height={480}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -left-[150px] bottom-0 z-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:-left-[170px] sm:h-[560px] sm:w-[340px]"
+        className="pointer-events-none absolute bottom-0 z-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px]"
+        style={{
+          left: `${heroImages.left.offsetX}px`,
+          bottom: `${-heroImages.left.offsetY}px`,
+          transform: `scale(${heroImages.left.scale})`,
+          transformOrigin: "bottom right",
+        }}
       />
       <img
         aria-hidden="true"
-        src={heroBgRight.url}
+        src={heroImages.right.url}
         alt=""
-        width={300}
-        height={410}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -right-[150px] bottom-0 z-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:-right-[170px] sm:h-[480px] sm:w-[340px]"
+        className="pointer-events-none absolute bottom-0 z-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px]"
+        style={{
+          right: `${heroImages.right.offsetX}px`,
+          bottom: `${-heroImages.right.offsetY}px`,
+          transform: `scale(${heroImages.right.scale})`,
+          transformOrigin: "bottom left",
+        }}
       />
+
 
 
 
