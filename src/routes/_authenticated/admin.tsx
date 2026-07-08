@@ -2324,8 +2324,11 @@ function HeroImageEditor({ product }: { product: Product }) {
               Resetar posição e zoom
             </button>
           </div>
+            </div>
+          </div>
         </div>
       )}
+
 
     </div>
   );
