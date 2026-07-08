@@ -3,7 +3,7 @@ import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
 export function CartSheet() {
-  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout } = useCart();
+  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit } = useCart();
   if (!isCartOpen) return null;
 
   const total = subtotal + (items.length ? BRAND.deliveryFee : 0);
