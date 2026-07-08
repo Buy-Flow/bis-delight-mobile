@@ -9,24 +9,25 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
       {/* Side ice cream illustrations */}
       <img
         aria-hidden="true"
+        src={heroBgLeft.url}
+        alt=""
+        width={600}
+        height={980}
+        decoding="async"
+        fetchPriority="high"
+        className="pointer-events-none absolute -left-6 -top-10 z-0 h-[980px] w-auto max-w-none select-none object-contain object-left"
+      />
+      <img
+        aria-hidden="true"
         src={heroBgRight.url}
         alt=""
         width={400}
         height={640}
         decoding="async"
         fetchPriority="high"
-        className="pointer-events-none absolute -left-4 top-4 z-0 h-[640px] w-auto max-w-none select-none object-contain object-left"
+        className="pointer-events-none absolute -right-4 top-8 z-0 h-[640px] w-auto max-w-none select-none object-contain object-right"
       />
-      <img
-        aria-hidden="true"
-        src={heroBgLeft.url}
-        alt=""
-        width={400}
-        height={640}
-        decoding="async"
-        fetchPriority="high"
-        className="pointer-events-none absolute -right-4 top-4 z-0 h-[640px] w-auto max-w-none select-none object-contain object-right"
-      />
+
 
 
 
