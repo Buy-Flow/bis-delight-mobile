@@ -9,9 +9,10 @@ export function CartSheet() {
   const total = subtotal + (items.length ? BRAND.deliveryFee : 0);
 
   return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeCart} />
-      <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300">
+    <div className="fixed inset-0 z-50 [-webkit-tap-highlight-color:transparent]">
+      <div className="absolute inset-0 bg-black/70 animate-in fade-in duration-150" onClick={closeCart} />
+      <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
           <div>
             <h3 className="font-display text-xl font-extrabold text-white">Seu carrinho</h3>
