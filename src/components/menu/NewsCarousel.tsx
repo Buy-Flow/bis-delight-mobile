@@ -94,9 +94,29 @@ export function NewsCarousel({
 
   return (
     <section className="relative isolate overflow-visible py-8">
+      {/* Brilhos coloridos no fundo — destaque das novidades */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div
+          className="absolute -top-10 -left-16 h-64 w-64 rounded-full opacity-70 blur-3xl animate-float-slow"
+          style={{ background: "radial-gradient(circle, oklch(0.72 0.26 350 / 0.75), transparent 70%)" }}
+        />
+        <div
+          className="absolute top-20 -right-20 h-72 w-72 rounded-full opacity-60 blur-3xl animate-float-med"
+          style={{ background: "radial-gradient(circle, oklch(0.86 0.18 200 / 0.70), transparent 70%)" }}
+        />
+        <div
+          className="absolute -bottom-16 left-1/3 h-64 w-64 rounded-full opacity-60 blur-3xl animate-float-slow"
+          style={{ background: "radial-gradient(circle, oklch(0.82 0.19 90 / 0.60), transparent 70%)", animationDelay: "1.5s" }}
+        />
+        <div
+          className="absolute top-1/3 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full opacity-50 blur-2xl animate-pulse-glow"
+          style={{ background: "radial-gradient(circle, oklch(0.75 0.20 305 / 0.70), transparent 70%)" }}
+        />
+      </div>
 
       {/* Separador acima do header */}
       <div className="mx-5 mb-5 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+
 
       {/* Header — magazine style */}
       <div className="relative mb-3 flex items-baseline gap-3 px-5">
