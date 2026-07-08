@@ -78,6 +78,7 @@ import {
 
 import type { Product, Category, OptionGroup, OptionItem } from "@/data/menu";
 import { ProductCard } from "@/components/menu/ProductCard";
+import { Hero } from "@/components/menu/Hero";
 import { getDefaultExtras } from "@/components/menu/ProductModal";
 import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
