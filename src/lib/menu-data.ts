@@ -294,7 +294,24 @@ const DEFAULT_EXTRA: Pick<
   cardBorder: true,
   cardGlow: false,
   titleFont: "Barlow Condensed",
+  heroImages: DEFAULT_HERO_IMAGES,
 };
+
+function parseHeroImages(raw: unknown): HeroImagesConfig {
+  if (!raw || typeof raw !== "object") return DEFAULT_HERO_IMAGES;
+  const r = raw as { left?: Partial<HeroImageConfig>; right?: Partial<HeroImageConfig> };
+  const merge = (side: HeroImageConfig, patch?: Partial<HeroImageConfig>): HeroImageConfig => ({
+    url: typeof patch?.url === "string" && patch.url ? patch.url : side.url,
+    offsetX: Number.isFinite(patch?.offsetX as number) ? Number(patch!.offsetX) : side.offsetX,
+    offsetY: Number.isFinite(patch?.offsetY as number) ? Number(patch!.offsetY) : side.offsetY,
+    scale: Number.isFinite(patch?.scale as number) ? Number(patch!.scale) : side.scale,
+  });
+  return {
+    left: merge(DEFAULT_HERO_IMAGES.left, r.left),
+    right: merge(DEFAULT_HERO_IMAGES.right, r.right),
+  };
+}
+
 
 
 export function useSiteSettings() {
