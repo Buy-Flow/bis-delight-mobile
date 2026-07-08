@@ -2350,25 +2350,31 @@ function StorePreview({ s }: { s: SiteSettings }) {
 }
 
 function StoreStatusBadge({ s }: { s: SiteSettings }) {
-  const label =
-    s.openOverride === "open"
-      ? "Aberto (forçado)"
-      : s.openOverride === "closed"
-      ? "Fechado (forçado)"
-      : "Automático (por horário)";
-  const color =
-    s.openOverride === "closed"
-      ? "border-red-400/40 bg-red-500/10 text-red-300"
-      : s.openOverride === "open"
-      ? "border-green-400/40 bg-green-500/10 text-green-300"
-      : "border-white/10 bg-white/5 text-white/60";
+  // Reflete o mesmo status "ao vivo" que o cliente vê no cardápio
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  // usa `now` para re-renderizar a cada 30s
+  void now;
+  const hours = s.hoursJson?.length ? s.hoursJson : DEFAULT_HOURS;
+  const open = isOpenNow(hours, s.openOverride ?? "auto");
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold", color)}>
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {label}
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold",
+        open
+          ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+          : "border-rose-400/40 bg-rose-500/10 text-rose-300",
+      )}
+    >
+      <span className={cn("h-1.5 w-1.5 rounded-full bg-current", open && "animate-pulse")} />
+      {open ? "Aberto agora" : "Fechado agora"}
     </span>
   );
 }
+
 
 /* ------- Sections ------- */
 type SetFn = <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
