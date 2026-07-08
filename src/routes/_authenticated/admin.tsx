@@ -4035,7 +4035,25 @@ function NewsHeroEditor({ product, index }: { product: Product; index: number })
               Resetar posição e zoom
             </button>
           </div>
+
+          {/* Imagem exclusiva da novidade */}
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Imagem exclusiva da novidade
             </div>
+            <ImageDropzone
+              url={draft.heroImage}
+              busy={busy}
+              onFile={onFile}
+              onClear={clearImage}
+            />
+            <p className="mt-1 text-[10.5px] text-white/40">
+              Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
+            </p>
+          </div>
+
+            </div>
+
             <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[oklch(0.10_0.08_300)] px-4 py-3">
               <div className="flex items-center gap-2 text-[11px] text-white/60">
                 {dirty ? <span className="h-2 w-2 rounded-full bg-neon-yellow" /> : null}
