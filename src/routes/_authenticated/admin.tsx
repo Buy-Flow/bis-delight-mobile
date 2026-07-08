@@ -1827,12 +1827,7 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     posY: product.heroImagePosY ?? 0,
     scale: product.heroImageScale ?? 1.4,
   };
-  const [draft, setDraft] = useState({
-    heroImage: product.heroImage ?? "",
-    posX: product.heroImagePosX ?? 0,
-    posY: product.heroImagePosY ?? 0,
-    scale: product.heroImageScale ?? 1.4,
-  });
+  const [draft, setDraft] = useState(initialDraft);
 
   useEffect(() => {
     setDraft({
@@ -1849,17 +1844,7 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     draft.posY !== initialDraft.posY ||
     draft.scale !== initialDraft.scale;
 
-  const previewProduct: Product = {
-    ...product,
-    heroImage: draft.heroImage,
-    heroImagePosX: draft.posX,
-    heroImagePosY: draft.posY,
-    heroImageScale: draft.scale,
-  };
-
-  const patchDraft = (patch: Partial<typeof draft>) => {
-    setDraft((prev) => ({ ...prev, ...patch }));
-  };
+  const patchDraft = (patch: Partial<typeof draft>) => setDraft((prev) => ({ ...prev, ...patch }));
 
   const save = async () => {
     await update.mutateAsync({
@@ -1895,41 +1880,6 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
     patchDraft({ heroImage: "" });
     toast.success("Imagem removida — clique em Salvar");
   };
-
-  const reset = () => patchDraft({ posX: 0, posY: 0, scale: 1.4 });
-
-  const CARD_W = 320;
-  const CARD_H = 148;
-  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number; w: number; h: number } | null>(null);
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = e.currentTarget as HTMLDivElement;
-    el.setPointerCapture(e.pointerId);
-    const rect = el.getBoundingClientRect();
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      posX: draft.posX,
-      posY: draft.posY,
-      w: rect.width || CARD_W,
-      h: rect.height || CARD_H,
-    };
-  };
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = dragRef.current;
-    if (!d) return;
-    e.preventDefault();
-    const dx = ((e.clientX - d.startX) / d.w) * 100;
-    const dy = ((e.clientY - d.startY) / d.h) * 100;
-    setDraft((prev) => ({
-      ...prev,
-      posX: clamp(d.posX + dx, -80, 80),
-      posY: clamp(d.posY + dy, -80, 80),
-    }));
-  };
-  const onPointerUp = () => {
-    dragRef.current = null;
-  };
-
 
   return (
     <div className="relative rounded-2xl border border-white/10 bg-white/[0.03]">
@@ -1969,179 +1919,132 @@ function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: (
       </div>
 
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
-          onClick={() => setOpen(false)}
+        <ImageAdjustModal
+          title={product.name}
+          subtitle={`Ajuste a foto do card de Destaque${dirty ? " • alterações não salvas" : ""}`}
+          icon={<Star className="h-3.5 w-3.5 fill-neon-yellow text-neon-yellow" />}
+          dirty={dirty}
+          saving={update.isPending || busy}
+          onClose={() => setOpen(false)}
+          onCancel={discard}
+          onSave={save}
         >
-          <div
-            className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Star className="h-3.5 w-3.5 fill-neon-yellow text-neon-yellow" />
-                  <div className="truncate text-sm font-bold">{product.name}</div>
-                </div>
-                <div className="text-[10.5px] text-white/50">
-                  Ajuste a foto do card de Destaque{dirty ? " • alterações não salvas" : ""}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Fechar"
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-              >
-                <X className="h-4 w-4" />
-              </button>
+          <ImageAdjustPanel
+            values={{ posX: draft.posX, posY: draft.posY, scale: draft.scale }}
+            onChange={(p) => patchDraft(p)}
+            defaults={{ posX: 0, posY: 0, scale: 1.4 }}
+            previewMaxWidth={320}
+            previewLabel="Preview real — card de Destaque"
+            previewHint="Arraste a foto ou use os controles e salve no final."
+            renderPreview={(v) => (
+              <HighlightCard
+                product={{
+                  ...product,
+                  heroImage: draft.heroImage,
+                  heroImagePosX: v.posX,
+                  heroImagePosY: v.posY,
+                  heroImageScale: v.scale,
+                }}
+                onOpen={() => {}}
+              />
+            )}
+          />
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Imagem exclusiva do destaque
             </div>
-            <div className="space-y-5 overflow-y-auto p-4">
-
-              {/* Preview real (arraste para posicionar) */}
-              <div>
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                  Preview real — card de Destaque
-                </div>
-                <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
-                  <div
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    onPointerCancel={onPointerUp}
-                    className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none"
-                    style={{ width: "100%", maxWidth: CARD_W }}
-                  >
-                    <HighlightCard product={previewProduct} onOpen={() => {}} />
-                  </div>
-                  <div className="text-[10px] text-white/40">
-                    Arraste a foto ou use os controles e salve no final.
-                  </div>
-                </div>
-              </div>
-
-
-
-              {/* Controls */}
-              <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-                <div>
-                  <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-                    <span>Zoom</span>
-                    <span className="text-white/50">{draft.scale.toFixed(2)}×</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0.5}
-                    max={2.5}
-                    step={0.05}
-                    value={draft.scale}
-                    onChange={(e) => setDraft((p) => ({ ...p, scale: Number(e.target.value) }))}
-                    className="w-full accent-neon-cyan"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-                      <span>Horizontal</span>
-                      <span className="text-white/50">{draft.posX.toFixed(0)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={-80}
-                      max={80}
-                      step={1}
-                      value={draft.posX}
-                      onChange={(e) => setDraft((p) => ({ ...p, posX: Number(e.target.value) }))}
-                      className="w-full accent-neon-cyan"
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white/70">
-                      <span>Vertical</span>
-                      <span className="text-white/50">{draft.posY.toFixed(0)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={-80}
-                      max={80}
-                      step={1}
-                      value={draft.posY}
-                      onChange={(e) => setDraft((p) => ({ ...p, posY: Number(e.target.value) }))}
-                      className="w-full accent-neon-cyan"
-                    />
-                  </div>
-                  <div className="flex flex-col items-stretch justify-end gap-1">
-                    <div className="grid grid-cols-3 gap-1">
-                      <div />
-                      <NudgeBtn onClick={() => patchDraft({ posY: clamp(draft.posY - 3, -80, 80) })}>↑</NudgeBtn>
-                      <div />
-                      <NudgeBtn onClick={() => patchDraft({ posX: clamp(draft.posX - 3, -80, 80) })}>←</NudgeBtn>
-                      <NudgeBtn onClick={reset}>◎</NudgeBtn>
-                      <NudgeBtn onClick={() => patchDraft({ posX: clamp(draft.posX + 3, -80, 80) })}>→</NudgeBtn>
-                      <div />
-                      <NudgeBtn onClick={() => patchDraft({ posY: clamp(draft.posY + 3, -80, 80) })}>↓</NudgeBtn>
-                      <div />
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
-                >
-                  Resetar posição e zoom
-                </button>
-              </div>
-
-              {/* Imagem exclusiva do destaque */}
-              <div>
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                  Imagem exclusiva do destaque
-                </div>
-                <ImageDropzone
-                  url={draft.heroImage}
-                  busy={busy}
-                  onFile={onFile}
-                  onClear={clearImage}
-                />
-                <p className="mt-1 text-[10.5px] text-white/40">
-                  Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
-                </p>
-              </div>
-
-            </div>
-            <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[oklch(0.10_0.08_300)] px-4 py-3">
-              <div className="flex items-center gap-2 text-[11px] text-white/60">
-                {dirty ? <span className="h-2 w-2 rounded-full bg-neon-yellow" /> : null}
-                {dirty ? "Alterações não salvas" : "Sem alterações"}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={discard}
-                  className="rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/5"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={save}
-                  disabled={!dirty || update.isPending || busy}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
-                >
-                  {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                  Salvar
-                </button>
-              </div>
-            </div>
+            <ImageDropzone url={draft.heroImage} busy={busy} onFile={onFile} onClear={clearImage} />
+            <p className="mt-1 text-[10.5px] text-white/40">
+              Dica: fundo transparente (PNG) fica melhor no card. Se vazio, usa a foto do produto.
+            </p>
           </div>
-        </div>
+        </ImageAdjustModal>
       )}
     </div>
   );
 }
+
+/**
+ * Shell de modal compartilhado para editores de imagem (destaques, novidades).
+ * Contém cabeçalho + área com scroll + rodapé com Cancelar/Salvar.
+ */
+function ImageAdjustModal({
+  title,
+  subtitle,
+  icon,
+  dirty,
+  saving,
+  onClose,
+  onCancel,
+  onSave,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  dirty: boolean;
+  saving?: boolean;
+  onClose: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              {icon}
+              <div className="truncate text-sm font-bold">{title}</div>
+            </div>
+            {subtitle && <div className="text-[10.5px] text-white/50">{subtitle}</div>}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="space-y-5 overflow-y-auto p-4">{children}</div>
+        <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-[oklch(0.10_0.08_300)] px-4 py-3">
+          <div className="flex items-center gap-2 text-[11px] text-white/60">
+            {dirty ? <span className="h-2 w-2 rounded-full bg-neon-yellow" /> : null}
+            {dirty ? "Alterações não salvas" : "Sem alterações"}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-2xl border border-white/10 px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/5"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={!dirty || saving}
+              className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
+            >
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 
 /* ============================= Settings ============================= */
