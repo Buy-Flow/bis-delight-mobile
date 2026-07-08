@@ -381,6 +381,7 @@ function Content() {
         {isCheckoutOpen && <CheckoutSheet />}
       </Suspense>
 
+      </div>
     </div>
   );
 }
