@@ -164,20 +164,8 @@ export function NewsCarousel({
         ))}
       </div>
 
-      {/* Progress rail */}
-      {items.length > 1 && (
-        <div className="mt-2 flex items-center justify-center gap-2 px-4">
-          {items.map((_, i) => (
-            <span
-              key={i}
-              className={cn(
-                "h-[3px] rounded-full transition-all",
-                i === activeIdx ? "w-10 bg-neon-pink shadow-[0_0_10px_rgba(255,45,149,0.9)]" : "w-2 bg-white/25",
-              )}
-            />
-          ))}
-        </div>
-      )}
+
+
 
       <style>{`
         @keyframes news-marquee {
