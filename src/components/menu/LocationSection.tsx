@@ -1,12 +1,23 @@
-import { MapPin, Navigation, MessageCircle, Instagram, Church, Clock, Bike } from "lucide-react";
+import { MapPin, Navigation, MessageCircle, Instagram, Church, Phone } from "lucide-react";
 import { BRAND } from "@/data/menu";
 import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/lib/menu-data";
 import { useEffect, useState } from "react";
 
-const _DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DAY_LABEL: Record<WeekDay, string> = {
+  mon: "SEG", tue: "TER", wed: "QUA", thu: "QUI", fri: "SEX", sat: "SÁB", sun: "DOM",
+};
 
 function jsWeekdayToKey(d: number): WeekDay {
   return (["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as WeekDay[])[d];
+}
+
+function formatPhone(raw: string): string {
+  const d = (raw || "").replace(/\D/g, "");
+  const local = d.startsWith("55") ? d.slice(2) : d;
+  if (local.length === 11) return `(${local.slice(0, 2)}) ${local.slice(2, 3)} ${local.slice(3, 7)}-${local.slice(7)}`;
+  if (local.length === 10) return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
+  return raw;
 }
 
 export function isOpenNow(hours: DayHours[], override: "auto" | "open" | "closed") {
