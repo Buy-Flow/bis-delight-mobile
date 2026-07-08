@@ -394,7 +394,19 @@ function Content() {
 
         {/* Categories under search */}
         <div className="-mx-4 mb-2">
-          <CategoryStrip active={activeCat} onChange={setActiveCat} />
+          <CategoryStrip
+            active={activeCat}
+            onChange={(id) => {
+              const el = document.getElementById("categorias");
+              const prevTop = el?.getBoundingClientRect().top ?? 0;
+              setActiveCat(id);
+              requestAnimationFrame(() => {
+                const nextTop = el?.getBoundingClientRect().top ?? 0;
+                const delta = nextTop - prevTop;
+                if (delta) window.scrollBy({ top: delta, behavior: "instant" as ScrollBehavior });
+              });
+            }}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
