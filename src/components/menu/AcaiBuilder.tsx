@@ -86,7 +86,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
         <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
           <Group title="1. Tamanho">
             <div className="grid grid-cols-2 gap-2">
-              {ACAI_SIZES.map((s) => (
+              {SIZES.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setSizeId(s.id)}
@@ -106,7 +106,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
 
           <Group title="2. Frutas" hint="2 grátis · extras + R$2">
             <Grid>
-              {ACAI_FRUITS.map((f) => (
+              {FRUITS.map((f) => (
                 <Pill key={f} active={fruits.includes(f)} onClick={() => toggle(fruits, setFruits, f)}>
                   {f}
                 </Pill>
@@ -116,7 +116,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
 
           <Group title="3. Cremes" hint="1 grátis · extras + R$4">
             <Grid>
-              {ACAI_CREAMS.map((c) => (
+              {CREAMS.map((c) => (
                 <Pill key={c} active={creams.includes(c)} onClick={() => toggle(creams, setCreams, c)}>
                   {c}
                 </Pill>
@@ -126,7 +126,7 @@ export function AcaiBuilder({ onClose }: { onClose: () => void }) {
 
           <Group title="4. Complementos">
             <div className="space-y-2">
-              {ACAI_EXTRAS.map((e) => {
+              {EXTRAS.map((e) => {
                 const on = extras.includes(e.id);
                 return (
                   <button
