@@ -4136,18 +4136,53 @@ function ExtrasTab() {
       return n;
     });
 
+  const totalGlobal = 0; // computed in section
+  const totalWithOwn = products.filter((p) => (p.extras?.length ?? 0) > 0).length;
+  const totalCatWith = catList.filter((c) => (c.extras?.length ?? 0) > 0).length;
+  void totalGlobal;
+
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="font-display text-2xl font-black">Complementos</h2>
-        <p className="text-xs text-white/50">
-          Adicione, edite ou remova os adicionais pagos de cada produto.
-        </p>
+      {/* Hero header */}
+      <div className="mb-5 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-pink/15 via-neon-cyan/10 to-neon-yellow/10 p-5">
+        <div className="flex items-start gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink to-neon-cyan text-white shadow-lg">
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-display text-2xl font-black leading-tight">Complementos</h2>
+            <p className="mt-0.5 text-[12px] text-white/60">
+              Configure adicionais em <b>três camadas</b>: globais, por categoria e por produto.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neon-cyan">
+                <Globe className="h-3 w-3" /> Globais
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-neon-pink/30 bg-neon-pink/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neon-pink">
+                <Tag className="h-3 w-3" /> {totalCatWith} categoria{totalCatWith === 1 ? "" : "s"}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-neon-yellow/30 bg-neon-yellow/10 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neon-yellow">
+                <Package className="h-3 w-3" /> {totalWithOwn} produto{totalWithOwn === 1 ? "" : "s"}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <GlobalExtrasSection />
+      {/* Two-column layer editors */}
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <GlobalExtrasSection />
+        <CategoryExtrasSection />
+      </div>
 
-      <CategoryExtrasSection />
+      {/* Products list section header */}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-black">Por produto</h3>
+          <p className="text-[11px] text-white/50">Adicionais exclusivos de um item específico.</p>
+        </div>
+      </div>
+
 
 
 
