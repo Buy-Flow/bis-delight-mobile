@@ -12,7 +12,7 @@ export function Hero({
   const heroImages = heroImagesOverride ?? settings?.heroImages ?? DEFAULT_HERO_IMAGES;
 
   return (
-    <section className="relative overflow-hidden px-4 pb-0 pt-2">
+    <section className="relative px-4 pb-0 pt-2">
       {/* Blending glows behind hero images to soften color mismatch with page bg */}
       <div
         aria-hidden="true"
