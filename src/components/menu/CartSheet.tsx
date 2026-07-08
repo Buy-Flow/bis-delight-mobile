@@ -20,12 +20,24 @@ export function CartSheet() {
           <X className="h-5 w-5" />
         </button>
 
-        {/* Header simples e fluido */}
-        <div className="relative px-5 pb-4 pt-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
+        {/* Header simples com detalhe */}
+        <div className="relative px-5 pb-4 pt-6 pr-16">
+          <div className="flex items-center gap-3">
+            <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
+              <ShoppingBag className="h-5 w-5 text-neon-yellow" />
+              {items.length > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white ring-2 ring-[hsl(var(--card))]">
+                  {items.reduce((s, i) => s + i.quantity, 0)}
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow shadow-[0_0_8px_theme(colors.neon-yellow)]" />
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neon-yellow/90">Pedido</span>
+              </div>
               <h3 className="text-[22px] font-black leading-tight text-white">
-                Seu carrinho
+                Seu <span className="bg-gradient-to-r from-neon-pink to-neon-yellow bg-clip-text text-transparent">carrinho</span>
               </h3>
               <p className="mt-0.5 text-[12px] text-white/60">
                 {items.length
@@ -33,16 +45,8 @@ export function CartSheet() {
                   : "Vazio por enquanto"}
               </p>
             </div>
-            <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/5 ring-1 ring-white/10">
-              <ShoppingBag className="h-5 w-5 text-neon-yellow" />
-              {items.length > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white">
-                  {items.reduce((s, i) => s + i.quantity, 0)}
-                </span>
-              )}
-            </div>
           </div>
-          <div className="mt-3 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <div className="mt-3 h-px w-full bg-gradient-to-r from-neon-pink/50 via-neon-purple/30 to-transparent" />
         </div>
 
 
