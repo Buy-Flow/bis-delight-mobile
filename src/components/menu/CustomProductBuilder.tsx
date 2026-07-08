@@ -72,6 +72,7 @@ export function CustomProductBuilder({
 
   const [sel, setSel] = useState<Selection>(seededSelection);
   const [qty, setQty] = useState(editItem?.quantity ?? 1);
+  const [collapsed, setCollapsed] = useState(false);
 
   const unit = useMemo(() => computeUnit(groups, sel), [groups, sel]);
   const total = unit * qty;
