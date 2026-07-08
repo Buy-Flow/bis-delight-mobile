@@ -8,6 +8,7 @@ import {
   Star,
   Settings,
   Sparkles,
+  Pencil,
   Plus,
   Trash2,
   Save,
