@@ -55,21 +55,21 @@ function PedidosPage() {
     <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
       <Toaster position="top-center" theme="dark" />
 
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[oklch(0.10_0.08_300)]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      <header className="sticky top-0 z-30 border-b border-purple-900/50 bg-[oklch(0.10_0.08_300)]/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <ClipboardList className="h-5 w-5 text-neon-yellow" />
-            <h1
-              className="font-display text-xl font-black uppercase"
+            <span
+              className="text-xl font-black uppercase text-neon-yellow"
               style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
             >
-              <span className="text-neon-yellow">Pedidos</span>
-            </h1>
+              Pedidos
+            </span>
           </Link>
           <div className="flex items-center gap-2">
             <Link
               to="/admin"
-              className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white"
+              className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
             >
               Painel
             </Link>
@@ -89,9 +89,10 @@ function PedidosPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-8">
         <OrdersTab />
       </main>
     </div>
   );
 }
+
