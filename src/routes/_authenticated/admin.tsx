@@ -99,12 +99,12 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "orders" | "products" | "categories" | "highlights" | "extras" | "news" | "settings";
+type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>("orders");
+  const [tab, setTab] = useState<Tab>("products");
 
   const signOut = async () => {
     await supabase.auth.signOut();
