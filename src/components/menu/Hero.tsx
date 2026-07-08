@@ -51,7 +51,11 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
             fontWeight: 900,
           }}
         >
-          <span className="inline-block -rotate-[3deg]">Transforma</span>
+          <span className="stagger-letters inline-block -rotate-[3deg]" aria-label="Transforma">
+            {"Transforma".split("").map((c, i) => (
+              <span key={i}>{c}</span>
+            ))}
+          </span>
         </h1>
 
 
@@ -60,7 +64,7 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         <svg
           aria-hidden="true"
           viewBox="0 0 160 14"
-          className="mt-1 h-4 w-[160px]"
+          className="mt-1 h-4 w-[160px] animate-bob"
           fill="none"
         >
           <path
@@ -82,8 +86,9 @@ export function Hero({ onScrollMenu }: { onScrollMenu: () => void }) {
         >
           A felicidade em
           <br />
-          cada <span className="text-neon-yellow">colher.</span>
+          cada <span className="text-neon-yellow animate-shimmer-text">colher.</span>
         </div>
+
 
 
 
