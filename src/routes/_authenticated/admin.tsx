@@ -1903,22 +1903,9 @@ function HighlightsTab() {
   const { data: products = [] } = useAllProducts();
   const { data: categories = [] } = useCategories();
   const toggle = useToggleHero();
-  const [filter, setFilter] = useState<string>("all");
-  const [search, setSearch] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
 
-  const catList = categories.filter((c) => c.id !== "all");
-  const heroCount = products.filter((p) => p.hero).length;
   const heroProducts = useMemo(() => products.filter((p) => p.hero), [products]);
-
-  const visible = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return products.filter((p) => {
-      if (filter === "hero" && !p.hero) return false;
-      else if (filter !== "all" && filter !== "hero" && p.category !== filter) return false;
-      if (q && !p.name.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [products, filter, search]);
 
   return (
     <div>
@@ -1926,107 +1913,167 @@ function HighlightsTab() {
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-2xl font-black">Nossos Destaques</h2>
           <p className="text-xs text-white/50">
-            Marque os produtos que devem aparecer no carrossel de destaques da home.{" "}
-            <b className="text-neon-yellow">{heroCount}</b> em destaque.
+            <b className="text-neon-yellow">{heroProducts.length}</b>{" "}
+            {heroProducts.length === 1 ? "produto" : "produtos"} no carrossel de destaques.
           </p>
         </div>
-        {heroProducts.length > 0 && (
-          <button
-            type="button"
-            onClick={() => {
-              document
-                .getElementById("hero-image-editors")
-                ?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
-            className="shrink-0 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-1.5 text-[11px] font-semibold text-neon-cyan hover:bg-neon-cyan/20"
-          >
-            Ajustar imagens ↓
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-neon-yellow px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-[oklch(0.15_0.10_305)] hover:brightness-110"
+        >
+          <Plus className="h-3.5 w-3.5" /> Adicionar destaque
+        </button>
       </div>
 
-
-      <div className="mb-3 space-y-2">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-          <input
-            className={cn(inputCls, "pl-9")}
-            placeholder="Buscar produto por nome..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {heroProducts.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+          <Star className="mx-auto mb-2 h-8 w-8 text-white/20" />
+          <div className="text-sm font-bold text-white/80">Nenhum destaque ainda</div>
+          <p className="mt-1 text-[11px] text-white/50">
+            Toque em <b className="text-neon-yellow">Adicionar destaque</b> para escolher os produtos.
+          </p>
         </div>
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
-            Tudo <span className="opacity-60">({products.length})</span>
-          </FilterChip>
-          <FilterChip active={filter === "hero"} onClick={() => setFilter("hero")}>
-            <Star className="h-3 w-3 fill-neon-yellow text-neon-yellow" /> Em destaque{" "}
-            <span className="opacity-60">({heroCount})</span>
-          </FilterChip>
-          {catList.map((c) => {
-            const count = products.filter((p) => p.category === c.id).length;
-            return (
-              <FilterChip key={c.id} active={filter === c.id} onClick={() => setFilter(c.id)}>
-                <span>{c.emoji}</span> {c.name} <span className="opacity-60">({count})</span>
-              </FilterChip>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-2">
-        {visible.map((p) => (
-          <label
-            key={p.id}
-            className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-2xl border p-2 transition",
-              p.hero ? "border-neon-yellow/50 bg-neon-yellow/5" : "border-white/10 bg-white/5",
-            )}
-          >
-            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
-              {p.image && <img src={p.image} className="h-full w-full object-cover" />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-bold">{p.name}</div>
-              <div className="text-[11px] text-white/50">{p.category}</div>
-            </div>
-            <input
-              type="checkbox"
-              checked={!!p.hero}
-              onChange={(e) => toggle.mutate({ id: p.id, hero: e.target.checked })}
-              className="h-5 w-5 accent-neon-yellow"
+      ) : (
+        <div className="space-y-3">
+          {heroProducts.map((p) => (
+            <HeroImageEditor
+              key={p.id}
+              product={p}
+              onRemove={() => {
+                if (confirm(`Remover "${p.name}" dos destaques?`)) {
+                  toggle.mutate({ id: p.id, hero: false });
+                }
+              }}
             />
-          </label>
-        ))}
-        {visible.length === 0 && (
-          <div className="sm:col-span-2 rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
-            Nenhum produto encontrado.
-          </div>
-        )}
-      </div>
-
-      {heroProducts.length > 0 && (
-        <div id="hero-image-editors" className="mt-8 scroll-mt-24">
-          <div className="mb-2">
-            <h3 className="font-display text-lg font-black">Ajustar imagem de cada destaque</h3>
-            <p className="text-[11px] text-white/50">
-              Envie uma foto exclusiva para o card do carrossel e ajuste a posição com preview ao vivo.
-              Se vazio, usa a foto do produto.
-            </p>
-          </div>
-          <div className="space-y-3">
-            {heroProducts.map((p) => (
-              <HeroImageEditor key={p.id} product={p} />
-            ))}
-          </div>
+          ))}
         </div>
+      )}
+
+      {pickerOpen && (
+        <HighlightPickerModal
+          products={products}
+          categories={categories}
+          onClose={() => setPickerOpen(false)}
+          onPick={(id) => toggle.mutate({ id, hero: true })}
+        />
       )}
     </div>
   );
 }
 
-function HeroImageEditor({ product }: { product: Product }) {
+function HighlightPickerModal({
+  products,
+  categories,
+  onClose,
+  onPick,
+}: {
+  products: Product[];
+  categories: Category[];
+  onClose: () => void;
+  onPick: (id: string) => void;
+}) {
+  const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const catList = categories.filter((c) => c.id !== "all");
+
+  const available = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (p.hero) return false;
+      if (filter !== "all" && p.category !== filter) return false;
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [products, filter, search]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-3xl border border-white/10 bg-[oklch(0.12_0.09_305)] sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-bold">
+              <Star className="h-4 w-4 fill-neon-yellow text-neon-yellow" />
+              Adicionar destaque
+            </div>
+            <div className="text-[10.5px] text-white/50">Escolha um produto para o carrossel.</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-2 border-b border-white/5 px-4 py-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+            <input
+              className={cn(inputCls, "pl-9")}
+              placeholder="Buscar produto..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-1 overflow-x-auto pb-1">
+            <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
+              Tudo
+            </FilterChip>
+            {catList.map((c) => (
+              <FilterChip key={c.id} active={filter === c.id} onClick={() => setFilter(c.id)}>
+                <span>{c.emoji}</span> {c.name}
+              </FilterChip>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-y-auto p-3">
+          {available.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-[12px] text-white/50">
+              Nenhum produto disponível.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {available.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    onPick(p.id);
+                    onClose();
+                  }}
+                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-2 text-left transition hover:border-neon-yellow/50 hover:bg-neon-yellow/10"
+                >
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+                    {p.image && <img src={p.image} className="h-full w-full object-cover" alt="" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold">{p.name}</div>
+                    <div className="text-[11px] text-white/50">{p.category}</div>
+                  </div>
+                  <Plus className="h-4 w-4 shrink-0 text-neon-yellow" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: () => void }) {
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -2119,7 +2166,7 @@ function HeroImageEditor({ product }: { product: Product }) {
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
+    <div className="relative rounded-2xl border border-white/10 bg-white/[0.03]">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -2150,6 +2197,17 @@ function HeroImageEditor({ product }: { product: Product }) {
           {open ? "Fechar" : "Ajustar"}
         </span>
       </button>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Remover destaque"
+          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      )}
+
 
       {open && (
         <div
