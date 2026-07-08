@@ -104,7 +104,7 @@ type Tab = "orders" | "products" | "categories" | "highlights" | "extras" | "new
 function AdminPage() {
   const navigate = useNavigate();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>("products");
+  const [tab, setTab] = useState<Tab>("orders");
 
   const signOut = async () => {
     await supabase.auth.signOut();
