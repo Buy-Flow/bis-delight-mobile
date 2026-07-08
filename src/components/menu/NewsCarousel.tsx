@@ -245,37 +245,25 @@ function NewsPosterCard({
     <article className="group relative w-[85vw] max-w-[380px] shrink-0 snap-center">
       <button
         onClick={() => onOpen(product)}
-        className="relative flex aspect-[3/4] w-full overflow-hidden rounded-[26px] bg-[oklch(0.12_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1"
+        className="relative block aspect-[3/4] w-full overflow-hidden rounded-[26px] bg-[oklch(0.12_0.10_305)] text-left transition-transform duration-300 group-hover:-translate-y-1"
         style={{
           boxShadow:
             "0 0 0 1px oklch(0.72 0.26 350 / 0.35), 0 0 22px -4px oklch(0.72 0.26 350 / 0.55), 0 0 60px -18px oklch(0.85 0.18 200 / 0.55), 0 24px 40px -20px rgba(0,0,0,0.8)",
         }}
       >
-        {/* Full-bleed hero — nítida, sem sujeira por cima */}
+        {/* Foto ocupa tudo — sem nada por cima */}
         <img
           src={heroSrc}
           alt={product.name}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.03]"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           style={{
             transform: `translate(${heroPosX}%, ${heroPosY}%) scale(${heroScale})`,
             transformOrigin: "center",
           }}
         />
 
-
-        {/* Wash bem sutil só no rodapé para legibilidade do texto */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]"
-          style={{
-            background:
-              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0) 0%, oklch(0.08 0.10 305 / 0.55) 60%, oklch(0.08 0.10 305 / 0.85) 100%)",
-          }}
-        />
-
-
-        {/* Badge minimalista no canto */}
+        {/* Badge canto superior direito */}
         <div className="absolute right-3 top-3 z-20">
           <span
             className={cn(
@@ -292,74 +280,75 @@ function NewsPosterCard({
           </span>
         </div>
 
-        {/* Conteúdo */}
-        <div className="relative z-10 flex w-full flex-col justify-between p-5">
+        {/* Eyebrow discreto no topo esquerdo */}
+        <div className="absolute left-3 top-3 z-20">
           <span
-            className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neon-cyan/90"
+            className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.28em] text-neon-cyan backdrop-blur"
             style={{ fontFamily: "'Poppins', sans-serif" }}
           >
             {eyebrow}
           </span>
+        </div>
 
-          <div className="mt-auto space-y-3">
+        {/* Faixa inferior com wash — só o rodapé cobre a imagem */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[32%]"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(0.08 0.10 305 / 0) 0%, oklch(0.08 0.10 305 / 0.70) 55%, oklch(0.08 0.10 305 / 0.92) 100%)",
+          }}
+        />
+
+        {/* Conteúdo compacto só no rodapé */}
+        <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 p-4">
+          <div className="min-w-0 flex-1">
             <h3
-              className="text-white"
+              className="truncate text-white"
               style={{
                 fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
                 fontWeight: 900,
                 fontStyle: "italic",
-                lineHeight: 0.88,
-                letterSpacing: "-0.02em",
-                textShadow: "0 2px 16px rgba(0,0,0,0.7)",
+                fontSize: "22px",
+                lineHeight: 1,
+                letterSpacing: "-0.01em",
+                textShadow: "0 2px 12px rgba(0,0,0,0.7)",
               }}
             >
-              <span className="block text-[38px] uppercase">{topLine}</span>
-              {bottomLine && (
-                <span
-                  className="mt-0.5 block text-[38px] uppercase text-neon-pink"
-                  style={{ textShadow: "0 0 14px rgba(255,45,149,0.55)" }}
-                >
-                  {bottomLine}
-                </span>
-              )}
+              {topLine}
+              {bottomLine ? ` ${bottomLine}` : ""}
             </h3>
-
-            {/* Preço + CTA */}
-            <div className="flex items-end justify-between gap-3">
-              <div className="flex flex-col leading-none">
-                <span
-                  className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/60"
-                  style={{ fontFamily: "'Poppins', sans-serif" }}
-                >
-                  A partir de
-                </span>
-                <span
-                  className="mt-1 text-[26px] font-black italic leading-none text-white"
-                  style={{
-                    fontFamily: "'Barlow Condensed', 'Poppins', sans-serif",
-                  }}
-                >
-                  {brl(product.basePrice)}
-                </span>
-              </div>
-
+            <div className="mt-1 flex items-baseline gap-1.5">
               <span
-                className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.16em] text-white transition-transform group-hover:scale-105 group-active:scale-95"
-                style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  boxShadow:
-                    "0 0 18px rgba(255,45,149,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
-                }}
-                aria-hidden
+                className="text-[9px] font-bold uppercase tracking-[0.24em] text-white/60"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
               >
-                Ver
-                <Plus className="h-3.5 w-3.5" strokeWidth={3.2} />
+                a partir de
+              </span>
+              <span
+                className="text-[18px] font-black italic leading-none text-white"
+                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+              >
+                {brl(product.basePrice)}
               </span>
             </div>
           </div>
+
+          <span
+            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-neon-pink px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-transform group-hover:scale-105 group-active:scale-95"
+            style={{
+              fontFamily: "'Poppins', sans-serif",
+              boxShadow: "0 0 18px rgba(255,45,149,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
+            }}
+            aria-hidden
+          >
+            Ver
+            <Plus className="h-3 w-3" strokeWidth={3.2} />
+          </span>
         </div>
       </button>
     </article>
   );
 }
+
 
