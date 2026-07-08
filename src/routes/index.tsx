@@ -223,8 +223,9 @@ function Content() {
         >
           <div className="relative z-10">
             <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
-              <Sparkles className="h-3 w-3" /> Novo
+              <Sparkles className="h-3 w-3 animate-spin-slow" /> Novo
             </div>
+
             <div className="font-display text-2xl font-extrabold leading-tight text-white">
               Monte seu <span className="text-neon-pink">açaí</span>
             </div>
@@ -261,12 +262,13 @@ function Content() {
           <div className="flex items-center justify-center gap-3">
             <span className="h-[2px] w-8 rounded-full bg-linear-to-r from-transparent to-neon-pink" />
             <span
-              className="text-[11px] uppercase tracking-[0.4em] text-neon-pink"
+              className="text-[11px] uppercase tracking-[0.4em] text-neon-pink animate-letter-wave"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
             >
               Feito com amor
             </span>
             <span className="h-[2px] w-8 rounded-full bg-linear-to-l from-transparent to-neon-pink" />
+
           </div>
           <h2
             className="mt-1 text-center font-display text-[34px] font-black uppercase leading-[0.95] text-white"
@@ -303,11 +305,12 @@ function Content() {
             className="mt-2 flex items-center justify-center gap-2 text-white/70"
             style={{ fontFamily: "'Caveat', cursive", fontWeight: 600, fontSize: "18px" }}
           >
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-cyan shadow-[0_0_8px_rgba(0,229,255,0.9)]" />
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-cyan shadow-[0_0_8px_rgba(0,229,255,0.9)] animate-sparkle" />
             <span className="-rotate-[2deg]">
               {filtered.length} delícias para adoçar seu dia
             </span>
-            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.9)]" />
+            <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.9)] animate-sparkle" style={{ animationDelay: "0.9s" }} />
+
           </div>
         </div>
 
@@ -380,7 +383,7 @@ function Content() {
           to="/admin"
           className="block text-[10px] text-white/30 transition-colors hover:text-white/60"
         >
-          © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com 💜
+          © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com <span className="inline-block animate-heartbeat">💜</span>
         </Link>
       </footer>
 
