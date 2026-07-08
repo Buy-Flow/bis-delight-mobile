@@ -197,7 +197,6 @@ function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
-        {tab === "orders" && <OrdersTab />}
         {tab === "products" && <ProductsTab />}
         {tab === "categories" && <CategoriesTab />}
         {tab === "highlights" && <HighlightsTab />}
