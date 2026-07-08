@@ -926,20 +926,6 @@ function PhotoTab({
 }
 
 
-function NudgeBtn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className="grid h-7 place-items-center rounded-md border border-white/10 bg-white/5 text-sm text-white/80 hover:bg-white/10"
-    >
-      {children}
-    </button>
-  );
-}
-
-function clamp(v: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, v));
-}
 
 
 
