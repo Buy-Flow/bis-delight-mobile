@@ -54,7 +54,7 @@ export function NewsCarousel({
 
   // Autoplay: avança 1 card a cada 4s, sempre para a direita, em loop infinito.
   useEffect(() => {
-    if (items.length <= 1) return;
+    if (items.length < 3) return;
     const el = scrollerRef.current;
     if (!el) return;
     const pause = () => {
