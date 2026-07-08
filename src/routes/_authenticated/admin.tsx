@@ -4361,16 +4361,20 @@ function GlobalExtrasSection() {
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-black text-neon-cyan">
-            Complementos globais
-          </h3>
-          <p className="text-[11px] text-white/60">
-            Aparecem em <b>todos os produtos</b> automaticamente, junto com os complementos
-            individuais do produto.
-          </p>
+    <div className="flex flex-col rounded-3xl border border-neon-cyan/25 bg-gradient-to-b from-neon-cyan/10 to-neon-cyan/5 p-5 shadow-[0_0_0_1px_rgba(34,211,238,0.05)_inset]">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-neon-cyan/40 bg-neon-cyan/15 text-neon-cyan">
+            <Globe className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display text-lg font-black text-neon-cyan">
+              Globais
+            </h3>
+            <p className="text-[11px] leading-tight text-white/60">
+              Aparecem em <b>todos os produtos</b> do cardápio.
+            </p>
+          </div>
         </div>
         <button
           onClick={() =>
@@ -4383,6 +4387,15 @@ function GlobalExtrasSection() {
         >
           <Plus className="h-3.5 w-3.5" /> Adicionar
         </button>
+      </div>
+
+      <div className="mb-2 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-white/40">
+        <span>{list.length} item{list.length === 1 ? "" : "s"}</span>
+        {isDirty && (
+          <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-neon-yellow">
+            Alterações não salvas
+          </span>
+        )}
       </div>
 
       <RowList
