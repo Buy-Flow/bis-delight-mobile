@@ -162,6 +162,7 @@ export function ProductModal({
   const [groupSel, setGroupSel] = useState<Record<string, string[]>>(
     initialGroupSel(product),
   );
+  const [stepIndex, setStepIndex] = useState(0);
 
   useMemo(() => {
     if (product) {
@@ -173,6 +174,7 @@ export function ProductModal({
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
       setGroupSel(initialGroupSel(product));
+      setStepIndex(0);
     }
   }, [product?.id, editItem?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -401,8 +403,58 @@ export function ProductModal({
           )}
 
           {isCustom ? (
-            <div className="space-y-8">
-              {optionGroups.map((g, gi) => {
+            <div className="space-y-6">
+              {/* Stepper */}
+              <div className="relative">
+                <div className="absolute left-5 right-5 top-5 h-[2px] bg-white/10" />
+                <div
+                  className="absolute left-5 top-5 h-[2px] bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] transition-all duration-300"
+                  style={{
+                    width: optionGroups.length > 1
+                      ? `calc((100% - 2.5rem) * ${stepIndex / (optionGroups.length - 1)})`
+                      : "0%",
+                  }}
+                />
+                <div className="relative flex items-start justify-between">
+                  {optionGroups.map((g, i) => {
+                    const done = i < stepIndex;
+                    const current = i === stepIndex;
+                    return (
+                      <button
+                        key={g.id}
+                        onClick={() => setStepIndex(i)}
+                        className="flex min-w-0 flex-1 flex-col items-center gap-1"
+                      >
+                        <span
+                          className={cn(
+                            "grid h-10 w-10 place-items-center rounded-full border-2 text-sm font-black transition-all",
+                            current
+                              ? "border-neon-pink bg-neon-pink text-white shadow-[0_0_20px_rgba(255,46,147,0.55)]"
+                              : done
+                                ? "border-neon-pink bg-neon-pink/20 text-neon-pink"
+                                : "border-white/15 bg-white/5 text-white/50",
+                          )}
+                        >
+                          {done ? <Check className="h-4 w-4" strokeWidth={3.5} /> : i + 1}
+                        </span>
+                        <span
+                          className={cn(
+                            "truncate text-[11px] font-bold uppercase tracking-wide",
+                            current ? "text-white" : done ? "text-neon-pink/80" : "text-white/40",
+                          )}
+                        >
+                          {g.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Current step content */}
+              {(() => {
+                const g = optionGroups[stepIndex];
+                if (!g) return null;
                 const picked = groupSel[g.id] ?? [];
                 const free = g.freeCount ?? 0;
                 const extraFee = g.pricePerExtra ?? 0;
@@ -413,13 +465,13 @@ export function ProductModal({
                     ? `até ${free} grátis`
                     : "escolha o que quiser";
                 return (
-                  <div key={g.id}>
+                  <div>
                     <div className="mb-3 flex items-end justify-between gap-3">
                       <h3
-                        className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                        className="font-display text-2xl font-extrabold uppercase tracking-wider text-neon-cyan"
                         style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                       >
-                        {gi + 1}. {g.name}
+                        {g.name}
                       </h3>
                       {isSingle && g.required ? (
                         <span className="rounded-full bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-pink">
@@ -494,7 +546,7 @@ export function ProductModal({
                     )}
                   </div>
                 );
-              })}
+              })()}
             </div>
           ) : (
             <div className="space-y-8">
@@ -658,59 +710,103 @@ export function ProductModal({
             </div>
           )}
 
-          <div className="mt-8">
-            <h3
-              className="mb-3 font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
-              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-            >
-              Observação
-            </h3>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Ex.: caprichar na calda, sem gelo…"
-              className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-              rows={3}
-            />
-          </div>
+          {(!isCustom || stepIndex >= optionGroups.length - 1) && (
+            <div className="mt-8">
+              <h3
+                className="mb-3 font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+              >
+                Observação
+              </h3>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ex.: caprichar na calda, sem gelo…"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
+                rows={3}
+              />
+            </div>
+          )}
 
           <div className="h-6" />
         </div>
 
         {/* Footer — quantidade + CTA gradiente pink */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-2xl border border-white/10 bg-white/10 p-1">
-              <button
-                onClick={() => setQty(Math.max(1, qty - 1))}
-                aria-label="Diminuir"
-                className="grid h-10 w-10 place-items-center text-white/60 active:scale-95"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="w-6 text-center text-base font-bold text-white">{qty}</span>
-              <button
-                onClick={() => setQty(qty + 1)}
-                aria-label="Aumentar"
-                className="grid h-10 w-10 place-items-center text-neon-cyan active:scale-95"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-            <button
-              onClick={submit}
-              className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97]"
-            >
-              <span
-                className="font-display text-lg font-bold uppercase tracking-wider text-white"
-                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-              >
-                Adicionar
-              </span>
-              <span className="text-base font-extrabold text-white">{brl(total)}</span>
-            </button>
-          </div>
+          {(() => {
+            const isWizard = isCustom && optionGroups.length > 0;
+            const isLastStep = !isWizard || stepIndex >= optionGroups.length - 1;
+            const currentGroup = isWizard ? optionGroups[stepIndex] : null;
+            const currentPicked = currentGroup ? (groupSel[currentGroup.id] ?? []) : [];
+            const canAdvance =
+              !currentGroup || !currentGroup.required || currentPicked.length > 0;
+            return (
+              <div className="flex items-center gap-3">
+                {isWizard && stepIndex > 0 && (
+                  <button
+                    onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
+                    className="h-12 rounded-2xl border border-white/15 bg-white/5 px-4 font-display text-sm font-bold uppercase tracking-wider text-white/80 active:scale-95"
+                  >
+                    Voltar
+                  </button>
+                )}
+                {isLastStep && (
+                  <div className="flex items-center rounded-2xl border border-white/10 bg-white/10 p-1">
+                    <button
+                      onClick={() => setQty(Math.max(1, qty - 1))}
+                      aria-label="Diminuir"
+                      className="grid h-10 w-10 place-items-center text-white/60 active:scale-95"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-6 text-center text-base font-bold text-white">{qty}</span>
+                    <button
+                      onClick={() => setQty(qty + 1)}
+                      aria-label="Aumentar"
+                      className="grid h-10 w-10 place-items-center text-neon-cyan active:scale-95"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+                {isLastStep ? (
+                  <button
+                    onClick={submit}
+                    className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97]"
+                  >
+                    <span
+                      className="font-display text-lg font-bold uppercase tracking-wider text-white"
+                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    >
+                      Adicionar
+                    </span>
+                    <span className="text-base font-extrabold text-white">{brl(total)}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (!canAdvance) {
+                        toast.error("Escolha uma opção para continuar.");
+                        return;
+                      }
+                      setStepIndex((i) => Math.min(optionGroups.length - 1, i + 1));
+                    }}
+                    disabled={!canAdvance}
+                    className="flex h-12 flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97] disabled:opacity-50"
+                  >
+                    <span
+                      className="font-display text-lg font-bold uppercase tracking-wider text-white"
+                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    >
+                      Próximo
+                    </span>
+                  </button>
+                )}
+              </div>
+            );
+          })()}
         </div>
+
       </div>
     </div>
   );
