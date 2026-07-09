@@ -214,8 +214,9 @@ export function CheckoutSheet() {
           couponApplied.kind === "promo"
             ? { _code: couponApplied.code, _order_total: subtotal, _order_id: order.id }
             : { _code: couponApplied.code };
-        const { data: redeemed, error: redeemErr } = await supabase.rpc(rpcName as never, args as never);
-        if (redeemErr || !Array.isArray(redeemed) || redeemed.length === 0) {
+        const { data: redeemed, error: redeemErr } = await (supabase.rpc as (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>)(rpcName, args);
+        const rows = Array.isArray(redeemed) ? redeemed : [];
+        if (redeemErr || rows.length === 0) {
           toast.error("Não foi possível usar o cupom. Ele pode já ter sido utilizado.");
           setSending(false);
           return;
