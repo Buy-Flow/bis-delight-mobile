@@ -130,6 +130,61 @@ export function OrdersTab() {
   const [filter, setFilter] = useState<FilterId>("pendente");
   const [busy, setBusy] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [notifyOn, setNotifyOn] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("orders-notify") === "1";
+  });
+  const notifyOnRef = useRef(notifyOn);
+  const firstLoadRef = useRef(true);
+  useEffect(() => {
+    notifyOnRef.current = notifyOn;
+  }, [notifyOn]);
+
+  const playBeep = () => {
+    try {
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new Ctx();
+      const beep = (freq: number, start: number, dur = 0.18) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + start);
+        gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(ctx.currentTime + start);
+        osc.stop(ctx.currentTime + start + dur + 0.02);
+      };
+      beep(880, 0);
+      beep(1320, 0.2);
+      beep(1760, 0.4, 0.25);
+      setTimeout(() => ctx.close().catch(() => {}), 1200);
+    } catch {
+      /* noop */
+    }
+  };
+
+  const toggleNotify = async () => {
+    if (notifyOn) {
+      setNotifyOn(false);
+      localStorage.setItem("orders-notify", "0");
+      toast.info("Notificações desativadas.");
+      return;
+    }
+    if ("Notification" in window && Notification.permission !== "granted") {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") {
+        toast.error("Permissão negada para notificações do navegador.");
+      }
+    }
+    setNotifyOn(true);
+    localStorage.setItem("orders-notify", "1");
+    playBeep();
+    toast.success("Notificações ativadas — teste de som tocando.");
+  };
 
   const load = async () => {
     setRefreshing(true);
@@ -143,6 +198,7 @@ export function OrdersTab() {
       return;
     }
     setOrders((data ?? []) as unknown as Order[]);
+    firstLoadRef.current = false;
   };
 
   useEffect(() => {
@@ -150,6 +206,26 @@ export function OrdersTab() {
     const channel = supabase
       .channel("orders-admin")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => load())
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders" },
+        (payload) => {
+          if (firstLoadRef.current) return;
+          if (!notifyOnRef.current) return;
+          const o = payload.new as { customer_name?: string; total?: number };
+          playBeep();
+          const title = "🛎️ Novo pedido!";
+          const body = `${o.customer_name ?? "Cliente"} — R$ ${Number(o.total ?? 0).toFixed(2).replace(".", ",")}`;
+          if ("Notification" in window && Notification.permission === "granted") {
+            try {
+              new Notification(title, { body, tag: "new-order", icon: "/favicon.ico" });
+            } catch {
+              /* noop */
+            }
+          }
+          toast.success(title + " " + body);
+        },
+      )
       .subscribe();
     const interval = setInterval(() => load(), 15000);
     return () => {
@@ -157,6 +233,7 @@ export function OrdersTab() {
       clearInterval(interval);
     };
   }, []);
+
 
 
   const filtered = useMemo(() => {
