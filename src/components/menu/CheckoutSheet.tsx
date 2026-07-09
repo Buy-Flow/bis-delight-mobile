@@ -163,6 +163,7 @@ export function CheckoutSheet() {
           subtotal,
           delivery_fee: fee,
           total,
+          coupon_code: couponApplied?.code ?? null,
         })
         .select("id")
         .single();
