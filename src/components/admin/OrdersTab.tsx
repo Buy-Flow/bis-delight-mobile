@@ -551,6 +551,8 @@ function OrderCard({
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
