@@ -1,44 +1,57 @@
-## Melhorias sugeridas para o Quero Bis
 
-Depois de dar uma olhada geral no site (Hero, Novidades, Destaques, Monte seu açaí, Cardápio, cards de produto), separei em **impacto alto** (o que mais melhora a percepção) e **polimento** (detalhes finos). Você escolhe o que quer aplicar — nada é feito antes da sua aprovação.
+# Objetivo
+Fazer o site pintar de uma vez — texto, Hero, cards e rodapé aparecendo juntos — em vez de em ondas.
 
----
+# Causa
+A rota `/` só busca produtos, categorias e configurações **depois** que o HTML já foi renderizado (`useQuery` puro no cliente). Cada query resolve num momento diferente e cada imagem chega quando quer. Sem `aspect-ratio` nos `<img>`, cada foto que chega empurra o layout.
 
-### 1. Hero (topo) — impacto alto
-- **Texto "TRANSFORMA" quebrando em duas linhas** no mobile. Reduzir 1 passo o tamanho no mobile (ex.: `text-6xl` no lugar de `text-7xl`) para caber numa linha só e ficar mais elegante.
-- **Botão "QUERO BIS"** pode ter uma leve pulsação/glow amarelo pra virar CTA principal (hoje se perde no meio do texto).
-- **Barra de benefícios** (Entrega rápida / Produtos / Feito com amor): textos estão espremidos com quebras estranhas ("os melhores ingredientes" ficou "osmelhores"). Ajustar padding/espaçamento.
+# O que vou mudar
 
-### 2. Cards de produto no cardápio — impacto alto
-- Fundo roxo dos cards tem **listras diagonais visíveis** (mesmo problema de transição de cor que resolvemos no fundo). Trocar por gradiente liso ou um brilho radial suave.
-- Selo "A PARTIR DE R$ XX" amarelo está **cobrindo parte da imagem do produto**. Reposicionar pra baixo do card ou tornar menor.
-- Botão coração (favoritar) e botão "+" competem visualmente com o preço. Padronizar tamanhos.
+## 1. Pré-carregar dados no loader da rota (principal)
+Em `src/routes/index.tsx`:
+- `loader: async ({ context }) => { await Promise.all([ ensureQueryData(products), ensureQueryData(categories), ensureQueryData(siteSettings) ]); return { heroImages, texture } }`.
+- No SSR o HTML já sai com os dados hidratados → sem "pop-in" de conteúdo nem de layout.
+- Component lê com `useSuspenseQuery` (padrão canônico Router + Query).
 
-### 3. Seção Destaques — polimento
-- Carrossel mostra só 1 card e um "espião" cortado do próximo. Bom no mobile, mas os **dots de paginação** podiam ser mais visíveis (hoje quase somem no fundo escuro).
-- Tag "TOP" amarela poderia ter um leve movimento (shine) pra chamar atenção sem exagero.
+## 2. Preload da imagem LCP e das laterais no `head()` da rota `/`
+Usando `head({ loaderData }).links` (per-route, não sitewide):
+- `{ rel: "preload", as: "image", href: heroImages.left.url, fetchpriority: "high" }` — a imagem esquerda é a LCP candidata.
+- `{ rel: "preload", as: "image", href: heroImages.right.url }` (sem `fetchpriority`, só uma LCP).
+- `{ rel: "preload", as: "image", href: texture }`.
 
-### 4. Consistência tipográfica — polimento
-- Hoje misturamos: script (Sabor que / Rápido Prático), display bold (TRANSFORMA / NOSSAS NOVIDADES), sans regular (descrições). Está bom, mas o **script "acabou de sair!"** ao lado de "NOSSAS NOVIDADES" fica pequeno demais no mobile — subir 1 tamanho.
-- Palavras destacadas em amarelo/rosa (irresistível, colher, DESTAQUES, CARDÁPIO) — manter só **uma cor de destaque por seção** pra dar ritmo.
+## 3. Reservar espaço nos elementos com imagem
+Prevenir layout shift:
+- `Hero.tsx`: dimensões explícitas e `aspect-ratio` nos `<img>` laterais.
+- `ProductCard.tsx`, `NewsCarousel.tsx` (`NewsPosterCard`) e `HighlightCard.tsx`: `aspect-ratio` + `width`/`height` nos `<img>` e fundo roxo da marca como placeholder.
 
-### 5. Performance e SSR — técnico
-- Verificar se as imagens grandes do hero (sorvete e copo Bis) estão com `loading="eager"` e `fetchpriority="high"`, e as demais com `loading="lazy"`. Ganha LCP.
-- Confirmar `<title>` e `meta description` únicos por rota (hoje o root talvez esteja sobrescrevendo).
+## 4. Fontes sem trocar de peso
+No `__root.tsx` (sitewide — Google Fonts é usado em todas as rotas):
+- `<link rel="preconnect" href="https://fonts.googleapis.com">`
+- `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`
+- Garantir `&display=swap` no `<link>` das Google Fonts.
+- `<link rel="preload" as="font" crossorigin>` para a Barlow Condensed 900 (usada no título do Hero, tipografia mais visível).
 
-### 6. Micro-interações — polimento
-- Botões "Personalizar" e "+" ganharem **feedback tátil** (scale 0.97 no press) — dá sensação de app.
-- Ícones da CategoryStrip (Tudo/Açaí/Taças/Mix/Kids) com leve **elevação no ativo** em vez de só borda.
+## 5. Placeholders coloridos
+Fundo roxo da marca por trás da imagem dos cards para eles já parecerem "cheios" antes da foto baixar.
 
-### 7. WhatsApp flutuante — polimento
-- Está bom, mas o **círculo verde** cobre preço/coração nos cards da direita quando rola. Deslocar levemente pra baixo ou adicionar um padding-bottom no grid.
+## 6. Splash opcional
+Só se após 1–5 ainda ficar irregular: overlay com logo que some quando `document.readyState === "complete"`. Provavelmente desnecessário depois dos passos anteriores.
 
----
+# Detalhes técnicos
+- `ensureQueryData` respeita o `staleTime` das queries — sem refetch extra.
+- LCP: só um `fetchpriority: "high"` por página (imagem esquerda do Hero).
+- Preloads de imagens ficam no `head()` da rota `/`, nunca no `__root.tsx`, para não penalizar outras rotas.
+- Nenhum dado sensível no HTML — produtos/settings já são públicos.
+- Sem alteração em carrinho, checkout, admin ou backend.
 
-### O que eu sugiro fazer primeiro (se pedir só "faz o melhor")
-1. Corrigir listras diagonais dos cards de produto (mesmo tratamento do fundo).
-2. Ajustar o Hero mobile ("TRANSFORMA" numa linha + barra de benefícios).
-3. Reposicionar o selo de preço pra não cobrir a imagem.
-4. Empurrar o botão do WhatsApp pra não cobrir os cards.
+# Ordem
+1. Loader + `ensureQueryData` (70% do problema)
+2. Preload de imagens no `head()` da rota `/` (LCP com `fetchpriority: "high"`)
+3. `aspect-ratio` nos `<img>` de Hero e cards
+4. Fontes (`preconnect` + `preload` + `display=swap`) no `__root.tsx`
+5. Placeholders coloridos nos cards
+6. Reavaliar; splash só se necessário
 
-Me diga **quais itens você quer** (pode ser "1, 2, 3", "todos", ou "só os de impacto alto") que eu preparo um plano de execução detalhado.
+# Fora de escopo
+- Converter PNGs para WebP/AVIF e trocar CDN de imagens (posso propor em plano separado se ainda pesar).
+- Lógica de negócio.
