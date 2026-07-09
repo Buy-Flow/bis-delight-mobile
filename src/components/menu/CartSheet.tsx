@@ -1,9 +1,22 @@
-import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck, Sparkles } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
+import { useProducts } from "@/lib/menu-data";
+import { useMemo } from "react";
 
 export function CartSheet() {
-  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit } = useCart();
+  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit, requestOpenProduct } = useCart();
+  const { data: allProducts = [] } = useProducts();
+
+  const suggestions = useMemo(() => {
+    if (!items.length) return [];
+    const inCart = new Set(items.map((i) => i.productId));
+    return allProducts
+      .filter((p) => !inCart.has(p.id) && !p.isCustom && p.basePrice > 0)
+      .sort((a, b) => a.basePrice - b.basePrice)
+      .slice(0, 6);
+  }, [allProducts, items]);
+
   if (!isCartOpen) return null;
 
   const fee = items.length ? BRAND.deliveryFee : 0;
