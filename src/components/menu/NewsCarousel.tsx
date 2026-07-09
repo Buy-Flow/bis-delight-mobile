@@ -123,22 +123,54 @@ export function NewsCarousel({
       })()}
 
 
-      {/* Card scroller — edge-to-edge, cards ocupam quase toda a tela */}
+      {/* Card único com crossfade — troca a cada 4s */}
       <div
-        ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto py-6 px-[7.5vw] scroll-px-[7.5vw]"
+        className="relative mx-auto w-[85vw] max-w-[380px] py-6"
+        style={{ aspectRatio: "3 / 4" }}
+        onPointerDown={() => setPaused(true)}
+        onPointerUp={() => setPaused(false)}
+        onPointerCancel={() => setPaused(false)}
+        onMouseLeave={() => setPaused(false)}
       >
-        {loopItems.map((p, i) => (
-          <NewsPosterCard
-            key={`${p.id}-${i}`}
-            product={p}
-            onOpen={onOpen}
-            badge={BADGE_STYLES[i % BADGE_STYLES.length]}
-            eyebrow={EYEBROWS[i % EYEBROWS.length]}
-            index={i % Math.max(1, items.length)}
-          />
+        {items.map((p, i) => (
+          <div
+            key={p.id}
+            className="absolute inset-0 transition-opacity duration-700 ease-out"
+            style={{
+              opacity: i === current ? 1 : 0,
+              pointerEvents: i === current ? "auto" : "none",
+            }}
+            aria-hidden={i !== current}
+          >
+            <NewsPosterCard
+              product={p}
+              onOpen={onOpen}
+              badge={BADGE_STYLES[i % BADGE_STYLES.length]}
+              eyebrow={EYEBROWS[i % EYEBROWS.length]}
+              index={i}
+            />
+          </div>
         ))}
       </div>
+
+      {/* Indicadores (pontinhos) */}
+      {items.length > 1 && (
+        <div className="mt-2 flex justify-center gap-2">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Ir para novidade ${i + 1}`}
+              onClick={() => setCurrent(i)}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                i === current ? "w-6 bg-neon-pink" : "w-1.5 bg-white/30",
+              )}
+            />
+          ))}
+        </div>
+      )}
+
 
 
 
