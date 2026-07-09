@@ -710,21 +710,23 @@ export function ProductModal({
             </div>
           )}
 
-          <div className="mt-8">
-            <h3
-              className="mb-3 font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
-              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-            >
-              Observação
-            </h3>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Ex.: caprichar na calda, sem gelo…"
-              className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-              rows={3}
-            />
-          </div>
+          {(!isCustom || stepIndex >= optionGroups.length - 1) && (
+            <div className="mt-8">
+              <h3
+                className="mb-3 font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+              >
+                Observação
+              </h3>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ex.: caprichar na calda, sem gelo…"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
+                rows={3}
+              />
+            </div>
+          )}
 
           <div className="h-6" />
         </div>
