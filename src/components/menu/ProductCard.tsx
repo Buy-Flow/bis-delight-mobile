@@ -1,8 +1,11 @@
-import { Plus, Flame } from "lucide-react";
+import { Plus, Flame, Pencil } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { FavoriteButton } from "./FavoriteButton";
+import { useIsAdmin } from "@/lib/menu-data";
+
 
 const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
   Premium: "bg-neon-yellow text-[oklch(0.18_0.11_305)]",
