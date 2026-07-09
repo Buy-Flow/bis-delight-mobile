@@ -8,12 +8,22 @@ import { cn } from "@/lib/utils";
 
 // simple in-memory cache so we don't re-query every card mount
 let cache: Set<string> | null = null;
+let loadedForUser: string | null = null;
+let loadingPromise: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 
 async function loadFavorites(userId: string) {
-  const { data } = await supabase.from("favorites").select("product_id").eq("user_id", userId);
-  cache = new Set((data ?? []).map((r) => r.product_id as string));
-  listeners.forEach((fn) => fn());
+  if (loadedForUser === userId) return;
+  if (loadingPromise) return loadingPromise;
+  loadingPromise = (async () => {
+    const { data } = await supabase.from("favorites").select("product_id").eq("user_id", userId);
+    cache = new Set((data ?? []).map((r) => r.product_id as string));
+    loadedForUser = userId;
+    listeners.forEach((fn) => fn());
+  })().finally(() => {
+    loadingPromise = null;
+  });
+  return loadingPromise;
 }
 
 function useFavorites() {
@@ -23,9 +33,12 @@ function useFavorites() {
   useEffect(() => {
     if (!user) {
       cache = new Set();
+      loadedForUser = null;
       return;
     }
-    loadFavorites(user.id);
+    if (loadedForUser !== user.id) {
+      loadFavorites(user.id);
+    }
     const fn = () => force((n) => n + 1);
     listeners.add(fn);
     return () => {
