@@ -279,11 +279,6 @@
     0%,100% { transform: translateY(0); }
     50%     { transform: translateY(-4px); }
   }
-  @keyframes product-float {
-    0%,100% { transform: translate3d(0, 0, 0) rotate(-1.2deg); }
-    50%     { transform: translate3d(0, -6px, 0) rotate(1.2deg); }
-  }
-
   .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
   .animate-float-med  { animation: float-med 4.5s ease-in-out infinite; }
   .animate-pulse-glow { animation: pulse-glow 2.2s ease-out infinite; }
@@ -297,10 +292,6 @@
   .animate-spin-slow  { animation: spin-slow 9s linear infinite; }
   .animate-sparkle    { animation: sparkle-pop 1.8s ease-in-out infinite; }
   .animate-bob        { animation: bob-soft 2.8s ease-in-out infinite; }
-  .animate-product-float { animation: product-float 4.2s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce) {
-    .animate-product-float { animation: none; }
-  }
   .animate-letter-wave{ animation: letter-wave 2.6s ease-in-out infinite; display: inline-block; }
   .animate-gradient   {
     background-size: 200% 200%;

@@ -56,27 +56,23 @@ export function ProductCard({
         <div
           className={cn(
             "absolute inset-0 will-change-transform transition-transform duration-300 ease-out",
-            "[@media(hover:hover)]:group-hover:rotate-2 [@media(hover:hover)]:group-hover:scale-[1.05]",
+            "[@media(hover:hover)]:group-hover:rotate-2 [@media(hover:hover)]:group-hover:scale-[1.03]",
             "group-active:scale-[.98] group-active:duration-100",
           )}
         >
-          {/* Idle floating motion — separate layer so it doesn't fight the hover transform */}
-          <div className="absolute inset-0 animate-product-float will-change-transform">
-            <img
-              src={product.image}
-              alt={product.name}
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)]"
-              style={{
-                transform: `translate3d(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%, 0) scale(${product.imageScale ?? 1.75})`,
-                transformOrigin: "center",
-              }}
-            />
-          </div>
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)]"
+            style={{
+              transform: `translate3d(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%, 0) scale(${product.imageScale ?? 1.5})`,
+              transformOrigin: "center",
+            }}
+          />
         </div>
-
 
 
         {/* Badge sticker tilted */}
