@@ -628,6 +628,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      redeem_loyalty_coupon: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          id: string
+        }[]
+      }
+      validate_loyalty_coupon: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
