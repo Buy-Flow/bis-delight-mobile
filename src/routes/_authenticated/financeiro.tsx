@@ -948,3 +948,69 @@ function ModeSplit({
     </div>
   );
 }
+
+function Heatmap({
+  grid,
+  revGrid,
+  hours,
+  max,
+}: {
+  grid: number[][];
+  revGrid: number[][];
+  hours: number[];
+  max: number;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-[560px]">
+        {/* Header */}
+        <div
+          className="grid gap-1 text-[9px] uppercase tracking-widest text-white/40"
+          style={{ gridTemplateColumns: `36px repeat(${hours.length}, minmax(0,1fr))` }}
+        >
+          <div />
+          {hours.map((h) => (
+            <div key={h} className="text-center">
+              {String(h).padStart(2, "0")}
+            </div>
+          ))}
+        </div>
+        {/* Rows */}
+        <div className="mt-1 space-y-1">
+          {DOW.map((label, dow) => (
+            <div
+              key={dow}
+              className="grid gap-1"
+              style={{ gridTemplateColumns: `36px repeat(${hours.length}, minmax(0,1fr))` }}
+            >
+              <div className="flex items-center text-[10px] font-bold uppercase text-white/60">{label}</div>
+              {hours.map((h) => {
+                const c = grid[dow][h];
+                const rev = revGrid[dow][h];
+                const a = c === 0 ? 0 : 0.08 + (c / max) * 0.85;
+                return (
+                  <div
+                    key={h}
+                    title={
+                      c === 0
+                        ? `${label} ${String(h).padStart(2, "0")}h · sem pedidos`
+                        : `${label} ${String(h).padStart(2, "0")}h · ${c} pedidos · ${brl(rev)}`
+                    }
+                    className="grid aspect-square place-items-center rounded-md border border-white/5 text-[9px] font-bold text-white/90 transition-transform hover:scale-110"
+                    style={{
+                      background: c === 0 ? "rgba(255,255,255,0.02)" : `rgba(236,72,153,${a})`,
+                      boxShadow: c > 0 ? `0 0 8px -4px rgba(236,72,153,${a})` : undefined,
+                    }}
+                  >
+                    {c > 0 ? c : ""}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
