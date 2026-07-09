@@ -147,10 +147,13 @@ export function OrdersTab() {
       .channel("orders-admin")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => load())
       .subscribe();
+    const interval = setInterval(() => load(), 15000);
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, []);
+
 
   const filtered = useMemo(() => {
     if (!orders) return [];
