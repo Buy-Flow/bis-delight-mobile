@@ -568,6 +568,7 @@ function buildMessage(o: {
   mode: Mode;
   fee: number;
   total: number;
+  coupon: { code: string; discount: number } | null;
 }) {
   const L: string[] = [];
   L.push("*🍧 NOVO PEDIDO — QUERO BIS*");
