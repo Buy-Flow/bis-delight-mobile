@@ -406,14 +406,25 @@ function ClientesDashboard() {
         ) : (
           <ul className="divide-y divide-purple-900/40">
             {filtered.map((r) => (
-              <ClientRowItem key={r.id} row={r} currentMonth={currentMonth} />
+              <ClientRowItem
+                key={r.id}
+                row={r}
+                currentMonth={currentMonth}
+                onOpen={() => setSelectedId(r.id)}
+              />
             ))}
           </ul>
         )}
       </div>
+
+      <ClientDetailDialog
+        client={rows.find((r) => r.id === selectedId) ?? null}
+        onClose={() => setSelectedId(null)}
+      />
     </div>
   );
 }
+
 
 function ClientRowItem({ row, currentMonth }: { row: ClientRow; currentMonth: number }) {
   const bday = formatBirthday(row.birthday);
