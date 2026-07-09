@@ -684,9 +684,9 @@ function ClientDetailDialog({
     const topMode =
       [...modeCount.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
-    // Produto mais pedido (por qtd)
+    // Produto mais pedido (somente pedidos pagos)
     const prodCount = new Map<string, number>();
-    for (const o of orders) {
+    for (const o of paid) {
       for (const it of o.order_items ?? []) {
         prodCount.set(it.name, (prodCount.get(it.name) ?? 0) + (it.quantity ?? 1));
       }
@@ -695,7 +695,12 @@ function ClientDetailDialog({
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
 
-    return { paidCount: paid.length, avg, topMode, topProducts };
+    // Histórico visível: apenas entregues e cancelados
+    const historyOrders = orders.filter(
+      (o) => o.status === "entregue" || o.status === "cancelado",
+    );
+
+    return { paidCount: paid.length, avg, topMode, topProducts, historyOrders };
   }, [data]);
 
   const waNumber = onlyDigits(client?.phone);
