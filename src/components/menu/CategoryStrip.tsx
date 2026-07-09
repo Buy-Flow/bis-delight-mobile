@@ -99,28 +99,30 @@ export function CategoryChip({
   const CustomIcon = getCategoryIcon(category.icon);
   const Icon = CustomIcon ?? accent.icon;
   return (
-    <button
-      type="button"
-      tabIndex={-1}
-      onPointerDown={(e) => e.preventDefault()}
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={(e) => {
-        e.preventDefault();
-        (e.currentTarget as HTMLButtonElement).blur();
-        onClick?.();
-      }}
-      aria-pressed={active}
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        tabIndex={-1}
+        onPointerDown={(e) => e.preventDefault()}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={(e) => {
+          e.preventDefault();
+          (e.currentTarget as HTMLButtonElement).blur();
+          onClick?.();
+        }}
+        aria-pressed={active}
 
-      className={cn(
-        "group relative shrink-0 w-[72px] h-[104px] rounded-[16px]",
-        "transition-all duration-300 active:scale-95 hover:-translate-y-0.5",
-        active && `${accent.glow} scale-[1.03]`,
-      )}
-      style={{
-        boxShadow:
-          "0 8px 16px -8px rgba(0,0,0,0.7), 0 2px 6px -2px rgba(0,0,0,0.5)",
-      }}
-    >
+        className={cn(
+          "group relative shrink-0 w-[72px] h-[104px] rounded-[16px]",
+          "transition-all duration-300 active:scale-95 hover:-translate-y-0.5",
+          active && `${accent.glow} scale-[1.03]`,
+        )}
+        style={{
+          boxShadow:
+            "0 8px 16px -8px rgba(0,0,0,0.7), 0 2px 6px -2px rgba(0,0,0,0.5)",
+        }}
+      >
+
       <div
         className={cn(
           "relative h-full w-full overflow-hidden rounded-[14px] transition-all duration-300",
