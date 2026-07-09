@@ -161,7 +161,7 @@ export function Hero({
           className="mt-3 text-[14px] leading-snug text-white/75"
           style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400 }}
         >
-          Qualidade{" "}
+          Sabor{" "}
           <span className="font-bold text-neon-yellow">irresistível</span>
           <br />
           para o seu dia.
