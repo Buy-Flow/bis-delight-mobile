@@ -320,253 +320,443 @@ export function ProductModal({
         className="absolute inset-0 bg-black/70 animate-in fade-in duration-150"
         onClick={onClose}
       />
-      <div className="absolute inset-x-0 bottom-0 top-[8vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+      <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[40px] bg-[oklch(0.18_0.11_305)] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
 
-        {/* Header — colapsável para dar mais espaço à personalização */}
+        {/* HERO — imagem em bleed com gradiente descendo */}
         <div
           className={cn(
             "relative shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
-            collapsed ? "h-[72px]" : "h-[220px]",
+            collapsed ? "h-[72px]" : "h-64",
           )}
         >
-          <div className="absolute inset-0 noise-purple" />
-          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_55%,oklch(0.86_0.18_200_/_0.35),transparent_65%)]" />
           {!collapsed && (
-            <img
-              src={product.image}
-              alt={product.name}
-              className="absolute left-1/2 -top-2 h-[200px] w-[100%] max-w-none -translate-x-1/2 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.55)] animate-float-slow"
-            />
+            <>
+              <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_45%,oklch(0.72_0.26_350_/_0.35),transparent_70%)]" />
+              <img
+                src={product.image}
+                alt={product.name}
+                className="absolute inset-0 h-full w-full object-contain p-6 drop-shadow-[0_20px_30px_rgba(0,0,0,0.55)] animate-float-slow"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/60 to-transparent" />
+            </>
           )}
 
-          {/* Controles no topo */}
-          <div className="absolute left-3 top-3 z-10 flex items-center gap-2">
-            <button
-              onClick={() => setCollapsed((v) => !v)}
-              aria-label={collapsed ? "Expandir imagem" : "Minimizar imagem"}
-              className="grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-sm active:scale-95"
-            >
-              <ChevronsUpDown className="h-5 w-5" />
-            </button>
-            <FavoriteButton
-              productId={product.id}
-              className="h-10 w-10 bg-black/50 backdrop-blur-sm"
-            />
-          </div>
-
+          {/* Close no canto esquerdo (padrão do protótipo) */}
           <button
             onClick={onClose}
             aria-label="Fechar"
-            className="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-sm active:scale-95"
+            className="absolute left-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
           >
             <X className="h-5 w-5" />
           </button>
-          <div
-            className={cn(
-              "absolute inset-x-0 bottom-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/70 to-transparent px-4 pb-3",
-              collapsed ? "pt-2" : "pt-8",
-            )}
-          >
-            {!collapsed && (
-              <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
-                <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize o seu"}
-              </div>
-            )}
-            <h2
-              className={cn(
-                "font-display font-extrabold text-neon-yellow glow-yellow-text leading-none",
-                collapsed ? "text-lg" : "text-3xl",
-              )}
+
+          {/* Ações do lado direito */}
+          <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+            <FavoriteButton
+              productId={product.id}
+              className="h-10 w-10 border border-white/20 bg-black/40 backdrop-blur-md"
+            />
+            <button
+              onClick={() => setCollapsed((v) => !v)}
+              aria-label={collapsed ? "Expandir imagem" : "Minimizar imagem"}
+              className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
             >
-              {product.name}
-            </h2>
-            {!collapsed && (
-              <p className="mt-1 text-[12px] text-white/70">{product.description}</p>
-            )}
+              <ChevronsUpDown className="h-5 w-5" />
+            </button>
           </div>
+
+          {collapsed && (
+            <div className="absolute inset-0 flex items-center px-16">
+              <h2 className="font-display text-xl font-extrabold uppercase tracking-tight text-white truncate">
+                {product.name}
+              </h2>
+            </div>
+          )}
         </div>
 
-
-
-
         {/* Scroll body */}
-        <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
+        <div className="flex-1 overflow-y-auto px-6 pb-40">
+          {!collapsed && (
+            <div className="-mt-8 relative z-10 mb-6">
+              <h2
+                className="font-display text-4xl font-extrabold uppercase tracking-tight leading-[0.9] text-white"
+                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+              >
+                {product.name.split(" ")[0]}
+                {product.name.split(" ").length > 1 && (
+                  <span className="block text-neon-pink glow-pink-text">
+                    {product.name.split(" ").slice(1).join(" ")}
+                  </span>
+                )}
+              </h2>
+              {product.description && (
+                <p className="mt-2 max-w-[85%] text-[13px] text-white/60">
+                  {product.description}
+                </p>
+              )}
+              <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
+                <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize"}
+              </div>
+            </div>
+          )}
+
           {isCustom ? (
-            <>
+            <div className="space-y-8">
               {optionGroups.map((g, gi) => {
                 const picked = groupSel[g.id] ?? [];
                 const free = g.freeCount ?? 0;
                 const extraFee = g.pricePerExtra ?? 0;
-                const hint =
-                  g.type === "single"
-                    ? g.required ? "Escolha 1" : "Opcional"
-                    : free > 0
-                      ? `${free} grátis${extraFee > 0 ? ` · +${brl(extraFee)} cada extra` : ""}`
-                      : "Adicione o que quiser";
+                const isSingle = g.type === "single";
+                const hint = isSingle
+                  ? g.required ? "Obrigatório" : "Opcional"
+                  : free > 0
+                    ? `até ${free} grátis`
+                    : "escolha o que quiser";
                 return (
-                  <Section
-                    key={g.id}
-                    title={`${gi + 1}. ${g.name}`}
-                    hint={hint}
-                  >
-                    <div className="flex flex-col gap-2">
-                      {g.options.map((o) => {
-                        const on = picked.includes(o.id);
-                        const idx = picked.indexOf(o.id);
-                        const isExtraCharged =
-                          g.type === "multi" && extraFee > 0 && on && idx >= free;
-                        const priceLabel =
-                          o.price > 0
-                            ? `+${brl(o.price)}`
-                            : isExtraCharged
-                              ? `+${brl(extraFee)}`
-                              : "";
-                        return (
-                          <Chip
-                            key={o.id}
-                            small
-                            active={on}
-                            onClick={() => toggleGroup(g, o.id)}
-                            className="w-full justify-between"
-                          >
-                            <span className="mr-1">{o.label}</span>
-                            {priceLabel && (
-                              <span className="text-[11px] text-white/60">{priceLabel}</span>
-                            )}
-                          </Chip>
-                        );
-                      })}
+                  <div key={g.id}>
+                    <div className="mb-3 flex items-end justify-between gap-3">
+                      <h3
+                        className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                        style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                      >
+                        {gi + 1}. {g.name}
+                      </h3>
+                      {isSingle && g.required ? (
+                        <span className="rounded-full bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-pink">
+                          Obrigatório
+                        </span>
+                      ) : (
+                        <span
+                          className="text-lg text-white/40"
+                          style={{ fontFamily: "'Caveat', cursive" }}
+                        >
+                          {hint}
+                        </span>
+                      )}
                     </div>
-                  </Section>
+
+                    {isSingle ? (
+                      <div className="grid grid-cols-3 gap-3">
+                        {g.options.map((o) => {
+                          const on = picked.includes(o.id);
+                          return (
+                            <button
+                              key={o.id}
+                              onClick={() => toggleGroup(g, o.id)}
+                              className={cn(
+                                "rounded-2xl border p-3 text-center transition-all",
+                                on
+                                  ? "border-neon-pink bg-neon-pink/10 shadow-[0_0_15px_rgba(255,46,147,0.2)]"
+                                  : "border-white/10 bg-white/5",
+                              )}
+                            >
+                              <span
+                                className="block font-display text-base font-extrabold uppercase leading-tight text-white"
+                                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                              >
+                                {o.label}
+                              </span>
+                              {o.price > 0 && (
+                                <span className="mt-0.5 block text-[10px] font-bold uppercase text-white/40">
+                                  +{brl(o.price)}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {g.options.map((o) => {
+                          const on = picked.includes(o.id);
+                          const idx = picked.indexOf(o.id);
+                          const isExtraCharged = extraFee > 0 && on && idx >= free;
+                          const priceLabel =
+                            o.price > 0
+                              ? `+ ${brl(o.price)}`
+                              : isExtraCharged
+                                ? `+ ${brl(extraFee)}`
+                                : "Grátis";
+                          const priceColor =
+                            o.price > 0 || isExtraCharged ? "text-neon-pink" : "text-neon-cyan";
+                          return (
+                            <ComplementRow
+                              key={o.id}
+                              active={on}
+                              onClick={() => toggleGroup(g, o.id)}
+                              label={o.label}
+                              price={priceLabel}
+                              priceColor={priceColor}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
-            </>
-
+            </div>
           ) : (
-            <>
+            <div className="space-y-8">
               {productSizes.length > 1 && (
-                <Section title="Tamanho">
-                  <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <div className="mb-3 flex items-end justify-between">
+                    <h3
+                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    >
+                      Escolha o Tamanho
+                    </h3>
+                    <span className="rounded-full bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-pink">
+                      Obrigatório
+                    </span>
+                  </div>
+                  <div className={cn(
+                    "grid gap-3",
+                    productSizes.length >= 3 ? "grid-cols-3" : "grid-cols-2",
+                  )}>
                     {productSizes.map((s) => {
                       const active = s.id === sizeId;
                       return (
-                        <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
-                          <div className="flex flex-col items-center">
-                            <span className="text-sm font-extrabold">{s.label}</span>
-                            {s.priceDelta > 0 && (
-                              <span className="text-[11px] text-white/60">
-                                +{brl(s.priceDelta)}
-                              </span>
-                            )}
-                          </div>
-                        </Chip>
+                        <button
+                          key={s.id}
+                          onClick={() => setSizeId(s.id)}
+                          className={cn(
+                            "rounded-2xl border p-3 text-center transition-all",
+                            active
+                              ? "border-neon-pink bg-neon-pink/10 shadow-[0_0_15px_rgba(255,46,147,0.2)]"
+                              : "border-white/10 bg-white/5",
+                          )}
+                        >
+                          <span
+                            className="block font-display text-lg font-extrabold uppercase leading-none text-white"
+                            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                          >
+                            {s.label}
+                          </span>
+                          {s.priceDelta > 0 && (
+                            <span className="mt-1 block text-[10px] font-bold uppercase text-white/40">
+                              +{brl(s.priceDelta)}
+                            </span>
+                          )}
+                        </button>
                       );
                     })}
                   </div>
-                </Section>
+                </div>
               )}
 
               {flavorList && (
-                <Section title="Sabor">
-                  <div className="grid grid-cols-2 gap-2">
-                    {flavorList.map((f) => (
-                      <Chip key={f} active={f === flavor} onClick={() => setFlavor(f)}>
-                        <span className="text-sm font-bold">{f}</span>
-                      </Chip>
-                    ))}
+                <div>
+                  <div className="mb-3 flex items-end justify-between">
+                    <h3
+                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    >
+                      Sabor
+                    </h3>
+                    <span
+                      className="text-lg text-white/40"
+                      style={{ fontFamily: "'Caveat', cursive" }}
+                    >
+                      escolha 1
+                    </span>
                   </div>
-                </Section>
-              )}
-
-              {availableExtras.length > 0 && (
-                <Section title="Complementos" hint="Adicione o que quiser">
-                  <div className="flex flex-col gap-2">
-                    {availableExtras.map((e) => {
-                      const on = extras.includes(e.id);
+                  <div className="grid grid-cols-2 gap-2">
+                    {flavorList.map((f) => {
+                      const on = f === flavor;
                       return (
-                        <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)} className="w-full justify-between">
-                          <span className="mr-1">{e.label}</span>
-                          {e.price > 0 && (
-                            <span className="text-[11px] text-white/60">+{brl(e.price)}</span>
+                        <button
+                          key={f}
+                          onClick={() => setFlavor(f)}
+                          className={cn(
+                            "rounded-2xl border px-3 py-3 text-sm font-bold transition-all",
+                            on
+                              ? "border-neon-pink bg-neon-pink/10 text-white shadow-[0_0_15px_rgba(255,46,147,0.15)]"
+                              : "border-white/10 bg-white/5 text-white/80",
                           )}
-                        </Chip>
+                        >
+                          {f}
+                        </button>
                       );
                     })}
                   </div>
-                </Section>
+                </div>
+              )}
+
+              {availableExtras.length > 0 && (
+                <div>
+                  <div className="mb-3 flex items-end justify-between gap-3">
+                    <h3
+                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    >
+                      Complementos
+                    </h3>
+                    <span
+                      className="text-lg text-white/40"
+                      style={{ fontFamily: "'Caveat', cursive" }}
+                    >
+                      adicione o que quiser
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {availableExtras.map((e) => {
+                      const on = extras.includes(e.id);
+                      return (
+                        <ComplementRow
+                          key={e.id}
+                          active={on}
+                          onClick={() => toggleExtra(e.id)}
+                          label={e.label}
+                          price={e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
+                          priceColor={e.price > 0 ? "text-neon-pink" : "text-neon-cyan"}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
               )}
 
               {removableList.length > 0 && (
-                <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
+                <div>
+                  <div className="mb-3 flex items-end justify-between">
+                    <h3
+                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    >
+                      Remover
+                    </h3>
+                    <span
+                      className="text-lg text-white/40"
+                      style={{ fontFamily: "'Caveat', cursive" }}
+                    >
+                      toque para tirar
+                    </span>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {removableList.map((r) => {
                       const off = removed.includes(r);
                       return (
-                        <Chip
+                        <button
                           key={r}
-                          small
-                          active={off}
-                          variant="pink"
                           onClick={() => toggleRemoved(r)}
+                          className={cn(
+                            "rounded-full border px-3 py-2 text-[13px] font-bold transition-all",
+                            off
+                              ? "border-neon-pink bg-neon-pink/15 text-white line-through decoration-neon-pink"
+                              : "border-white/10 bg-white/5 text-white/80",
+                          )}
                         >
                           {off ? `Sem ${r}` : r}
-                        </Chip>
+                        </button>
                       );
                     })}
                   </div>
-                </Section>
+                </div>
               )}
-            </>
+            </div>
           )}
 
-
-          <Section title="Observação">
+          <div className="mt-8">
+            <h3
+              className="mb-3 font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+            >
+              Observação
+            </h3>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Ex.: caprichar na calda, sem gelo…"
-              className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
+              className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
               rows={3}
             />
-          </Section>
+          </div>
 
-          <div className="h-8" />
+          <div className="h-6" />
         </div>
 
-        {/* Sticky footer */}
-        <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-          <div className="flex items-center gap-2">
-            <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+        {/* Footer — quantidade + CTA gradiente pink */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center rounded-2xl border border-white/10 bg-white/10 p-1">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
                 aria-label="Diminuir"
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white active:scale-95"
+                className="grid h-10 w-10 place-items-center text-white/60 active:scale-95"
               >
                 <Minus className="h-4 w-4" />
               </button>
-              <div className="w-6 text-center text-base font-bold text-white">{qty}</div>
+              <span className="w-6 text-center text-base font-bold text-white">{qty}</span>
               <button
                 onClick={() => setQty(qty + 1)}
                 aria-label="Aumentar"
-                className="grid h-9 w-9 place-items-center rounded-full bg-neon-cyan text-[oklch(0.18_0.11_305)] active:scale-95"
+                className="grid h-10 w-10 place-items-center text-neon-cyan active:scale-95"
               >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
             <button
               onClick={submit}
-              className="flex-1 rounded-2xl bg-neon-pink px-4 py-3 text-base font-extrabold text-white glow-pink touch-manipulation [-webkit-tap-highlight-color:transparent] will-change-transform transition-transform duration-100 ease-out active:scale-[.97]"
+              className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97]"
             >
-              {brl(total)}
+              <span
+                className="font-display text-lg font-bold uppercase tracking-wider text-white"
+                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+              >
+                Adicionar
+              </span>
+              <span className="text-base font-extrabold text-white">{brl(total)}</span>
             </button>
           </div>
         </div>
-
-
       </div>
     </div>
   );
 }
+
+function ComplementRow({
+  active,
+  onClick,
+  label,
+  price,
+  priceColor,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  price: string;
+  priceColor: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex w-full items-center justify-between rounded-2xl border p-4 text-left transition-all",
+        active
+          ? "border-neon-cyan bg-neon-cyan/10 shadow-[0_0_15px_rgba(0,229,255,0.15)]"
+          : "border-white/5 bg-white/5",
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          className={cn(
+            "grid h-5 w-5 shrink-0 place-items-center rounded border-2 transition-all",
+            active
+              ? "border-neon-cyan bg-neon-cyan"
+              : "border-white/30 bg-transparent",
+          )}
+        >
+          {active && <Check className="h-3.5 w-3.5 text-[oklch(0.18_0.11_305)]" strokeWidth={3.5} />}
+        </span>
+        <span className="text-[15px] font-medium text-white">{label}</span>
+      </div>
+      <span className={cn("text-sm font-bold shrink-0", priceColor)}>{price}</span>
+    </button>
+  );
+}
+
 
 function Section({
   title,
