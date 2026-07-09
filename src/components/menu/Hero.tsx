@@ -1,5 +1,7 @@
 import { useSiteSettings } from "@/lib/menu-data";
 import { type HeroImagesConfig } from "@/lib/menu-data";
+import { AdminEditButton } from "./AdminEditButton";
+
 
 export function Hero({
   onScrollMenu,
