@@ -440,16 +440,8 @@ export function ProductModal({
                   </Section>
                 );
               })}
-              <Section title="Observação">
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Ex.: caprichar na calda, sem gelo…"
-                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-                  rows={3}
-                />
-              </Section>
             </>
+
           ) : (
             <>
               {productSizes.length > 1 && (
