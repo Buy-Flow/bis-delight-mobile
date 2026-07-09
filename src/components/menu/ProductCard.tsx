@@ -108,6 +108,22 @@ export function ProductCard({
           <FavoriteButton productId={product.id} />
         </div>
 
+        {/* Admin edit button top-left (opposite the heart) */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate({ to: "/admin", search: { edit: product.id } });
+            }}
+            aria-label="Editar produto no painel"
+            className="absolute left-2 top-2 z-20 grid h-8 w-8 place-items-center rounded-full border border-neon-cyan/40 bg-black/50 text-neon-cyan backdrop-blur transition hover:bg-neon-cyan hover:text-black active:scale-95"
+          >
+            <Pencil className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+        )}
+
+
 
         {/* Wavy divider on bottom */}
         <svg
