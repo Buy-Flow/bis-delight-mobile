@@ -397,8 +397,8 @@ export function ProductModal({
                 <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize"}
               </div>
               <h2
-                className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight leading-[1.05] text-neon-yellow drop-shadow-[0_0_18px_rgba(253,224,71,0.35)] pb-1 break-words"
-                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                className="text-3xl sm:text-4xl font-bold leading-[1.05] text-neon-yellow drop-shadow-[0_0_18px_rgba(253,224,71,0.35)] pb-1 break-words"
+                style={{ fontFamily: "'Fredoka', 'Poppins', sans-serif" }}
               >
                 {product.name}
               </h2>
