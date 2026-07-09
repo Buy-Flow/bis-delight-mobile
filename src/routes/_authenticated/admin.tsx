@@ -90,9 +90,14 @@ import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    edit: typeof search.edit === "string" ? search.edit : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const validTabs = ["products", "categories", "highlights", "extras", "news", "settings"] as const;
+    const rawTab = typeof search.tab === "string" ? search.tab : undefined;
+    return {
+      edit: typeof search.edit === "string" ? search.edit : undefined,
+      tab: (validTabs as readonly string[]).includes(rawTab ?? "") ? (rawTab as Tab) : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Admin — Painel Quero Bis" },
@@ -106,9 +111,10 @@ type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "setti
 
 function AdminPage() {
   const navigate = useNavigate();
-  const { edit: editProductId } = Route.useSearch();
+  const { edit: editProductId, tab: tabParam } = Route.useSearch();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>(editProductId ? "products" : "products");
+  const [tab, setTab] = useState<Tab>(tabParam ?? "products");
+
 
 
   const signOut = async () => {
