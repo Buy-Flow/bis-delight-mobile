@@ -552,7 +552,7 @@ function KpiCard({
   value,
   tint,
 }: {
-  icon: (props: { className?: string }) => JSX.Element;
+  icon: import("lucide-react").LucideIcon;
   label: string;
   value: string;
   tint: string;
@@ -1046,7 +1046,7 @@ function MiniStat({
   value,
   tint,
 }: {
-  icon: (props: { className?: string }) => JSX.Element;
+  icon: import("lucide-react").LucideIcon;
   label: string;
   value: string;
   tint: string;
