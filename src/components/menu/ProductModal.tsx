@@ -598,12 +598,12 @@ export function ProductModal({
                                 price={priceLabel}
                                 priceColor={priceColor}
                               />
-                              {on && unitP > 0 && (
+                              {on && getOptRepeatBase(g, o) > 0 && (
                                 <div className="mx-4 mb-3 flex items-center justify-between border-t border-white/10 pt-3">
                                   <div className="text-[11px] font-semibold uppercase tracking-wider text-neon-cyan/90">
                                     +unidade{" "}
                                     <span className="text-white/60">
-                                      50% off ({brl(unitP * 0.5)})
+                                      50% off ({brl(getOptRepeatBase(g, o) * 0.5)})
                                     </span>
                                   </div>
                                   <div className="flex items-center rounded-full border border-white/15 bg-black/30 p-1">
@@ -627,6 +627,7 @@ export function ProductModal({
                                   </div>
                                 </div>
                               )}
+
                             </div>
                           );
                         })}
