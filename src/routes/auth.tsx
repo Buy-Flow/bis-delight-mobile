@@ -11,6 +11,8 @@ import {
   Lock,
   User as UserIcon,
   Phone,
+  Cake,
+
   Eye,
   EyeOff,
   Award,
@@ -48,6 +50,8 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthday, setBirthday] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -67,7 +71,7 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin + next,
-            data: { full_name: fullName, phone },
+            data: { full_name: fullName, phone, birthday: birthday || null },
           },
         });
         if (error) throw error;
@@ -227,7 +231,20 @@ function AuthPage() {
                       className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
                     />
                   </Field>
+                  <Field icon={Cake}>
+                    <input
+                      type="date"
+                      required
+                      autoComplete="bday"
+                      value={birthday}
+                      onChange={(e) => setBirthday(e.target.value)}
+                      max={new Date().toISOString().slice(0, 10)}
+                      placeholder="Data de aniversário"
+                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none [color-scheme:dark]"
+                    />
+                  </Field>
                 </>
+
               )}
               <Field icon={Mail}>
                 <input
