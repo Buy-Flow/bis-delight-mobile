@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart-context";
 import { ConfirmDialogHost } from "@/lib/confirm";
+import { InstallPWAButton } from "@/components/InstallPWAButton";
 import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
@@ -254,8 +255,10 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <ConfirmDialogHost />
+        <InstallPWAButton />
       </CartProvider>
     </QueryClientProvider>
+
 
 
   );
