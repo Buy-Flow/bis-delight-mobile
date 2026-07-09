@@ -428,7 +428,7 @@ export function ProductModal({
         <div
           className={cn(
             "relative z-10 shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
-            collapsed ? "h-[72px]" : "h-44",
+            collapsed ? "h-[72px]" : "h-32",
           )}
         >
           {!collapsed && (
