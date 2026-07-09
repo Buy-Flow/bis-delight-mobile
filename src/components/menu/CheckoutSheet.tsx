@@ -593,6 +593,7 @@ function buildMessage(o: {
   });
   L.push("");
   if (o.fee > 0) L.push(`Taxa de entrega: ${brl(o.fee)}`);
+  if (o.coupon) L.push(`🎟️ Cupom ${o.coupon.code}: −${brl(o.coupon.discount)}`);
   L.push(`*TOTAL: ${brl(o.total)}*`);
   if (o.note) {
     L.push("");
