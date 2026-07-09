@@ -726,7 +726,25 @@ export function ProductModal({
                           </div>
                         );
                       })}
+
+                      {/* Promo explanation */}
+                      <div className="mt-2 flex items-stretch gap-2 rounded-2xl border border-neon-cyan/30 bg-gradient-to-br from-neon-cyan/10 to-neon-pink/10 p-3">
+                        <div className="flex flex-col items-center justify-center rounded-xl bg-black/30 px-3">
+                          <Sparkles className="h-4 w-4 text-neon-yellow" />
+                        </div>
+                        <div className="flex-1 space-y-1.5 text-[12px] leading-snug text-white/85">
+                          <div className="flex items-center gap-2">
+                            <span className="grid h-5 w-5 place-items-center rounded-full bg-neon-cyan text-[10px] font-black text-black">1</span>
+                            <span><b className="text-white">1ª unidade</b> — preço cheio (100%)</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="grid h-5 w-5 place-items-center rounded-full bg-neon-pink text-[10px] font-black text-white">%</span>
+                            <span><b className="text-neon-pink">Repetiu?</b> as próximas saem com <b>50% off</b></span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+
 
                   ),
                 });
