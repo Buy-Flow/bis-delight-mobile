@@ -127,9 +127,13 @@ export function ProductModal({
     };
   };
 
+  const FALLBACK_SIZE = { id: "u", label: "Único", priceDelta: 0 };
+  const getSizes = (p: Product | null) =>
+    p && p.sizes && p.sizes.length > 0 ? p.sizes : [FALLBACK_SIZE];
+
   const seed = product ? initialFromEdit(product) : null;
   const [sizeId, setSizeId] = useState<string>(
-    seed?.sizeId ?? product?.sizes[0]?.id ?? "u",
+    seed?.sizeId ?? getSizes(product)[0].id,
   );
   const [flavor, setFlavor] = useState<string | undefined>(
     seed?.flavor ?? product?.flavors?.[0],
@@ -143,7 +147,7 @@ export function ProductModal({
   useMemo(() => {
     if (product) {
       const s = initialFromEdit(product);
-      setSizeId(s?.sizeId ?? product.sizes[0]?.id ?? "u");
+      setSizeId(s?.sizeId ?? getSizes(product)[0].id);
       setFlavor(s?.flavor ?? product.flavors?.[0]);
       setExtras(s?.extras ?? []);
       setRemoved(s?.removed ?? []);
@@ -157,10 +161,11 @@ export function ProductModal({
   // Rich customization pools with sensible fallbacks per category
   const availableExtras = resolveExtras(product);
 
+  const ingredientsList: string[] = product.ingredients ?? [];
   const removableList: string[] =
     product.removable && product.removable.length > 0
       ? product.removable
-      : product.ingredients.filter((i) => i.toLowerCase() !== "açaí");
+      : ingredientsList.filter((i) => i.toLowerCase() !== "açaí");
   const flavorList: string[] | undefined =
     product.flavors && product.flavors.length > 0
       ? product.flavors
@@ -168,7 +173,8 @@ export function ProductModal({
         ? ["Chocolate", "Morango", "Baunilha", "Ninho", "Flocos", "Ovomaltine", "Doce de Leite"]
         : undefined;
 
-  const size = product.sizes.find((s) => s.id === sizeId) ?? product.sizes[0];
+  const productSizes = getSizes(product);
+  const size = productSizes.find((s) => s.id === sizeId) ?? productSizes[0];
   const extrasSelected = availableExtras.filter((e) => extras.includes(e.id));
   const extrasPrice = extrasSelected.reduce((s, e) => s + e.price, 0);
   const unit = product.basePrice + size.priceDelta + extrasPrice;
@@ -280,25 +286,27 @@ export function ProductModal({
 
         {/* Scroll body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
-          <Section title="Tamanho">
-            <div className="grid grid-cols-2 gap-2">
-              {product.sizes.map((s) => {
-                const active = s.id === sizeId;
-                return (
-                  <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
-                    <div className="flex flex-col items-center">
-                      <span className="text-sm font-extrabold">{s.label}</span>
-                      {s.priceDelta > 0 && (
-                        <span className="text-[11px] text-white/60">
-                          +{brl(s.priceDelta)}
-                        </span>
-                      )}
-                    </div>
-                  </Chip>
-                );
-              })}
-            </div>
-          </Section>
+          {productSizes.length > 1 && (
+            <Section title="Tamanho">
+              <div className="grid grid-cols-2 gap-2">
+                {productSizes.map((s) => {
+                  const active = s.id === sizeId;
+                  return (
+                    <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
+                      <div className="flex flex-col items-center">
+                        <span className="text-sm font-extrabold">{s.label}</span>
+                        {s.priceDelta > 0 && (
+                          <span className="text-[11px] text-white/60">
+                            +{brl(s.priceDelta)}
+                          </span>
+                        )}
+                      </div>
+                    </Chip>
+                  );
+                })}
+              </div>
+            </Section>
+          )}
 
           {flavorList && (
             <Section title="Sabor">
