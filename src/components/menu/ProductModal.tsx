@@ -350,12 +350,15 @@ export function ProductModal({
         const free = g.freeCount ?? 0;
         const extra = g.pricePerExtra ?? 0;
         picked.forEach((o, idx) => {
-          const feeShare = extra > 0 && idx >= free ? extra : 0;
+          const unitP = getOptUnitPrice(g, o, idx);
+          const q = groupQty[g.id]?.[o.id] ?? 1;
+          const linePrice = unitP + unitP * 0.5 * Math.max(0, q - 1);
           groupExtras.push({
-            label: `${g.name}: ${o.label}`,
-            price: (o.price || 0) + feeShare,
+            label: q > 1 ? `${g.name}: ${o.label} x${q}` : `${g.name}: ${o.label}`,
+            price: linePrice,
           });
         });
+
       }
       const payload = {
         productId: product.id,
