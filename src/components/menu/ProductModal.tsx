@@ -144,6 +144,25 @@ export function ProductModal({
   const [note, setNote] = useState(seed?.note ?? "");
   const [collapsed, setCollapsed] = useState(false);
 
+  // Option groups (produtos personalizados: monte seu açaí, etc.)
+  const initialGroupSel = (p: Product | null): Record<string, string[]> => {
+    const out: Record<string, string[]> = {};
+    const groups = p?.optionGroups ?? [];
+    for (const g of groups) {
+      if (g.type === "single") {
+        if (g.required && g.options[0]) out[g.id] = [g.options[0].id];
+        else out[g.id] = [];
+      } else {
+        const free = g.freeCount ?? 0;
+        out[g.id] = free > 0 ? g.options.slice(0, free).map((o) => o.id) : [];
+      }
+    }
+    return out;
+  };
+  const [groupSel, setGroupSel] = useState<Record<string, string[]>>(
+    initialGroupSel(product),
+  );
+
   useMemo(() => {
     if (product) {
       const s = initialFromEdit(product);
@@ -153,6 +172,7 @@ export function ProductModal({
       setRemoved(s?.removed ?? []);
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
+      setGroupSel(initialGroupSel(product));
     }
   }, [product?.id, editItem?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -177,7 +197,29 @@ export function ProductModal({
   const size = productSizes.find((s) => s.id === sizeId) ?? productSizes[0];
   const extrasSelected = availableExtras.filter((e) => extras.includes(e.id));
   const extrasPrice = extrasSelected.reduce((s, e) => s + e.price, 0);
-  const unit = product.basePrice + size.priceDelta + extrasPrice;
+
+  // Modo personalizado: preço vem dos grupos, não de sizes/extras
+  const optionGroups: OptionGroup[] = product.optionGroups ?? [];
+  const isCustom = !!product.isCustom && optionGroups.length > 0;
+
+  const groupsUnit = (() => {
+    let t = 0;
+    for (const g of optionGroups) {
+      const picked = groupSel[g.id] ?? [];
+      const items = g.options.filter((o) => picked.includes(o.id));
+      t += items.reduce((s, o) => s + (o.price || 0), 0);
+      const free = g.freeCount ?? 0;
+      const extra = g.pricePerExtra ?? 0;
+      if (extra > 0 && picked.length > free) {
+        t += (picked.length - free) * extra;
+      }
+    }
+    return t;
+  })();
+
+  const unit = isCustom
+    ? groupsUnit
+    : product.basePrice + size.priceDelta + extrasPrice;
   const total = unit * qty;
 
 
@@ -185,8 +227,71 @@ export function ProductModal({
     setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const toggleRemoved = (name: string) =>
     setRemoved((prev) => (prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]));
+  const toggleGroup = (g: OptionGroup, optId: string) => {
+    setGroupSel((prev) => {
+      const cur = prev[g.id] ?? [];
+      if (g.type === "single") {
+        return {
+          ...prev,
+          [g.id]: cur[0] === optId ? (g.required ? cur : []) : [optId],
+        };
+      }
+      const has = cur.includes(optId);
+      return { ...prev, [g.id]: has ? cur.filter((x) => x !== optId) : [...cur, optId] };
+    });
+  };
+
+  const canSubmit = !isCustom
+    ? true
+    : optionGroups.every((g) => (!g.required ? true : (groupSel[g.id] ?? []).length > 0));
 
   const submit = () => {
+    if (isCustom) {
+      if (!canSubmit) {
+        toast.error("Escolha as opções obrigatórias.");
+        return;
+      }
+      const groupExtras: { label: string; price: number }[] = [];
+      let sizeLabel = "";
+      for (const g of optionGroups) {
+        const picked = (groupSel[g.id] ?? [])
+          .map((id) => g.options.find((o) => o.id === id))
+          .filter((o): o is OptionItem => !!o);
+        if (g.type === "single") {
+          if (picked[0]) sizeLabel = picked[0].label;
+          continue;
+        }
+        const free = g.freeCount ?? 0;
+        const extra = g.pricePerExtra ?? 0;
+        picked.forEach((o, idx) => {
+          const feeShare = extra > 0 && idx >= free ? extra : 0;
+          groupExtras.push({
+            label: `${g.name}: ${o.label}`,
+            price: (o.price || 0) + feeShare,
+          });
+        });
+      }
+      const payload = {
+        productId: product.id,
+        name: sizeLabel ? `${product.name} — ${sizeLabel}` : product.name,
+        image: product.image,
+        size: sizeLabel || undefined,
+        extras: groupExtras,
+        removed: [],
+        note: note.trim() || undefined,
+        quantity: qty,
+        unitPrice: unit,
+      };
+      if (editItem) {
+        update(editItem.uid, payload);
+        toast.success(`${product.name} atualizado!`);
+      } else {
+        add(payload);
+        toast.success(`${product.name} adicionado ao carrinho!`);
+      }
+      onClose();
+      return;
+    }
     const payload = {
       productId: product.id,
       name: product.name,
