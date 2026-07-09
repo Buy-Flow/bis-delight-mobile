@@ -286,25 +286,27 @@ export function ProductModal({
 
         {/* Scroll body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
-          <Section title="Tamanho">
-            <div className="grid grid-cols-2 gap-2">
-              {product.sizes.map((s) => {
-                const active = s.id === sizeId;
-                return (
-                  <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
-                    <div className="flex flex-col items-center">
-                      <span className="text-sm font-extrabold">{s.label}</span>
-                      {s.priceDelta > 0 && (
-                        <span className="text-[11px] text-white/60">
-                          +{brl(s.priceDelta)}
-                        </span>
-                      )}
-                    </div>
-                  </Chip>
-                );
-              })}
-            </div>
-          </Section>
+          {productSizes.length > 1 && (
+            <Section title="Tamanho">
+              <div className="grid grid-cols-2 gap-2">
+                {productSizes.map((s) => {
+                  const active = s.id === sizeId;
+                  return (
+                    <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
+                      <div className="flex flex-col items-center">
+                        <span className="text-sm font-extrabold">{s.label}</span>
+                        {s.priceDelta > 0 && (
+                          <span className="text-[11px] text-white/60">
+                            +{brl(s.priceDelta)}
+                          </span>
+                        )}
+                      </div>
+                    </Chip>
+                  );
+                })}
+              </div>
+            </Section>
+          )}
 
           {flavorList && (
             <Section title="Sabor">
