@@ -114,18 +114,28 @@ export function ProductModal({
     if (!editItem) return null;
     const pool = resolveExtras(p);
     const sizeMatch = p.sizes.find((s) => s.label === editItem.size)?.id;
-    const extraIds = pool
-      .filter((e) => editItem.extras.some((x) => x.label === e.label))
-      .map((e) => e.id);
+    const extraQty: Record<string, number> = {};
+    for (const e of pool) {
+      const n = editItem.extras.filter((x) => x.label === e.label || x.label.startsWith(`${e.label} x`)).length;
+      // If saved as "Label x3", parse count
+      const withCount = editItem.extras.find((x) => x.label.startsWith(`${e.label} x`));
+      if (withCount) {
+        const m = withCount.label.match(/x(\d+)$/);
+        extraQty[e.id] = m ? parseInt(m[1], 10) : 1;
+      } else if (n > 0) {
+        extraQty[e.id] = 1;
+      }
+    }
     return {
       sizeId: sizeMatch ?? p.sizes[0]?.id ?? "u",
       flavor: editItem.flavor ?? p.flavors?.[0],
-      extras: extraIds,
+      extras: extraQty,
       removed: editItem.removed ?? [],
       qty: editItem.quantity ?? 1,
       note: editItem.note ?? "",
     };
   };
+
 
   const FALLBACK_SIZE = { id: "u", label: "Único", priceDelta: 0 };
   const getSizes = (p: Product | null) =>
