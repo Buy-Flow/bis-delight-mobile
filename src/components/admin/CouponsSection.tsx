@@ -76,9 +76,9 @@ export function CouponsSection() {
   const remove = async (c: Coupon) => {
     const ok = await confirmDialog({
       title: `Excluir cupom ${c.code}?`,
-      description: "Esta ação não pode ser desfeita.",
-      confirmText: "Excluir",
-      danger: true,
+      message: "Esta ação não pode ser desfeita.",
+      confirmLabel: "Excluir",
+      tone: "danger",
     });
     if (!ok) return;
     const { error } = await supabase.from("promo_coupons").delete().eq("id", c.id);
