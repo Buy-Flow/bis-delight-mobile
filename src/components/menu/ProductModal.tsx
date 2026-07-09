@@ -907,7 +907,7 @@ export function ProductModal({
                       setStepIndex((i) => Math.min(totalSteps - 1, i + 1));
                     }}
                     disabled={!canAdvance}
-                    className="flex h-12 flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97] disabled:opacity-50"
+                    className="flex h-12 flex-1 items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97] disabled:opacity-50"
                   >
                     <span
                       className="font-display text-lg font-bold uppercase tracking-wider text-white"
@@ -915,7 +915,14 @@ export function ProductModal({
                     >
                       Próximo
                     </span>
+                    <span
+                      className="rounded-full bg-black/25 px-3 py-1 text-sm font-extrabold text-white"
+                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    >
+                      {brl(total)}
+                    </span>
                   </button>
+
                 )}
               </div>
             );
