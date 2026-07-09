@@ -681,16 +681,16 @@ function BigKpi({
       {delta !== undefined && (
         <div
           className={cn(
-            "mt-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-            up
-              ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/40"
-              : "bg-red-500/15 text-red-300 ring-1 ring-red-500/40",
+            "mt-2 inline-flex items-center gap-0.5 text-[10px] font-semibold tabular-nums",
+            up ? "text-emerald-400" : "text-red-400",
           )}
+          title="vs período anterior"
         >
-          {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-          {Math.abs(delta).toFixed(1)}% vs período anterior
+          {up ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+          {up ? "+" : "−"}{Math.abs(delta).toFixed(1)}%
         </div>
       )}
+
     </div>
   );
 }
