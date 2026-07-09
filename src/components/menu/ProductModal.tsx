@@ -736,7 +736,7 @@ export function ProductModal({
 
 
         {/* Footer — quantidade + CTA gradiente pink */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
+        <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
           {(() => {
             const { totalSteps, clampedStep, isLast, canAdvance } = wizardCtxRef.current;
             const isWizard = totalSteps > 1;
