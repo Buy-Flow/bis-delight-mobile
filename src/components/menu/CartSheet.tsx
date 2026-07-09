@@ -180,13 +180,13 @@ export function CartSheet() {
                         onClick={() => requestOpenProduct(p.id)}
                         className="group relative w-[132px] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition active:scale-[0.97] hover:border-neon-pink/50"
                       >
-                        <div className="relative aspect-square w-full overflow-hidden bg-[oklch(0.24_0.14_305)]">
+                        <div className="relative aspect-square w-full overflow-hidden bg-[oklch(0.24_0.14_305)] p-2">
                           <img
                             src={p.image}
                             alt={p.name}
                             loading="lazy"
                             decoding="async"
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
                           />
                           <span className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white glow-pink">
                             <Plus className="h-3.5 w-3.5" />
