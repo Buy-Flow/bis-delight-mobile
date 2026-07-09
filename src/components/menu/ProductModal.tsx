@@ -320,7 +320,7 @@ export function ProductModal({
         className="absolute inset-0 bg-black/70 animate-in fade-in duration-150"
         onClick={onClose}
       />
-      <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[40px] bg-[oklch(0.18_0.11_305)] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+      <div className="paper-crumpled absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[40px] bg-[oklch(0.18_0.11_305)] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
 
         {/* HERO — imagem em bleed com gradiente descendo */}
         <div
