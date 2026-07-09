@@ -148,7 +148,7 @@ export function ProductModal({
   const [flavor, setFlavor] = useState<string | undefined>(
     seed?.flavor ?? product?.flavors?.[0],
   );
-  const [extras, setExtras] = useState<string[]>(seed?.extras ?? []);
+  const [extras, setExtras] = useState<Record<string, number>>(seed?.extras ?? {});
   const [removed, setRemoved] = useState<string[]>(seed?.removed ?? []);
   const [qty, setQty] = useState(seed?.qty ?? 1);
   const [note, setNote] = useState(seed?.note ?? "");
