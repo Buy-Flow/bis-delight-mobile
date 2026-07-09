@@ -424,83 +424,103 @@ export function ProductModal({
         {/* Textura papel amassado como camada de fundo (não interfere no layout) */}
         <div className="paper-crumpled pointer-events-none absolute inset-0 z-0" aria-hidden="true" />
 
-        {/* HERO — imagem em bleed com gradiente descendo */}
-        <div
-          className={cn(
-            "relative z-10 shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
-            collapsed ? "h-[72px]" : "h-24",
-          )}
-        >
-          {!collapsed && (
-            <>
-              <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_45%,oklch(0.72_0.26_350_/_0.35),transparent_70%)]" />
-              <img
-                src={product.image}
-                alt={product.name}
-                className="absolute inset-0 h-full w-full object-contain p-4 drop-shadow-[0_20px_30px_rgba(0,0,0,0.55)] animate-float-slow"
+        {/* HERO compacto — medalhão + título lado a lado */}
+        <div className="relative z-10 shrink-0">
+          {/* Top bar de ações — flutuando sobre o hero */}
+          <div className="absolute left-4 right-4 top-3 z-30 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCollapsed((v) => !v)}
+                aria-label={collapsed ? "Expandir" : "Minimizar"}
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md active:scale-95"
+              >
+                <ChevronsUpDown className="h-4 w-4" />
+              </button>
+              <FavoriteButton
+                productId={product.id}
+                className="h-9 w-9 border border-white/15 bg-black/50 backdrop-blur-md"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/60 to-transparent" />
-            </>
-          )}
-
-          {/* Ações à esquerda: minimizar + favorito */}
-          <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
+            </div>
             <button
-              onClick={() => setCollapsed((v) => !v)}
-              aria-label={collapsed ? "Expandir imagem" : "Minimizar imagem"}
-              className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
+              onClick={onClose}
+              aria-label="Fechar"
+              className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md active:scale-95"
             >
-              <ChevronsUpDown className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
-            <FavoriteButton
-              productId={product.id}
-              className="h-10 w-10 border border-white/20 bg-black/40 backdrop-blur-md"
-            />
           </div>
 
-          {/* Fechar à direita */}
-          <button
-            onClick={onClose}
-            aria-label="Fechar"
-            className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          {/* Glow decorativo de fundo */}
+          <div
+            className="pointer-events-none absolute -top-8 right-[-10%] h-56 w-56 rounded-full opacity-70 blur-3xl"
+            style={{ background: "radial-gradient(circle, oklch(0.72 0.26 350 / 0.55), transparent 65%)" }}
+            aria-hidden="true"
+          />
 
-
-
-          {collapsed && (
-            <div className="absolute inset-0 flex items-center px-16">
-              <h2 className="font-display text-xl font-extrabold uppercase tracking-tight text-white truncate">
+          {collapsed ? (
+            <div className="flex items-center gap-3 px-5 pb-3 pt-16">
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ring-neon-yellow/40">
+                <img src={product.image} alt="" className="h-full w-full object-cover" />
+              </div>
+              <h2 className="min-w-0 flex-1 truncate font-display text-lg font-extrabold uppercase tracking-tight text-white">
                 {product.name}
               </h2>
             </div>
+          ) : (
+            <div className="relative flex items-start gap-3 px-5 pb-4 pt-16">
+              {/* Medalhão da imagem */}
+              <div className="relative shrink-0">
+                <div
+                  className="absolute inset-0 rounded-full blur-2xl opacity-70"
+                  style={{ background: "radial-gradient(circle, oklch(0.72 0.26 350 / 0.65), transparent 60%)" }}
+                  aria-hidden="true"
+                />
+                <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-white/10 to-white/0 ring-1 ring-white/15 backdrop-blur-sm">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="absolute inset-0 h-full w-full object-contain p-1.5 drop-shadow-[0_10px_18px_rgba(0,0,0,0.55)] animate-float-slow"
+                  />
+                </div>
+                {/* Sparkle decorativo */}
+                <div className="pointer-events-none absolute -right-1 -top-1 h-3 w-3 rounded-full bg-neon-cyan shadow-[0_0_10px_2px_oklch(0.85_0.18_200)]" />
+              </div>
+
+              {/* Texto */}
+              <div className="min-w-0 flex-1 pt-0.5">
+                <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
+                  <Sparkles className="h-2.5 w-2.5" />
+                  {CATEGORY_LABEL[product.category] ?? "Personalize"}
+                </div>
+                <h2
+                  className="text-[26px] font-bold leading-[1] text-neon-yellow drop-shadow-[0_0_18px_rgba(253,224,71,0.35)] break-words"
+                  style={{ fontFamily: "'Fredoka', 'Poppins', sans-serif" }}
+                >
+                  {product.name}
+                </h2>
+                {product.description && (
+                  <p className="mt-1.5 line-clamp-2 text-[12px] leading-snug text-white/65">
+                    {product.description}
+                  </p>
+                )}
+              </div>
+            </div>
           )}
+
+          {/* Divisor decorativo com traço wavy */}
+          <div className="relative px-5">
+            <svg viewBox="0 0 400 6" preserveAspectRatio="none" className="h-1.5 w-full text-neon-cyan/40" aria-hidden="true">
+              <path d="M0 3 Q 20 0 40 3 T 80 3 T 120 3 T 160 3 T 200 3 T 240 3 T 280 3 T 320 3 T 360 3 T 400 3" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </div>
         </div>
 
         {/* Scroll body */}
         <div
-          className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-40"
+          className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-40 pt-4"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {!collapsed && (
-            <div className="-mt-4 relative z-30 mb-6">
-              <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
-                <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize"}
-              </div>
-              <h2
-                className="text-3xl sm:text-4xl font-bold leading-[1.05] text-neon-yellow drop-shadow-[0_0_18px_rgba(253,224,71,0.35)] pb-1 break-words"
-                style={{ fontFamily: "'Fredoka', 'Poppins', sans-serif" }}
-              >
-                {product.name}
-              </h2>
-              {product.description && (
-                <p className="mt-2 max-w-[95%] text-[13px] text-white/70">
-                  {product.description}
-                </p>
-              )}
-            </div>
-          )}
+
 
           {(() => {
             type Step = {
