@@ -352,21 +352,14 @@ export function ProductModal({
             </>
           )}
 
-          {/* Close no canto esquerdo (padrão do protótipo) */}
-          <button
-            onClick={onClose}
-            aria-label="Fechar"
-            className="absolute left-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          {/* Favorito à esquerda */}
+          <FavoriteButton
+            productId={product.id}
+            className="absolute left-4 top-4 z-10 h-10 w-10 border border-white/20 bg-black/40 backdrop-blur-md"
+          />
 
-          {/* Ações do lado direito */}
+          {/* Ações do lado direito: minimizar + fechar */}
           <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
-            <FavoriteButton
-              productId={product.id}
-              className="h-10 w-10 border border-white/20 bg-black/40 backdrop-blur-md"
-            />
             <button
               onClick={() => setCollapsed((v) => !v)}
               aria-label={collapsed ? "Expandir imagem" : "Minimizar imagem"}
@@ -374,7 +367,15 @@ export function ProductModal({
             >
               <ChevronsUpDown className="h-5 w-5" />
             </button>
+            <button
+              onClick={onClose}
+              aria-label="Fechar"
+              className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
+
 
           {collapsed && (
             <div className="absolute inset-0 flex items-center px-16">
