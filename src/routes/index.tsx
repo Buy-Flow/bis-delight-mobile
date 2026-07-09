@@ -95,9 +95,12 @@ function Page() {
 function Content() {
   const [activeCat, setActiveCat] = useState("all");
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [customProduct, setCustomProduct] = useState<Product | null>(null);
   const { isCartOpen, isCheckoutOpen, editingItem, closeEdit } = useCart();
+
 
   // Prefetch modais/checkout no idle — abertura instantânea sem impactar o FCP
   useEffect(() => {
@@ -150,6 +153,20 @@ function Content() {
       return hay.includes(q);
     });
   }, [activeCat, query, products]);
+
+  // Paginação: só aplicamos quando estamos em "Tudo" sem busca ativa
+  const isPaginated = activeCat === "all" && !query.trim();
+  const totalPages = isPaginated ? Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)) : 1;
+  const currentPage = Math.min(page, totalPages);
+  const visibleProducts = isPaginated
+    ? filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+    : filtered;
+
+  // Reseta a página quando a categoria ou a busca muda
+  useEffect(() => {
+    setPage(1);
+  }, [activeCat, query]);
+
 
 
 
@@ -228,20 +245,7 @@ function Content() {
       {/* Novidades — faixa full-bleed */}
       {settings?.newsActive && (
         <Reveal as="section" className="relative -mx-4 sm:-mx-6 md:-mx-8 overflow-visible">
-          {newsLoading ? (
-            <div className="flex gap-5 overflow-visible px-4 py-10" aria-label="Carregando novidades" aria-busy="true">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="h-[380px] w-[85vw] max-w-[420px] shrink-0 animate-pulse rounded-[28px] bg-white/5 ring-1 ring-white/10"
-                />
-              ))}
-            </div>
-          ) : newsError ? (
-            <div className="mx-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-200" role="alert">
-              Não foi possível carregar as novidades. Tente novamente em instantes.
-            </div>
-          ) : newsItems.length > 0 ? (
+          {newsItems.length > 0 ? (
             <NewsCarousel
               items={newsItems}
               onOpen={openProduct}
@@ -249,11 +253,16 @@ function Content() {
               subtitle={settings.newsSubtitle}
               ticker={settings.newsTicker}
             />
-          ) : (
+          ) : newsError ? (
+            <div className="mx-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-center text-sm text-red-200" role="alert">
+              Não foi possível carregar as novidades. Tente novamente em instantes.
+            </div>
+          ) : !newsLoading ? (
             <div className="mx-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-center text-sm text-white/70">
               Nenhuma novidade por aqui ainda. Volte em breve!
             </div>
-          )}
+          ) : null}
+
         </Reveal>
       )}
 
@@ -269,7 +278,7 @@ function Content() {
             const monte = products.find((p) => p.id === "monte-acai" || p.isCustom);
             if (monte) openProduct(monte);
           }}
-          className="shine-strip group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
+          className="group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
         >
           <div className="relative z-10">
             <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
@@ -410,37 +419,60 @@ function Content() {
         <div className="-mx-4 mb-2">
           <CategoryStrip
             active={activeCat}
-            onChange={(id) => {
-              const el = document.getElementById("categorias");
-              const prevTop = el?.getBoundingClientRect().top ?? 0;
-              setActiveCat(id);
-              requestAnimationFrame(() => {
-                const nextTop = el?.getBoundingClientRect().top ?? 0;
-                const delta = nextTop - prevTop;
-                if (delta) window.scrollBy({ top: delta, behavior: "instant" as ScrollBehavior });
-              });
-            }}
+            onChange={(id) => setActiveCat(id)}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-
-
-          {filtered.map((p, i) => (
-            <div
-              key={p.id}
-              className="animate-rise-in h-full cv-auto-sm"
-              style={{ animationDelay: `${Math.min(i * 40, 300)}ms` }}
-            >
+          {visibleProducts.map((p) => (
+            <div key={p.id} className="h-full">
               <ProductCard product={p} onOpen={openProduct} />
             </div>
           ))}
         </div>
+
+        {/* Paginação — só na aba "Tudo" e sem busca ativa */}
+        {isPaginated && totalPages > 1 && (
+          <nav
+            className="mt-6 flex items-center justify-center gap-3"
+            aria-label="Paginação do cardápio"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setPage((p) => Math.max(1, p - 1));
+                document.getElementById("feito-com-amor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              disabled={currentPage === 1}
+              className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              ← Anterior
+            </button>
+            <span
+              className="text-[12px] font-bold uppercase tracking-[0.14em] text-white/70"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setPage((p) => Math.min(totalPages, p + 1));
+                document.getElementById("feito-com-amor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              disabled={currentPage === totalPages}
+              className="rounded-full border border-neon-pink/40 bg-neon-pink/15 px-4 py-2 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Próxima →
+            </button>
+          </nav>
+        )}
       </section>
 
-      <div className="cv-auto">
+      <div>
         <LocationSection />
       </div>
+
 
       <footer className="border-t border-white/5 px-4 py-8 text-center">
         <Link
