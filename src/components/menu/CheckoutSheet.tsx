@@ -49,7 +49,7 @@ export function CheckoutSheet() {
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [couponInput, setCouponInput] = useState("");
-  const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number } | null>(null);
+  const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
 
   useEffect(() => {
