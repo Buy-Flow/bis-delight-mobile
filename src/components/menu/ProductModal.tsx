@@ -235,18 +235,38 @@ export function ProductModal({
 
   const groupsUnit = (() => {
     let t = 0;
+  const getGQty = (gId: string, oId: string, picked: string[]): number => {
+    if (!picked.includes(oId)) return 0;
+    return groupQty[gId]?.[oId] ?? 1;
+  };
+  const getOptUnitPrice = (g: OptionGroup, o: OptionItem, idxInPicked: number) => {
+    if (o.price && o.price > 0) return o.price;
+    const free = g.freeCount ?? 0;
+    const extra = g.pricePerExtra ?? 0;
+    if (extra > 0 && idxInPicked >= free) return extra;
+    return 0;
+  };
+
+  const groupsUnit = (() => {
+    let t = 0;
     for (const g of optionGroups) {
       const picked = groupSel[g.id] ?? [];
-      const items = g.options.filter((o) => picked.includes(o.id));
-      t += items.reduce((s, o) => s + (o.price || 0), 0);
-      const free = g.freeCount ?? 0;
-      const extra = g.pricePerExtra ?? 0;
-      if (extra > 0 && picked.length > free) {
-        t += (picked.length - free) * extra;
+      if (g.type === "single") {
+        const items = g.options.filter((o) => picked.includes(o.id));
+        t += items.reduce((s, o) => s + (o.price || 0), 0);
+        continue;
       }
+      picked.forEach((oId, idx) => {
+        const o = g.options.find((x) => x.id === oId);
+        if (!o) return;
+        const unitP = getOptUnitPrice(g, o, idx);
+        const q = getGQty(g.id, oId, picked);
+        t += unitP + unitP * 0.5 * Math.max(0, q - 1);
+      });
     }
     return t;
   })();
+
 
   const unit = isCustom
     ? groupsUnit
