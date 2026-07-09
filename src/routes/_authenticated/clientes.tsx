@@ -426,14 +426,26 @@ function ClientesDashboard() {
 }
 
 
-function ClientRowItem({ row, currentMonth }: { row: ClientRow; currentMonth: number }) {
+function ClientRowItem({
+  row,
+  currentMonth,
+  onOpen,
+}: {
+  row: ClientRow;
+  currentMonth: number;
+  onOpen: () => void;
+}) {
   const bday = formatBirthday(row.birthday);
   const isBdayMonth = monthOf(row.birthday) === currentMonth;
   const waNumber = onlyDigits(row.phone);
   const waHref = waNumber.length >= 10 ? `https://wa.me/55${waNumber}` : null;
 
   return (
-    <li className="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-[1.4fr_1fr_1fr_auto] md:items-center">
+    <li
+      onClick={onOpen}
+      className="grid cursor-pointer grid-cols-1 gap-3 px-4 py-4 transition hover:bg-purple-900/20 md:grid-cols-[1.4fr_1fr_1fr_auto] md:items-center"
+    >
+
       <div className="min-w-0">
         <p className="truncate font-semibold text-white">
           {row.full_name?.trim() || <span className="italic text-white/40">Sem nome</span>}
