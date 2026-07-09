@@ -13,7 +13,13 @@ import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { Reveal } from "@/components/Reveal";
 import { BRAND, type Product } from "@/data/menu";
-import { useProducts, useSiteSettings } from "@/lib/menu-data";
+import {
+  useProducts,
+  useSiteSettings,
+  productsQueryOptions,
+  categoriesQueryOptions,
+  siteSettingsQueryOptions,
+} from "@/lib/menu-data";
 import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
 import { Search, Sparkles, X, Megaphone } from "lucide-react";
@@ -37,6 +43,15 @@ const CheckoutSheet = lazy(() =>
 
 
 export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    // Pré-aquece o cache do Query: HTML/hidratação chega com dados prontos.
+    // Evita a renderização "em ondas" (letras > imagens > seções).
+    await Promise.all([
+      context.queryClient.ensureQueryData(productsQueryOptions),
+      context.queryClient.ensureQueryData(categoriesQueryOptions),
+      context.queryClient.ensureQueryData(siteSettingsQueryOptions),
+    ]);
+  },
   head: () => ({
     meta: [
       { title: "Quero Bis — Sorveteria & Açaí | Cardápio Digital" },
