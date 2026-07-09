@@ -335,6 +335,8 @@ function OrderCard({
     : created.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   const phoneDigits = order.phone.replace(/\D/g, "");
 
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <div
       className={cn(
