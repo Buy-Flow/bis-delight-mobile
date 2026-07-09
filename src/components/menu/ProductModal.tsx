@@ -214,8 +214,15 @@ export function ProductModal({
 
   const productSizes = getSizes(product);
   const size = productSizes.find((s) => s.id === sizeId) ?? productSizes[0];
-  const extrasSelected = availableExtras.filter((e) => extras.includes(e.id));
-  const extrasPrice = extrasSelected.reduce((s, e) => s + e.price, 0);
+  const extrasSelected = availableExtras
+    .filter((e) => (extras[e.id] ?? 0) > 0)
+    .map((e) => ({ ...e, qty: extras[e.id] }));
+  // Preço: primeira unidade cheia, adicionais com 50% desconto
+  const extrasPrice = extrasSelected.reduce(
+    (s, e) => s + e.price + e.price * 0.5 * (e.qty - 1),
+    0,
+  );
+
 
   // Modo personalizado: preço vem dos grupos, não de sizes/extras
   const optionGroups: OptionGroup[] = product.optionGroups ?? [];
