@@ -928,15 +928,15 @@ function ClientDetailDialog({
                     className="mb-3 text-lg font-black uppercase text-neon-yellow"
                     style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                   >
-                    Histórico de pedidos ({data?.orders.length ?? 0})
+                    Histórico de pedidos ({stats.historyOrders.length})
                   </p>
-                  {(data?.orders.length ?? 0) === 0 ? (
+                  {stats.historyOrders.length === 0 ? (
                     <p className="py-6 text-center text-sm text-white/50">
-                      Este cliente ainda não fez pedidos.
+                      Nenhum pedido entregue ou cancelado ainda.
                     </p>
                   ) : (
                     <ul className="space-y-2">
-                      {data!.orders.map((o) => (
+                      {stats.historyOrders.map((o) => (
                         <OrderCard key={o.id} order={o} />
                       ))}
                     </ul>
