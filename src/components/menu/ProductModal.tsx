@@ -606,29 +606,38 @@ export function ProductModal({
               if (removableList.length > 0) {
                 steps.push({
                   key: "remove",
-                  name: "Remover",
+                  name: "Ingredientes",
                   isValid: () => true,
                   render: () => (
-                    <div className="flex flex-wrap gap-2">
-                      {removableList.map((r) => {
-                        const off = removed.includes(r);
-                        return (
-                          <button
-                            key={r}
-                            onClick={() => toggleRemoved(r)}
-                            className={cn(
-                              "rounded-full border px-3 py-2 text-[13px] font-bold transition-all",
-                              off
-                                ? "border-neon-pink bg-neon-pink/15 text-white line-through decoration-neon-pink"
-                                : "border-white/10 bg-white/5 text-white/80",
-                            )}
-                          >
-                            {off ? `Sem ${r}` : r}
-                          </button>
-                        );
-                      })}
+                    <div className="space-y-3">
+                      <p className="text-[12px] text-white/60">
+                        Toque em um ingrediente para removê-lo do seu pedido.
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {removableList.map((r) => {
+                          const off = removed.includes(r);
+                          return (
+                            <button
+                              key={r}
+                              onClick={() => toggleRemoved(r)}
+                              className={cn(
+                                "flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-[14px] font-bold transition-all",
+                                off
+                                  ? "border-neon-pink bg-neon-pink/15 text-white line-through decoration-neon-pink"
+                                  : "border-white/10 bg-white/5 text-white/90",
+                              )}
+                            >
+                              <span>{off ? `Sem ${r}` : r}</span>
+                              <span className={cn("text-[11px] font-semibold", off ? "text-neon-pink" : "text-white/40")}>
+                                {off ? "removido" : "toque para remover"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   ),
+
                 });
               }
               if (availableExtras.length > 0) {
