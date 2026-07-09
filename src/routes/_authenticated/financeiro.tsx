@@ -310,6 +310,35 @@ function FinanceiroPage() {
     return arr;
   }, [paid]);
 
+  /* Heatmap DoW × Hour */
+  const heatmap = useMemo(() => {
+    const grid: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+    const revGrid: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+    let minH = 23;
+    let maxH = 0;
+    let peak = { dow: 0, h: 0, count: 0, revenue: 0 };
+    for (const o of paid) {
+      const d = new Date(o.created_at);
+      const dow = d.getDay();
+      const h = d.getHours();
+      grid[dow][h] += 1;
+      revGrid[dow][h] += Number(o.total || 0);
+      if (h < minH) minH = h;
+      if (h > maxH) maxH = h;
+      if (grid[dow][h] > peak.count) peak = { dow, h, count: grid[dow][h], revenue: revGrid[dow][h] };
+    }
+    if (minH > maxH) {
+      minH = 10;
+      maxH = 22;
+    }
+    // pad edges a bit
+    minH = Math.max(0, minH - 1);
+    maxH = Math.min(23, maxH + 1);
+    const hours = Array.from({ length: maxH - minH + 1 }, (_, i) => minH + i);
+    const max = Math.max(1, ...grid.flat());
+    return { grid, revGrid, hours, max, peak };
+  }, [paid]);
+
   /* Status split */
   const statusSplit = useMemo(() => {
     const map = new Map<string, number>();
@@ -598,8 +627,42 @@ function FinanceiroPage() {
               </div>
             </section>
 
+            {/* Heatmap Dia × Hora */}
+            <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">
+                    Horários de pico · Dia × Hora
+                  </h2>
+                  <p className="mt-1 text-[11px] text-white/50">
+                    Use pra dimensionar equipe: quanto mais rosa, mais pedidos naquele horário.
+                  </p>
+                </div>
+                {heatmap.peak.count > 0 && (
+                  <div className="rounded-2xl border border-neon-pink/40 bg-neon-pink/10 px-3 py-2 text-[11px]">
+                    <div className="font-bold uppercase tracking-widest text-neon-pink">Pico</div>
+                    <div className="mt-0.5 text-white">
+                      {DOW[heatmap.peak.dow]} · {fmtHour(heatmap.peak.h)} — {heatmap.peak.count} pedidos ·{" "}
+                      {brl(heatmap.peak.revenue)}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Heatmap grid={heatmap.grid} revGrid={heatmap.revGrid} hours={heatmap.hours} max={heatmap.max} />
+              <div className="mt-4 flex items-center justify-end gap-2 text-[10px] uppercase tracking-widest text-white/50">
+                <span>menos</span>
+                <div className="flex h-2 w-40 overflow-hidden rounded-full">
+                  {[0.05, 0.15, 0.3, 0.5, 0.7, 0.9].map((a, i) => (
+                    <div key={i} className="flex-1" style={{ background: `rgba(236,72,153,${a})` }} />
+                  ))}
+                </div>
+                <span>mais</span>
+              </div>
+            </section>
+
             {/* Bottom: menos vendidos + zerados */}
             <section className="grid gap-6 lg:grid-cols-2">
+
               <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
                 <div className="mb-4 flex items-center gap-2">
                   <TrendingDown className="h-4 w-4 text-neon-yellow" />
@@ -885,3 +948,69 @@ function ModeSplit({
     </div>
   );
 }
+
+function Heatmap({
+  grid,
+  revGrid,
+  hours,
+  max,
+}: {
+  grid: number[][];
+  revGrid: number[][];
+  hours: number[];
+  max: number;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-[560px]">
+        {/* Header */}
+        <div
+          className="grid gap-1 text-[9px] uppercase tracking-widest text-white/40"
+          style={{ gridTemplateColumns: `36px repeat(${hours.length}, minmax(0,1fr))` }}
+        >
+          <div />
+          {hours.map((h) => (
+            <div key={h} className="text-center">
+              {String(h).padStart(2, "0")}
+            </div>
+          ))}
+        </div>
+        {/* Rows */}
+        <div className="mt-1 space-y-1">
+          {DOW.map((label, dow) => (
+            <div
+              key={dow}
+              className="grid gap-1"
+              style={{ gridTemplateColumns: `36px repeat(${hours.length}, minmax(0,1fr))` }}
+            >
+              <div className="flex items-center text-[10px] font-bold uppercase text-white/60">{label}</div>
+              {hours.map((h) => {
+                const c = grid[dow][h];
+                const rev = revGrid[dow][h];
+                const a = c === 0 ? 0 : 0.08 + (c / max) * 0.85;
+                return (
+                  <div
+                    key={h}
+                    title={
+                      c === 0
+                        ? `${label} ${String(h).padStart(2, "0")}h · sem pedidos`
+                        : `${label} ${String(h).padStart(2, "0")}h · ${c} pedidos · ${brl(rev)}`
+                    }
+                    className="grid aspect-square place-items-center rounded-md border border-white/5 text-[9px] font-bold text-white/90 transition-transform hover:scale-110"
+                    style={{
+                      background: c === 0 ? "rgba(255,255,255,0.02)" : `rgba(236,72,153,${a})`,
+                      boxShadow: c > 0 ? `0 0 8px -4px rgba(236,72,153,${a})` : undefined,
+                    }}
+                  >
+                    {c > 0 ? c : ""}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
