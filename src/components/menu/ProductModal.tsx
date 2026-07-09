@@ -163,8 +163,7 @@ export function ProductModal({
         if (g.required && g.options[0]) out[g.id] = [g.options[0].id];
         else out[g.id] = [];
       } else {
-        const free = g.freeCount ?? 0;
-        out[g.id] = free > 0 ? g.options.slice(0, free).map((o) => o.id) : [];
+        out[g.id] = [];
       }
     }
     return out;
