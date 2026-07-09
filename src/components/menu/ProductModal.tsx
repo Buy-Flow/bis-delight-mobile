@@ -357,8 +357,10 @@ export function ProductModal({
         }
         picked.forEach((o, idx) => {
           const unitP = getOptUnitPrice(g, o, idx);
+          const repeatBase = getOptRepeatBase(g, o);
           const q = groupQty[g.id]?.[o.id] ?? 1;
-          const linePrice = unitP + unitP * 0.5 * Math.max(0, q - 1);
+          const linePrice = unitP + repeatBase * 0.5 * Math.max(0, q - 1);
+
           groupExtras.push({
             label: q > 1 ? `${g.name}: ${o.label} x${q}` : `${g.name}: ${o.label}`,
             price: linePrice,
