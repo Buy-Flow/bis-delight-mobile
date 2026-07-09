@@ -55,10 +55,11 @@ export function ProductCard({
         <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-neon-cyan/15 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-neon-pink/15 blur-2xl" />
 
-        {/* Image — no continuous float animation (keeps scroll smooth) */}
+        {/* Image — subtle continuous float (GPU-only transform, safe for scroll) */}
         <div
           className={cn(
-            "absolute inset-0 will-change-transform transition-transform duration-300 ease-out",
+            "absolute inset-0 will-change-transform animate-product-float",
+            "transition-transform duration-300 ease-out",
             "[@media(hover:hover)]:group-hover:rotate-2 [@media(hover:hover)]:group-hover:scale-[1.05]",
             "group-active:scale-[.98] group-active:duration-100",
           )}
