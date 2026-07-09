@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown } from "lucide-react";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
-import type { ExtraOption, Product } from "@/data/menu";
+import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -144,6 +144,25 @@ export function ProductModal({
   const [note, setNote] = useState(seed?.note ?? "");
   const [collapsed, setCollapsed] = useState(false);
 
+  // Option groups (produtos personalizados: monte seu açaí, etc.)
+  const initialGroupSel = (p: Product | null): Record<string, string[]> => {
+    const out: Record<string, string[]> = {};
+    const groups = p?.optionGroups ?? [];
+    for (const g of groups) {
+      if (g.type === "single") {
+        if (g.required && g.options[0]) out[g.id] = [g.options[0].id];
+        else out[g.id] = [];
+      } else {
+        const free = g.freeCount ?? 0;
+        out[g.id] = free > 0 ? g.options.slice(0, free).map((o) => o.id) : [];
+      }
+    }
+    return out;
+  };
+  const [groupSel, setGroupSel] = useState<Record<string, string[]>>(
+    initialGroupSel(product),
+  );
+
   useMemo(() => {
     if (product) {
       const s = initialFromEdit(product);
@@ -153,6 +172,7 @@ export function ProductModal({
       setRemoved(s?.removed ?? []);
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
+      setGroupSel(initialGroupSel(product));
     }
   }, [product?.id, editItem?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -177,7 +197,29 @@ export function ProductModal({
   const size = productSizes.find((s) => s.id === sizeId) ?? productSizes[0];
   const extrasSelected = availableExtras.filter((e) => extras.includes(e.id));
   const extrasPrice = extrasSelected.reduce((s, e) => s + e.price, 0);
-  const unit = product.basePrice + size.priceDelta + extrasPrice;
+
+  // Modo personalizado: preço vem dos grupos, não de sizes/extras
+  const optionGroups: OptionGroup[] = product.optionGroups ?? [];
+  const isCustom = !!product.isCustom && optionGroups.length > 0;
+
+  const groupsUnit = (() => {
+    let t = 0;
+    for (const g of optionGroups) {
+      const picked = groupSel[g.id] ?? [];
+      const items = g.options.filter((o) => picked.includes(o.id));
+      t += items.reduce((s, o) => s + (o.price || 0), 0);
+      const free = g.freeCount ?? 0;
+      const extra = g.pricePerExtra ?? 0;
+      if (extra > 0 && picked.length > free) {
+        t += (picked.length - free) * extra;
+      }
+    }
+    return t;
+  })();
+
+  const unit = isCustom
+    ? groupsUnit
+    : product.basePrice + size.priceDelta + extrasPrice;
   const total = unit * qty;
 
 
@@ -185,8 +227,71 @@ export function ProductModal({
     setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const toggleRemoved = (name: string) =>
     setRemoved((prev) => (prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]));
+  const toggleGroup = (g: OptionGroup, optId: string) => {
+    setGroupSel((prev) => {
+      const cur = prev[g.id] ?? [];
+      if (g.type === "single") {
+        return {
+          ...prev,
+          [g.id]: cur[0] === optId ? (g.required ? cur : []) : [optId],
+        };
+      }
+      const has = cur.includes(optId);
+      return { ...prev, [g.id]: has ? cur.filter((x) => x !== optId) : [...cur, optId] };
+    });
+  };
+
+  const canSubmit = !isCustom
+    ? true
+    : optionGroups.every((g) => (!g.required ? true : (groupSel[g.id] ?? []).length > 0));
 
   const submit = () => {
+    if (isCustom) {
+      if (!canSubmit) {
+        toast.error("Escolha as opções obrigatórias.");
+        return;
+      }
+      const groupExtras: { label: string; price: number }[] = [];
+      let sizeLabel = "";
+      for (const g of optionGroups) {
+        const picked = (groupSel[g.id] ?? [])
+          .map((id) => g.options.find((o) => o.id === id))
+          .filter((o): o is OptionItem => !!o);
+        if (g.type === "single") {
+          if (picked[0]) sizeLabel = picked[0].label;
+          continue;
+        }
+        const free = g.freeCount ?? 0;
+        const extra = g.pricePerExtra ?? 0;
+        picked.forEach((o, idx) => {
+          const feeShare = extra > 0 && idx >= free ? extra : 0;
+          groupExtras.push({
+            label: `${g.name}: ${o.label}`,
+            price: (o.price || 0) + feeShare,
+          });
+        });
+      }
+      const payload = {
+        productId: product.id,
+        name: sizeLabel ? `${product.name} — ${sizeLabel}` : product.name,
+        image: product.image,
+        size: sizeLabel || undefined,
+        extras: groupExtras,
+        removed: [],
+        note: note.trim() || undefined,
+        quantity: qty,
+        unitPrice: unit,
+      };
+      if (editItem) {
+        update(editItem.uid, payload);
+        toast.success(`${product.name} atualizado!`);
+      } else {
+        add(payload);
+        toast.success(`${product.name} adicionado ao carrinho!`);
+      }
+      onClose();
+      return;
+    }
     const payload = {
       productId: product.id,
       name: product.name,
@@ -286,79 +391,132 @@ export function ProductModal({
 
         {/* Scroll body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
-          {productSizes.length > 1 && (
-            <Section title="Tamanho">
-              <div className="grid grid-cols-2 gap-2">
-                {productSizes.map((s) => {
-                  const active = s.id === sizeId;
-                  return (
-                    <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
-                      <div className="flex flex-col items-center">
-                        <span className="text-sm font-extrabold">{s.label}</span>
-                        {s.priceDelta > 0 && (
-                          <span className="text-[11px] text-white/60">
-                            +{brl(s.priceDelta)}
-                          </span>
-                        )}
-                      </div>
-                    </Chip>
-                  );
-                })}
-              </div>
-            </Section>
-          )}
+          {isCustom ? (
+            <>
+              {optionGroups.map((g, gi) => {
+                const picked = groupSel[g.id] ?? [];
+                const free = g.freeCount ?? 0;
+                const extraFee = g.pricePerExtra ?? 0;
+                const hint =
+                  g.type === "single"
+                    ? g.required ? "Escolha 1" : "Opcional"
+                    : free > 0
+                      ? `${free} grátis${extraFee > 0 ? ` · +${brl(extraFee)} cada extra` : ""}`
+                      : "Adicione o que quiser";
+                return (
+                  <Section
+                    key={g.id}
+                    title={`${gi + 1}. ${g.name}`}
+                    hint={hint}
+                  >
+                    <div className="flex flex-col gap-2">
+                      {g.options.map((o) => {
+                        const on = picked.includes(o.id);
+                        const idx = picked.indexOf(o.id);
+                        const isExtraCharged =
+                          g.type === "multi" && extraFee > 0 && on && idx >= free;
+                        const priceLabel =
+                          o.price > 0
+                            ? `+${brl(o.price)}`
+                            : isExtraCharged
+                              ? `+${brl(extraFee)}`
+                              : "";
+                        return (
+                          <Chip
+                            key={o.id}
+                            small
+                            active={on}
+                            onClick={() => toggleGroup(g, o.id)}
+                            className="w-full justify-between"
+                          >
+                            <span className="mr-1">{o.label}</span>
+                            {priceLabel && (
+                              <span className="text-[11px] text-white/60">{priceLabel}</span>
+                            )}
+                          </Chip>
+                        );
+                      })}
+                    </div>
+                  </Section>
+                );
+              })}
+            </>
 
-          {flavorList && (
-            <Section title="Sabor">
-              <div className="grid grid-cols-2 gap-2">
-                {flavorList.map((f) => (
-                  <Chip key={f} active={f === flavor} onClick={() => setFlavor(f)}>
-                    <span className="text-sm font-bold">{f}</span>
-                  </Chip>
-                ))}
-              </div>
-            </Section>
-          )}
+          ) : (
+            <>
+              {productSizes.length > 1 && (
+                <Section title="Tamanho">
+                  <div className="grid grid-cols-2 gap-2">
+                    {productSizes.map((s) => {
+                      const active = s.id === sizeId;
+                      return (
+                        <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
+                          <div className="flex flex-col items-center">
+                            <span className="text-sm font-extrabold">{s.label}</span>
+                            {s.priceDelta > 0 && (
+                              <span className="text-[11px] text-white/60">
+                                +{brl(s.priceDelta)}
+                              </span>
+                            )}
+                          </div>
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </Section>
+              )}
 
-          {availableExtras.length > 0 && (
-            <Section title="Complementos" hint="Adicione o que quiser">
-              <div className="flex flex-col gap-2">
-                {availableExtras.map((e) => {
-                  const on = extras.includes(e.id);
-                  return (
-                    <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)} className="w-full justify-between">
-                      <span className="mr-1">{e.label}</span>
-                      {e.price > 0 && (
-                        <span className="text-[11px] text-white/60">+{brl(e.price)}</span>
-                      )}
-                    </Chip>
-                  );
-                })}
-              </div>
-            </Section>
-          )}
+              {flavorList && (
+                <Section title="Sabor">
+                  <div className="grid grid-cols-2 gap-2">
+                    {flavorList.map((f) => (
+                      <Chip key={f} active={f === flavor} onClick={() => setFlavor(f)}>
+                        <span className="text-sm font-bold">{f}</span>
+                      </Chip>
+                    ))}
+                  </div>
+                </Section>
+              )}
 
+              {availableExtras.length > 0 && (
+                <Section title="Complementos" hint="Adicione o que quiser">
+                  <div className="flex flex-col gap-2">
+                    {availableExtras.map((e) => {
+                      const on = extras.includes(e.id);
+                      return (
+                        <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)} className="w-full justify-between">
+                          <span className="mr-1">{e.label}</span>
+                          {e.price > 0 && (
+                            <span className="text-[11px] text-white/60">+{brl(e.price)}</span>
+                          )}
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </Section>
+              )}
 
-
-          {removableList.length > 0 && (
-            <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
-              <div className="flex flex-wrap gap-2">
-                {removableList.map((r) => {
-                  const off = removed.includes(r);
-                  return (
-                    <Chip
-                      key={r}
-                      small
-                      active={off}
-                      variant="pink"
-                      onClick={() => toggleRemoved(r)}
-                    >
-                      {off ? `Sem ${r}` : r}
-                    </Chip>
-                  );
-                })}
-              </div>
-            </Section>
+              {removableList.length > 0 && (
+                <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
+                  <div className="flex flex-wrap gap-2">
+                    {removableList.map((r) => {
+                      const off = removed.includes(r);
+                      return (
+                        <Chip
+                          key={r}
+                          small
+                          active={off}
+                          variant="pink"
+                          onClick={() => toggleRemoved(r)}
+                        >
+                          {off ? `Sem ${r}` : r}
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </Section>
+              )}
+            </>
           )}
 
 
