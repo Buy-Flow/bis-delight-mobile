@@ -8,6 +8,7 @@ import { Benefits } from "@/components/menu/Benefits";
 import { LoyaltyProgress } from "@/components/menu/LoyaltyProgress";
 import { CategoryStrip } from "@/components/menu/CategoryStrip";
 import { ProductCard } from "@/components/menu/ProductCard";
+import { ProductCardSkeleton } from "@/components/menu/ProductCardSkeleton";
 import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
