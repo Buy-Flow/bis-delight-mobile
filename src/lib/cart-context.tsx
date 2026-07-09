@@ -115,8 +115,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setEditingItem(item);
       },
       closeEdit: () => setEditingItem(null),
+      pendingProductId,
+      requestOpenProduct: (productId) => {
+        setCartOpen(false);
+        setPendingProductId(productId);
+      },
+      consumePendingProduct: () => setPendingProductId(null),
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
