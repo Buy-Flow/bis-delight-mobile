@@ -163,6 +163,13 @@ export function ProductModal({
     initialGroupSel(product),
   );
   const [stepIndex, setStepIndex] = useState(0);
+  const wizardCtxRef = useRef<{
+    totalSteps: number;
+    clampedStep: number;
+    isLast: boolean;
+    canAdvance: boolean;
+    stepName: string;
+  }>({ totalSteps: 1, clampedStep: 0, isLast: true, canAdvance: true, stepName: "" });
 
   useMemo(() => {
     if (product) {
