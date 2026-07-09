@@ -384,19 +384,17 @@ export function ProductModal({
         </div>
 
         {/* Scroll body */}
-        <div className="flex-1 overflow-y-auto px-6 pb-40">
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-40"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {!collapsed && (
             <div className="-mt-8 relative z-10 mb-6">
               <h2
-                className="font-display text-4xl font-extrabold uppercase tracking-tight leading-[0.9] text-white"
+                className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight leading-[1.05] text-neon-pink glow-pink-text pb-1 break-words"
                 style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
               >
-                {product.name.split(" ")[0]}
-                {product.name.split(" ").length > 1 && (
-                  <span className="block text-neon-pink glow-pink-text">
-                    {product.name.split(" ").slice(1).join(" ")}
-                  </span>
-                )}
+                {product.name}
               </h2>
               {product.description && (
                 <p className="mt-2 max-w-[85%] text-[13px] text-white/60">
