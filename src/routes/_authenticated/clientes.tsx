@@ -510,8 +510,10 @@ function ClientRowItem({
             href={waHref}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110"
           >
+
             <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
           </a>
         )}
