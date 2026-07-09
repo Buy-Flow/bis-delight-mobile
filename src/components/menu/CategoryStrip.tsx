@@ -99,12 +99,16 @@ export function CategoryChip({
   return (
     <button
       type="button"
+      tabIndex={-1}
+      onPointerDown={(e) => e.preventDefault()}
       onMouseDown={(e) => e.preventDefault()}
       onClick={(e) => {
-        e.currentTarget.blur();
+        e.preventDefault();
+        (e.currentTarget as HTMLButtonElement).blur();
         onClick?.();
       }}
       aria-pressed={active}
+
       className={cn(
         "group relative shrink-0 w-[72px] h-[104px] rounded-[16px]",
         "transition-all duration-300 active:scale-95 hover:-translate-y-0.5",

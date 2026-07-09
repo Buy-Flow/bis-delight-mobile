@@ -122,6 +122,8 @@ function Content() {
     setModalProduct(p);
   };
   const menuRef = useRef<HTMLDivElement>(null);
+  const scrollLockRef = useRef<number | null>(null);
+
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: settings, isLoading: settingsLoading, error: settingsError } = useSiteSettings();
@@ -416,12 +418,32 @@ function Content() {
         </div>
 
         {/* Categories under search */}
-        <div className="-mx-4 mb-2">
+        <div
+          className="-mx-4 mb-2"
+          // Captura a posição de rolagem ANTES do click, pois o browser
+          // pode rolar sozinho para o chip antes do nosso handler rodar.
+          onPointerDownCapture={() => {
+            scrollLockRef.current = window.scrollY;
+          }}
+        >
           <CategoryStrip
             active={activeCat}
-            onChange={(id) => setActiveCat(id)}
+            onChange={(id) => {
+              const y = scrollLockRef.current ?? window.scrollY;
+              setActiveCat(id);
+              // Trava a rolagem por alguns frames para anular qualquer
+              // smooth-scroll iniciado pelo foco do botão.
+              const start = performance.now();
+              const lock = () => {
+                if (window.scrollY !== y) window.scrollTo({ top: y, behavior: "auto" });
+                if (performance.now() - start < 400) requestAnimationFrame(lock);
+              };
+              requestAnimationFrame(lock);
+            }}
           />
         </div>
+
+
 
         <div className="grid grid-cols-2 gap-3">
           {visibleProducts.map((p) => (
