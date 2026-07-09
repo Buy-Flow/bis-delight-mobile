@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   PRODUCTS as STATIC_PRODUCTS,
@@ -173,21 +173,24 @@ function normalizeOptionGroups(raw: unknown): OptionGroup[] | undefined {
   });
 }
 
+export const productsQueryOptions = queryOptions({
+  queryKey: ["products"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) throw error;
+    if (!data || data.length === 0) return STATIC_PRODUCTS;
+    return data.map((r) => rowToProduct(r as Record<string, unknown>));
+  },
+  staleTime: 60_000,
+});
+
 export function useProducts() {
-  return useQuery({
-    queryKey: ["products"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order", { ascending: true })
-        .order("name", { ascending: true });
-      if (error) throw error;
-      if (!data || data.length === 0) return STATIC_PRODUCTS;
-      return data.map((r) => rowToProduct(r as Record<string, unknown>));
-    },
-  });
+  return useQuery(productsQueryOptions);
 }
 
 export function useAllProducts() {
@@ -205,26 +208,29 @@ export function useAllProducts() {
   });
 }
 
+export const categoriesQueryOptions = queryOptions({
+  queryKey: ["categories"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    const rows =
+      data && data.length > 0
+        ? data.map((r) => rowToCategory(r as Record<string, unknown>))
+        : STATIC_CATEGORIES.filter((c) => c.id !== "all");
+    return [
+      { id: "all", name: "Tudo", emoji: "✨", image: getStaticCategoryImage("all") || rows[0]?.image || "" } as Category,
+      ...rows,
+    ];
+  },
+  staleTime: 60_000,
+});
+
 export function useCategories() {
-  return useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order", { ascending: true });
-      if (error) throw error;
-      const rows =
-        data && data.length > 0
-          ? data.map((r) => rowToCategory(r as Record<string, unknown>))
-          : STATIC_CATEGORIES.filter((c) => c.id !== "all");
-      return [
-        { id: "all", name: "Tudo", emoji: "✨", image: getStaticCategoryImage("all") || rows[0]?.image || "" } as Category,
-        ...rows,
-      ];
-    },
-  });
+  return useQuery(categoriesQueryOptions);
 }
 
 export const DEFAULT_HOURS: DayHours[] = [
@@ -316,79 +322,81 @@ function parseHeroImages(raw: unknown): HeroImagesConfig {
 
 
 
-export function useSiteSettings() {
-  return useQuery({
-    queryKey: ["site_settings"],
-    queryFn: async (): Promise<SiteSettings> => {
-      const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
-      if (!data) {
-        return {
-          name: STATIC_BRAND.name,
-          tagline: STATIC_BRAND.tagline,
-          city: STATIC_BRAND.city,
-          address: STATIC_BRAND.address,
-          hours: STATIC_BRAND.hours,
-          whatsapp: STATIC_BRAND.whatsapp,
-          whatsappDisplay: STATIC_BRAND.whatsappDisplay,
-          mapsUrl: STATIC_BRAND.mapsUrl,
-          mapEmbed: STATIC_BRAND.mapEmbed,
-          deliveryFee: STATIC_BRAND.deliveryFee,
-          logo: STATIC_BRAND.logo,
-          texture: STATIC_BRAND.texture,
-          ...DEFAULT_EXTRA,
-        };
-      }
-      const rawHours = (data.hours_json as unknown) as DayHours[] | null;
-      const rawMethods = (data.payment_methods as unknown) as string[] | null;
-      const rawNewsIds = (data.news_product_ids as unknown) as string[] | null;
-      const rawGlobalExtras = ((data as Record<string, unknown>).global_extras as unknown) as ExtraOption[] | null;
-
-      const rawOverride = String(data.open_override ?? "auto");
+export const siteSettingsQueryOptions = queryOptions({
+  queryKey: ["site_settings"],
+  queryFn: async (): Promise<SiteSettings> => {
+    const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+    if (!data) {
       return {
-        name: data.name || STATIC_BRAND.name,
-        tagline: data.tagline || STATIC_BRAND.tagline,
-        city: data.city || STATIC_BRAND.city,
-        address: data.address || STATIC_BRAND.address,
-        hours: data.hours || STATIC_BRAND.hours,
-        whatsapp: data.whatsapp || STATIC_BRAND.whatsapp,
-        whatsappDisplay: data.whatsapp_display || STATIC_BRAND.whatsappDisplay,
-        mapsUrl: data.maps_url || STATIC_BRAND.mapsUrl,
-        mapEmbed: data.map_embed || STATIC_BRAND.mapEmbed,
-        deliveryFee: Number(data.delivery_fee ?? STATIC_BRAND.deliveryFee),
-        logo: data.logo_url || STATIC_BRAND.logo,
-        texture: data.texture_url || STATIC_BRAND.texture,
-        instagram: String(data.instagram ?? ""),
-        facebook: String(data.facebook ?? ""),
-        tiktok: String(data.tiktok ?? ""),
-        announcementText: String(data.announcement_text ?? ""),
-        announcementActive: Boolean(data.announcement_active ?? false),
-        pixKey: String(data.pix_key ?? ""),
-        paymentMethods: Array.isArray(rawMethods) && rawMethods.length ? rawMethods : ["Dinheiro", "Pix", "Cartão"],
-        freeDeliveryThreshold: Number(data.free_delivery_threshold ?? 0),
-        minOrder: Number(data.min_order ?? 0),
-        acceptsDelivery: Boolean(data.accepts_delivery ?? true),
-        acceptsPickup: Boolean(data.accepts_pickup ?? true),
-        openOverride: rawOverride === "open" || rawOverride === "closed" ? rawOverride : "auto",
-        hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
-        newsActive: Boolean(data.news_active ?? false),
-        newsTitle: String(data.news_title ?? "Novidades"),
-        newsSubtitle: String((data as Record<string, unknown>).news_subtitle ?? "acabou de sair!"),
-        newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
-        newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
-        globalExtras: Array.isArray(rawGlobalExtras) ? rawGlobalExtras : [],
-        bgColor: String((data as Record<string, unknown>).bg_color ?? "#0d0322"),
-        accentColor: String((data as Record<string, unknown>).accent_color ?? "#ffe600"),
-        textureOpacity: Number((data as Record<string, unknown>).texture_opacity ?? 1),
-        textureSize: (String((data as Record<string, unknown>).texture_size ?? "cover") as SiteSettings["textureSize"]),
-        cardRadius: Number((data as Record<string, unknown>).card_radius ?? 24),
-        cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
-        cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
-        titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
-        heroImages: parseHeroImages((data as Record<string, unknown>).hero_images),
+        name: STATIC_BRAND.name,
+        tagline: STATIC_BRAND.tagline,
+        city: STATIC_BRAND.city,
+        address: STATIC_BRAND.address,
+        hours: STATIC_BRAND.hours,
+        whatsapp: STATIC_BRAND.whatsapp,
+        whatsappDisplay: STATIC_BRAND.whatsappDisplay,
+        mapsUrl: STATIC_BRAND.mapsUrl,
+        mapEmbed: STATIC_BRAND.mapEmbed,
+        deliveryFee: STATIC_BRAND.deliveryFee,
+        logo: STATIC_BRAND.logo,
+        texture: STATIC_BRAND.texture,
+        ...DEFAULT_EXTRA,
       };
+    }
+    const rawHours = (data.hours_json as unknown) as DayHours[] | null;
+    const rawMethods = (data.payment_methods as unknown) as string[] | null;
+    const rawNewsIds = (data.news_product_ids as unknown) as string[] | null;
+    const rawGlobalExtras = ((data as Record<string, unknown>).global_extras as unknown) as ExtraOption[] | null;
 
-    },
-  });
+    const rawOverride = String(data.open_override ?? "auto");
+    return {
+      name: data.name || STATIC_BRAND.name,
+      tagline: data.tagline || STATIC_BRAND.tagline,
+      city: data.city || STATIC_BRAND.city,
+      address: data.address || STATIC_BRAND.address,
+      hours: data.hours || STATIC_BRAND.hours,
+      whatsapp: data.whatsapp || STATIC_BRAND.whatsapp,
+      whatsappDisplay: data.whatsapp_display || STATIC_BRAND.whatsappDisplay,
+      mapsUrl: data.maps_url || STATIC_BRAND.mapsUrl,
+      mapEmbed: data.map_embed || STATIC_BRAND.mapEmbed,
+      deliveryFee: Number(data.delivery_fee ?? STATIC_BRAND.deliveryFee),
+      logo: data.logo_url || STATIC_BRAND.logo,
+      texture: data.texture_url || STATIC_BRAND.texture,
+      instagram: String(data.instagram ?? ""),
+      facebook: String(data.facebook ?? ""),
+      tiktok: String(data.tiktok ?? ""),
+      announcementText: String(data.announcement_text ?? ""),
+      announcementActive: Boolean(data.announcement_active ?? false),
+      pixKey: String(data.pix_key ?? ""),
+      paymentMethods: Array.isArray(rawMethods) && rawMethods.length ? rawMethods : ["Dinheiro", "Pix", "Cartão"],
+      freeDeliveryThreshold: Number(data.free_delivery_threshold ?? 0),
+      minOrder: Number(data.min_order ?? 0),
+      acceptsDelivery: Boolean(data.accepts_delivery ?? true),
+      acceptsPickup: Boolean(data.accepts_pickup ?? true),
+      openOverride: rawOverride === "open" || rawOverride === "closed" ? rawOverride : "auto",
+      hoursJson: Array.isArray(rawHours) && rawHours.length ? rawHours : DEFAULT_HOURS,
+      newsActive: Boolean(data.news_active ?? false),
+      newsTitle: String(data.news_title ?? "Novidades"),
+      newsSubtitle: String((data as Record<string, unknown>).news_subtitle ?? "acabou de sair!"),
+      newsTicker: String((data as Record<string, unknown>).news_ticker ?? "Lançamento fresquinho, Edição limitada, Só na Quero Bis, Novidade da semana"),
+      newsProductIds: Array.isArray(rawNewsIds) ? rawNewsIds.map(String) : [],
+      globalExtras: Array.isArray(rawGlobalExtras) ? rawGlobalExtras : [],
+      bgColor: String((data as Record<string, unknown>).bg_color ?? "#0d0322"),
+      accentColor: String((data as Record<string, unknown>).accent_color ?? "#ffe600"),
+      textureOpacity: Number((data as Record<string, unknown>).texture_opacity ?? 1),
+      textureSize: (String((data as Record<string, unknown>).texture_size ?? "cover") as SiteSettings["textureSize"]),
+      cardRadius: Number((data as Record<string, unknown>).card_radius ?? 24),
+      cardBorder: Boolean((data as Record<string, unknown>).card_border ?? true),
+      cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
+      titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
+      heroImages: parseHeroImages((data as Record<string, unknown>).hero_images),
+    };
+  },
+  staleTime: 60_000,
+});
+
+export function useSiteSettings() {
+  return useQuery(siteSettingsQueryOptions);
 }
 
 export function useIsAdmin() {
