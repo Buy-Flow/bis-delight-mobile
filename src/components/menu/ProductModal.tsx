@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown } from "lucide-react";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
@@ -163,6 +163,13 @@ export function ProductModal({
     initialGroupSel(product),
   );
   const [stepIndex, setStepIndex] = useState(0);
+  const wizardCtxRef = useRef<{
+    totalSteps: number;
+    clampedStep: number;
+    isLast: boolean;
+    canAdvance: boolean;
+    stepName: string;
+  }>({ totalSteps: 1, clampedStep: 0, isLast: true, canAdvance: true, stepName: "" });
 
   useMemo(() => {
     if (product) {
@@ -402,95 +409,33 @@ export function ProductModal({
             </div>
           )}
 
-          {isCustom ? (
-            <div className="space-y-6">
-              {/* Stepper */}
-              <div className="relative">
-                <div className="absolute left-5 right-5 top-5 h-[2px] bg-white/10" />
-                <div
-                  className="absolute left-5 top-5 h-[2px] bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] transition-all duration-300"
-                  style={{
-                    width: optionGroups.length > 1
-                      ? `calc((100% - 2.5rem) * ${stepIndex / (optionGroups.length - 1)})`
-                      : "0%",
-                  }}
-                />
-                <div className="relative flex items-start justify-between">
-                  {optionGroups.map((g, i) => {
-                    const done = i < stepIndex;
-                    const current = i === stepIndex;
-                    return (
-                      <button
-                        key={g.id}
-                        onClick={() => setStepIndex(i)}
-                        className="flex min-w-0 flex-1 flex-col items-center gap-1"
-                      >
-                        <span
-                          className={cn(
-                            "grid h-10 w-10 place-items-center rounded-full border-2 text-sm font-black transition-all",
-                            current
-                              ? "border-neon-pink bg-neon-pink text-white shadow-[0_0_20px_rgba(255,46,147,0.55)]"
-                              : done
-                                ? "border-neon-pink bg-neon-pink/20 text-neon-pink"
-                                : "border-white/15 bg-white/5 text-white/50",
-                          )}
-                        >
-                          {done ? <Check className="h-4 w-4" strokeWidth={3.5} /> : i + 1}
-                        </span>
-                        <span
-                          className={cn(
-                            "truncate text-[11px] font-bold uppercase tracking-wide",
-                            current ? "text-white" : done ? "text-neon-pink/80" : "text-white/40",
-                          )}
-                        >
-                          {g.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+          {(() => {
+            type Step = {
+              key: string;
+              name: string;
+              required?: boolean;
+              isValid: () => boolean;
+              render: () => React.ReactNode;
+            };
+            const steps: Step[] = [];
 
-              {/* Current step content */}
-              {(() => {
-                const g = optionGroups[stepIndex];
-                if (!g) return null;
-                const picked = groupSel[g.id] ?? [];
-                const free = g.freeCount ?? 0;
-                const extraFee = g.pricePerExtra ?? 0;
-                const isSingle = g.type === "single";
-                const hint = isSingle
-                  ? g.required ? "Obrigatório" : "Opcional"
-                  : free > 0
-                    ? `até ${free} grátis`
-                    : "escolha o que quiser";
-                return (
-                  <div>
-                    <div className="mb-3 flex items-end justify-between gap-3">
-                      <h3
-                        className="font-display text-2xl font-extrabold uppercase tracking-wider text-neon-cyan"
-                        style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-                      >
-                        {g.name}
-                      </h3>
-                      {isSingle && g.required ? (
-                        <span className="rounded-full bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-pink">
-                          Obrigatório
-                        </span>
-                      ) : (
-                        <span
-                          className="text-lg text-white/40"
-                          style={{ fontFamily: "'Caveat', cursive" }}
-                        >
-                          {hint}
-                        </span>
-                      )}
-                    </div>
-
-                    {isSingle ? (
+            if (isCustom) {
+              for (const g of optionGroups) {
+                const picked = () => groupSel[g.id] ?? [];
+                steps.push({
+                  key: `g-${g.id}`,
+                  name: g.name,
+                  required: g.type === "single" && g.required,
+                  isValid: () => !g.required || picked().length > 0,
+                  render: () => {
+                    const p = picked();
+                    const free = g.freeCount ?? 0;
+                    const extraFee = g.pricePerExtra ?? 0;
+                    const isSingle = g.type === "single";
+                    return isSingle ? (
                       <div className="grid grid-cols-3 gap-3">
                         {g.options.map((o) => {
-                          const on = picked.includes(o.id);
+                          const on = p.includes(o.id);
                           return (
                             <button
                               key={o.id}
@@ -520,8 +465,8 @@ export function ProductModal({
                     ) : (
                       <div className="space-y-2">
                         {g.options.map((o) => {
-                          const on = picked.includes(o.id);
-                          const idx = picked.indexOf(o.id);
+                          const on = p.includes(o.id);
+                          const idx = p.indexOf(o.id);
                           const isExtraCharged = extraFee > 0 && on && idx >= free;
                           const priceLabel =
                             o.price > 0
@@ -543,206 +488,261 @@ export function ProductModal({
                           );
                         })}
                       </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {productSizes.length > 1 && (
-                <div>
-                  <div className="mb-3 flex items-end justify-between">
-                    <h3
-                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
-                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                    );
+                  },
+                });
+              }
+            } else {
+              if (productSizes.length > 1) {
+                steps.push({
+                  key: "size",
+                  name: "Tamanho",
+                  required: true,
+                  isValid: () => !!sizeId,
+                  render: () => (
+                    <div
+                      className={cn(
+                        "grid gap-3",
+                        productSizes.length >= 3 ? "grid-cols-3" : "grid-cols-2",
+                      )}
                     >
-                      Escolha o Tamanho
-                    </h3>
-                    <span className="rounded-full bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-pink">
-                      Obrigatório
-                    </span>
-                  </div>
-                  <div className={cn(
-                    "grid gap-3",
-                    productSizes.length >= 3 ? "grid-cols-3" : "grid-cols-2",
-                  )}>
-                    {productSizes.map((s) => {
-                      const active = s.id === sizeId;
-                      return (
-                        <button
-                          key={s.id}
-                          onClick={() => setSizeId(s.id)}
-                          className={cn(
-                            "rounded-2xl border p-3 text-center transition-all",
-                            active
-                              ? "border-neon-pink bg-neon-pink/10 shadow-[0_0_15px_rgba(255,46,147,0.2)]"
-                              : "border-white/10 bg-white/5",
-                          )}
-                        >
-                          <span
-                            className="block font-display text-lg font-extrabold uppercase leading-none text-white"
-                            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                      {productSizes.map((s) => {
+                        const active = s.id === sizeId;
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => setSizeId(s.id)}
+                            className={cn(
+                              "rounded-2xl border p-3 text-center transition-all",
+                              active
+                                ? "border-neon-pink bg-neon-pink/10 shadow-[0_0_15px_rgba(255,46,147,0.2)]"
+                                : "border-white/10 bg-white/5",
+                            )}
                           >
-                            {s.label}
-                          </span>
-                          {s.priceDelta > 0 && (
-                            <span className="mt-1 block text-[10px] font-bold uppercase text-white/40">
-                              +{brl(s.priceDelta)}
+                            <span
+                              className="block font-display text-lg font-extrabold uppercase leading-none text-white"
+                              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                            >
+                              {s.label}
                             </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                            {s.priceDelta > 0 && (
+                              <span className="mt-1 block text-[10px] font-bold uppercase text-white/40">
+                                +{brl(s.priceDelta)}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ),
+                });
+              }
+              if (flavorList) {
+                steps.push({
+                  key: "flavor",
+                  name: "Sabor",
+                  isValid: () => true,
+                  render: () => (
+                    <div className="grid grid-cols-2 gap-2">
+                      {flavorList.map((f) => {
+                        const on = f === flavor;
+                        return (
+                          <button
+                            key={f}
+                            onClick={() => setFlavor(f)}
+                            className={cn(
+                              "rounded-2xl border px-3 py-3 text-sm font-bold transition-all",
+                              on
+                                ? "border-neon-pink bg-neon-pink/10 text-white shadow-[0_0_15px_rgba(255,46,147,0.15)]"
+                                : "border-white/10 bg-white/5 text-white/80",
+                            )}
+                          >
+                            {f}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ),
+                });
+              }
+              if (availableExtras.length > 0) {
+                steps.push({
+                  key: "extras",
+                  name: "Extras",
+                  isValid: () => true,
+                  render: () => (
+                    <div className="space-y-2">
+                      {availableExtras.map((e) => {
+                        const on = extras.includes(e.id);
+                        return (
+                          <ComplementRow
+                            key={e.id}
+                            active={on}
+                            onClick={() => toggleExtra(e.id)}
+                            label={e.label}
+                            price={e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
+                            priceColor={e.price > 0 ? "text-neon-pink" : "text-neon-cyan"}
+                          />
+                        );
+                      })}
+                    </div>
+                  ),
+                });
+              }
+              if (removableList.length > 0) {
+                steps.push({
+                  key: "remove",
+                  name: "Remover",
+                  isValid: () => true,
+                  render: () => (
+                    <div className="flex flex-wrap gap-2">
+                      {removableList.map((r) => {
+                        const off = removed.includes(r);
+                        return (
+                          <button
+                            key={r}
+                            onClick={() => toggleRemoved(r)}
+                            className={cn(
+                              "rounded-full border px-3 py-2 text-[13px] font-bold transition-all",
+                              off
+                                ? "border-neon-pink bg-neon-pink/15 text-white line-through decoration-neon-pink"
+                                : "border-white/10 bg-white/5 text-white/80",
+                            )}
+                          >
+                            {off ? `Sem ${r}` : r}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ),
+                });
+              }
+            }
 
-              {flavorList && (
+            // Sempre encerra com a etapa "Finalizar" (observação + revisão)
+            steps.push({
+              key: "finish",
+              name: "Finalizar",
+              isValid: () => true,
+              render: () => (
                 <div>
-                  <div className="mb-3 flex items-end justify-between">
-                    <h3
-                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
-                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-                    >
-                      Sabor
-                    </h3>
-                    <span
-                      className="text-lg text-white/40"
-                      style={{ fontFamily: "'Caveat', cursive" }}
-                    >
-                      escolha 1
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {flavorList.map((f) => {
-                      const on = f === flavor;
-                      return (
-                        <button
-                          key={f}
-                          onClick={() => setFlavor(f)}
-                          className={cn(
-                            "rounded-2xl border px-3 py-3 text-sm font-bold transition-all",
-                            on
-                              ? "border-neon-pink bg-neon-pink/10 text-white shadow-[0_0_15px_rgba(255,46,147,0.15)]"
-                              : "border-white/10 bg-white/5 text-white/80",
-                          )}
-                        >
-                          {f}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Ex.: caprichar na calda, sem gelo…"
+                    className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
+                    rows={3}
+                  />
                 </div>
-              )}
+              ),
+            });
 
-              {availableExtras.length > 0 && (
+            const clampedStep = Math.min(stepIndex, steps.length - 1);
+            const current = steps[clampedStep];
+            const isMulti = steps.length > 1;
+            const isLast = clampedStep >= steps.length - 1;
+            const canAdvance = current.isValid();
+            const totalSteps = steps.length;
+
+            // Expõe pra usar no footer via ref-like: guarda em variáveis no closure externo
+            wizardCtxRef.current = {
+              totalSteps,
+              clampedStep,
+              isLast,
+              canAdvance,
+              stepName: current.name,
+            };
+
+            return (
+              <div className="space-y-6">
+                {isMulti && (
+                  <div className="relative">
+                    <div className="absolute left-5 right-5 top-5 h-[2px] bg-white/10" />
+                    <div
+                      className="absolute left-5 top-5 h-[2px] bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] transition-all duration-300"
+                      style={{
+                        width:
+                          totalSteps > 1
+                            ? `calc((100% - 2.5rem) * ${clampedStep / (totalSteps - 1)})`
+                            : "0%",
+                      }}
+                    />
+                    <div className="relative flex items-start justify-between">
+                      {steps.map((s, i) => {
+                        const done = i < clampedStep;
+                        const cur = i === clampedStep;
+                        return (
+                          <button
+                            key={s.key}
+                            onClick={() => setStepIndex(i)}
+                            className="flex min-w-0 flex-1 flex-col items-center gap-1"
+                          >
+                            <span
+                              className={cn(
+                                "grid h-10 w-10 place-items-center rounded-full border-2 text-sm font-black transition-all",
+                                cur
+                                  ? "border-neon-pink bg-neon-pink text-white shadow-[0_0_20px_rgba(255,46,147,0.55)]"
+                                  : done
+                                    ? "border-neon-pink bg-neon-pink/20 text-neon-pink"
+                                    : "border-white/15 bg-white/5 text-white/50",
+                              )}
+                            >
+                              {done ? <Check className="h-4 w-4" strokeWidth={3.5} /> : i + 1}
+                            </span>
+                            <span
+                              className={cn(
+                                "truncate text-[11px] font-bold uppercase tracking-wide max-w-[70px]",
+                                cur ? "text-white" : done ? "text-neon-pink/80" : "text-white/40",
+                              )}
+                            >
+                              {s.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <div className="mb-3 flex items-end justify-between gap-3">
                     <h3
-                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                      className="font-display text-2xl font-extrabold uppercase tracking-wider text-neon-cyan"
                       style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                     >
-                      Complementos
+                      {current.name}
                     </h3>
-                    <span
-                      className="text-lg text-white/40"
-                      style={{ fontFamily: "'Caveat', cursive" }}
-                    >
-                      adicione o que quiser
-                    </span>
+                    {current.required ? (
+                      <span className="rounded-full bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-pink">
+                        Obrigatório
+                      </span>
+                    ) : (
+                      <span
+                        className="text-lg text-white/40"
+                        style={{ fontFamily: "'Caveat', cursive" }}
+                      >
+                        {current.key === "finish" ? "quase lá" : "opcional"}
+                      </span>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    {availableExtras.map((e) => {
-                      const on = extras.includes(e.id);
-                      return (
-                        <ComplementRow
-                          key={e.id}
-                          active={on}
-                          onClick={() => toggleExtra(e.id)}
-                          label={e.label}
-                          price={e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
-                          priceColor={e.price > 0 ? "text-neon-pink" : "text-neon-cyan"}
-                        />
-                      );
-                    })}
-                  </div>
+                  {current.render()}
                 </div>
-              )}
-
-              {removableList.length > 0 && (
-                <div>
-                  <div className="mb-3 flex items-end justify-between">
-                    <h3
-                      className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
-                      style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-                    >
-                      Remover
-                    </h3>
-                    <span
-                      className="text-lg text-white/40"
-                      style={{ fontFamily: "'Caveat', cursive" }}
-                    >
-                      toque para tirar
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {removableList.map((r) => {
-                      const off = removed.includes(r);
-                      return (
-                        <button
-                          key={r}
-                          onClick={() => toggleRemoved(r)}
-                          className={cn(
-                            "rounded-full border px-3 py-2 text-[13px] font-bold transition-all",
-                            off
-                              ? "border-neon-pink bg-neon-pink/15 text-white line-through decoration-neon-pink"
-                              : "border-white/10 bg-white/5 text-white/80",
-                          )}
-                        >
-                          {off ? `Sem ${r}` : r}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {(!isCustom || stepIndex >= optionGroups.length - 1) && (
-            <div className="mt-8">
-              <h3
-                className="mb-3 font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
-                style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-              >
-                Observação
-              </h3>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Ex.: caprichar na calda, sem gelo…"
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
-                rows={3}
-              />
-            </div>
-          )}
+              </div>
+            );
+          })()}
 
           <div className="h-6" />
         </div>
 
+
         {/* Footer — quantidade + CTA gradiente pink */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
           {(() => {
-            const isWizard = isCustom && optionGroups.length > 0;
-            const isLastStep = !isWizard || stepIndex >= optionGroups.length - 1;
-            const currentGroup = isWizard ? optionGroups[stepIndex] : null;
-            const currentPicked = currentGroup ? (groupSel[currentGroup.id] ?? []) : [];
-            const canAdvance =
-              !currentGroup || !currentGroup.required || currentPicked.length > 0;
+            const { totalSteps, clampedStep, isLast, canAdvance } = wizardCtxRef.current;
+            const isWizard = totalSteps > 1;
             return (
               <div className="flex items-center gap-3">
-                {isWizard && stepIndex > 0 && (
+                {isWizard && clampedStep > 0 && (
                   <button
                     onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
                     className="h-12 rounded-2xl border border-white/15 bg-white/5 px-4 font-display text-sm font-bold uppercase tracking-wider text-white/80 active:scale-95"
@@ -750,7 +750,7 @@ export function ProductModal({
                     Voltar
                   </button>
                 )}
-                {isLastStep && (
+                {isLast && (
                   <div className="flex items-center rounded-2xl border border-white/10 bg-white/10 p-1">
                     <button
                       onClick={() => setQty(Math.max(1, qty - 1))}
@@ -769,7 +769,7 @@ export function ProductModal({
                     </button>
                   </div>
                 )}
-                {isLastStep ? (
+                {isLast ? (
                   <button
                     onClick={submit}
                     className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97]"
@@ -789,7 +789,7 @@ export function ProductModal({
                         toast.error("Escolha uma opção para continuar.");
                         return;
                       }
-                      setStepIndex((i) => Math.min(optionGroups.length - 1, i + 1));
+                      setStepIndex((i) => Math.min(totalSteps - 1, i + 1));
                     }}
                     disabled={!canAdvance}
                     className="flex h-12 flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97] disabled:opacity-50"
@@ -811,6 +811,7 @@ export function ProductModal({
     </div>
   );
 }
+
 
 function ComplementRow({
   active,
