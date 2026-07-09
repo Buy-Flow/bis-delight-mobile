@@ -90,9 +90,14 @@ import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    edit: typeof search.edit === "string" ? search.edit : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const validTabs = ["products", "categories", "highlights", "extras", "news", "settings"] as const;
+    const rawTab = typeof search.tab === "string" ? search.tab : undefined;
+    return {
+      edit: typeof search.edit === "string" ? search.edit : undefined,
+      tab: (validTabs as readonly string[]).includes(rawTab ?? "") ? (rawTab as Tab) : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Admin — Painel Quero Bis" },
@@ -106,9 +111,10 @@ type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "setti
 
 function AdminPage() {
   const navigate = useNavigate();
-  const { edit: editProductId } = Route.useSearch();
+  const { edit: editProductId, tab: tabParam } = Route.useSearch();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>(editProductId ? "products" : "products");
+  const [tab, setTab] = useState<Tab>(tabParam ?? "products");
+
 
 
   const signOut = async () => {
@@ -203,7 +209,8 @@ function AdminPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-6">
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}
-        {tab === "categories" && <CategoriesTab />}
+
+        {tab === "categories" && <CategoriesTab initialEditId={editProductId} />}
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
         {tab === "news" && <NewsTab />}
@@ -1257,7 +1264,7 @@ function CategoryPicker({
 
 
 /* ============================= Categories ============================= */
-function CategoriesTab() {
+function CategoriesTab({ initialEditId }: { initialEditId?: string }) {
   const { data: categories = [] } = useCategories();
   const reorder = useReorderCategories();
   const base = categories.filter((c) => c.id !== "all");
@@ -1266,6 +1273,17 @@ function CategoriesTab() {
   const list = localOrder ?? base;
   const [editing, setEditing] = useState<Category | null>(null);
   const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!initialEditId || !base.length) return;
+    const c = base.find((c) => c.id === initialEditId);
+    if (c) {
+      setEditing(c);
+      navigate({ to: "/admin", search: { tab: "categories" }, replace: true });
+    }
+  }, [initialEditId, base, navigate]);
+
 
   const onDragOver = (e: React.DragEvent, overId: string) => {
     e.preventDefault();

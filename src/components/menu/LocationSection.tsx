@@ -2,6 +2,8 @@ import { MapPin, Navigation, MessageCircle, Instagram, Church, Phone, Bike, Shop
 import { BRAND } from "@/data/menu";
 import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/lib/menu-data";
 import { useEffect, useState } from "react";
+import { AdminEditButton } from "./AdminEditButton";
+
 
 const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const DAY_LABEL: Record<WeekDay, string> = {
@@ -104,6 +106,8 @@ export function LocationSection() {
 
   return (
     <section id="localizacao" className="relative px-5 pb-10 pt-16">
+      <AdminEditButton tab="settings" label="Editar loja no painel" className="absolute right-5 top-4" />
+
       {/* Ambient decorations */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-4 top-6 grid grid-cols-4 gap-2 opacity-40">

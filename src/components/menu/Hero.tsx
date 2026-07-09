@@ -1,5 +1,7 @@
 import { useSiteSettings } from "@/lib/menu-data";
 import { type HeroImagesConfig } from "@/lib/menu-data";
+import { AdminEditButton } from "./AdminEditButton";
+
 
 export function Hero({
   onScrollMenu,
@@ -13,6 +15,8 @@ export function Hero({
 
   return (
     <section className="relative px-4 pb-0 pt-2">
+      <AdminEditButton tab="settings" label="Editar hero na loja" className="absolute right-4 top-3" />
+
       {/* Pink/magenta glow behind hero images — matches the bg tone */}
       <div
         aria-hidden="true"

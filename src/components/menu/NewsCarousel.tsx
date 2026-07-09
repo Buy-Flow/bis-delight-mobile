@@ -3,6 +3,8 @@ import { Plus, Sparkles } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { AdminEditButton } from "./AdminEditButton";
+
 
 export const BADGE_STYLES = [
   { bg: "bg-neon-cyan", text: "text-[oklch(0.18_0.11_305)]", shadow: "shadow-[0_4px_0_0_oklch(0.55_0.20_200)]", rotate: "-rotate-[5deg]", label: "Novo" },
@@ -68,7 +70,9 @@ export function NewsCarousel({
 
   return (
     <section className="relative isolate overflow-visible py-8">
+      <AdminEditButton tab="news" label="Editar novidades no painel" className="absolute right-4 top-4" />
       {/* Brilhos coloridos no fundo — destaque das novidades */}
+
       <div aria-hidden className="pointer-events-none absolute -inset-x-40 -inset-y-28 -z-10 overflow-visible">
         <div
           className="absolute top-16 left-10 h-80 w-80 rounded-full opacity-24 blur-3xl animate-float-slow"
