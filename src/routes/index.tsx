@@ -665,8 +665,10 @@ function HighlightsCarousel({
   }[accentColor];
 
   return (
-      <section className="overflow-visible pb-4 pt-2">
+      <section className="relative overflow-visible pb-4 pt-2">
+      <AdminEditButton tab="highlights" label="Editar destaques no painel" className="absolute right-4 top-2" />
       {!hideHeader && (
+
         <div className="mb-3 px-4 text-center">
           <h2
             className="font-display text-[34px] font-black uppercase leading-[0.95] text-white"
