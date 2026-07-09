@@ -231,6 +231,18 @@ function AuthPage() {
                       className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
                     />
                   </Field>
+                  <Field icon={Cake}>
+                    <input
+                      type="date"
+                      required
+                      autoComplete="bday"
+                      value={birthday}
+                      onChange={(e) => setBirthday(e.target.value)}
+                      max={new Date().toISOString().slice(0, 10)}
+                      placeholder="Data de aniversário"
+                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none [color-scheme:dark]"
+                    />
+
                 </>
               )}
               <Field icon={Mail}>
