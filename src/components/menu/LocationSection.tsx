@@ -2,6 +2,8 @@ import { MapPin, Navigation, MessageCircle, Instagram, Church, Phone, Bike, Shop
 import { BRAND } from "@/data/menu";
 import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/lib/menu-data";
 import { useEffect, useState } from "react";
+import { AdminEditButton } from "./AdminEditButton";
+
 
 const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const DAY_LABEL: Record<WeekDay, string> = {
