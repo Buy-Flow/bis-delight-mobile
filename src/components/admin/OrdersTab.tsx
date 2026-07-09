@@ -305,19 +305,34 @@ export function OrdersTab() {
             Gerenciamento em tempo real
           </p>
         </div>
-        <div className="inline-flex items-center gap-2 self-start rounded-full border border-purple-500/30 bg-purple-900/30 px-4 py-2 md:self-auto">
-          <span
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <button
+            onClick={toggleNotify}
             className={cn(
-              "h-2 w-2 rounded-full bg-neon-cyan",
-              refreshing ? "animate-spin" : "animate-pulse shadow-[0_0_10px_var(--neon-cyan)]",
+              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all",
+              notifyOn
+                ? "border-emerald-400/60 bg-emerald-400/10 text-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.25)]"
+                : "border-white/15 bg-white/5 text-white/60 hover:bg-white/10",
             )}
-          />
-          <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">
-            {refreshing ? "Atualizando" : "Ao vivo"}
-          </span>
+            title={notifyOn ? "Desativar notificações" : "Ativar notificações"}
+          >
+            {notifyOn ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+            {notifyOn ? "Alertas ON" : "Alertas OFF"}
+          </button>
+          <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-900/30 px-4 py-2">
+            <span
+              className={cn(
+                "h-2 w-2 rounded-full bg-neon-cyan",
+                refreshing ? "animate-spin" : "animate-pulse shadow-[0_0_10px_var(--neon-cyan)]",
+              )}
+            />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">
+              {refreshing ? "Atualizando" : "Ao vivo"}
+            </span>
+          </div>
         </div>
-
       </div>
+
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4">
