@@ -132,6 +132,15 @@ function Content() {
   const newsLoading = settingsLoading || productsLoading;
   const newsError = settingsError || productsError;
 
+  // Upsell do carrinho: abre o modal do produto sugerido
+  useEffect(() => {
+    if (!pendingProductId) return;
+    const p = products.find((x) => x.id === pendingProductId);
+    if (p) setModalProduct(p);
+    consumePendingProduct();
+  }, [pendingProductId, products, consumePendingProduct]);
+
+
   const scrollToMenu = () => {
     document.getElementById("categorias")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
