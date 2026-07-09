@@ -5,6 +5,7 @@ import { useCart } from "@/lib/cart-context";
 import { TopBar } from "@/components/menu/TopBar";
 import { Hero } from "@/components/menu/Hero";
 import { Benefits } from "@/components/menu/Benefits";
+import { LoyaltyProgress } from "@/components/menu/LoyaltyProgress";
 import { CategoryStrip } from "@/components/menu/CategoryStrip";
 import { ProductCard } from "@/components/menu/ProductCard";
 import { HighlightCard } from "@/components/menu/HighlightCard";
@@ -252,6 +253,7 @@ function Content() {
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
       <Hero onScrollMenu={scrollToMenu} />
       <Reveal><Benefits /></Reveal>
+      <Reveal><LoyaltyProgress /></Reveal>
       
       
 
