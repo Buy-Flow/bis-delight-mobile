@@ -16,6 +16,8 @@ import {
   Undo2,
   ChevronDown,
   Star,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
