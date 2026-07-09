@@ -316,7 +316,7 @@ function Content() {
       {/* Product list */}
       <section ref={menuRef} className="px-4 pb-28">
 
-        <div id="feito-com-amor" className="mb-4 scroll-mt-8">
+        <div id="feito-com-amor" className="mb-4 scroll-mt-2 pt-6">
 
           <div className="flex items-center justify-center gap-3">
             <span className="h-[2px] w-8 rounded-full bg-linear-to-r from-transparent to-neon-pink" />
