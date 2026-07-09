@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from "react";
-import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown } from "lucide-react";
+import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { useSiteSettings, useCategories } from "@/lib/menu-data";
 
 
@@ -441,13 +441,43 @@ export function ProductModal({
                 className="h-9 w-9 border border-white/15 bg-black/50 backdrop-blur-md"
               />
             </div>
-            <button
-              onClick={onClose}
-              aria-label="Fechar"
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md active:scale-95"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  const url = `${window.location.origin}/produto/${product.id}`;
+                  const shareData = {
+                    title: product.name,
+                    text: `Olha esse ${product.name} da Quero Bis 🍧`,
+                    url,
+                  };
+                  const nav = navigator as Navigator & {
+                    share?: (d: ShareData) => Promise<void>;
+                  };
+                  try {
+                    if (nav.share) {
+                      await nav.share(shareData);
+                    } else {
+                      await navigator.clipboard.writeText(url);
+                      toast.success("Link copiado!");
+                    }
+                  } catch {
+                    /* usuário cancelou */
+                  }
+                }}
+                aria-label="Compartilhar"
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md active:scale-95"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={onClose}
+                aria-label="Fechar"
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/50 text-white backdrop-blur-md active:scale-95"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
           </div>
 
           {/* Glow decorativo de fundo */}

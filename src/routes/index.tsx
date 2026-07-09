@@ -142,6 +142,24 @@ function Content() {
     consumePendingProduct();
   }, [pendingProductId, products, consumePendingProduct]);
 
+  // Deep-link ?produto=<id> — vem de /produto/:id (share do WhatsApp) e abre o modal
+  useEffect(() => {
+    if (typeof window === "undefined" || products.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get("produto");
+    if (!pid) return;
+    const p = products.find((x) => x.id === pid);
+    if (p) setModalProduct(p);
+    params.delete("produto");
+    const nextSearch = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + (nextSearch ? `?${nextSearch}` : "") + window.location.hash,
+    );
+  }, [products]);
+
+
 
   const scrollToMenu = () => {
     document.getElementById("categorias")?.scrollIntoView({ behavior: "smooth", block: "start" });
