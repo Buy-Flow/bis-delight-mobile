@@ -347,8 +347,6 @@ export function ProductModal({
           if (picked[0]) sizeLabel = picked[0].label;
           continue;
         }
-        const free = g.freeCount ?? 0;
-        const extra = g.pricePerExtra ?? 0;
         picked.forEach((o, idx) => {
           const unitP = getOptUnitPrice(g, o, idx);
           const q = groupQty[g.id]?.[o.id] ?? 1;
