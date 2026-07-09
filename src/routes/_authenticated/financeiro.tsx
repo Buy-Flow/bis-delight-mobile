@@ -477,7 +477,7 @@ function FinanceiroPage() {
               <BigKpi
                 label="Faturamento"
                 value={brl(kpis.revenue)}
-                delta={kpis.deltaRevenue}
+                delta={period === "tudo" ? undefined : kpis.deltaRevenue}
                 icon={Wallet}
                 accent="text-neon-cyan"
                 glow="shadow-[0_0_30px_-8px_var(--neon-cyan)]"
@@ -485,14 +485,14 @@ function FinanceiroPage() {
               <BigKpi
                 label="Pedidos pagos"
                 value={String(kpis.ordersCount)}
-                delta={kpis.deltaOrders}
+                delta={period === "tudo" ? undefined : kpis.deltaOrders}
                 icon={ShoppingBag}
                 accent="text-neon-yellow"
               />
               <BigKpi
                 label="Ticket médio"
                 value={brl(kpis.avgTicket)}
-                delta={kpis.deltaTicket}
+                delta={period === "tudo" ? undefined : kpis.deltaTicket}
                 icon={Receipt}
                 accent="text-neon-pink"
               />
