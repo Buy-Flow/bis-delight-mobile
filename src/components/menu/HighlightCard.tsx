@@ -18,7 +18,16 @@ export function HighlightCard({
 
   return (
     <div
-      className="relative flex h-full overflow-hidden rounded-[26px]"
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(product)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(product);
+        }
+      }}
+      className="relative flex h-full cursor-pointer overflow-hidden rounded-[26px] transition active:scale-[0.99]"
       style={{
         background:
           "linear-gradient(155deg, oklch(0.24 0.17 305) 0%, oklch(0.14 0.10 305) 55%, oklch(0.10 0.06 300) 100%)",
@@ -26,6 +35,7 @@ export function HighlightCard({
           "0 22px 44px -18px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.06)",
       }}
     >
+
       {/* Neon border tint */}
       <div className="pointer-events-none absolute inset-0 rounded-[26px] ring-1 ring-inset ring-neon-pink/20" />
       {/* Corner glows */}
