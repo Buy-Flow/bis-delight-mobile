@@ -90,6 +90,9 @@ import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    edit: typeof search.edit === "string" ? search.edit : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Admin — Painel Quero Bis" },
@@ -103,8 +106,10 @@ type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "setti
 
 function AdminPage() {
   const navigate = useNavigate();
+  const { edit: editProductId } = Route.useSearch();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>("products");
+  const [tab, setTab] = useState<Tab>(editProductId ? "products" : "products");
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
