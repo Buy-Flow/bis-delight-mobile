@@ -70,7 +70,9 @@ export function NewsCarousel({
 
   return (
     <section className="relative isolate overflow-visible py-8">
+      <AdminEditButton tab="news" label="Editar novidades no painel" className="absolute right-4 top-4" />
       {/* Brilhos coloridos no fundo — destaque das novidades */}
+
       <div aria-hidden className="pointer-events-none absolute -inset-x-40 -inset-y-28 -z-10 overflow-visible">
         <div
           className="absolute top-16 left-10 h-80 w-80 rounded-full opacity-24 blur-3xl animate-float-slow"
