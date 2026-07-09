@@ -2161,6 +2161,7 @@ type SettingsSection =
   | "social"
   | "announcement"
   | "news"
+  | "coupons"
   | "appearance";
 
 
