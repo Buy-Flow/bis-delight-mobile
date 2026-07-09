@@ -534,6 +534,7 @@ function HighlightsCarousel({
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const pausedRef = useRef(false);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -563,11 +564,41 @@ function HighlightsCarousel({
     };
     el.addEventListener("wheel", onWheel, { passive: false });
 
+    // Pausa autoplay durante interação
+    const pause = () => { pausedRef.current = true; };
+    const resumeSoon = () => {
+      window.setTimeout(() => { pausedRef.current = false; }, 4000);
+    };
+    el.addEventListener("pointerdown", pause);
+    el.addEventListener("pointerup", resumeSoon);
+    el.addEventListener("pointercancel", resumeSoon);
+    el.addEventListener("touchend", resumeSoon);
+
+    // Autoplay: avança para a direita a cada 3.5s, com loop
+    const interval = window.setInterval(() => {
+      if (pausedRef.current) return;
+      if (!el) return;
+      const step = el.clientWidth * 0.88;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const atEnd = el.scrollLeft >= maxScroll - 2;
+      if (atEnd) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: step, behavior: "smooth" });
+      }
+    }, 3500);
+
     return () => {
       el.removeEventListener("scroll", onScroll);
       el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("pointerdown", pause);
+      el.removeEventListener("pointerup", resumeSoon);
+      el.removeEventListener("pointercancel", resumeSoon);
+      el.removeEventListener("touchend", resumeSoon);
+      window.clearInterval(interval);
     };
   }, [highlights.length]);
+
 
   const scrollTo = (i: number) => {
     const el = scrollerRef.current;
