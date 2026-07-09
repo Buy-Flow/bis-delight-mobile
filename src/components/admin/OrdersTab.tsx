@@ -541,8 +541,9 @@ function OrderCard({
                 <Star className="h-3.5 w-3.5" /> Pedir avaliação
               </a>
             )}
-
+            {order.status !== "cancelado" && order.status !== "entregue" && (
               <button
+
                 onClick={() => onStatus(order, "cancelado")}
                 disabled={busy}
                 className="inline-flex items-center justify-center rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-red-400 transition-colors hover:bg-red-500 hover:text-white disabled:opacity-50"
