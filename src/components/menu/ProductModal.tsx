@@ -172,6 +172,9 @@ export function ProductModal({
   const [groupSel, setGroupSel] = useState<Record<string, string[]>>(
     initialGroupSel(product),
   );
+  // qty por (groupId, optionId) — 1ª unidade preço cheio, próximas 50% off
+  const [groupQty, setGroupQty] = useState<Record<string, Record<string, number>>>({});
+
   const [stepIndex, setStepIndex] = useState(0);
   const wizardCtxRef = useRef<{
     totalSteps: number;
