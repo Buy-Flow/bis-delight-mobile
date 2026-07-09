@@ -310,6 +310,35 @@ function FinanceiroPage() {
     return arr;
   }, [paid]);
 
+  /* Heatmap DoW × Hour */
+  const heatmap = useMemo(() => {
+    const grid: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+    const revGrid: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+    let minH = 23;
+    let maxH = 0;
+    let peak = { dow: 0, h: 0, count: 0, revenue: 0 };
+    for (const o of paid) {
+      const d = new Date(o.created_at);
+      const dow = d.getDay();
+      const h = d.getHours();
+      grid[dow][h] += 1;
+      revGrid[dow][h] += Number(o.total || 0);
+      if (h < minH) minH = h;
+      if (h > maxH) maxH = h;
+      if (grid[dow][h] > peak.count) peak = { dow, h, count: grid[dow][h], revenue: revGrid[dow][h] };
+    }
+    if (minH > maxH) {
+      minH = 10;
+      maxH = 22;
+    }
+    // pad edges a bit
+    minH = Math.max(0, minH - 1);
+    maxH = Math.min(23, maxH + 1);
+    const hours = Array.from({ length: maxH - minH + 1 }, (_, i) => minH + i);
+    const max = Math.max(1, ...grid.flat());
+    return { grid, revGrid, hours, max, peak };
+  }, [paid]);
+
   /* Status split */
   const statusSplit = useMemo(() => {
     const map = new Map<string, number>();
