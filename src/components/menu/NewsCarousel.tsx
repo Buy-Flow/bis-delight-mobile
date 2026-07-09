@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Sparkles } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
@@ -25,68 +25,23 @@ export function NewsCarousel({
   subtitle?: string;
   ticker?: string;
 }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef(false);
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  // Duplica os itens para permitir loop infinito sempre para a direita (>= 2 itens).
-  const loopItems = items.length >= 2 ? [...items, ...items] : items;
-
-  // Loop invisível: quando o scroll passa da primeira cópia (setWidth), volta
-  // silenciosamente para a mesma posição na primeira — mantém o movimento
-  // sempre indo para a direita sem "rewind".
+  // Autoplay: troca 1 card a cada 4s. Sem duplicação — mostra exatamente os itens configurados.
   useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el || items.length < 2) return;
-    const onScroll = () => {
-      const first = el.firstElementChild as HTMLElement | null;
-      if (!first) return;
-      const step = first.getBoundingClientRect().width + 20;
-      const setWidth = items.length * step;
-      if (el.scrollLeft >= setWidth) {
-        el.scrollTo({ left: el.scrollLeft - setWidth, behavior: "auto" });
-      } else if (el.scrollLeft < 0) {
-        el.scrollTo({ left: el.scrollLeft + setWidth, behavior: "auto" });
-      }
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [items.length]);
-
-  // Autoplay: avança 1 card a cada 4s, sempre para a direita (loop invisível).
-  useEffect(() => {
-    if (items.length < 2) return;
-    const el = scrollerRef.current;
-    if (!el) return;
-    const pause = () => {
-      pausedRef.current = true;
-    };
-    const resume = () => {
-      pausedRef.current = false;
-    };
-    el.addEventListener("pointerdown", pause);
-    el.addEventListener("pointerup", resume);
-    el.addEventListener("pointercancel", resume);
-    el.addEventListener("mouseleave", resume);
-
+    if (items.length < 2 || paused) return;
     const id = window.setInterval(() => {
-      if (pausedRef.current) return;
-      const node = scrollerRef.current;
-      if (!node) return;
-      const first = node.firstElementChild as HTMLElement | null;
-      if (!first) return;
-      const step = first.getBoundingClientRect().width + 20;
-      node.scrollBy({ left: step, behavior: "smooth" });
+      setCurrent((c) => (c + 1) % items.length);
     }, 4000);
+    return () => window.clearInterval(id);
+  }, [items.length, paused]);
 
+  // Garante índice válido se a lista mudar
+  useEffect(() => {
+    if (current >= items.length) setCurrent(0);
+  }, [items.length, current]);
 
-    return () => {
-      window.clearInterval(id);
-      el.removeEventListener("pointerdown", pause);
-      el.removeEventListener("pointerup", resume);
-      el.removeEventListener("pointercancel", resume);
-      el.removeEventListener("mouseleave", resume);
-    };
-  }, [items.length]);
 
 
 
@@ -168,22 +123,54 @@ export function NewsCarousel({
       })()}
 
 
-      {/* Card scroller — edge-to-edge, cards ocupam quase toda a tela */}
+      {/* Card único com crossfade — troca a cada 4s */}
       <div
-        ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto py-6 px-[7.5vw] scroll-px-[7.5vw]"
+        className="relative mx-auto w-[85vw] max-w-[380px] py-6"
+        style={{ aspectRatio: "3 / 4" }}
+        onPointerDown={() => setPaused(true)}
+        onPointerUp={() => setPaused(false)}
+        onPointerCancel={() => setPaused(false)}
+        onMouseLeave={() => setPaused(false)}
       >
-        {loopItems.map((p, i) => (
-          <NewsPosterCard
-            key={`${p.id}-${i}`}
-            product={p}
-            onOpen={onOpen}
-            badge={BADGE_STYLES[i % BADGE_STYLES.length]}
-            eyebrow={EYEBROWS[i % EYEBROWS.length]}
-            index={i % Math.max(1, items.length)}
-          />
+        {items.map((p, i) => (
+          <div
+            key={p.id}
+            className="absolute inset-0 transition-opacity duration-700 ease-out"
+            style={{
+              opacity: i === current ? 1 : 0,
+              pointerEvents: i === current ? "auto" : "none",
+            }}
+            aria-hidden={i !== current}
+          >
+            <NewsPosterCard
+              product={p}
+              onOpen={onOpen}
+              badge={BADGE_STYLES[i % BADGE_STYLES.length]}
+              eyebrow={EYEBROWS[i % EYEBROWS.length]}
+              index={i}
+            />
+          </div>
         ))}
       </div>
+
+      {/* Indicadores (pontinhos) */}
+      {items.length > 1 && (
+        <div className="mt-2 flex justify-center gap-2">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Ir para novidade ${i + 1}`}
+              onClick={() => setCurrent(i)}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                i === current ? "w-6 bg-neon-pink" : "w-1.5 bg-white/30",
+              )}
+            />
+          ))}
+        </div>
+      )}
+
 
 
 
