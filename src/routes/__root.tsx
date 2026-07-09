@@ -207,13 +207,22 @@ function RootComponent() {
 
   useEffect(() => {
     let mounted = true;
+    let lastUserId: string | null | undefined = undefined; // undefined = ainda não inicializado
     import("@/integrations/supabase/client").then(({ supabase }) => {
       if (!mounted) return;
-      const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-        if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-          router.invalidate();
-          if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+        const nextUserId = session?.user?.id ?? null;
+        // Primeira notificação (INITIAL_SESSION / SIGNED_IN de restauração): apenas registra,
+        // sem invalidar — evita a "piscada" no carregamento.
+        if (lastUserId === undefined) {
+          lastUserId = nextUserId;
+          return;
         }
+        // Só invalida quando a identidade REALMENTE mudou (login/logout/troca de conta).
+        if (nextUserId === lastUserId && event !== "USER_UPDATED") return;
+        lastUserId = nextUserId;
+        router.invalidate();
+        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       });
       (window as unknown as { __sbUnsub?: () => void }).__sbUnsub = () => sub.subscription.unsubscribe();
     });
@@ -222,6 +231,7 @@ function RootComponent() {
       (window as unknown as { __sbUnsub?: () => void }).__sbUnsub?.();
     };
   }, [queryClient, router]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
