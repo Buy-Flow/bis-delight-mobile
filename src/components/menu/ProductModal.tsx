@@ -304,7 +304,28 @@ export function ProductModal({
       const has = cur.includes(optId);
       return { ...prev, [g.id]: has ? cur.filter((x) => x !== optId) : [...cur, optId] };
     });
+    // limpa qty quando desmarca
+    setGroupQty((prev) => {
+      const cur = prev[g.id] ?? {};
+      if (cur[optId]) {
+        const nextGroup = { ...cur };
+        delete nextGroup[optId];
+        return { ...prev, [g.id]: nextGroup };
+      }
+      return prev;
+    });
   };
+  const changeGroupQty = (gId: string, optId: string, delta: number) => {
+    setGroupQty((prev) => {
+      const cur = prev[gId]?.[optId] ?? 1;
+      const nextVal = Math.max(1, cur + delta);
+      return {
+        ...prev,
+        [gId]: { ...(prev[gId] ?? {}), [optId]: nextVal },
+      };
+    });
+  };
+
 
   const canSubmit = !isCustom
     ? true
