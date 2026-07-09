@@ -336,7 +336,7 @@ export function ProductModal({
         {/* HERO — imagem em bleed com gradiente descendo */}
         <div
           className={cn(
-            "relative shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
+            "relative z-10 shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
             collapsed ? "h-[72px]" : "h-64",
           )}
         >
