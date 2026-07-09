@@ -419,9 +419,16 @@ function Content() {
         <div className="-mx-4 mb-2">
           <CategoryStrip
             active={activeCat}
-            onChange={(id) => setActiveCat(id)}
+            onChange={(id) => {
+              const y = window.scrollY;
+              setActiveCat(id);
+              // Impede o "salto" que o browser aplica ao focar o chip clicado
+              requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "auto" }));
+              setTimeout(() => window.scrollTo({ top: y, behavior: "auto" }), 0);
+            }}
           />
         </div>
+
 
         <div className="grid grid-cols-2 gap-3">
           {visibleProducts.map((p) => (
