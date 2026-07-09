@@ -738,15 +738,11 @@ export function ProductModal({
         {/* Footer — quantidade + CTA gradiente pink */}
         <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
           {(() => {
-            const isWizard = isCustom && optionGroups.length > 0;
-            const isLastStep = !isWizard || stepIndex >= optionGroups.length - 1;
-            const currentGroup = isWizard ? optionGroups[stepIndex] : null;
-            const currentPicked = currentGroup ? (groupSel[currentGroup.id] ?? []) : [];
-            const canAdvance =
-              !currentGroup || !currentGroup.required || currentPicked.length > 0;
+            const { totalSteps, clampedStep, isLast, canAdvance } = wizardCtxRef.current;
+            const isWizard = totalSteps > 1;
             return (
               <div className="flex items-center gap-3">
-                {isWizard && stepIndex > 0 && (
+                {isWizard && clampedStep > 0 && (
                   <button
                     onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
                     className="h-12 rounded-2xl border border-white/15 bg-white/5 px-4 font-display text-sm font-bold uppercase tracking-wider text-white/80 active:scale-95"
@@ -754,7 +750,7 @@ export function ProductModal({
                     Voltar
                   </button>
                 )}
-                {isLastStep && (
+                {isLast && (
                   <div className="flex items-center rounded-2xl border border-white/10 bg-white/10 p-1">
                     <button
                       onClick={() => setQty(Math.max(1, qty - 1))}
@@ -773,7 +769,7 @@ export function ProductModal({
                     </button>
                   </div>
                 )}
-                {isLastStep ? (
+                {isLast ? (
                   <button
                     onClick={submit}
                     className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97]"
@@ -793,7 +789,7 @@ export function ProductModal({
                         toast.error("Escolha uma opção para continuar.");
                         return;
                       }
-                      setStepIndex((i) => Math.min(optionGroups.length - 1, i + 1));
+                      setStepIndex((i) => Math.min(totalSteps - 1, i + 1));
                     }}
                     disabled={!canAdvance}
                     className="flex h-12 flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97] disabled:opacity-50"
@@ -815,6 +811,7 @@ export function ProductModal({
     </div>
   );
 }
+
 
 function ComplementRow({
   active,
