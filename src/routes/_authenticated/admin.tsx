@@ -1264,7 +1264,7 @@ function CategoryPicker({
 
 
 /* ============================= Categories ============================= */
-function CategoriesTab() {
+function CategoriesTab({ initialEditId }: { initialEditId?: string }) {
   const { data: categories = [] } = useCategories();
   const reorder = useReorderCategories();
   const base = categories.filter((c) => c.id !== "all");
@@ -1273,6 +1273,17 @@ function CategoriesTab() {
   const list = localOrder ?? base;
   const [editing, setEditing] = useState<Category | null>(null);
   const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!initialEditId || !base.length) return;
+    const c = base.find((c) => c.id === initialEditId);
+    if (c) {
+      setEditing(c);
+      navigate({ to: "/admin", search: { tab: "categories" }, replace: true });
+    }
+  }, [initialEditId, base, navigate]);
+
 
   const onDragOver = (e: React.DragEvent, overId: string) => {
     e.preventDefault();
