@@ -1,8 +1,11 @@
-import { Plus, Flame } from "lucide-react";
+import { Plus, Flame, Pencil } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { FavoriteButton } from "./FavoriteButton";
+import { useIsAdmin } from "@/lib/menu-data";
+
 
 const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
   Premium: "bg-neon-yellow text-[oklch(0.18_0.11_305)]",
@@ -17,7 +20,10 @@ export function ProductCard({
   product: Product;
   onOpen: (p: Product) => void;
 }) {
+  const { data: isAdmin } = useIsAdmin();
+  const navigate = useNavigate();
   return (
+
     <div
       role="button"
       tabIndex={0}
@@ -101,6 +107,22 @@ export function ProductCard({
         <div className="absolute right-2 top-2 z-20">
           <FavoriteButton productId={product.id} />
         </div>
+
+        {/* Admin edit button top-left (opposite the heart) */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate({ to: "/admin", search: { edit: product.id } });
+            }}
+            aria-label="Editar produto no painel"
+            className="absolute left-2 top-2 z-20 grid h-8 w-8 place-items-center rounded-full border border-neon-cyan/40 bg-black/50 text-neon-cyan backdrop-blur transition hover:bg-neon-cyan hover:text-black active:scale-95"
+          >
+            <Pencil className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+        )}
+
 
 
         {/* Wavy divider on bottom */}

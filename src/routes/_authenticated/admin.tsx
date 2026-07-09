@@ -90,6 +90,9 @@ import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    edit: typeof search.edit === "string" ? search.edit : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Admin — Painel Quero Bis" },
@@ -103,8 +106,10 @@ type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "setti
 
 function AdminPage() {
   const navigate = useNavigate();
+  const { edit: editProductId } = Route.useSearch();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>("products");
+  const [tab, setTab] = useState<Tab>(editProductId ? "products" : "products");
+
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -197,7 +202,7 @@ function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
-        {tab === "products" && <ProductsTab />}
+        {tab === "products" && <ProductsTab initialEditId={editProductId} />}
         {tab === "categories" && <CategoriesTab />}
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
@@ -210,13 +215,24 @@ function AdminPage() {
 
 
 /* =============================== Products =============================== */
-function ProductsTab() {
+function ProductsTab({ initialEditId }: { initialEditId?: string }) {
+  const navigate = useNavigate();
   const { data: products = [] } = useAllProducts();
   const { data: categories = [] } = useCategories();
   const reorder = useReorderProducts();
   const toggleActive = useToggleProductActive();
   const upsert = useUpsertProduct();
   const [editing, setEditing] = useState<Product | null>(null);
+
+  useEffect(() => {
+    if (!initialEditId || !products.length) return;
+    const p = products.find((p) => p.id === initialEditId);
+    if (p) {
+      setEditing(p);
+      navigate({ to: "/admin", search: {}, replace: true });
+    }
+  }, [initialEditId, products, navigate]);
+
   
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
