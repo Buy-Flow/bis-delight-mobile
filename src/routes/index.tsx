@@ -119,14 +119,6 @@ function Content() {
     else setTimeout(run, 1500);
   }, []);
 
-  // Upsell do carrinho: abre o modal do produto sugerido
-  useEffect(() => {
-    if (!pendingProductId) return;
-    const p = products.find((x) => x.id === pendingProductId);
-    if (p) setModalProduct(p);
-    consumePendingProduct();
-  }, [pendingProductId, products, consumePendingProduct]);
-
 
   const openProduct = (p: Product) => {
     setModalProduct(p);
