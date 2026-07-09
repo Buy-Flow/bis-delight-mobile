@@ -82,6 +82,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [items, hydrated]);
 
+  // Track logged-in user for abandoned cart sync
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setUserId(s?.user?.id ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  // Sync abandoned cart to Supabase (debounced) when logged in
+  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!hydrated || !userId) return;
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(async () => {
+      const subtotal = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+      const count = items.reduce((s, i) => s + i.quantity, 0);
+      try {
+        if (items.length === 0) {
+          // Cart emptied: mark recovered (or leave if already gone)
+          await supabase.from("abandoned_carts").delete().eq("user_id", userId);
+        } else {
+          await supabase.from("abandoned_carts").upsert({
+            user_id: userId,
+            items: items as unknown as never,
+            subtotal,
+            item_count: count,
+            notified_at: null,
+            recovered_at: null,
+          });
+        }
+      } catch {}
+    }, 1500);
+    return () => {
+      if (syncTimer.current) clearTimeout(syncTimer.current);
+    };
+  }, [items, hydrated, userId]);
+
   const value = useMemo<CartCtx>(() => {
     const subtotal = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
     const count = items.reduce((s, i) => s + i.quantity, 0);
