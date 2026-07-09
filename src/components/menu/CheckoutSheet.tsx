@@ -209,14 +209,21 @@ export function CheckoutSheet() {
       } catch {}
 
       if (couponApplied) {
-        const rpcName = couponApplied.kind === "promo" ? "redeem_promo_coupon" : "redeem_loyalty_coupon";
-        const args: Record<string, unknown> =
+        const { data: redeemed, error: redeemErr } =
           couponApplied.kind === "promo"
-            ? { _code: couponApplied.code, _order_total: subtotal, _order_id: order.id }
-            : { _code: couponApplied.code };
-        const { data: redeemed, error: redeemErr } = await (supabase.rpc as (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>)(rpcName, args);
+            ? await supabase.rpc("redeem_promo_coupon", {
+                _code: couponApplied.code,
+                _order_total: subtotal,
+                _order_id: order.id,
+              })
+            : await supabase.rpc("redeem_loyalty_coupon", { _code: couponApplied.code });
         const rows = Array.isArray(redeemed) ? redeemed : [];
         if (redeemErr || rows.length === 0) {
+          toast.error("Não foi possível usar o cupom. Ele pode já ter sido utilizado.");
+          setSending(false);
+          return;
+        }
+      }
           toast.error("Não foi possível usar o cupom. Ele pode já ter sido utilizado.");
           setSending(false);
           return;
