@@ -12,6 +12,8 @@ import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { Reveal } from "@/components/Reveal";
+import { AdminEditButton } from "@/components/menu/AdminEditButton";
+
 import { BRAND, type Product } from "@/data/menu";
 import {
   useProducts,
