@@ -154,7 +154,7 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
-      <Toaster position="top-center" theme="dark" />
+      <Toaster position="bottom-center" theme="dark" closeButton />
 
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[oklch(0.10_0.08_300)]/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">

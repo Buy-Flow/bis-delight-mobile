@@ -53,7 +53,7 @@ function PedidosPage() {
 
   return (
     <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
-      <Toaster position="top-center" theme="dark" />
+      <Toaster position="bottom-center" theme="dark" closeButton />
 
       <header className="sticky top-0 z-30 border-b border-purple-900/50 bg-[oklch(0.10_0.08_300)]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
