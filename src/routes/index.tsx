@@ -459,12 +459,19 @@ function Content() {
 
 
         <div className="grid grid-cols-2 gap-3">
-          {visibleProducts.map((p) => (
-            <div key={p.id} className="h-full">
-              <ProductCard product={p} onOpen={openProduct} />
-            </div>
-          ))}
+          {productsLoading && products.length === 0
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={`sk-${i}`} className="h-full">
+                  <ProductCardSkeleton delay={i * 80} />
+                </div>
+              ))
+            : visibleProducts.map((p) => (
+                <div key={p.id} className="h-full">
+                  <ProductCard product={p} onOpen={openProduct} />
+                </div>
+              ))}
         </div>
+
 
         {/* Paginação — só na aba "Tudo" e sem busca ativa */}
         {isPaginated && totalPages > 1 && (
