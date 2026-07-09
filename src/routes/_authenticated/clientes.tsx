@@ -16,7 +16,20 @@ import {
   MessageCircle,
   Sparkles,
   ClipboardList,
+  X,
+  Award,
+  Ticket,
+  TrendingUp,
+  Package,
+  Calendar,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
 
