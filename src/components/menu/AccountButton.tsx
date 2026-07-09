@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User as UserIcon, LogOut, Award, Heart, ClipboardList, Shield, Users } from "lucide-react";
+import { User as UserIcon, LogOut, Award, Heart, ClipboardList, Shield, Users, LineChart } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth, signOut } from "@/lib/use-auth";
 import { useIsAdmin } from "@/lib/menu-data";
@@ -102,6 +102,15 @@ export function AccountButton() {
                   }}
                 />
                 <MenuItem
+                  icon={LineChart}
+                  label="Financeiro"
+                  accent
+                  onClick={() => {
+                    setOpen(false);
+                    navigate({ to: "/financeiro" });
+                  }}
+                />
+                <MenuItem
                   icon={Users}
                   label="Clientes"
                   accent
@@ -110,6 +119,7 @@ export function AccountButton() {
                     navigate({ to: "/clientes" });
                   }}
                 />
+
               </div>
             )}
 

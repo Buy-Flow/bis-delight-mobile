@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Toaster } from "sonner";
-import { Home, LogOut, Loader2, ClipboardList, Users } from "lucide-react";
+import { Home, LogOut, Loader2, ClipboardList, Users, LineChart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
 import { OrdersTab } from "@/components/admin/OrdersTab";
@@ -72,6 +72,12 @@ function PedidosPage() {
               className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
             >
               Painel
+            </Link>
+            <Link
+              to="/financeiro"
+              className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
+            >
+              <LineChart className="h-3.5 w-3.5" /> Financeiro
             </Link>
             <Link
               to="/clientes"

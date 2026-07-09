@@ -240,12 +240,11 @@ export function OrdersTab() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4">
         <KpiCard label="Pendentes hoje" value={String(kpis.pendingToday).padStart(2, "0")} accent="text-neon-yellow" />
-        <KpiCard label="Faturamento (hoje)" value={brl(kpis.revenue)} accent="text-neon-cyan" />
-        <KpiCard label="Ticket médio" value={brl(kpis.avgTicket)} accent="text-neon-pink" />
         <KpiCard label="Total de pedidos" value={String(kpis.total)} accent="text-white" />
       </div>
+
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2.5">
