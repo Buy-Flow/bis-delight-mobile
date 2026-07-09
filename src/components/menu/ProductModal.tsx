@@ -162,6 +162,7 @@ export function ProductModal({
   const [groupSel, setGroupSel] = useState<Record<string, string[]>>(
     initialGroupSel(product),
   );
+  const [stepIndex, setStepIndex] = useState(0);
 
   useMemo(() => {
     if (product) {
@@ -173,6 +174,7 @@ export function ProductModal({
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
       setGroupSel(initialGroupSel(product));
+      setStepIndex(0);
     }
   }, [product?.id, editItem?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
