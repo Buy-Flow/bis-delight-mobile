@@ -52,9 +52,9 @@ export function NewsCarousel({
     return () => el.removeEventListener("scroll", onScroll);
   }, [items.length]);
 
-  // Autoplay: avança 1 card a cada 4s, sempre para a direita, em loop infinito.
+  // Autoplay: avança 1 card a cada 4s. Com 3+ usa loop invisível; com 2, alterna entre eles.
   useEffect(() => {
-    if (items.length < 3) return;
+    if (items.length < 2) return;
     const el = scrollerRef.current;
     if (!el) return;
     const pause = () => {
@@ -75,10 +75,15 @@ export function NewsCarousel({
       const first = node.firstElementChild as HTMLElement | null;
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
-      // Sempre anda 1 card para a direita a partir da posição atual.
-      // O onScroll cuida do teleport invisível quando ultrapassa a primeira cópia.
-      node.scrollBy({ left: step, behavior: "smooth" });
-    }, 3000);
+
+      if (items.length >= 3) {
+        node.scrollBy({ left: step, behavior: "smooth" });
+      } else {
+        const currentIdx = Math.round(node.scrollLeft / step);
+        const nextIdx = (currentIdx + 1) % items.length;
+        node.scrollTo({ left: nextIdx * step, behavior: "smooth" });
+      }
+    }, 4000);
 
     return () => {
       window.clearInterval(id);
