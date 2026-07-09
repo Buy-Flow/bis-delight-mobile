@@ -387,7 +387,7 @@ export function ProductModal({
 
         {/* Scroll body */}
         <div
-          className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-40"
+          className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-40"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {!collapsed && (
