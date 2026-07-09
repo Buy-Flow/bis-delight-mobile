@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown } from "lucide-react";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
