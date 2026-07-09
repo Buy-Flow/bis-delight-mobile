@@ -547,20 +547,26 @@ function HighlightsCarousel({
     const el = scrollerRef.current;
     if (!el) return;
 
+    let scrollIdleTimer: number | undefined;
     const onScroll = () => {
       const step = el.clientWidth * 0.88;
-      // Wrap invisível: quando passa da 1ª cópia, subtrai a largura dela
-      if (canLoop) {
-        const half = el.scrollWidth / 2;
-        if (half > 0 && el.scrollLeft >= half) {
-          el.scrollLeft = el.scrollLeft - half;
-        }
-      }
       const rawIdx = Math.round(el.scrollLeft / step);
       const len = highlights.length || 1;
       setActiveIdx(((rawIdx % len) + len) % len);
+
+      // Wrap invisível SÓ quando a rolagem parou (evita o "piscar" no meio da transição)
+      if (canLoop) {
+        window.clearTimeout(scrollIdleTimer);
+        scrollIdleTimer = window.setTimeout(() => {
+          const half = el.scrollWidth / 2;
+          if (half > 0 && el.scrollLeft >= half) {
+            el.scrollLeft = el.scrollLeft - half;
+          }
+        }, 180);
+      }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
+
 
     const isFinePointer =
       typeof window !== "undefined" &&
@@ -599,6 +605,8 @@ function HighlightsCarousel({
       el.removeEventListener("pointercancel", resumeSoon);
       el.removeEventListener("touchend", resumeSoon);
       window.clearInterval(interval);
+      window.clearTimeout(scrollIdleTimer);
+
     };
   }, [highlights.length, canLoop]);
 
