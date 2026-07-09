@@ -1,8 +1,10 @@
 import { CATEGORIES as STATIC_CATEGORIES } from "@/data/menu";
 import { useCategories } from "@/lib/menu-data";
 import { getCategoryIcon } from "@/lib/category-icons";
+import { AdminEditButton } from "./AdminEditButton";
 
 import { cn } from "@/lib/utils";
+
 import {
   Sparkles,
   Cherry,
