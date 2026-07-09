@@ -209,6 +209,7 @@ function AdminPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-6">
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}
+
         {tab === "categories" && <CategoriesTab />}
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
