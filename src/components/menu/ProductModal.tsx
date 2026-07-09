@@ -393,20 +393,20 @@ export function ProductModal({
         >
           {!collapsed && (
             <div className="-mt-8 relative z-10 mb-6">
+              <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
+                <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize"}
+              </div>
               <h2
-                className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight leading-[1.05] text-neon-pink glow-pink-text pb-1 break-words"
+                className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight leading-[1.05] text-neon-yellow drop-shadow-[0_0_18px_rgba(253,224,71,0.35)] pb-1 break-words"
                 style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
               >
                 {product.name}
               </h2>
               {product.description && (
-                <p className="mt-2 max-w-[85%] text-[13px] text-white/60">
+                <p className="mt-2 max-w-[95%] text-[13px] text-white/70">
                   {product.description}
                 </p>
               )}
-              <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
-                <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize"}
-              </div>
             </div>
           )}
 
