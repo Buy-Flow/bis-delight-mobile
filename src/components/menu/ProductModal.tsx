@@ -186,7 +186,7 @@ export function ProductModal({
       const s = initialFromEdit(product);
       setSizeId(s?.sizeId ?? getSizes(product)[0].id);
       setFlavor(s?.flavor ?? product.flavors?.[0]);
-      setExtras(s?.extras ?? []);
+      setExtras(s?.extras ?? {});
       setRemoved(s?.removed ?? []);
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
