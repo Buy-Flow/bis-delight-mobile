@@ -403,8 +403,58 @@ export function ProductModal({
           )}
 
           {isCustom ? (
-            <div className="space-y-8">
-              {optionGroups.map((g, gi) => {
+            <div className="space-y-6">
+              {/* Stepper */}
+              <div className="relative">
+                <div className="absolute left-5 right-5 top-5 h-[2px] bg-white/10" />
+                <div
+                  className="absolute left-5 top-5 h-[2px] bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] transition-all duration-300"
+                  style={{
+                    width: optionGroups.length > 1
+                      ? `calc((100% - 2.5rem) * ${stepIndex / (optionGroups.length - 1)})`
+                      : "0%",
+                  }}
+                />
+                <div className="relative flex items-start justify-between">
+                  {optionGroups.map((g, i) => {
+                    const done = i < stepIndex;
+                    const current = i === stepIndex;
+                    return (
+                      <button
+                        key={g.id}
+                        onClick={() => setStepIndex(i)}
+                        className="flex min-w-0 flex-1 flex-col items-center gap-1"
+                      >
+                        <span
+                          className={cn(
+                            "grid h-10 w-10 place-items-center rounded-full border-2 text-sm font-black transition-all",
+                            current
+                              ? "border-neon-pink bg-neon-pink text-white shadow-[0_0_20px_rgba(255,46,147,0.55)]"
+                              : done
+                                ? "border-neon-pink bg-neon-pink/20 text-neon-pink"
+                                : "border-white/15 bg-white/5 text-white/50",
+                          )}
+                        >
+                          {done ? <Check className="h-4 w-4" strokeWidth={3.5} /> : i + 1}
+                        </span>
+                        <span
+                          className={cn(
+                            "truncate text-[11px] font-bold uppercase tracking-wide",
+                            current ? "text-white" : done ? "text-neon-pink/80" : "text-white/40",
+                          )}
+                        >
+                          {g.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Current step content */}
+              {(() => {
+                const g = optionGroups[stepIndex];
+                if (!g) return null;
                 const picked = groupSel[g.id] ?? [];
                 const free = g.freeCount ?? 0;
                 const extraFee = g.pricePerExtra ?? 0;
@@ -415,13 +465,13 @@ export function ProductModal({
                     ? `até ${free} grátis`
                     : "escolha o que quiser";
                 return (
-                  <div key={g.id}>
+                  <div>
                     <div className="mb-3 flex items-end justify-between gap-3">
                       <h3
-                        className="font-display text-xl font-extrabold uppercase tracking-wider text-neon-cyan"
+                        className="font-display text-2xl font-extrabold uppercase tracking-wider text-neon-cyan"
                         style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                       >
-                        {gi + 1}. {g.name}
+                        {g.name}
                       </h3>
                       {isSingle && g.required ? (
                         <span className="rounded-full bg-neon-pink/20 px-2 py-0.5 text-[10px] font-bold uppercase text-neon-pink">
@@ -496,7 +546,7 @@ export function ProductModal({
                     )}
                   </div>
                 );
-              })}
+              })()}
             </div>
           ) : (
             <div className="space-y-8">
