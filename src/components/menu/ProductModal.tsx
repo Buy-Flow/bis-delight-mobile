@@ -635,19 +635,86 @@ export function ProductModal({
                   render: () => (
                     <div className="space-y-2">
                       {availableExtras.map((e) => {
-                        const on = extras.includes(e.id);
+                        const qtyE = extras[e.id] ?? 0;
+                        const on = qtyE > 0;
                         return (
-                          <ComplementRow
+                          <div
                             key={e.id}
-                            active={on}
-                            onClick={() => toggleExtra(e.id)}
-                            label={e.label}
-                            price={e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
-                            priceColor={e.price > 0 ? "text-neon-pink" : "text-neon-cyan"}
-                          />
+                            className={cn(
+                              "rounded-2xl border p-4 transition-all",
+                              on
+                                ? "border-neon-cyan bg-neon-cyan/10 shadow-[0_0_15px_rgba(0,229,255,0.15)]"
+                                : "border-white/5 bg-white/5",
+                            )}
+                          >
+                            <button
+                              onClick={() => toggleExtra(e.id)}
+                              className="flex w-full items-center justify-between text-left"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className={cn(
+                                    "grid h-5 w-5 shrink-0 place-items-center rounded border-2 transition-all",
+                                    on
+                                      ? "border-neon-cyan bg-neon-cyan"
+                                      : "border-white/30 bg-transparent",
+                                  )}
+                                >
+                                  {on && (
+                                    <Check
+                                      className="h-3.5 w-3.5 text-[oklch(0.18_0.11_305)]"
+                                      strokeWidth={3.5}
+                                    />
+                                  )}
+                                </span>
+                                <span className="text-[15px] font-medium text-white">
+                                  {e.label}
+                                </span>
+                              </div>
+                              <span
+                                className={cn(
+                                  "text-sm font-bold shrink-0",
+                                  e.price > 0 ? "text-neon-pink" : "text-neon-cyan",
+                                )}
+                              >
+                                {e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
+                              </span>
+                            </button>
+
+                            {on && e.price > 0 && (
+                              <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+                                <div className="text-[11px] font-semibold uppercase tracking-wider text-neon-cyan/90">
+                                  +unidade{" "}
+                                  <span className="text-white/60">
+                                    50% off ({brl(e.price * 0.5)})
+                                  </span>
+                                </div>
+                                <div className="flex items-center rounded-full border border-white/15 bg-black/30 p-1">
+                                  <button
+                                    onClick={() => changeExtraQty(e.id, -1)}
+                                    aria-label="Diminuir"
+                                    className="grid h-7 w-7 place-items-center text-white/70 active:scale-95"
+                                  >
+                                    <Minus className="h-3.5 w-3.5" />
+                                  </button>
+                                  <span className="w-6 text-center text-sm font-bold text-white">
+                                    {qtyE}
+                                  </span>
+                                  <button
+                                    onClick={() => changeExtraQty(e.id, +1)}
+                                    aria-label="Aumentar"
+                                    className="grid h-7 w-7 place-items-center text-neon-cyan active:scale-95"
+                                  >
+                                    <Plus className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
+
                   ),
                 });
               }
