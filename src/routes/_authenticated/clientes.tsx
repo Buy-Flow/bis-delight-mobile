@@ -259,46 +259,80 @@ function ClientesDashboard() {
     return { total: rows.length, buyers, bdays, revenue };
   }, [rows, currentMonth]);
 
+  const ALL_FIELDS = [
+    { key: "full_name", label: "Nome" },
+    { key: "phone", label: "Telefone" },
+    { key: "email", label: "E-mail" },
+    { key: "birthday", label: "Aniversário" },
+    { key: "address", label: "Endereço" },
+    { key: "reference", label: "Referência" },
+    { key: "orders_count", label: "Pedidos" },
+    { key: "total_spent", label: "Total gasto" },
+    { key: "paid_spent", label: "Total pago" },
+    { key: "last_order_at", label: "Último pedido" },
+    { key: "created_at", label: "Cadastrado em" },
+  ] as const;
+  type FieldKey = (typeof ALL_FIELDS)[number]["key"];
+
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportFields, setExportFields] = useState<Set<FieldKey>>(
+    () => new Set(ALL_FIELDS.map((f) => f.key)),
+  );
+
+  const applyPreset = (preset: "all" | "name_phone" | "phone" | "email" | "address" | "birthday") => {
+    const map: Record<typeof preset, FieldKey[]> = {
+      all: ALL_FIELDS.map((f) => f.key),
+      name_phone: ["full_name", "phone"],
+      phone: ["phone"],
+      email: ["email"],
+      address: ["full_name", "phone", "address", "reference"],
+      birthday: ["full_name", "phone", "birthday"],
+    };
+    setExportFields(new Set(map[preset]));
+  };
+
+  const toggleField = (k: FieldKey) => {
+    setExportFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+  };
+
   const exportCsv = () => {
     if (filtered.length === 0) {
       toast.error("Nenhum cliente para exportar");
       return;
     }
-    const header = [
-      "Nome",
-      "Telefone",
-      "Aniversário",
-      "Endereço",
-      "Referência",
-      "Pedidos",
-      "Total gasto",
-      "Total pago",
-      "Último pedido",
-      "Cadastrado em",
-    ];
+    const selected = ALL_FIELDS.filter((f) => exportFields.has(f.key));
+    if (selected.length === 0) {
+      toast.error("Selecione pelo menos um campo");
+      return;
+    }
     const escape = (v: unknown) => {
       const s = String(v ?? "");
       if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
       return s;
     };
+    const valueFor = (r: (typeof filtered)[number], k: FieldKey): string => {
+      switch (k) {
+        case "full_name": return r.full_name ?? "";
+        case "phone": return formatPhone(r.phone);
+        case "email": return (r as { email?: string | null }).email ?? "";
+        case "birthday": return formatBirthday(r.birthday) ?? "";
+        case "address": return r.address ?? "";
+        case "reference": return r.reference ?? "";
+        case "orders_count": return String(r.orders_count);
+        case "total_spent": return r.total_spent.toFixed(2).replace(".", ",");
+        case "paid_spent": return r.paid_spent.toFixed(2).replace(".", ",");
+        case "last_order_at": return r.last_order_at ? new Date(r.last_order_at).toLocaleString("pt-BR") : "";
+        case "created_at": return new Date(r.created_at).toLocaleString("pt-BR");
+      }
+    };
     const lines = [
-      header.join(","),
-      ...filtered.map((r) =>
-        [
-          r.full_name ?? "",
-          formatPhone(r.phone),
-          formatBirthday(r.birthday) ?? "",
-          r.address ?? "",
-          r.reference ?? "",
-          r.orders_count,
-          r.total_spent.toFixed(2).replace(".", ","),
-          r.paid_spent.toFixed(2).replace(".", ","),
-          r.last_order_at ? new Date(r.last_order_at).toLocaleString("pt-BR") : "",
-          new Date(r.created_at).toLocaleString("pt-BR"),
-        ]
-          .map(escape)
-          .join(","),
-      ),
+      selected.map((f) => f.label).join(","),
+      ...filtered.map((r) => selected.map((f) => escape(valueFor(r, f.key))).join(",")),
     ];
     const blob = new Blob(["\uFEFF" + lines.join("\n")], {
       type: "text/csv;charset=utf-8;",
@@ -309,8 +343,10 @@ function ClientesDashboard() {
     a.download = `clientes-quero-bis-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    setExportOpen(false);
     toast.success(`${filtered.length} cliente(s) exportado(s)`);
   };
+
 
   const copyPhones = async () => {
     const phones = filtered
