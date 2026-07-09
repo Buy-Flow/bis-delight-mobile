@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag } from "lucide-react";
+import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag, Ticket, Check } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
@@ -48,6 +48,9 @@ export function CheckoutSheet() {
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number } | null>(null);
+  const [couponChecking, setCouponChecking] = useState(false);
 
   useEffect(() => {
     if (!isCheckoutOpen) return;
@@ -77,8 +80,58 @@ export function CheckoutSheet() {
   if (!isCheckoutOpen) return null;
 
   const fee = mode === "entrega" ? BRAND.deliveryFee : 0;
-  const total = subtotal + fee;
+  const discount = couponApplied?.discount ?? 0;
+  const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    if (!user) {
+      toast.error("Entre na sua conta para usar cupom.");
+      return;
+    }
+    setCouponChecking(true);
+    try {
+      const { data, error } = await supabase
+        .from("loyalty_coupons")
+        .select("id, code, used_at")
+        .eq("user_id", user.id)
+        .eq("code", code)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        toast.error("Cupom não encontrado.");
+        return;
+      }
+      if (data.used_at) {
+        toast.error("Este cupom já foi utilizado.");
+        return;
+      }
+      // Cupom Bis Recompensa: 1 açaí 300ml grátis. Aplica desconto do
+      // item de 300ml mais barato do carrinho.
+      const acai300 = items
+        .filter((it) => (it.size || "").toLowerCase().includes("300"))
+        .map((it) => it.unitPrice)
+        .sort((a, b) => a - b)[0];
+      if (!acai300) {
+        toast.error("Adicione um açaí 300ml no carrinho para usar este cupom.");
+        return;
+      }
+      setCouponApplied({ id: data.id, code: data.code, discount: acai300 });
+      toast.success(`Cupom aplicado! −${brl(acai300)}`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível validar o cupom.");
+    } finally {
+      setCouponChecking(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponApplied(null);
+    setCouponInput("");
+  };
 
   const goLogin = () => {
     sessionStorage.setItem("querobis:resume_checkout", "1");
@@ -110,6 +163,7 @@ export function CheckoutSheet() {
           subtotal,
           delivery_fee: fee,
           total,
+          coupon_code: couponApplied?.code ?? null,
         })
         .select("id")
         .single();
@@ -145,7 +199,15 @@ export function CheckoutSheet() {
         );
       } catch {}
 
-      const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total });
+      if (couponApplied) {
+        await supabase
+          .from("loyalty_coupons")
+          .update({ used_at: new Date().toISOString() })
+          .eq("id", couponApplied.id)
+          .is("used_at", null);
+      }
+
+      const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
       const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
       window.open(url, "_blank");
       toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
@@ -343,11 +405,65 @@ export function CheckoutSheet() {
                 <span>{mode === "entrega" ? "Taxa de entrega" : "Retirada na loja"}</span>
                 <span>{fee > 0 ? brl(fee) : "Grátis"}</span>
               </div>
+              {couponApplied && (
+                <div className="flex justify-between text-neon-cyan">
+                  <span>Cupom {couponApplied.code}</span>
+                  <span>−{brl(couponApplied.discount)}</span>
+                </div>
+              )}
               <div className="mt-2 flex items-end justify-between">
                 <span className="font-display text-lg font-extrabold text-white">Total</span>
                 <span className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">{brl(total)}</span>
               </div>
             </div>
+          </div>
+
+          {/* Cupom Bis Recompensa */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan">
+                <Ticket className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-extrabold text-white">Cupom de desconto</div>
+                <div className="text-[11px] text-white/60">Tem um código Bis Recompensa? Use aqui.</div>
+              </div>
+            </div>
+            {couponApplied ? (
+              <div className="flex items-center justify-between gap-2 rounded-2xl border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2.5">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Check className="h-4 w-4 text-neon-cyan shrink-0" />
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-bold text-white">{couponApplied.code}</div>
+                    <div className="truncate text-[11px] text-neon-cyan">Desconto de {brl(couponApplied.discount)}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeCoupon}
+                  className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white/80 active:scale-95"
+                >
+                  Remover
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="BIS-XXXXXXXX"
+                  className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm font-mono uppercase tracking-wider text-white placeholder:text-white/30 outline-none focus:border-neon-cyan/60"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={couponChecking || !couponInput.trim()}
+                  className="rounded-2xl bg-neon-cyan px-4 py-2.5 text-sm font-extrabold text-[oklch(0.18_0.11_305)] active:scale-95 disabled:opacity-50"
+                >
+                  {couponChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aplicar"}
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="h-20" />
@@ -452,6 +568,7 @@ function buildMessage(o: {
   mode: Mode;
   fee: number;
   total: number;
+  coupon: { code: string; discount: number } | null;
 }) {
   const L: string[] = [];
   L.push("*🍧 NOVO PEDIDO — QUERO BIS*");
@@ -476,6 +593,7 @@ function buildMessage(o: {
   });
   L.push("");
   if (o.fee > 0) L.push(`Taxa de entrega: ${brl(o.fee)}`);
+  if (o.coupon) L.push(`🎟️ Cupom ${o.coupon.code}: −${brl(o.coupon.discount)}`);
   L.push(`*TOTAL: ${brl(o.total)}*`);
   if (o.note) {
     L.push("");
