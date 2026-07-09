@@ -27,13 +27,14 @@ export function NewsCarousel({
 }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Autoplay: troca 1 card a cada 4s. Sem duplicação — mostra exatamente os itens configurados.
+  // Autoplay: troca 1 card a cada 3s. Sem duplicação — mostra exatamente os itens configurados.
   useEffect(() => {
     if (items.length < 2 || paused) return;
     const id = window.setInterval(() => {
       setCurrent((c) => (c + 1) % items.length);
-    }, 4000);
+    }, 3000);
     return () => window.clearInterval(id);
   }, [items.length, paused]);
 
@@ -41,6 +42,25 @@ export function NewsCarousel({
   useEffect(() => {
     if (current >= items.length) setCurrent(0);
   }, [items.length, current]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setPaused(true);
+    setTouchStartX(e.touches[0].clientX);
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40 && items.length > 1) {
+      if (dx > 0) {
+        // arrastou para direita → volta
+        setCurrent((c) => (c - 1 + items.length) % items.length);
+      } else {
+        setCurrent((c) => (c + 1) % items.length);
+      }
+    }
+    setTouchStartX(null);
+    setPaused(false);
+  };
 
 
 
@@ -125,12 +145,14 @@ export function NewsCarousel({
 
       {/* Card único com crossfade — troca a cada 4s */}
       <div
-        className="relative mx-auto w-[85vw] max-w-[380px] py-6"
+        className="relative mx-auto w-[85vw] max-w-[380px] py-6 touch-pan-y"
         style={{ aspectRatio: "3 / 4" }}
         onPointerDown={() => setPaused(true)}
         onPointerUp={() => setPaused(false)}
         onPointerCancel={() => setPaused(false)}
         onMouseLeave={() => setPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {items.map((p, i) => (
           <div
