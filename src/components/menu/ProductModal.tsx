@@ -114,18 +114,28 @@ export function ProductModal({
     if (!editItem) return null;
     const pool = resolveExtras(p);
     const sizeMatch = p.sizes.find((s) => s.label === editItem.size)?.id;
-    const extraIds = pool
-      .filter((e) => editItem.extras.some((x) => x.label === e.label))
-      .map((e) => e.id);
+    const extraQty: Record<string, number> = {};
+    for (const e of pool) {
+      const n = editItem.extras.filter((x) => x.label === e.label || x.label.startsWith(`${e.label} x`)).length;
+      // If saved as "Label x3", parse count
+      const withCount = editItem.extras.find((x) => x.label.startsWith(`${e.label} x`));
+      if (withCount) {
+        const m = withCount.label.match(/x(\d+)$/);
+        extraQty[e.id] = m ? parseInt(m[1], 10) : 1;
+      } else if (n > 0) {
+        extraQty[e.id] = 1;
+      }
+    }
     return {
       sizeId: sizeMatch ?? p.sizes[0]?.id ?? "u",
       flavor: editItem.flavor ?? p.flavors?.[0],
-      extras: extraIds,
+      extras: extraQty,
       removed: editItem.removed ?? [],
       qty: editItem.quantity ?? 1,
       note: editItem.note ?? "",
     };
   };
+
 
   const FALLBACK_SIZE = { id: "u", label: "Único", priceDelta: 0 };
   const getSizes = (p: Product | null) =>
@@ -138,7 +148,7 @@ export function ProductModal({
   const [flavor, setFlavor] = useState<string | undefined>(
     seed?.flavor ?? product?.flavors?.[0],
   );
-  const [extras, setExtras] = useState<string[]>(seed?.extras ?? []);
+  const [extras, setExtras] = useState<Record<string, number>>(seed?.extras ?? {});
   const [removed, setRemoved] = useState<string[]>(seed?.removed ?? []);
   const [qty, setQty] = useState(seed?.qty ?? 1);
   const [note, setNote] = useState(seed?.note ?? "");
@@ -176,7 +186,7 @@ export function ProductModal({
       const s = initialFromEdit(product);
       setSizeId(s?.sizeId ?? getSizes(product)[0].id);
       setFlavor(s?.flavor ?? product.flavors?.[0]);
-      setExtras(s?.extras ?? []);
+      setExtras(s?.extras ?? {});
       setRemoved(s?.removed ?? []);
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
@@ -204,8 +214,15 @@ export function ProductModal({
 
   const productSizes = getSizes(product);
   const size = productSizes.find((s) => s.id === sizeId) ?? productSizes[0];
-  const extrasSelected = availableExtras.filter((e) => extras.includes(e.id));
-  const extrasPrice = extrasSelected.reduce((s, e) => s + e.price, 0);
+  const extrasSelected = availableExtras
+    .filter((e) => (extras[e.id] ?? 0) > 0)
+    .map((e) => ({ ...e, qty: extras[e.id] }));
+  // Preço: primeira unidade cheia, adicionais com 50% desconto
+  const extrasPrice = extrasSelected.reduce(
+    (s, e) => s + e.price + e.price * 0.5 * (e.qty - 1),
+    0,
+  );
+
 
   // Modo personalizado: preço vem dos grupos, não de sizes/extras
   const optionGroups: OptionGroup[] = product.optionGroups ?? [];
@@ -233,7 +250,23 @@ export function ProductModal({
 
 
   const toggleExtra = (id: string) =>
-    setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setExtras((prev) => {
+      const cur = prev[id] ?? 0;
+      const next = { ...prev };
+      if (cur > 0) delete next[id];
+      else next[id] = 1;
+      return next;
+    });
+  const changeExtraQty = (id: string, delta: number) =>
+    setExtras((prev) => {
+      const cur = prev[id] ?? 0;
+      const nextVal = Math.max(0, cur + delta);
+      const next = { ...prev };
+      if (nextVal === 0) delete next[id];
+      else next[id] = nextVal;
+      return next;
+    });
+
   const toggleRemoved = (name: string) =>
     setRemoved((prev) => (prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]));
   const toggleGroup = (g: OptionGroup, optId: string) => {
@@ -307,7 +340,11 @@ export function ProductModal({
       image: product.image,
       size: size.label,
       flavor,
-      extras: extrasSelected.map((e) => ({ label: e.label, price: e.price })),
+      extras: extrasSelected.map((e) => ({
+        label: e.qty > 1 ? `${e.label} x${e.qty}` : e.label,
+        price: e.price + e.price * 0.5 * (e.qty - 1),
+      })),
+
       removed,
       note: note.trim() || undefined,
       quantity: qty,
@@ -602,19 +639,86 @@ export function ProductModal({
                   render: () => (
                     <div className="space-y-2">
                       {availableExtras.map((e) => {
-                        const on = extras.includes(e.id);
+                        const qtyE = extras[e.id] ?? 0;
+                        const on = qtyE > 0;
                         return (
-                          <ComplementRow
+                          <div
                             key={e.id}
-                            active={on}
-                            onClick={() => toggleExtra(e.id)}
-                            label={e.label}
-                            price={e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
-                            priceColor={e.price > 0 ? "text-neon-pink" : "text-neon-cyan"}
-                          />
+                            className={cn(
+                              "rounded-2xl border p-4 transition-all",
+                              on
+                                ? "border-neon-cyan bg-neon-cyan/10 shadow-[0_0_15px_rgba(0,229,255,0.15)]"
+                                : "border-white/5 bg-white/5",
+                            )}
+                          >
+                            <button
+                              onClick={() => toggleExtra(e.id)}
+                              className="flex w-full items-center justify-between text-left"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className={cn(
+                                    "grid h-5 w-5 shrink-0 place-items-center rounded border-2 transition-all",
+                                    on
+                                      ? "border-neon-cyan bg-neon-cyan"
+                                      : "border-white/30 bg-transparent",
+                                  )}
+                                >
+                                  {on && (
+                                    <Check
+                                      className="h-3.5 w-3.5 text-[oklch(0.18_0.11_305)]"
+                                      strokeWidth={3.5}
+                                    />
+                                  )}
+                                </span>
+                                <span className="text-[15px] font-medium text-white">
+                                  {e.label}
+                                </span>
+                              </div>
+                              <span
+                                className={cn(
+                                  "text-sm font-bold shrink-0",
+                                  e.price > 0 ? "text-neon-pink" : "text-neon-cyan",
+                                )}
+                              >
+                                {e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
+                              </span>
+                            </button>
+
+                            {on && e.price > 0 && (
+                              <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+                                <div className="text-[11px] font-semibold uppercase tracking-wider text-neon-cyan/90">
+                                  +unidade{" "}
+                                  <span className="text-white/60">
+                                    50% off ({brl(e.price * 0.5)})
+                                  </span>
+                                </div>
+                                <div className="flex items-center rounded-full border border-white/15 bg-black/30 p-1">
+                                  <button
+                                    onClick={() => changeExtraQty(e.id, -1)}
+                                    aria-label="Diminuir"
+                                    className="grid h-7 w-7 place-items-center text-white/70 active:scale-95"
+                                  >
+                                    <Minus className="h-3.5 w-3.5" />
+                                  </button>
+                                  <span className="w-6 text-center text-sm font-bold text-white">
+                                    {qtyE}
+                                  </span>
+                                  <button
+                                    onClick={() => changeExtraQty(e.id, +1)}
+                                    aria-label="Aumentar"
+                                    className="grid h-7 w-7 place-items-center text-neon-cyan active:scale-95"
+                                  >
+                                    <Plus className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
+
                   ),
                 });
               }
