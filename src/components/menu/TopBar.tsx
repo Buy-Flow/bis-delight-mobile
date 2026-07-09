@@ -25,11 +25,12 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
           <img
             src={logo}
             alt={`${name} — Sorveteria e Açaí`}
-            width={140}
-            height={56}
+            width={200}
+            height={80}
             decoding="async"
             fetchPriority="high"
-            className="h-14 w-auto drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+            className="h-20 w-auto drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]"
+
           />
 
         </div>
