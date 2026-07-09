@@ -34,6 +34,10 @@ type CartCtx = {
   editingItem: CartItem | null;
   openEdit: (item: CartItem) => void;
   closeEdit: () => void;
+  // Upsell: cart pede pra home abrir o modal de um produto sugerido
+  pendingProductId: string | null;
+  requestOpenProduct: (productId: string) => void;
+  consumePendingProduct: () => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
@@ -56,6 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   const [isAcaiOpen, setAcaiOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+  const [pendingProductId, setPendingProductId] = useState<string | null>(null);
 
   // hydrate from localStorage on mount
   useEffect(() => {
@@ -110,8 +115,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setEditingItem(item);
       },
       closeEdit: () => setEditingItem(null),
+      pendingProductId,
+      requestOpenProduct: (productId) => {
+        setCartOpen(false);
+        setPendingProductId(productId);
+      },
+      consumePendingProduct: () => setPendingProductId(null),
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

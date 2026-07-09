@@ -101,7 +101,7 @@ function Content() {
   const PAGE_SIZE = 10;
   const [modalProduct, setModalProduct] = useState<Product | null>(null);
   const [customProduct, setCustomProduct] = useState<Product | null>(null);
-  const { isCartOpen, isCheckoutOpen, editingItem, closeEdit } = useCart();
+  const { isCartOpen, isCheckoutOpen, editingItem, closeEdit, pendingProductId, consumePendingProduct } = useCart();
 
 
   // Prefetch modais/checkout no idle — abertura instantânea sem impactar o FCP
@@ -131,6 +131,15 @@ function Content() {
   const { data: settings, isLoading: settingsLoading, error: settingsError } = useSiteSettings();
   const newsLoading = settingsLoading || productsLoading;
   const newsError = settingsError || productsError;
+
+  // Upsell do carrinho: abre o modal do produto sugerido
+  useEffect(() => {
+    if (!pendingProductId) return;
+    const p = products.find((x) => x.id === pendingProductId);
+    if (p) setModalProduct(p);
+    consumePendingProduct();
+  }, [pendingProductId, products, consumePendingProduct]);
+
 
   const scrollToMenu = () => {
     document.getElementById("categorias")?.scrollIntoView({ behavior: "smooth", block: "start" });

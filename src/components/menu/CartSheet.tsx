@@ -1,9 +1,22 @@
-import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck, Sparkles } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
+import { useProducts } from "@/lib/menu-data";
+import { useMemo } from "react";
 
 export function CartSheet() {
-  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit } = useCart();
+  const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit, requestOpenProduct } = useCart();
+  const { data: allProducts = [] } = useProducts();
+
+  const suggestions = useMemo(() => {
+    if (!items.length) return [];
+    const inCart = new Set(items.map((i) => i.productId));
+    return allProducts
+      .filter((p) => !inCart.has(p.id) && !p.isCustom && p.basePrice > 0)
+      .sort((a, b) => a.basePrice - b.basePrice)
+      .slice(0, 6);
+  }, [allProducts, items]);
+
   if (!isCartOpen) return null;
 
   const fee = items.length ? BRAND.deliveryFee : 0;
@@ -149,6 +162,50 @@ export function CartSheet() {
                   </button>
                 </div>
               ))}
+
+              {suggestions.length > 0 && (
+                <div className="mt-4 rounded-3xl border border-neon-cyan/25 bg-gradient-to-br from-neon-cyan/[0.06] to-neon-pink/[0.04] p-3">
+                  <div className="mb-2 flex items-center gap-2 px-1">
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-neon-cyan/20 text-neon-cyan">
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="text-[11px] font-black uppercase tracking-[0.16em] text-neon-cyan">
+                      Que tal levar também?
+                    </div>
+                  </div>
+                  <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {suggestions.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => requestOpenProduct(p.id)}
+                        className="group relative w-[132px] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition active:scale-[0.97] hover:border-neon-pink/50"
+                      >
+                        <div className="relative aspect-square w-full overflow-hidden bg-[oklch(0.24_0.14_305)]">
+                          <img
+                            src={p.image}
+                            alt={p.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                          <span className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white glow-pink">
+                            <Plus className="h-3.5 w-3.5" />
+                          </span>
+                        </div>
+                        <div className="p-2">
+                          <div className="truncate text-[12px] font-extrabold leading-tight text-white">
+                            {p.name}
+                          </div>
+                          <div className="mt-0.5 text-[12px] font-black text-neon-yellow">
+                            {brl(p.basePrice)}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
 
               {/* Adicionar mais itens */}
               <button
