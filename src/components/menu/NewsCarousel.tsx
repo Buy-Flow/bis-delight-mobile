@@ -145,12 +145,14 @@ export function NewsCarousel({
 
       {/* Card único com crossfade — troca a cada 4s */}
       <div
-        className="relative mx-auto w-[85vw] max-w-[380px] py-6"
+        className="relative mx-auto w-[85vw] max-w-[380px] py-6 touch-pan-y"
         style={{ aspectRatio: "3 / 4" }}
         onPointerDown={() => setPaused(true)}
         onPointerUp={() => setPaused(false)}
         onPointerCancel={() => setPaused(false)}
         onMouseLeave={() => setPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {items.map((p, i) => (
           <div
