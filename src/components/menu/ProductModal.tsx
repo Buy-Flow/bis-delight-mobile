@@ -5,7 +5,6 @@ import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { useSiteSettings, useCategories } from "@/lib/menu-data";
 
 
