@@ -20,7 +20,10 @@ export function ProductCard({
   product: Product;
   onOpen: (p: Product) => void;
 }) {
+  const { data: isAdmin } = useIsAdmin();
+  const navigate = useNavigate();
   return (
+
     <div
       role="button"
       tabIndex={0}
