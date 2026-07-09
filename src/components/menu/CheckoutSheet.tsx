@@ -405,11 +405,65 @@ export function CheckoutSheet() {
                 <span>{mode === "entrega" ? "Taxa de entrega" : "Retirada na loja"}</span>
                 <span>{fee > 0 ? brl(fee) : "Grátis"}</span>
               </div>
+              {couponApplied && (
+                <div className="flex justify-between text-neon-cyan">
+                  <span>Cupom {couponApplied.code}</span>
+                  <span>−{brl(couponApplied.discount)}</span>
+                </div>
+              )}
               <div className="mt-2 flex items-end justify-between">
                 <span className="font-display text-lg font-extrabold text-white">Total</span>
                 <span className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">{brl(total)}</span>
               </div>
             </div>
+          </div>
+
+          {/* Cupom Bis Recompensa */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan">
+                <Ticket className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-sm font-extrabold text-white">Cupom de desconto</div>
+                <div className="text-[11px] text-white/60">Tem um código Bis Recompensa? Use aqui.</div>
+              </div>
+            </div>
+            {couponApplied ? (
+              <div className="flex items-center justify-between gap-2 rounded-2xl border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2.5">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Check className="h-4 w-4 text-neon-cyan shrink-0" />
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-bold text-white">{couponApplied.code}</div>
+                    <div className="truncate text-[11px] text-neon-cyan">Desconto de {brl(couponApplied.discount)}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeCoupon}
+                  className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white/80 active:scale-95"
+                >
+                  Remover
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="BIS-XXXXXXXX"
+                  className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm font-mono uppercase tracking-wider text-white placeholder:text-white/30 outline-none focus:border-neon-cyan/60"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={couponChecking || !couponInput.trim()}
+                  className="rounded-2xl bg-neon-cyan px-4 py-2.5 text-sm font-extrabold text-[oklch(0.18_0.11_305)] active:scale-95 disabled:opacity-50"
+                >
+                  {couponChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aplicar"}
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="h-20" />
