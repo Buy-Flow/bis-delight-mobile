@@ -1,9 +1,12 @@
 import { Menu } from "lucide-react";
 import { BRAND } from "@/data/menu";
+import { useSiteSettings } from "@/lib/menu-data";
 import { AccountButton } from "./AccountButton";
 
 export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
-
+  const { data: settings } = useSiteSettings();
+  const logo = settings?.logo || BRAND.logo;
+  const name = settings?.name || BRAND.name;
 
   return (
     <header className="sticky top-0 z-40 bg-transparent">
@@ -20,8 +23,8 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
 
         <div className="flex items-center gap-2">
           <img
-            src={BRAND.logo}
-            alt="Quero Bis — Sorveteria e Açaí"
+            src={logo}
+            alt={`${name} — Sorveteria e Açaí`}
             width={140}
             height={56}
             decoding="async"
@@ -39,3 +42,4 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
     </header>
   );
 }
+
