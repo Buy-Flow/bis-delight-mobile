@@ -684,9 +684,9 @@ function ClientDetailDialog({
     const topMode =
       [...modeCount.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
-    // Produto mais pedido (por qtd)
+    // Produto mais pedido (somente pedidos pagos)
     const prodCount = new Map<string, number>();
-    for (const o of orders) {
+    for (const o of paid) {
       for (const it of o.order_items ?? []) {
         prodCount.set(it.name, (prodCount.get(it.name) ?? 0) + (it.quantity ?? 1));
       }
@@ -695,7 +695,12 @@ function ClientDetailDialog({
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
 
-    return { paidCount: paid.length, avg, topMode, topProducts };
+    // Histórico visível: apenas entregues e cancelados
+    const historyOrders = orders.filter(
+      (o) => o.status === "entregue" || o.status === "cancelado",
+    );
+
+    return { paidCount: paid.length, avg, topMode, topProducts, historyOrders };
   }, [data]);
 
   const waNumber = onlyDigits(client?.phone);
@@ -923,15 +928,15 @@ function ClientDetailDialog({
                     className="mb-3 text-lg font-black uppercase text-neon-yellow"
                     style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                   >
-                    Histórico de pedidos ({data?.orders.length ?? 0})
+                    Histórico de pedidos ({stats.historyOrders.length})
                   </p>
-                  {(data?.orders.length ?? 0) === 0 ? (
+                  {stats.historyOrders.length === 0 ? (
                     <p className="py-6 text-center text-sm text-white/50">
-                      Este cliente ainda não fez pedidos.
+                      Nenhum pedido entregue ou cancelado ainda.
                     </p>
                   ) : (
                     <ul className="space-y-2">
-                      {data!.orders.map((o) => (
+                      {stats.historyOrders.map((o) => (
                         <OrderCard key={o.id} order={o} />
                       ))}
                     </ul>
