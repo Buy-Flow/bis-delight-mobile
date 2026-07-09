@@ -233,8 +233,6 @@ export function ProductModal({
   const optionGroups: OptionGroup[] = product.optionGroups ?? [];
   const isCustom = !!product.isCustom && optionGroups.length > 0;
 
-  const groupsUnit = (() => {
-    let t = 0;
   const getGQty = (gId: string, oId: string, picked: string[]): number => {
     if (!picked.includes(oId)) return 0;
     return groupQty[gId]?.[oId] ?? 1;
