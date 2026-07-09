@@ -215,13 +215,24 @@ function AdminPage() {
 
 
 /* =============================== Products =============================== */
-function ProductsTab() {
+function ProductsTab({ initialEditId }: { initialEditId?: string }) {
+  const navigate = useNavigate();
   const { data: products = [] } = useAllProducts();
   const { data: categories = [] } = useCategories();
   const reorder = useReorderProducts();
   const toggleActive = useToggleProductActive();
   const upsert = useUpsertProduct();
   const [editing, setEditing] = useState<Product | null>(null);
+
+  useEffect(() => {
+    if (!initialEditId || !products.length) return;
+    const p = products.find((p) => p.id === initialEditId);
+    if (p) {
+      setEditing(p);
+      navigate({ to: "/admin", search: {}, replace: true });
+    }
+  }, [initialEditId, products, navigate]);
+
   
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
