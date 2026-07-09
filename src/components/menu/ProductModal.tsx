@@ -172,6 +172,9 @@ export function ProductModal({
   const [groupSel, setGroupSel] = useState<Record<string, string[]>>(
     initialGroupSel(product),
   );
+  // qty por (groupId, optionId) — 1ª unidade preço cheio, próximas 50% off
+  const [groupQty, setGroupQty] = useState<Record<string, Record<string, number>>>({});
+
   const [stepIndex, setStepIndex] = useState(0);
   const wizardCtxRef = useRef<{
     totalSteps: number;
@@ -191,8 +194,10 @@ export function ProductModal({
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
       setGroupSel(initialGroupSel(product));
+      setGroupQty({});
       setStepIndex(0);
     }
+
   }, [product?.id, editItem?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!product) return null;
@@ -228,20 +233,38 @@ export function ProductModal({
   const optionGroups: OptionGroup[] = product.optionGroups ?? [];
   const isCustom = !!product.isCustom && optionGroups.length > 0;
 
+  const getGQty = (gId: string, oId: string, picked: string[]): number => {
+    if (!picked.includes(oId)) return 0;
+    return groupQty[gId]?.[oId] ?? 1;
+  };
+  const getOptUnitPrice = (g: OptionGroup, o: OptionItem, idxInPicked: number) => {
+    if (o.price && o.price > 0) return o.price;
+    const free = g.freeCount ?? 0;
+    const extra = g.pricePerExtra ?? 0;
+    if (extra > 0 && idxInPicked >= free) return extra;
+    return 0;
+  };
+
   const groupsUnit = (() => {
     let t = 0;
     for (const g of optionGroups) {
       const picked = groupSel[g.id] ?? [];
-      const items = g.options.filter((o) => picked.includes(o.id));
-      t += items.reduce((s, o) => s + (o.price || 0), 0);
-      const free = g.freeCount ?? 0;
-      const extra = g.pricePerExtra ?? 0;
-      if (extra > 0 && picked.length > free) {
-        t += (picked.length - free) * extra;
+      if (g.type === "single") {
+        const items = g.options.filter((o) => picked.includes(o.id));
+        t += items.reduce((s, o) => s + (o.price || 0), 0);
+        continue;
       }
+      picked.forEach((oId, idx) => {
+        const o = g.options.find((x) => x.id === oId);
+        if (!o) return;
+        const unitP = getOptUnitPrice(g, o, idx);
+        const q = getGQty(g.id, oId, picked);
+        t += unitP + unitP * 0.5 * Math.max(0, q - 1);
+      });
     }
     return t;
   })();
+
 
   const unit = isCustom
     ? groupsUnit
@@ -281,7 +304,28 @@ export function ProductModal({
       const has = cur.includes(optId);
       return { ...prev, [g.id]: has ? cur.filter((x) => x !== optId) : [...cur, optId] };
     });
+    // limpa qty quando desmarca
+    setGroupQty((prev) => {
+      const cur = prev[g.id] ?? {};
+      if (cur[optId]) {
+        const nextGroup = { ...cur };
+        delete nextGroup[optId];
+        return { ...prev, [g.id]: nextGroup };
+      }
+      return prev;
+    });
   };
+  const changeGroupQty = (gId: string, optId: string, delta: number) => {
+    setGroupQty((prev) => {
+      const cur = prev[gId]?.[optId] ?? 1;
+      const nextVal = Math.max(1, cur + delta);
+      return {
+        ...prev,
+        [gId]: { ...(prev[gId] ?? {}), [optId]: nextVal },
+      };
+    });
+  };
+
 
   const canSubmit = !isCustom
     ? true
@@ -303,15 +347,16 @@ export function ProductModal({
           if (picked[0]) sizeLabel = picked[0].label;
           continue;
         }
-        const free = g.freeCount ?? 0;
-        const extra = g.pricePerExtra ?? 0;
         picked.forEach((o, idx) => {
-          const feeShare = extra > 0 && idx >= free ? extra : 0;
+          const unitP = getOptUnitPrice(g, o, idx);
+          const q = groupQty[g.id]?.[o.id] ?? 1;
+          const linePrice = unitP + unitP * 0.5 * Math.max(0, q - 1);
           groupExtras.push({
-            label: `${g.name}: ${o.label}`,
-            price: (o.price || 0) + feeShare,
+            label: q > 1 ? `${g.name}: ${o.label} x${q}` : `${g.name}: ${o.label}`,
+            price: linePrice,
           });
         });
+
       }
       const payload = {
         productId: product.id,
@@ -518,27 +563,63 @@ export function ProductModal({
                         {g.options.map((o) => {
                           const on = p.includes(o.id);
                           const idx = p.indexOf(o.id);
-                          const freeUsed = p.length;
-                          const willBeCharged = on
-                            ? idx >= free && extraFee > 0
-                            : freeUsed >= free && extraFee > 0;
-                          const priceLabel =
-                            o.price > 0
-                              ? `+ ${brl(o.price)}`
-                              : willBeCharged
-                                ? `+ ${brl(extraFee)}`
-                                : "Grátis";
-                          const priceColor =
-                            o.price > 0 || willBeCharged ? "text-neon-pink" : "text-neon-cyan";
+                          const unitP = on
+                            ? getOptUnitPrice(g, o, idx)
+                            : o.price > 0
+                              ? o.price
+                              : p.length >= free && extraFee > 0
+                                ? extraFee
+                                : 0;
+                          const q = on ? groupQty[g.id]?.[o.id] ?? 1 : 0;
+                          const priceLabel = unitP > 0 ? `+ ${brl(unitP)}` : "Grátis";
+                          const priceColor = unitP > 0 ? "text-neon-pink" : "text-neon-cyan";
                           return (
-                            <ComplementRow
+                            <div
                               key={o.id}
-                              active={on}
-                              onClick={() => toggleGroup(g, o.id)}
-                              label={o.label}
-                              price={priceLabel}
-                              priceColor={priceColor}
-                            />
+                              className={cn(
+                                "rounded-2xl border transition-all",
+                                on
+                                  ? "border-neon-cyan bg-neon-cyan/10 shadow-[0_0_15px_rgba(0,229,255,0.15)]"
+                                  : "border-white/5 bg-white/5",
+                              )}
+                            >
+                              <ComplementRow
+                                active={on}
+                                onClick={() => toggleGroup(g, o.id)}
+                                label={o.label}
+                                price={priceLabel}
+                                priceColor={priceColor}
+                              />
+                              {on && unitP > 0 && (
+                                <div className="mx-4 mb-3 flex items-center justify-between border-t border-white/10 pt-3">
+                                  <div className="text-[11px] font-semibold uppercase tracking-wider text-neon-cyan/90">
+                                    +unidade{" "}
+                                    <span className="text-white/60">
+                                      50% off ({brl(unitP * 0.5)})
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center rounded-full border border-white/15 bg-black/30 p-1">
+                                    <button
+                                      onClick={() => changeGroupQty(g.id, o.id, -1)}
+                                      aria-label="Diminuir"
+                                      className="grid h-7 w-7 place-items-center text-white/70 active:scale-95"
+                                    >
+                                      <Minus className="h-3.5 w-3.5" />
+                                    </button>
+                                    <span className="w-6 text-center text-sm font-bold text-white">
+                                      {q}
+                                    </span>
+                                    <button
+                                      onClick={() => changeGroupQty(g.id, o.id, +1)}
+                                      aria-label="Aumentar"
+                                      className="grid h-7 w-7 place-items-center text-neon-cyan active:scale-95"
+                                    >
+                                      <Plus className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
@@ -547,6 +628,7 @@ export function ProductModal({
                   },
                 });
               }
+
             } else {
               if (productSizes.length > 1) {
                 steps.push({
