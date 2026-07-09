@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Undo2,
   ChevronDown,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
@@ -527,8 +528,22 @@ function OrderCard({
                 <Truck className="h-3.5 w-3.5" /> Marcar entregue
               </button>
             )}
+            {["pago", "preparando", "entregue"].includes(order.status) && phoneDigits && (
+              <a
+                href={`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(
+                  `Oi ${order.customer_name.split(" ")[0]}! 💜 Aqui é da Quero Bis. Seu pedido foi confirmado e queremos saber: como foi sua experiência? Sua avaliação ajuda demais a gente a melhorar! ⭐️⭐️⭐️⭐️⭐️`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/50 bg-emerald-400/10 px-4 py-3 text-xs font-black uppercase tracking-tighter text-emerald-300 transition-all hover:bg-emerald-400 hover:text-[oklch(0.13_0.08_305)]"
+                title="Pedir avaliação no WhatsApp"
+              >
+                <Star className="h-3.5 w-3.5" /> Pedir avaliação
+              </a>
+            )}
             {order.status !== "cancelado" && order.status !== "entregue" && (
               <button
+
                 onClick={() => onStatus(order, "cancelado")}
                 disabled={busy}
                 className="inline-flex items-center justify-center rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-red-400 transition-colors hover:bg-red-500 hover:text-white disabled:opacity-50"
