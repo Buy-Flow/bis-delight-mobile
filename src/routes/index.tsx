@@ -605,6 +605,8 @@ function HighlightsCarousel({
       el.removeEventListener("pointercancel", resumeSoon);
       el.removeEventListener("touchend", resumeSoon);
       window.clearInterval(interval);
+      window.clearTimeout(scrollIdleTimer);
+
     };
   }, [highlights.length, canLoop]);
 
