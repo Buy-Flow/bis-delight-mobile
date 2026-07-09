@@ -566,30 +566,6 @@ export function ProductModal({
                   ),
                 });
               }
-              if (availableExtras.length > 0) {
-                steps.push({
-                  key: "extras",
-                  name: "Extras",
-                  isValid: () => true,
-                  render: () => (
-                    <div className="space-y-2">
-                      {availableExtras.map((e) => {
-                        const on = extras.includes(e.id);
-                        return (
-                          <ComplementRow
-                            key={e.id}
-                            active={on}
-                            onClick={() => toggleExtra(e.id)}
-                            label={e.label}
-                            price={e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
-                            priceColor={e.price > 0 ? "text-neon-pink" : "text-neon-cyan"}
-                          />
-                        );
-                      })}
-                    </div>
-                  ),
-                });
-              }
               if (removableList.length > 0) {
                 steps.push({
                   key: "remove",
@@ -618,6 +594,31 @@ export function ProductModal({
                   ),
                 });
               }
+              if (availableExtras.length > 0) {
+                steps.push({
+                  key: "extras",
+                  name: "Extras",
+                  isValid: () => true,
+                  render: () => (
+                    <div className="space-y-2">
+                      {availableExtras.map((e) => {
+                        const on = extras.includes(e.id);
+                        return (
+                          <ComplementRow
+                            key={e.id}
+                            active={on}
+                            onClick={() => toggleExtra(e.id)}
+                            label={e.label}
+                            price={e.price > 0 ? `+ ${brl(e.price)}` : "Grátis"}
+                            priceColor={e.price > 0 ? "text-neon-pink" : "text-neon-cyan"}
+                          />
+                        );
+                      })}
+                    </div>
+                  ),
+                });
+              }
+
             }
 
             // Sempre encerra com a etapa "Finalizar" (observação + revisão)
