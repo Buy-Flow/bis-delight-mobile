@@ -8,7 +8,7 @@ import {
   XCircle,
   Truck,
   ChefHat,
-  RefreshCw,
+  
   Package,
   MapPin,
   Phone,
@@ -147,10 +147,13 @@ export function OrdersTab() {
       .channel("orders-admin")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => load())
       .subscribe();
+    const interval = setInterval(() => load(), 15000);
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, []);
+
 
   const filtered = useMemo(() => {
     if (!orders) return [];
@@ -221,24 +224,18 @@ export function OrdersTab() {
             Gerenciamento em tempo real
           </p>
         </div>
-        <button
-          onClick={load}
-          disabled={refreshing}
-          className="group inline-flex items-center gap-2 self-start rounded-full border border-purple-500/30 bg-purple-900/30 px-5 py-2.5 transition-all hover:bg-purple-800/50 disabled:opacity-60 md:self-auto"
-        >
+        <div className="inline-flex items-center gap-2 self-start rounded-full border border-purple-500/30 bg-purple-900/30 px-4 py-2 md:self-auto">
           <span
             className={cn(
-              "h-2 w-2 rounded-full bg-neon-cyan transition-shadow group-hover:shadow-[0_0_10px_var(--neon-cyan)]",
-              refreshing ? "animate-spin" : "animate-pulse",
+              "h-2 w-2 rounded-full bg-neon-cyan",
+              refreshing ? "animate-spin" : "animate-pulse shadow-[0_0_10px_var(--neon-cyan)]",
             )}
           />
-          <span className="text-xs font-bold uppercase tracking-wider text-white">
-            {refreshing ? "Atualizando" : "Atualizar Agora"}
+          <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">
+            {refreshing ? "Atualizando" : "Ao vivo"}
           </span>
-          <RefreshCw
-            className={cn("h-3.5 w-3.5 text-white/70", refreshing && "animate-spin")}
-          />
-        </button>
+        </div>
+
       </div>
 
       {/* KPIs */}
