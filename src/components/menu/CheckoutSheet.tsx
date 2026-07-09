@@ -199,7 +199,15 @@ export function CheckoutSheet() {
         );
       } catch {}
 
-      const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total });
+      if (couponApplied) {
+        await supabase
+          .from("loyalty_coupons")
+          .update({ used_at: new Date().toISOString() })
+          .eq("id", couponApplied.id)
+          .is("used_at", null);
+      }
+
+      const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
       const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
       window.open(url, "_blank");
       toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
