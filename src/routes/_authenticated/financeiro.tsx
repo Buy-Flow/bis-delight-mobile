@@ -627,8 +627,42 @@ function FinanceiroPage() {
               </div>
             </section>
 
+            {/* Heatmap Dia × Hora */}
+            <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">
+                    Horários de pico · Dia × Hora
+                  </h2>
+                  <p className="mt-1 text-[11px] text-white/50">
+                    Use pra dimensionar equipe: quanto mais rosa, mais pedidos naquele horário.
+                  </p>
+                </div>
+                {heatmap.peak.count > 0 && (
+                  <div className="rounded-2xl border border-neon-pink/40 bg-neon-pink/10 px-3 py-2 text-[11px]">
+                    <div className="font-bold uppercase tracking-widest text-neon-pink">Pico</div>
+                    <div className="mt-0.5 text-white">
+                      {DOW[heatmap.peak.dow]} · {fmtHour(heatmap.peak.h)} — {heatmap.peak.count} pedidos ·{" "}
+                      {brl(heatmap.peak.revenue)}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Heatmap grid={heatmap.grid} revGrid={heatmap.revGrid} hours={heatmap.hours} max={heatmap.max} />
+              <div className="mt-4 flex items-center justify-end gap-2 text-[10px] uppercase tracking-widest text-white/50">
+                <span>menos</span>
+                <div className="flex h-2 w-40 overflow-hidden rounded-full">
+                  {[0.05, 0.15, 0.3, 0.5, 0.7, 0.9].map((a, i) => (
+                    <div key={i} className="flex-1" style={{ background: `rgba(236,72,153,${a})` }} />
+                  ))}
+                </div>
+                <span>mais</span>
+              </div>
+            </section>
+
             {/* Bottom: menos vendidos + zerados */}
             <section className="grid gap-6 lg:grid-cols-2">
+
               <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
                 <div className="mb-4 flex items-center gap-2">
                   <TrendingDown className="h-4 w-4 text-neon-yellow" />
