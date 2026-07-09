@@ -242,8 +242,9 @@ function AuthPage() {
                       placeholder="Data de aniversário"
                       className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none [color-scheme:dark]"
                     />
-
+                  </Field>
                 </>
+
               )}
               <Field icon={Mail}>
                 <input
