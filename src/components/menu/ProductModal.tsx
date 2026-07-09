@@ -374,7 +374,7 @@ export function ProductModal({
         <div
           className={cn(
             "relative z-10 shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
-            collapsed ? "h-[72px]" : "h-64",
+            collapsed ? "h-[72px]" : "h-44",
           )}
         >
           {!collapsed && (
@@ -383,20 +383,14 @@ export function ProductModal({
               <img
                 src={product.image}
                 alt={product.name}
-                className="absolute inset-0 h-full w-full object-contain p-6 drop-shadow-[0_20px_30px_rgba(0,0,0,0.55)] animate-float-slow"
+                className="absolute inset-0 h-full w-full object-contain p-4 drop-shadow-[0_20px_30px_rgba(0,0,0,0.55)] animate-float-slow"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.18_0.11_305)] via-[oklch(0.18_0.11_305)]/60 to-transparent" />
             </>
           )}
 
-          {/* Favorito à esquerda */}
-          <FavoriteButton
-            productId={product.id}
-            className="absolute left-4 top-4 z-10 h-10 w-10 border border-white/20 bg-black/40 backdrop-blur-md"
-          />
-
-          {/* Ações do lado direito: minimizar + fechar */}
-          <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+          {/* Ações à esquerda: minimizar + favorito */}
+          <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
             <button
               onClick={() => setCollapsed((v) => !v)}
               aria-label={collapsed ? "Expandir imagem" : "Minimizar imagem"}
@@ -404,14 +398,21 @@ export function ProductModal({
             >
               <ChevronsUpDown className="h-5 w-5" />
             </button>
-            <button
-              onClick={onClose}
-              aria-label="Fechar"
-              className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <FavoriteButton
+              productId={product.id}
+              className="h-10 w-10 border border-white/20 bg-black/40 backdrop-blur-md"
+            />
           </div>
+
+          {/* Fechar à direita */}
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md active:scale-95"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
 
 
           {collapsed && (
