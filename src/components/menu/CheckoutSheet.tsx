@@ -209,10 +209,12 @@ export function CheckoutSheet() {
       } catch {}
 
       if (couponApplied) {
-        // Resgate atômico no servidor: garante código válido, do usuário e não usado.
-        const { data: redeemed, error: redeemErr } = await supabase.rpc("redeem_loyalty_coupon", {
-          _code: couponApplied.code,
-        });
+        const rpcName = couponApplied.kind === "promo" ? "redeem_promo_coupon" : "redeem_loyalty_coupon";
+        const args: Record<string, unknown> =
+          couponApplied.kind === "promo"
+            ? { _code: couponApplied.code, _order_total: subtotal, _order_id: order.id }
+            : { _code: couponApplied.code };
+        const { data: redeemed, error: redeemErr } = await supabase.rpc(rpcName as never, args as never);
         if (redeemErr || !Array.isArray(redeemed) || redeemed.length === 0) {
           toast.error("Não foi possível usar o cupom. Ele pode já ter sido utilizado.");
           setSending(false);
