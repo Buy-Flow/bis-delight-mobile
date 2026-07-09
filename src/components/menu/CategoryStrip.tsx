@@ -188,9 +188,20 @@ export function CategoryChip({
           </div>
         </div>
       </div>
-    </button>
+      </button>
+      {category.id !== "all" && (
+        <AdminEditButton
+          tab="categories"
+          edit={category.id}
+          size="sm"
+          label={`Editar categoria ${category.name}`}
+          className="absolute -right-1 -top-1"
+        />
+      )}
+    </div>
   );
 }
+
 
 export function CategoryStrip({
   active,
