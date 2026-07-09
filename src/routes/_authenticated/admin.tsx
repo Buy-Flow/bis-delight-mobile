@@ -563,9 +563,22 @@ function ProductEditor({
               {dirty && <span className="rounded-full bg-neon-yellow/20 px-2 py-0.5 text-neon-yellow">não salvo</span>}
             </div>
           </div>
-          <button onClick={requestClose} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/10">
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            {p.image && (
+              <button
+                type="button"
+                onClick={() => setField("image", "")}
+                title="Remover foto"
+                className="grid h-9 w-9 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-red-300"
+              >
+                <ImageOff className="h-4 w-4" />
+              </button>
+            )}
+            <button onClick={requestClose} className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/10">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
         </div>
 
         {/* Tabs */}
