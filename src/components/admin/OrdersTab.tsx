@@ -8,7 +8,7 @@ import {
   XCircle,
   Truck,
   ChefHat,
-  RefreshCw,
+  
   Package,
   MapPin,
   Phone,
