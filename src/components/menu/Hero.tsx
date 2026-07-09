@@ -13,6 +13,8 @@ export function Hero({
 
   return (
     <section className="relative px-4 pb-0 pt-2">
+      <AdminEditButton tab="settings" label="Editar hero na loja" className="absolute right-4 top-3" />
+
       {/* Pink/magenta glow behind hero images — matches the bg tone */}
       <div
         aria-hidden="true"
