@@ -108,18 +108,15 @@ export function CheckoutSheet() {
         toast.error("Este cupom já foi utilizado.");
         return;
       }
-      // Cupom Bis Recompensa: 1 açaí 300ml grátis. Aplica desconto do
-      // item de 300ml mais barato do carrinho.
-      const acai300 = items
-        .filter((it) => (it.size || "").toLowerCase().includes("300"))
-        .map((it) => it.unitPrice)
-        .sort((a, b) => a - b)[0];
-      if (!acai300) {
-        toast.error("Adicione um açaí 300ml no carrinho para usar este cupom.");
+      // Cupom Bis Recompensa: R$ 20 de desconto no pedido.
+      const REWARD_VALUE = 20;
+      if (subtotal < REWARD_VALUE) {
+        toast.error(`Pedido mínimo de ${brl(REWARD_VALUE)} para usar este cupom.`);
         return;
       }
-      setCouponApplied({ id: data.id, code: data.code, discount: acai300 });
-      toast.success(`Cupom aplicado! −${brl(acai300)}`);
+      const discountValue = Math.min(REWARD_VALUE, subtotal);
+      setCouponApplied({ id: data.id, code: data.code, discount: discountValue });
+      toast.success(`Cupom aplicado! −${brl(discountValue)}`);
     } catch (err) {
       console.error(err);
       toast.error("Não foi possível validar o cupom.");
@@ -267,7 +264,7 @@ export function CheckoutSheet() {
                     Entre para finalizar seu pedido
                   </div>
                   <div className="mt-1 text-[11px] leading-relaxed text-white/70">
-                    A cada pedido você ganha 1 selo Bis Recompensa. 10 selos = 1 açaí 300ml grátis!
+                    A cada pedido você ganha 1 selo Bis Recompensa. 10 selos = R$ 20 de desconto!
                   </div>
                 </div>
               </div>

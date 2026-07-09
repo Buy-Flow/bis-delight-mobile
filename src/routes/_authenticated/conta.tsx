@@ -159,7 +159,7 @@ function LoyaltyPanel() {
           </div>
         </div>
         <div className="mt-1 text-[11px] text-white/70">
-          A cada pedido acima de R$ 20 você ganha 1 selo 🍧. Complete 10 e ganhe 1 açaí 300ml grátis!
+          A cada pedido acima de R$ 20 você ganha 1 selo 🍧. Complete 10 e ganhe R$ 20 de desconto!
         </div>
 
         <div className="mt-5 flex items-end justify-between">
@@ -219,7 +219,7 @@ function LoyaltyPanel() {
             >
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-widest text-white/50">
-                  {c.used_at ? "Usado" : "Açaí 300ml grátis"}
+                  {c.used_at ? "Usado" : "R$ 20 de desconto"}
                 </div>
                 <div className="font-mono text-sm font-bold text-white">{c.code}</div>
               </div>
