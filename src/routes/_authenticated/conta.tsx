@@ -219,7 +219,7 @@ function LoyaltyPanel() {
             >
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-widest text-white/50">
-                  {c.used_at ? "Usado" : "Açaí 300ml grátis"}
+                  {c.used_at ? "Usado" : "R$ 20 de desconto"}
                 </div>
                 <div className="font-mono text-sm font-bold text-white">{c.code}</div>
               </div>
