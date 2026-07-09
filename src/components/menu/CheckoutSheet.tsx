@@ -189,11 +189,15 @@ export function CheckoutSheet() {
       } catch {}
 
       if (couponApplied) {
-        await supabase
-          .from("loyalty_coupons")
-          .update({ used_at: new Date().toISOString() })
-          .eq("id", couponApplied.id)
-          .is("used_at", null);
+        // Resgate atômico no servidor: garante código válido, do usuário e não usado.
+        const { data: redeemed, error: redeemErr } = await supabase.rpc("redeem_loyalty_coupon", {
+          _code: couponApplied.code,
+        });
+        if (redeemErr || !Array.isArray(redeemed) || redeemed.length === 0) {
+          toast.error("Não foi possível usar o cupom. Ele pode já ter sido utilizado.");
+          setSending(false);
+          return;
+        }
       }
 
       const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
