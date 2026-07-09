@@ -428,7 +428,7 @@ export function ProductModal({
         <div
           className={cn(
             "relative z-10 shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
-            collapsed ? "h-[72px]" : "h-32",
+            collapsed ? "h-[72px]" : "h-24",
           )}
         >
           {!collapsed && (
@@ -484,7 +484,7 @@ export function ProductModal({
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {!collapsed && (
-            <div className="-mt-2 relative z-30 mb-6">
+            <div className="-mt-4 relative z-30 mb-6">
               <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/40">
                 <Sparkles className="h-3 w-3" /> {CATEGORY_LABEL[product.category] ?? "Personalize"}
               </div>
