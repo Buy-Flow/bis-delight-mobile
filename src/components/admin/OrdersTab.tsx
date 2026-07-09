@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Undo2,
   ChevronDown,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
