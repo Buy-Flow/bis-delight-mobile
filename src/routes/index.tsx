@@ -536,16 +536,32 @@ function HighlightsCarousel({
   const [activeIdx, setActiveIdx] = useState(0);
   const pausedRef = useRef(false);
 
+  // Duplica a lista para simular loop infinito (só se >1 item)
+  const loopItems = useMemo(
+    () => (highlights.length > 1 ? [...highlights, ...highlights] : highlights),
+    [highlights],
+  );
+  const canLoop = highlights.length > 1;
+
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
+
     const onScroll = () => {
-      const idx = Math.round(el.scrollLeft / (el.clientWidth * 0.88));
-      setActiveIdx(Math.min(highlights.length - 1, Math.max(0, idx)));
+      const step = el.clientWidth * 0.88;
+      // Wrap invisível: quando passa da 1ª cópia, subtrai a largura dela
+      if (canLoop) {
+        const half = el.scrollWidth / 2;
+        if (half > 0 && el.scrollLeft >= half) {
+          el.scrollLeft = el.scrollLeft - half;
+        }
+      }
+      const rawIdx = Math.round(el.scrollLeft / step);
+      const len = highlights.length || 1;
+      setActiveIdx(((rawIdx % len) + len) % len);
     };
     el.addEventListener("scroll", onScroll, { passive: true });
 
-    // Desktop: converte scroll vertical do mouse em rolagem lateral
     const isFinePointer =
       typeof window !== "undefined" &&
       window.matchMedia?.("(pointer: fine)").matches;
@@ -554,17 +570,11 @@ function HighlightsCarousel({
       if (e.deltaY === 0) return;
       const delta =
         Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (maxScroll <= 0) return;
-      const atStart = el.scrollLeft <= 0 && delta < 0;
-      const atEnd = el.scrollLeft >= maxScroll - 1 && delta > 0;
-      if (atStart || atEnd) return;
       e.preventDefault();
       el.scrollBy({ left: delta, behavior: "auto" });
     };
     el.addEventListener("wheel", onWheel, { passive: false });
 
-    // Pausa autoplay durante interação
     const pause = () => { pausedRef.current = true; };
     const resumeSoon = () => {
       window.setTimeout(() => { pausedRef.current = false; }, 4000);
@@ -574,18 +584,11 @@ function HighlightsCarousel({
     el.addEventListener("pointercancel", resumeSoon);
     el.addEventListener("touchend", resumeSoon);
 
-    // Autoplay: avança para a direita a cada 3.5s, com loop
+    // Autoplay: sempre para a direita; o wrap é invisível via onScroll
     const interval = window.setInterval(() => {
       if (pausedRef.current) return;
-      if (!el) return;
       const step = el.clientWidth * 0.88;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      const atEnd = el.scrollLeft >= maxScroll - 2;
-      if (atEnd) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        el.scrollBy({ left: step, behavior: "smooth" });
-      }
+      el.scrollBy({ left: step, behavior: "smooth" });
     }, 3500);
 
     return () => {
@@ -597,7 +600,9 @@ function HighlightsCarousel({
       el.removeEventListener("touchend", resumeSoon);
       window.clearInterval(interval);
     };
-  }, [highlights.length]);
+  }, [highlights.length, canLoop]);
+
+
 
 
   const scrollTo = (i: number) => {
@@ -671,11 +676,12 @@ function HighlightsCarousel({
             "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
         }}
       >
-        {highlights.map((p) => (
-          <div key={p.id} className="w-[88%] shrink-0 snap-start">
+        {loopItems.map((p, i) => (
+          <div key={`${p.id}-${i}`} className="w-[88%] shrink-0 snap-start">
             <HighlightCard product={p} onOpen={onOpen} />
           </div>
         ))}
+
       </div>
 
       <div className="mt-1 flex items-center justify-center gap-1.5">
