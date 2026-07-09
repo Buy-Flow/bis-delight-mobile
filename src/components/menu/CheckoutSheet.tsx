@@ -224,11 +224,6 @@ export function CheckoutSheet() {
           return;
         }
       }
-          toast.error("Não foi possível usar o cupom. Ele pode já ter sido utilizado.");
-          setSending(false);
-          return;
-        }
-      }
 
       const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
       const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
