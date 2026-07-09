@@ -101,6 +101,15 @@ export function AccountButton() {
                     navigate({ to: "/pedidos" });
                   }}
                 />
+                <MenuItem
+                  icon={Users}
+                  label="Clientes"
+                  accent
+                  onClick={() => {
+                    setOpen(false);
+                    navigate({ to: "/clientes" });
+                  }}
+                />
               </div>
             )}
 
