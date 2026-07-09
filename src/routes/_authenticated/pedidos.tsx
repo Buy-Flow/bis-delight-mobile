@@ -74,6 +74,12 @@ function PedidosPage() {
               Painel
             </Link>
             <Link
+              to="/carrinhos"
+              className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
+            >
+              <ShoppingCart className="h-3.5 w-3.5" /> Carrinhos
+            </Link>
+            <Link
               to="/financeiro"
               className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
             >
