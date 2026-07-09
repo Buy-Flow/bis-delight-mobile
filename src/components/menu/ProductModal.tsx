@@ -250,7 +250,23 @@ export function ProductModal({
 
 
   const toggleExtra = (id: string) =>
-    setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setExtras((prev) => {
+      const cur = prev[id] ?? 0;
+      const next = { ...prev };
+      if (cur > 0) delete next[id];
+      else next[id] = 1;
+      return next;
+    });
+  const changeExtraQty = (id: string, delta: number) =>
+    setExtras((prev) => {
+      const cur = prev[id] ?? 0;
+      const nextVal = Math.max(0, cur + delta);
+      const next = { ...prev };
+      if (nextVal === 0) delete next[id];
+      else next[id] = nextVal;
+      return next;
+    });
+
   const toggleRemoved = (name: string) =>
     setRemoved((prev) => (prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]));
   const toggleGroup = (g: OptionGroup, optId: string) => {
