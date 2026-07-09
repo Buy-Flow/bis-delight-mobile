@@ -24,7 +24,7 @@ import {
   Info,
   X,
 
-  ImagePlus,
+  ImagePlus, ImageOff,
   ArrowUp,
   ArrowDown,
   Instagram,
