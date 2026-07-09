@@ -122,6 +122,8 @@ function Content() {
     setModalProduct(p);
   };
   const menuRef = useRef<HTMLDivElement>(null);
+  const scrollLockRef = useRef<number | null>(null);
+
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: settings, isLoading: settingsLoading, error: settingsError } = useSiteSettings();
