@@ -106,6 +106,8 @@ export function LocationSection() {
 
   return (
     <section id="localizacao" className="relative px-5 pb-10 pt-16">
+      <AdminEditButton tab="settings" label="Editar loja no painel" className="absolute right-5 top-4" />
+
       {/* Ambient decorations */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-4 top-6 grid grid-cols-4 gap-2 opacity-40">
