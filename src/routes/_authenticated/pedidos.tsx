@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Toaster } from "sonner";
-import { Home, LogOut, Loader2, ClipboardList } from "lucide-react";
+import { Home, LogOut, Loader2, ClipboardList, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
 import { OrdersTab } from "@/components/admin/OrdersTab";
