@@ -134,7 +134,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
 
       { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -204,6 +207,18 @@ function RootComponent() {
   const router = useRouter();
 
   useDesktopWheelHorizontalScroll();
+
+  useEffect(() => {
+    let cancelled = false;
+    import("@/lib/register-sw").then(({ registerServiceWorker }) => {
+      if (!cancelled) registerServiceWorker();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+
 
   useEffect(() => {
     let mounted = true;
