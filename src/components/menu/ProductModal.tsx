@@ -244,6 +244,12 @@ export function ProductModal({
     if (extra > 0 && idxInPicked >= free) return extra;
     return 0;
   };
+  // Preço-base para unidades REPETIDAS de um mesmo item (frutas, cremes, etc.).
+  // A 1ª unidade segue a regra grátis/extra do grupo; as próximas saem sempre com 50% off.
+  const getOptRepeatBase = (g: OptionGroup, o: OptionItem) => {
+    if (o.price && o.price > 0) return o.price;
+    return g.pricePerExtra ?? 0;
+  };
 
   const groupsUnit = (() => {
     let t = 0;
@@ -258,12 +264,14 @@ export function ProductModal({
         const o = g.options.find((x) => x.id === oId);
         if (!o) return;
         const unitP = getOptUnitPrice(g, o, idx);
+        const repeatBase = getOptRepeatBase(g, o);
         const q = getGQty(g.id, oId, picked);
-        t += unitP + unitP * 0.5 * Math.max(0, q - 1);
+        t += unitP + repeatBase * 0.5 * Math.max(0, q - 1);
       });
     }
     return t;
   })();
+
 
 
   const unit = isCustom
@@ -349,8 +357,10 @@ export function ProductModal({
         }
         picked.forEach((o, idx) => {
           const unitP = getOptUnitPrice(g, o, idx);
+          const repeatBase = getOptRepeatBase(g, o);
           const q = groupQty[g.id]?.[o.id] ?? 1;
-          const linePrice = unitP + unitP * 0.5 * Math.max(0, q - 1);
+          const linePrice = unitP + repeatBase * 0.5 * Math.max(0, q - 1);
+
           groupExtras.push({
             label: q > 1 ? `${g.name}: ${o.label} x${q}` : `${g.name}: ${o.label}`,
             price: linePrice,
@@ -590,12 +600,12 @@ export function ProductModal({
                                 price={priceLabel}
                                 priceColor={priceColor}
                               />
-                              {on && unitP > 0 && (
+                              {on && getOptRepeatBase(g, o) > 0 && (
                                 <div className="mx-4 mb-3 flex items-center justify-between border-t border-white/10 pt-3">
                                   <div className="text-[11px] font-semibold uppercase tracking-wider text-neon-cyan/90">
                                     +unidade{" "}
                                     <span className="text-white/60">
-                                      50% off ({brl(unitP * 0.5)})
+                                      50% off ({brl(getOptRepeatBase(g, o) * 0.5)})
                                     </span>
                                   </div>
                                   <div className="flex items-center rounded-full border border-white/15 bg-black/30 p-1">
@@ -619,6 +629,7 @@ export function ProductModal({
                                   </div>
                                 </div>
                               )}
+
                             </div>
                           );
                         })}
