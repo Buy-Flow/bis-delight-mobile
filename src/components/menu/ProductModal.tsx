@@ -340,7 +340,11 @@ export function ProductModal({
       image: product.image,
       size: size.label,
       flavor,
-      extras: extrasSelected.map((e) => ({ label: e.label, price: e.price })),
+      extras: extrasSelected.map((e) => ({
+        label: e.qty > 1 ? `${e.label} x${e.qty}` : e.label,
+        price: e.price + e.price * 0.5 * (e.qty - 1),
+      })),
+
       removed,
       note: note.trim() || undefined,
       quantity: qty,
