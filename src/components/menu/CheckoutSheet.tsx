@@ -93,29 +93,21 @@ export function CheckoutSheet() {
     }
     setCouponChecking(true);
     try {
-      const { data, error } = await supabase
-        .from("loyalty_coupons")
-        .select("id, code, used_at")
-        .eq("user_id", user.id)
-        .eq("code", code)
-        .maybeSingle();
+      // RPC valida no servidor: código existe, pertence a este usuário e não foi usado.
+      const { data, error } = await supabase.rpc("validate_loyalty_coupon", { _code: code });
       if (error) throw error;
-      if (!data) {
-        toast.error("Cupom não encontrado.");
+      const row = Array.isArray(data) ? data[0] : null;
+      if (!row) {
+        toast.error("Cupom inválido, já utilizado ou não pertence a esta conta.");
         return;
       }
-      if (data.used_at) {
-        toast.error("Este cupom já foi utilizado.");
-        return;
-      }
-      // Cupom Bis Recompensa: R$ 20 de desconto no pedido.
       const REWARD_VALUE = 20;
       if (subtotal < REWARD_VALUE) {
         toast.error(`Pedido mínimo de ${brl(REWARD_VALUE)} para usar este cupom.`);
         return;
       }
       const discountValue = Math.min(REWARD_VALUE, subtotal);
-      setCouponApplied({ id: data.id, code: data.code, discount: discountValue });
+      setCouponApplied({ id: row.id, code: row.code, discount: discountValue });
       toast.success(`Cupom aplicado! −${brl(discountValue)}`);
     } catch (err) {
       console.error(err);
