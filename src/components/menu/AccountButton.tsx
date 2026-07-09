@@ -102,6 +102,15 @@ export function AccountButton() {
                   }}
                 />
                 <MenuItem
+                  icon={LineChart}
+                  label="Financeiro"
+                  accent
+                  onClick={() => {
+                    setOpen(false);
+                    navigate({ to: "/financeiro" });
+                  }}
+                />
+                <MenuItem
                   icon={Users}
                   label="Clientes"
                   accent
@@ -110,6 +119,7 @@ export function AccountButton() {
                     navigate({ to: "/clientes" });
                   }}
                 />
+
               </div>
             )}
 
