@@ -390,12 +390,74 @@ function ClientesDashboard() {
             >
               <Phone className="h-3.5 w-3.5" /> Copiar telefones
             </button>
-            <button
-              onClick={exportCsv}
-              className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-neon-pink/30 transition hover:brightness-110"
-            >
-              <Download className="h-3.5 w-3.5" /> Exportar CSV
-            </button>
+            <Popover open={exportOpen} onOpenChange={setExportOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-neon-pink/30 transition hover:brightness-110"
+                >
+                  <Download className="h-3.5 w-3.5" /> Exportar CSV
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="w-72 rounded-2xl border-purple-800/60 bg-purple-950/95 p-3 text-white backdrop-blur-xl"
+              >
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/50">
+                  Predefinições
+                </div>
+                <div className="mb-3 grid grid-cols-2 gap-1.5">
+                  {[
+                    { k: "all", l: "Tudo" },
+                    { k: "name_phone", l: "Nome + telefone" },
+                    { k: "phone", l: "Só telefone" },
+                    { k: "email", l: "Só e-mail" },
+                    { k: "address", l: "Só endereço" },
+                    { k: "birthday", l: "Só aniversário" },
+                  ].map((p) => (
+                    <button
+                      key={p.k}
+                      onClick={() => applyPreset(p.k as Parameters<typeof applyPreset>[0])}
+                      className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-[11px] font-semibold text-white/80 transition hover:bg-neon-pink/20 hover:text-white"
+                    >
+                      {p.l}
+                    </button>
+                  ))}
+                </div>
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/50">
+                  Campos
+                </div>
+                <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+                  {ALL_FIELDS.map((f) => {
+                    const active = exportFields.has(f.key);
+                    return (
+                      <label
+                        key={f.key}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] hover:bg-white/5"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={active}
+                          onChange={() => toggleField(f.key)}
+                          className="h-3.5 w-3.5 accent-neon-pink"
+                        />
+                        <span className={active ? "text-white" : "text-white/60"}>{f.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-3">
+                  <span className="text-[11px] text-white/50">
+                    {exportFields.size} campo(s) · {filtered.length} cliente(s)
+                  </span>
+                  <button
+                    onClick={exportCsv}
+                    className="inline-flex items-center gap-1 rounded-full bg-neon-pink px-3 py-1.5 text-[11px] font-bold text-white transition hover:brightness-110"
+                  >
+                    <Download className="h-3 w-3" /> Baixar
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
