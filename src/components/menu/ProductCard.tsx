@@ -18,17 +18,21 @@ export function ProductCard({
   onOpen: (p: Product) => void;
 }) {
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen(product)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(product);
+        }
+      }}
       className={cn(
-        "group relative flex h-full w-full flex-col overflow-visible rounded-[22px] text-left select-none",
-        // Fluid mobile touch: no 300ms delay, no blue tap highlight
+        "group relative flex h-full w-full cursor-pointer flex-col overflow-visible rounded-[22px] text-left select-none",
         "touch-manipulation [-webkit-tap-highlight-color:transparent]",
-        // GPU-friendly transform-only transition
         "transition-transform duration-150 ease-out will-change-transform",
-        // Tap feedback (works on touch)
         "active:scale-[.97] active:duration-75",
-        // Desktop hover lift (skipped on touch devices)
         "[@media(hover:hover)]:hover:-translate-y-0.5",
       )}
       style={{
@@ -40,7 +44,6 @@ export function ProductCard({
     >
       {/* Full-bleed product image top */}
       <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px]">
-        {/* Smooth radial glow background — no diagonal stripes */}
         <div
           className="absolute inset-0"
           style={{
@@ -48,11 +51,11 @@ export function ProductCard({
               "radial-gradient(120% 90% at 30% 20%, oklch(0.42 0.24 340) 0%, oklch(0.26 0.18 315) 45%, oklch(0.14 0.09 300) 100%)",
           }}
         />
-        <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-neon-cyan/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-neon-pink/25 blur-3xl" />
+        {/* Static soft glows (lighter blur for mobile perf) */}
+        <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-neon-cyan/15 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-neon-pink/15 blur-2xl" />
 
-        {/* Image wrapper handles hover/tap animation so we don't clash with the
-            inline transform used for positioning */}
+        {/* Image — no continuous float animation (keeps scroll smooth) */}
         <div
           className={cn(
             "absolute inset-0 will-change-transform transition-transform duration-300 ease-out",
@@ -60,22 +63,20 @@ export function ProductCard({
             "group-active:scale-[.98] group-active:duration-100",
           )}
         >
-          {/* Idle floating motion — separate layer so it doesn't fight the hover transform */}
-          <div className="absolute inset-0 animate-product-float will-change-transform">
-            <img
-              src={product.image}
-              alt={product.name}
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)]"
-              style={{
-                transform: `translate3d(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%, 0) scale(${product.imageScale ?? 1.75})`,
-                transformOrigin: "center",
-              }}
-            />
-          </div>
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)]"
+            style={{
+              transform: `translate3d(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%, 0) scale(${product.imageScale ?? 1.75})`,
+              transformOrigin: "center",
+            }}
+          />
         </div>
+
 
 
 
@@ -183,6 +184,6 @@ export function ProductCard({
         </div>
 
       </div>
-    </button>
+    </div>
   );
 }
