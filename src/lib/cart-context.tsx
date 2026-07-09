@@ -60,6 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   const [isAcaiOpen, setAcaiOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+  const [pendingProductId, setPendingProductId] = useState<string | null>(null);
 
   // hydrate from localStorage on mount
   useEffect(() => {
