@@ -676,11 +676,12 @@ function HighlightsCarousel({
             "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
         }}
       >
-        {highlights.map((p) => (
-          <div key={p.id} className="w-[88%] shrink-0 snap-start">
+        {loopItems.map((p, i) => (
+          <div key={`${p.id}-${i}`} className="w-[88%] shrink-0 snap-start">
             <HighlightCard product={p} onOpen={onOpen} />
           </div>
         ))}
+
       </div>
 
       <div className="mt-1 flex items-center justify-center gap-1.5">
