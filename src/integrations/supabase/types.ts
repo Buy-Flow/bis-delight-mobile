@@ -371,6 +371,86 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_coupon_redemptions: {
+        Row: {
+          coupon_id: string
+          id: string
+          order_id: string | null
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "promo_coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          min_order: number
+          note: string | null
+          per_user_limit: number
+          updated_at: string
+          uses: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order?: number
+          note?: string | null
+          per_user_limit?: number
+          updated_at?: string
+          uses?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order?: number
+          note?: string | null
+          per_user_limit?: number
+          updated_at?: string
+          uses?: number
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           accent_color: string
@@ -635,10 +715,28 @@ export type Database = {
           id: string
         }[]
       }
+      redeem_promo_coupon: {
+        Args: { _code: string; _order_id?: string; _order_total: number }
+        Returns: {
+          code: string
+          discount: number
+          id: string
+        }[]
+      }
       validate_loyalty_coupon: {
         Args: { _code: string }
         Returns: {
           code: string
+          id: string
+        }[]
+      }
+      validate_promo_coupon: {
+        Args: { _code: string; _order_total: number }
+        Returns: {
+          code: string
+          discount: number
+          discount_type: string
+          discount_value: number
           id: string
         }[]
       }

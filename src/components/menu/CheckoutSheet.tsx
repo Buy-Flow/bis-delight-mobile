@@ -49,7 +49,7 @@ export function CheckoutSheet() {
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [couponInput, setCouponInput] = useState("");
-  const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number } | null>(null);
+  const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
 
   useEffect(() => {
@@ -93,22 +93,42 @@ export function CheckoutSheet() {
     }
     setCouponChecking(true);
     try {
-      // RPC valida no servidor: código existe, pertence a este usuário e não foi usado.
+      // 1) Tenta cupom promocional criado pelo admin
+      const { data: promo, error: promoErr } = await supabase.rpc("validate_promo_coupon", {
+        _code: code,
+        _order_total: subtotal,
+      });
+      if (!promoErr && Array.isArray(promo) && promo.length > 0) {
+        const row = promo[0] as { id: string; code: string; discount: number };
+        setCouponApplied({ id: row.id, code: row.code, discount: Number(row.discount), kind: "promo" });
+        toast.success(`Cupom aplicado! −${brl(Number(row.discount))}`);
+        return;
+      }
+
+      // 2) Cai para o cupom Bis Recompensa (fidelidade)
       const { data, error } = await supabase.rpc("validate_loyalty_coupon", { _code: code });
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : null;
-      if (!row) {
-        toast.error("Cupom inválido, já utilizado ou não pertence a esta conta.");
+      if (row) {
+        const REWARD_VALUE = 20;
+        if (subtotal < REWARD_VALUE) {
+          toast.error(`Pedido mínimo de ${brl(REWARD_VALUE)} para usar este cupom.`);
+          return;
+        }
+        const discountValue = Math.min(REWARD_VALUE, subtotal);
+        setCouponApplied({ id: row.id, code: row.code, discount: discountValue, kind: "loyalty" });
+        toast.success(`Cupom aplicado! −${brl(discountValue)}`);
         return;
       }
-      const REWARD_VALUE = 20;
-      if (subtotal < REWARD_VALUE) {
-        toast.error(`Pedido mínimo de ${brl(REWARD_VALUE)} para usar este cupom.`);
-        return;
-      }
-      const discountValue = Math.min(REWARD_VALUE, subtotal);
-      setCouponApplied({ id: row.id, code: row.code, discount: discountValue });
-      toast.success(`Cupom aplicado! −${brl(discountValue)}`);
+
+      // Mensagem específica do erro do RPC promocional
+      const msg = promoErr?.message ?? "";
+      if (msg.includes("order_below_minimum")) toast.error("Pedido abaixo do mínimo pra este cupom.");
+      else if (msg.includes("coupon_expired")) toast.error("Cupom expirado.");
+      else if (msg.includes("coupon_exhausted")) toast.error("Cupom esgotado.");
+      else if (msg.includes("coupon_inactive")) toast.error("Cupom inativo.");
+      else if (msg.includes("coupon_user_limit")) toast.error("Você já usou este cupom.");
+      else toast.error("Cupom inválido.");
     } catch (err) {
       console.error(err);
       toast.error("Não foi possível validar o cupom.");
@@ -189,11 +209,16 @@ export function CheckoutSheet() {
       } catch {}
 
       if (couponApplied) {
-        // Resgate atômico no servidor: garante código válido, do usuário e não usado.
-        const { data: redeemed, error: redeemErr } = await supabase.rpc("redeem_loyalty_coupon", {
-          _code: couponApplied.code,
-        });
-        if (redeemErr || !Array.isArray(redeemed) || redeemed.length === 0) {
+        const { data: redeemed, error: redeemErr } =
+          couponApplied.kind === "promo"
+            ? await supabase.rpc("redeem_promo_coupon", {
+                _code: couponApplied.code,
+                _order_total: subtotal,
+                _order_id: order.id,
+              })
+            : await supabase.rpc("redeem_loyalty_coupon", { _code: couponApplied.code });
+        const rows = Array.isArray(redeemed) ? redeemed : [];
+        if (redeemErr || rows.length === 0) {
           toast.error("Não foi possível usar o cupom. Ele pode já ter sido utilizado.");
           setSending(false);
           return;
