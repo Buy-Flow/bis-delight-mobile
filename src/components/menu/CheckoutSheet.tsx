@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag } from "lucide-react";
+import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag, Ticket, Check } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
