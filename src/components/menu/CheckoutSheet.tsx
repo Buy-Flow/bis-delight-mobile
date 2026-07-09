@@ -80,8 +80,58 @@ export function CheckoutSheet() {
   if (!isCheckoutOpen) return null;
 
   const fee = mode === "entrega" ? BRAND.deliveryFee : 0;
-  const total = subtotal + fee;
+  const discount = couponApplied?.discount ?? 0;
+  const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    if (!user) {
+      toast.error("Entre na sua conta para usar cupom.");
+      return;
+    }
+    setCouponChecking(true);
+    try {
+      const { data, error } = await supabase
+        .from("loyalty_coupons")
+        .select("id, code, used_at")
+        .eq("user_id", user.id)
+        .eq("code", code)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        toast.error("Cupom não encontrado.");
+        return;
+      }
+      if (data.used_at) {
+        toast.error("Este cupom já foi utilizado.");
+        return;
+      }
+      // Cupom Bis Recompensa: 1 açaí 300ml grátis. Aplica desconto do
+      // item de 300ml mais barato do carrinho.
+      const acai300 = items
+        .filter((it) => (it.size || "").toLowerCase().includes("300"))
+        .map((it) => it.unitPrice)
+        .sort((a, b) => a - b)[0];
+      if (!acai300) {
+        toast.error("Adicione um açaí 300ml no carrinho para usar este cupom.");
+        return;
+      }
+      setCouponApplied({ id: data.id, code: data.code, discount: acai300 });
+      toast.success(`Cupom aplicado! −${brl(acai300)}`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível validar o cupom.");
+    } finally {
+      setCouponChecking(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponApplied(null);
+    setCouponInput("");
+  };
 
   const goLogin = () => {
     sessionStorage.setItem("querobis:resume_checkout", "1");
