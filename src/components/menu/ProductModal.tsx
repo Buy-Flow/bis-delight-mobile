@@ -329,12 +329,14 @@ export function ProductModal({
         className="absolute inset-0 bg-black/70 animate-in fade-in duration-150"
         onClick={onClose}
       />
-      <div className="paper-crumpled absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[40px] bg-[oklch(0.18_0.11_305)] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+      <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[40px] bg-[oklch(0.18_0.11_305)] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+        {/* Textura papel amassado como camada de fundo (não interfere no layout) */}
+        <div className="paper-crumpled pointer-events-none absolute inset-0 z-0" aria-hidden="true" />
 
         {/* HERO — imagem em bleed com gradiente descendo */}
         <div
           className={cn(
-            "relative shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
+            "relative z-10 shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
             collapsed ? "h-[72px]" : "h-64",
           )}
         >
@@ -384,19 +386,17 @@ export function ProductModal({
         </div>
 
         {/* Scroll body */}
-        <div className="flex-1 overflow-y-auto px-6 pb-40">
+        <div
+          className="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-40"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {!collapsed && (
             <div className="-mt-8 relative z-10 mb-6">
               <h2
-                className="font-display text-4xl font-extrabold uppercase tracking-tight leading-[0.9] text-white"
+                className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight leading-[1.05] text-neon-pink glow-pink-text pb-1 break-words"
                 style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
               >
-                {product.name.split(" ")[0]}
-                {product.name.split(" ").length > 1 && (
-                  <span className="block text-neon-pink glow-pink-text">
-                    {product.name.split(" ").slice(1).join(" ")}
-                  </span>
-                )}
+                {product.name}
               </h2>
               {product.description && (
                 <p className="mt-2 max-w-[85%] text-[13px] text-white/60">
@@ -736,7 +736,7 @@ export function ProductModal({
 
 
         {/* Footer — quantidade + CTA gradiente pink */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
+        <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
           {(() => {
             const { totalSteps, clampedStep, isLast, canAdvance } = wizardCtxRef.current;
             const isWizard = totalSteps > 1;
