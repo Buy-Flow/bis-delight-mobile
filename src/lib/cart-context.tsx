@@ -34,6 +34,10 @@ type CartCtx = {
   editingItem: CartItem | null;
   openEdit: (item: CartItem) => void;
   closeEdit: () => void;
+  // Upsell: cart pede pra home abrir o modal de um produto sugerido
+  pendingProductId: string | null;
+  requestOpenProduct: (productId: string) => void;
+  consumePendingProduct: () => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
