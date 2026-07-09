@@ -183,6 +183,8 @@ type FilterKey = "all" | "buyers" | "birthday" | "with_address" | "no_orders";
 function ClientesDashboard() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["clientes-admin"],
