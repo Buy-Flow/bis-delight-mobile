@@ -225,11 +225,26 @@ function LoyaltyPanel() {
               </div>
               {!c.used_at && (
                 <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(c.code);
-                    toast.success("Código copiado!");
+                  onClick={async () => {
+                    try {
+                      if (navigator.clipboard?.writeText) {
+                        await navigator.clipboard.writeText(c.code);
+                      } else {
+                        const ta = document.createElement("textarea");
+                        ta.value = c.code;
+                        ta.style.position = "fixed";
+                        ta.style.opacity = "0";
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(ta);
+                      }
+                      toast.success(`Código ${c.code} copiado!`);
+                    } catch {
+                      toast.error("Não foi possível copiar. Código: " + c.code);
+                    }
                   }}
-                  className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow text-[oklch(0.18_0.11_305)]"
+                  className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow text-[oklch(0.18_0.11_305)] transition active:scale-90"
                   aria-label="Copiar código"
                 >
                   <Copy className="h-4 w-4" />
