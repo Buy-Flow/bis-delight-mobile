@@ -1,21 +1,21 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Toaster } from "sonner";
-import { Home, LogOut, Loader2, ClipboardList, Users, LineChart, ShoppingCart } from "lucide-react";
+import { Home, LogOut, Loader2, ShoppingCart, Users, LineChart, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
-import { OrdersTab } from "@/components/admin/OrdersTab";
+import { AbandonedCartsTab } from "@/components/admin/AbandonedCartsTab";
 
-export const Route = createFileRoute("/_authenticated/pedidos")({
+export const Route = createFileRoute("/_authenticated/carrinhos")({
   head: () => ({
     meta: [
-      { title: "Pedidos — Painel Quero Bis" },
+      { title: "Carrinhos abandonados — Painel Quero Bis" },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: PedidosPage,
+  component: CarrinhosPage,
 });
 
-function PedidosPage() {
+function CarrinhosPage() {
   const navigate = useNavigate();
   const { data: isAdmin, isLoading } = useIsAdmin();
 
@@ -37,9 +37,7 @@ function PedidosPage() {
       <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] px-4 text-white">
         <div className="max-w-sm text-center">
           <h1 className="font-display text-2xl font-black">Acesso negado</h1>
-          <p className="mt-2 text-sm text-white/60">
-            Sua conta não tem permissão de administrador.
-          </p>
+          <p className="mt-2 text-sm text-white/60">Sua conta não tem permissão de administrador.</p>
           <button
             onClick={signOut}
             className="mt-6 rounded-2xl bg-neon-pink px-4 py-2 text-sm font-bold text-white"
@@ -58,26 +56,20 @@ function PedidosPage() {
       <header className="sticky top-0 z-30 border-b border-purple-900/50 bg-[oklch(0.10_0.08_300)]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <ClipboardList className="h-5 w-5 text-neon-yellow" />
+            <ShoppingCart className="h-5 w-5 text-neon-yellow" />
             <span
               className="text-xl font-black uppercase text-neon-yellow"
               style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
             >
-              Pedidos
+              Carrinhos
             </span>
           </Link>
           <div className="flex items-center gap-2">
             <Link
-              to="/admin"
+              to="/pedidos"
               className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
             >
-              Painel
-            </Link>
-            <Link
-              to="/carrinhos"
-              className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
-            >
-              <ShoppingCart className="h-3.5 w-3.5" /> Carrinhos
+              <ClipboardList className="h-3.5 w-3.5" /> Pedidos
             </Link>
             <Link
               to="/financeiro"
@@ -108,9 +100,8 @@ function PedidosPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <OrdersTab />
+        <AbandonedCartsTab />
       </main>
     </div>
   );
 }
-
