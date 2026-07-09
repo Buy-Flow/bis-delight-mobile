@@ -3,6 +3,8 @@ import { Plus, Sparkles } from "lucide-react";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { AdminEditButton } from "./AdminEditButton";
+
 
 export const BADGE_STYLES = [
   { bg: "bg-neon-cyan", text: "text-[oklch(0.18_0.11_305)]", shadow: "shadow-[0_4px_0_0_oklch(0.55_0.20_200)]", rotate: "-rotate-[5deg]", label: "Novo" },
