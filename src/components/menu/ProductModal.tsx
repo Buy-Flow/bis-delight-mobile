@@ -244,6 +244,12 @@ export function ProductModal({
     if (extra > 0 && idxInPicked >= free) return extra;
     return 0;
   };
+  // Preço-base para unidades REPETIDAS de um mesmo item (frutas, cremes, etc.).
+  // A 1ª unidade segue a regra grátis/extra do grupo; as próximas saem sempre com 50% off.
+  const getOptRepeatBase = (g: OptionGroup, o: OptionItem) => {
+    if (o.price && o.price > 0) return o.price;
+    return g.pricePerExtra ?? 0;
+  };
 
   const groupsUnit = (() => {
     let t = 0;
@@ -258,12 +264,14 @@ export function ProductModal({
         const o = g.options.find((x) => x.id === oId);
         if (!o) return;
         const unitP = getOptUnitPrice(g, o, idx);
+        const repeatBase = getOptRepeatBase(g, o);
         const q = getGQty(g.id, oId, picked);
-        t += unitP + unitP * 0.5 * Math.max(0, q - 1);
+        t += unitP + repeatBase * 0.5 * Math.max(0, q - 1);
       });
     }
     return t;
   })();
+
 
 
   const unit = isCustom
