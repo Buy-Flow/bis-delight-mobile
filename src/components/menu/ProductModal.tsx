@@ -503,18 +503,33 @@ export function ProductModal({
                       </div>
                     ) : (
                       <div className="space-y-2">
+                        {free > 0 && (
+                          <div className="mb-1 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider">
+                            <span className="text-neon-cyan">
+                              {Math.min(p.length, free)}/{free} grátis
+                            </span>
+                            {extraFee > 0 && (
+                              <span className="text-neon-pink">
+                                extra +{brl(extraFee)}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         {g.options.map((o) => {
                           const on = p.includes(o.id);
                           const idx = p.indexOf(o.id);
-                          const isExtraCharged = extraFee > 0 && on && idx >= free;
+                          const freeUsed = p.length;
+                          const willBeCharged = on
+                            ? idx >= free && extraFee > 0
+                            : freeUsed >= free && extraFee > 0;
                           const priceLabel =
                             o.price > 0
                               ? `+ ${brl(o.price)}`
-                              : isExtraCharged
+                              : willBeCharged
                                 ? `+ ${brl(extraFee)}`
                                 : "Grátis";
                           const priceColor =
-                            o.price > 0 || isExtraCharged ? "text-neon-pink" : "text-neon-cyan";
+                            o.price > 0 || willBeCharged ? "text-neon-pink" : "text-neon-cyan";
                           return (
                             <ComplementRow
                               key={o.id}
@@ -528,6 +543,7 @@ export function ProductModal({
                         })}
                       </div>
                     );
+
                   },
                 });
               }
