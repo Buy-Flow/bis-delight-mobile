@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User as UserIcon, LogOut, Award, Heart, ClipboardList, Shield } from "lucide-react";
+import { User as UserIcon, LogOut, Award, Heart, ClipboardList, Shield, Users } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth, signOut } from "@/lib/use-auth";
 import { useIsAdmin } from "@/lib/menu-data";
