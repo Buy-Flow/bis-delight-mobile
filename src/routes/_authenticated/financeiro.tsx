@@ -158,7 +158,7 @@ function FinanceiroPage() {
         if (prodRes.error) throw prodRes.error;
         const ords = (curRes.data ?? []) as OrderRow[];
         setOrders(ords);
-        setPrevOrders(((prevRes.data ?? []) as OrderRow[]) ?? []);
+        setPrevOrders((prevRes.data ?? []) as OrderRow[]);
         setProducts((prodRes.data ?? []) as ProductRow[]);
         // Items — fetch for current-range orders only
         if (ords.length > 0) {
