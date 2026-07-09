@@ -552,7 +552,7 @@ function KpiCard({
   value,
   tint,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: (props: { className?: string }) => JSX.Element;
   label: string;
   value: string;
   tint: string;
@@ -1046,7 +1046,7 @@ function MiniStat({
   value,
   tint,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: (props: { className?: string }) => JSX.Element;
   label: string;
   value: string;
   tint: string;
