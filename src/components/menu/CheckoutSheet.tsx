@@ -264,7 +264,7 @@ export function CheckoutSheet() {
                     Entre para finalizar seu pedido
                   </div>
                   <div className="mt-1 text-[11px] leading-relaxed text-white/70">
-                    A cada pedido você ganha 1 selo Bis Recompensa. 10 selos = 1 açaí 300ml grátis!
+                    A cada pedido você ganha 1 selo Bis Recompensa. 10 selos = R$ 20 de desconto!
                   </div>
                 </div>
               </div>
