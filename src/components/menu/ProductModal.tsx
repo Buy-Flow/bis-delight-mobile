@@ -744,7 +744,7 @@ export function ProductModal({
             const isWizard = totalSteps > 1;
             return (
               <div className="flex items-center gap-3">
-                {isWizard && clampedStep > 0 && (
+                {isWizard && clampedStep > 0 && !isLast && (
                   <button
                     onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
                     className="h-12 rounded-2xl border border-white/15 bg-white/5 px-4 font-display text-sm font-bold uppercase tracking-wider text-white/80 active:scale-95"
