@@ -28,15 +28,15 @@ export function NewsCarousel({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
 
-  // Só duplica para loop infinito quando há 3+ itens; com 2, mostra exatamente o configurado.
-  const loopItems = items.length >= 3 ? [...items, ...items] : items;
+  // Duplica os itens para permitir loop infinito sempre para a direita (>= 2 itens).
+  const loopItems = items.length >= 2 ? [...items, ...items] : items;
 
   // Loop invisível: quando o scroll passa da primeira cópia (setWidth), volta
   // silenciosamente para a mesma posição na primeira — mantém o movimento
   // sempre indo para a direita sem "rewind".
   useEffect(() => {
     const el = scrollerRef.current;
-    if (!el || items.length < 3) return;
+    if (!el || items.length < 2) return;
     const onScroll = () => {
       const first = el.firstElementChild as HTMLElement | null;
       if (!first) return;
@@ -52,7 +52,7 @@ export function NewsCarousel({
     return () => el.removeEventListener("scroll", onScroll);
   }, [items.length]);
 
-  // Autoplay: avança 1 card a cada 4s. Com 3+ usa loop invisível; com 2, alterna entre eles.
+  // Autoplay: avança 1 card a cada 4s, sempre para a direita (loop invisível).
   useEffect(() => {
     if (items.length < 2) return;
     const el = scrollerRef.current;
@@ -75,15 +75,9 @@ export function NewsCarousel({
       const first = node.firstElementChild as HTMLElement | null;
       if (!first) return;
       const step = first.getBoundingClientRect().width + 20;
-
-      if (items.length >= 3) {
-        node.scrollBy({ left: step, behavior: "smooth" });
-      } else {
-        const currentIdx = Math.round(node.scrollLeft / step);
-        const nextIdx = (currentIdx + 1) % items.length;
-        node.scrollTo({ left: nextIdx * step, behavior: "smooth" });
-      }
+      node.scrollBy({ left: step, behavior: "smooth" });
     }, 4000);
+
 
     return () => {
       window.clearInterval(id);
