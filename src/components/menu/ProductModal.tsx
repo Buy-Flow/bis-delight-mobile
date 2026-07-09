@@ -194,8 +194,10 @@ export function ProductModal({
       setQty(s?.qty ?? 1);
       setNote(s?.note ?? "");
       setGroupSel(initialGroupSel(product));
+      setGroupQty({});
       setStepIndex(0);
     }
+
   }, [product?.id, editItem?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!product) return null;
