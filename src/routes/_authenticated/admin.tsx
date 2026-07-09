@@ -2385,6 +2385,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
         {section === "social" && <SocialSection s={s} set={set} />}
         {section === "announcement" && <AnnouncementSection s={s} set={set} />}
         {section === "news" && <NewsSection s={s} set={set} />}
+        {section === "coupons" && <CouponsSection />}
         {section === "appearance" && (
           <AppearanceSection s={s} set={set} onTexture={uploadTexture} textureBusy={textureBusy} />
         )}
