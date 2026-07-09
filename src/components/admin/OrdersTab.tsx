@@ -14,6 +14,7 @@ import {
   Phone,
   ShoppingBag,
   Undo2,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
@@ -334,6 +335,8 @@ function OrderCard({
     : created.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   const phoneDigits = order.phone.replace(/\D/g, "");
 
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <div
       className={cn(
@@ -343,9 +346,14 @@ function OrderCard({
         "hover:border-neon-cyan/50",
       )}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 p-6 pb-4">
-        <div className="min-w-0">
+      {/* Header (clickable to expand) */}
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="flex w-full items-start justify-between gap-3 p-6 pb-4 text-left transition-colors hover:bg-white/[0.02]"
+      >
+        <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <span
               className={cn(
@@ -366,29 +374,53 @@ function OrderCard({
           >
             {order.customer_name}
           </h3>
-          <a
-            href={`https://wa.me/55${phoneDigits}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-0.5 inline-flex items-center gap-1 text-xs font-bold text-neon-cyan hover:underline"
-          >
-            <Phone className="h-3 w-3" />
-            {order.phone}
-            <span className="text-white/40">(WhatsApp)</span>
-          </a>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold uppercase">
+            <span className="text-white/50">{timeLabel}</span>
+            <span
+              className={cn(
+                order.mode === "entrega" ? "text-neon-pink" : "text-white/60",
+              )}
+            >
+              {order.mode === "entrega" ? "Entrega" : "Retirada"}
+            </span>
+            <span className="text-white/40">·</span>
+            <span className="text-neon-yellow">
+              {order.order_items.reduce((s, it) => s + it.quantity, 0)} itens
+            </span>
+          </div>
+          {expanded && (
+            <a
+              href={`https://wa.me/55${phoneDigits}`}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-neon-cyan hover:underline"
+            >
+              <Phone className="h-3 w-3" />
+              {order.phone}
+              <span className="text-white/40">(WhatsApp)</span>
+            </a>
+          )}
         </div>
-        <div className="shrink-0 text-right">
-          <p className="text-[10px] font-bold uppercase text-white/40">{timeLabel}</p>
-          <p
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <span
+            className="text-xl font-black text-neon-yellow drop-shadow-[0_0_10px_rgba(253,224,71,0.25)]"
+            style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+          >
+            {brl(Number(order.total))}
+          </span>
+          <ChevronDown
             className={cn(
-              "mt-0.5 text-[11px] font-bold uppercase",
-              order.mode === "entrega" ? "text-neon-pink" : "text-white/60",
+              "h-5 w-5 text-white/50 transition-transform",
+              expanded && "rotate-180",
             )}
-          >
-            {order.mode === "entrega" ? "Entrega" : "Retirada"}
-          </p>
+          />
         </div>
-      </div>
+      </button>
+
+      {expanded && (
+      <>
+
 
       {/* Items */}
       <div className="space-y-3 px-6">
@@ -519,6 +551,8 @@ function OrderCard({
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
