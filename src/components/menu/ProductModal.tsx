@@ -391,79 +391,140 @@ export function ProductModal({
 
         {/* Scroll body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
-          {productSizes.length > 1 && (
-            <Section title="Tamanho">
-              <div className="grid grid-cols-2 gap-2">
-                {productSizes.map((s) => {
-                  const active = s.id === sizeId;
-                  return (
-                    <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
-                      <div className="flex flex-col items-center">
-                        <span className="text-sm font-extrabold">{s.label}</span>
-                        {s.priceDelta > 0 && (
-                          <span className="text-[11px] text-white/60">
-                            +{brl(s.priceDelta)}
-                          </span>
-                        )}
-                      </div>
-                    </Chip>
-                  );
-                })}
-              </div>
-            </Section>
-          )}
+          {isCustom ? (
+            <>
+              {optionGroups.map((g, gi) => {
+                const picked = groupSel[g.id] ?? [];
+                const free = g.freeCount ?? 0;
+                const extraFee = g.pricePerExtra ?? 0;
+                const hint =
+                  g.type === "single"
+                    ? g.required ? "Escolha 1" : "Opcional"
+                    : free > 0
+                      ? `${free} grátis${extraFee > 0 ? ` · +${brl(extraFee)} cada extra` : ""}`
+                      : "Adicione o que quiser";
+                return (
+                  <Section
+                    key={g.id}
+                    title={`${gi + 1}. ${g.name}`}
+                    hint={hint}
+                  >
+                    <div className="flex flex-col gap-2">
+                      {g.options.map((o) => {
+                        const on = picked.includes(o.id);
+                        const idx = picked.indexOf(o.id);
+                        const isExtraCharged =
+                          g.type === "multi" && extraFee > 0 && on && idx >= free;
+                        const priceLabel =
+                          o.price > 0
+                            ? `+${brl(o.price)}`
+                            : isExtraCharged
+                              ? `+${brl(extraFee)}`
+                              : "";
+                        return (
+                          <Chip
+                            key={o.id}
+                            small
+                            active={on}
+                            onClick={() => toggleGroup(g, o.id)}
+                            className="w-full justify-between"
+                          >
+                            <span className="mr-1">{o.label}</span>
+                            {priceLabel && (
+                              <span className="text-[11px] text-white/60">{priceLabel}</span>
+                            )}
+                          </Chip>
+                        );
+                      })}
+                    </div>
+                  </Section>
+                );
+              })}
+              <Section title="Observação">
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Ex.: caprichar na calda, sem gelo…"
+                  className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
+                  rows={3}
+                />
+              </Section>
+            </>
+          ) : (
+            <>
+              {productSizes.length > 1 && (
+                <Section title="Tamanho">
+                  <div className="grid grid-cols-2 gap-2">
+                    {productSizes.map((s) => {
+                      const active = s.id === sizeId;
+                      return (
+                        <Chip key={s.id} active={active} onClick={() => setSizeId(s.id)}>
+                          <div className="flex flex-col items-center">
+                            <span className="text-sm font-extrabold">{s.label}</span>
+                            {s.priceDelta > 0 && (
+                              <span className="text-[11px] text-white/60">
+                                +{brl(s.priceDelta)}
+                              </span>
+                            )}
+                          </div>
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </Section>
+              )}
 
-          {flavorList && (
-            <Section title="Sabor">
-              <div className="grid grid-cols-2 gap-2">
-                {flavorList.map((f) => (
-                  <Chip key={f} active={f === flavor} onClick={() => setFlavor(f)}>
-                    <span className="text-sm font-bold">{f}</span>
-                  </Chip>
-                ))}
-              </div>
-            </Section>
-          )}
+              {flavorList && (
+                <Section title="Sabor">
+                  <div className="grid grid-cols-2 gap-2">
+                    {flavorList.map((f) => (
+                      <Chip key={f} active={f === flavor} onClick={() => setFlavor(f)}>
+                        <span className="text-sm font-bold">{f}</span>
+                      </Chip>
+                    ))}
+                  </div>
+                </Section>
+              )}
 
-          {availableExtras.length > 0 && (
-            <Section title="Complementos" hint="Adicione o que quiser">
-              <div className="flex flex-col gap-2">
-                {availableExtras.map((e) => {
-                  const on = extras.includes(e.id);
-                  return (
-                    <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)} className="w-full justify-between">
-                      <span className="mr-1">{e.label}</span>
-                      {e.price > 0 && (
-                        <span className="text-[11px] text-white/60">+{brl(e.price)}</span>
-                      )}
-                    </Chip>
-                  );
-                })}
-              </div>
-            </Section>
-          )}
+              {availableExtras.length > 0 && (
+                <Section title="Complementos" hint="Adicione o que quiser">
+                  <div className="flex flex-col gap-2">
+                    {availableExtras.map((e) => {
+                      const on = extras.includes(e.id);
+                      return (
+                        <Chip key={e.id} small active={on} onClick={() => toggleExtra(e.id)} className="w-full justify-between">
+                          <span className="mr-1">{e.label}</span>
+                          {e.price > 0 && (
+                            <span className="text-[11px] text-white/60">+{brl(e.price)}</span>
+                          )}
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </Section>
+              )}
 
-
-
-          {removableList.length > 0 && (
-            <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
-              <div className="flex flex-wrap gap-2">
-                {removableList.map((r) => {
-                  const off = removed.includes(r);
-                  return (
-                    <Chip
-                      key={r}
-                      small
-                      active={off}
-                      variant="pink"
-                      onClick={() => toggleRemoved(r)}
-                    >
-                      {off ? `Sem ${r}` : r}
-                    </Chip>
-                  );
-                })}
-              </div>
-            </Section>
+              {removableList.length > 0 && (
+                <Section title="Remover ingredientes" hint="Toque para tirar do pedido">
+                  <div className="flex flex-wrap gap-2">
+                    {removableList.map((r) => {
+                      const off = removed.includes(r);
+                      return (
+                        <Chip
+                          key={r}
+                          small
+                          active={off}
+                          variant="pink"
+                          onClick={() => toggleRemoved(r)}
+                        >
+                          {off ? `Sem ${r}` : r}
+                        </Chip>
+                      );
+                    })}
+                  </div>
+                </Section>
+              )}
+            </>
           )}
 
 
