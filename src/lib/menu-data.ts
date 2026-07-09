@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   PRODUCTS as STATIC_PRODUCTS,
@@ -173,21 +173,24 @@ function normalizeOptionGroups(raw: unknown): OptionGroup[] | undefined {
   });
 }
 
+export const productsQueryOptions = queryOptions({
+  queryKey: ["products"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) throw error;
+    if (!data || data.length === 0) return STATIC_PRODUCTS;
+    return data.map((r) => rowToProduct(r as Record<string, unknown>));
+  },
+  staleTime: 60_000,
+});
+
 export function useProducts() {
-  return useQuery({
-    queryKey: ["products"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order", { ascending: true })
-        .order("name", { ascending: true });
-      if (error) throw error;
-      if (!data || data.length === 0) return STATIC_PRODUCTS;
-      return data.map((r) => rowToProduct(r as Record<string, unknown>));
-    },
-  });
+  return useQuery(productsQueryOptions);
 }
 
 export function useAllProducts() {
@@ -205,26 +208,29 @@ export function useAllProducts() {
   });
 }
 
+export const categoriesQueryOptions = queryOptions({
+  queryKey: ["categories"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    const rows =
+      data && data.length > 0
+        ? data.map((r) => rowToCategory(r as Record<string, unknown>))
+        : STATIC_CATEGORIES.filter((c) => c.id !== "all");
+    return [
+      { id: "all", name: "Tudo", emoji: "✨", image: getStaticCategoryImage("all") || rows[0]?.image || "" } as Category,
+      ...rows,
+    ];
+  },
+  staleTime: 60_000,
+});
+
 export function useCategories() {
-  return useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order", { ascending: true });
-      if (error) throw error;
-      const rows =
-        data && data.length > 0
-          ? data.map((r) => rowToCategory(r as Record<string, unknown>))
-          : STATIC_CATEGORIES.filter((c) => c.id !== "all");
-      return [
-        { id: "all", name: "Tudo", emoji: "✨", image: getStaticCategoryImage("all") || rows[0]?.image || "" } as Category,
-        ...rows,
-      ];
-    },
-  });
+  return useQuery(categoriesQueryOptions);
 }
 
 export const DEFAULT_HOURS: DayHours[] = [
