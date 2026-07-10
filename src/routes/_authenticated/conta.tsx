@@ -33,6 +33,12 @@ import { ProductModal } from "@/components/menu/ProductModal";
 import type { Product } from "@/data/menu";
 import { Heart as HeartIcon } from "lucide-react";
 import { ProductCard } from "@/components/menu/ProductCard";
+import {
+  OrdersListSkeleton,
+  FavoritesGridSkeleton,
+  ProfilePanelSkeleton,
+  LoyaltyPanelSkeleton,
+} from "@/components/ui/skeletons";
 
 
 
