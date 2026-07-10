@@ -15,6 +15,12 @@ import {
   Infinity as InfinityIcon,
   X,
   Check,
+  CalendarClock,
+  Zap,
+  Sparkles,
+  Gift,
+  UserPlus,
+  Power,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
