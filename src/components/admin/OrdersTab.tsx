@@ -411,6 +411,8 @@ export function OrdersTab() {
     }
     toast.success(`Pedido atualizado para ${STATUS_THEME[status].label.toLowerCase()}.`);
     setOrders((prev) => (prev ? prev.map((o) => (o.id === order.id ? { ...o, status } : o)) : prev));
+    // Fire-and-forget push notification for key status transitions
+    void notifyOrderStatus(order, status);
   };
 
   if (orders === null) {
