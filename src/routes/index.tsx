@@ -545,13 +545,11 @@ function Content() {
 
 
       <footer className="border-t border-white/5 px-4 py-8 text-center">
-        <Link
-          to="/admin"
-          className="block text-[10px] text-white/30 transition-colors hover:text-white/60"
-        >
+        <p className="text-[10px] text-white/30">
           © {new Date().getFullYear()} {settings?.name ?? BRAND.name} · Feito com <span className="inline-block animate-heartbeat">💜</span>
-        </Link>
+        </p>
       </footer>
+
 
 
 
