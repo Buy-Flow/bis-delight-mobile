@@ -88,6 +88,7 @@ import { getDefaultExtras } from "@/components/menu/ProductModal";
 import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
+import { PopupsSection } from "@/components/admin/PopupsSection";
 import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
 import { ProductPicker } from "@/components/admin/ProductPicker";
 import { OrdersTab } from "@/components/admin/OrdersTab";
@@ -2383,7 +2384,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
         {section === "payment" && <PaymentSection s={s} set={set} />}
         {section === "social" && <SocialSection s={s} set={set} />}
         {section === "announcement" && <AnnouncementSection s={s} set={set} />}
-        {section === "popup" && <PopupSection s={s} set={set} />}
+        {section === "popup" && <PopupsSection />}
         {section === "news" && <NewsSection s={s} set={set} />}
         {section === "coupons" && <CouponsSection />}
         {section === "appearance" && (

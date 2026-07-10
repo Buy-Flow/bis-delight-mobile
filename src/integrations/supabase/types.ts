@@ -729,6 +729,81 @@ export type Database = {
         }
         Relationships: []
       }
+      site_popups: {
+        Row: {
+          active: boolean
+          audience: string
+          audience_days: number | null
+          body: string
+          created_at: string
+          cta: string
+          days_of_week: number[]
+          end_hour: number | null
+          ends_at: string | null
+          frequency: string
+          id: string
+          image_pos_x: number
+          image_pos_y: number
+          image_scale: number
+          image_url: string
+          link: string
+          name: string
+          priority: number
+          start_hour: number | null
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          audience?: string
+          audience_days?: number | null
+          body?: string
+          created_at?: string
+          cta?: string
+          days_of_week?: number[]
+          end_hour?: number | null
+          ends_at?: string | null
+          frequency?: string
+          id?: string
+          image_pos_x?: number
+          image_pos_y?: number
+          image_scale?: number
+          image_url?: string
+          link?: string
+          name?: string
+          priority?: number
+          start_hour?: number | null
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          audience?: string
+          audience_days?: number | null
+          body?: string
+          created_at?: string
+          cta?: string
+          days_of_week?: number[]
+          end_hour?: number | null
+          ends_at?: string | null
+          frequency?: string
+          id?: string
+          image_pos_x?: number
+          image_pos_y?: number
+          image_scale?: number
+          image_url?: string
+          link?: string
+          name?: string
+          priority?: number
+          start_hour?: number | null
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           accent_color: string
