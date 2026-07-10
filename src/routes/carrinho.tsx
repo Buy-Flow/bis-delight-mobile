@@ -40,14 +40,7 @@ function CartPage() {
   } = useCart();
   const { data: allProducts = [] } = useProducts();
 
-  const suggestions = useMemo(() => {
-    if (!items.length) return [];
-    const inCart = new Set(items.map((i) => i.productId));
-    return allProducts
-      .filter((p) => !inCart.has(p.id) && !p.isCustom && p.basePrice > 0)
-      .sort((a, b) => a.basePrice - b.basePrice)
-      .slice(0, 6);
-  }, [allProducts, items]);
+  const suggestions = usePersonalizedSuggestions(items, allProducts);
 
   const editingProduct = editingItem
     ? allProducts.find((x) => x.id === editingItem.productId)
