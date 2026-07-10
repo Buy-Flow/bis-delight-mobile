@@ -97,9 +97,9 @@ export function PopupsSection() {
   const remove = async (p: SitePopup) => {
     const ok = await confirmDialog({
       title: "Excluir pop-up?",
-      description: `"${p.name}" será removido permanentemente.`,
-      confirmText: "Excluir",
-      variant: "danger",
+      message: `"${p.name}" será removido permanentemente.`,
+      confirmLabel: "Excluir",
+      tone: "danger",
     });
     if (!ok) return;
     const { error } = await supabase.from("site_popups").delete().eq("id", p.id);
