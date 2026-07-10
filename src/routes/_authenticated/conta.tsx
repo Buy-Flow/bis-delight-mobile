@@ -288,19 +288,34 @@ function OrdersPanel() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("orders")
-      .select("id, created_at, total, mode, status, order_items(name, quantity, size, flavor, extras, unit_price, product_id)")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(30)
-      .then(({ data }) => {
-        setOrders(
-          (data ?? []).map((o: any) => ({ ...o, items: o.order_items ?? [] })),
-        );
-        setLoading(false);
-      });
+    const load = () => {
+      supabase
+        .from("orders")
+        .select("id, created_at, total, mode, status, order_items(name, quantity, size, flavor, extras, unit_price, product_id)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(30)
+        .then(({ data }) => {
+          setOrders(
+            (data ?? []).map((o: any) => ({ ...o, items: o.order_items ?? [] })),
+          );
+          setLoading(false);
+        });
+    };
+    load();
+    const channel = supabase
+      .channel(`orders-user-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
+
 
   const reorder = (o: OrderRow) => {
     o.items.forEach((it: any) => {
