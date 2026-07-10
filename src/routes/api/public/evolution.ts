@@ -41,8 +41,6 @@ export const Route = createFileRoute("/api/public/evolution")({
             const key = data?.key;
             const msg = data?.message;
             if (!key || !msg) return new Response("ok", { status: 200, headers: CORS });
-            // Ignore outbound echoes (messages we sent) — we already stored them.
-            if (key.fromMe) return new Response("ok", { status: 200, headers: CORS });
             // Ignore groups for now
             if (key.remoteJid?.endsWith("@g.us")) return new Response("ok", { status: 200, headers: CORS });
 
@@ -80,6 +78,15 @@ export const Route = createFileRoute("/api/public/evolution")({
             // Upsert conversation
             const preview = content || (type === "image" ? "📷 Foto" : type === "audio" ? "🎤 Áudio" : type === "video" ? "🎬 Vídeo" : type === "document" ? "📎 Documento" : type === "sticker" ? "Sticker" : "");
 
+            const { data: existingMessage } = key.id
+              ? await supabaseAdmin
+                  .from("whatsapp_messages")
+                  .select("id")
+                  .eq("evolution_id", key.id)
+                  .maybeSingle()
+              : { data: null };
+            if (existingMessage) return new Response("ok", { status: 200, headers: CORS });
+
             const { data: existing } = await supabaseAdmin
               .from("whatsapp_conversations")
               .select("id, unread_count, contact_name")
@@ -94,7 +101,7 @@ export const Route = createFileRoute("/api/public/evolution")({
                 .update({
                   last_message_at: new Date().toISOString(),
                   last_message_preview: preview.slice(0, 200),
-                  unread_count: (existing.unread_count ?? 0) + 1,
+                  unread_count: key.fromMe ? (existing.unread_count ?? 0) : (existing.unread_count ?? 0) + 1,
                   contact_name: existing.contact_name || pushName || null,
                 })
                 .eq("id", conversationId);
@@ -115,7 +122,7 @@ export const Route = createFileRoute("/api/public/evolution")({
                   contact_name: pushName || profile?.full_name || null,
                   last_message_at: new Date().toISOString(),
                   last_message_preview: preview.slice(0, 200),
-                  unread_count: 1,
+                  unread_count: key.fromMe ? 0 : 1,
                 })
                 .select("id")
                 .single();
@@ -130,11 +137,11 @@ export const Route = createFileRoute("/api/public/evolution")({
             const { error: msgErr } = await supabaseAdmin.from("whatsapp_messages").insert({
               conversation_id: conversationId,
               evolution_id: key.id,
-              direction: "in",
+              direction: key.fromMe ? "out" : "in",
               type,
               content,
               media_url: mediaUrl,
-              sent_by: "customer",
+              sent_by: key.fromMe ? "human" : "customer",
               raw: data,
             });
             if (msgErr && !msgErr.message?.includes("duplicate")) {
