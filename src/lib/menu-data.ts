@@ -301,6 +301,7 @@ const DEFAULT_EXTRA: Pick<
   | "cardGlow"
   | "titleFont"
   | "heroImages"
+  | "popup"
 
 > = {
   instagram: "",
