@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Bell, ExternalLink, Loader2 } from "lucide-react";
+import { Bell, BellRing, CheckCheck, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
+
 
 type Campaign = {
   id: string;
@@ -128,94 +129,156 @@ export function NotificationsInbox() {
 
   const unreadCount = items.filter((i) => i.anyUnread).length;
 
+
+  const Hero = () => (
+    <div
+      className="relative mb-5 overflow-hidden rounded-3xl border border-white/10 p-6"
+      style={{
+        background:
+          "radial-gradient(120% 100% at 20% 0%, oklch(0.42 0.22 340) 0%, oklch(0.22 0.15 310) 55%, oklch(0.12 0.08 300) 100%)",
+      }}
+    >
+      <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-cyan/30 blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute -left-10 -bottom-16 h-48 w-48 rounded-full bg-neon-pink/30 blur-3xl" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen"
+        style={{
+          background:
+            "radial-gradient(60% 40% at 80% 90%, oklch(0.85 0.20 100 / 0.25), transparent 70%)",
+        }}
+      />
+      <div className="relative flex items-center gap-4">
+        <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink via-neon-pink to-neon-yellow text-white shadow-[0_0_32px_rgba(236,72,153,0.65)]">
+          {unreadCount > 0 ? (
+            <BellRing className="h-8 w-8 animate-[wiggle_1.2s_ease-in-out_infinite]" />
+          ) : (
+            <Bell className="h-8 w-8" />
+          )}
+          {unreadCount > 0 && (
+            <span className="absolute -right-1 -top-1 grid h-6 min-w-6 place-items-center rounded-full bg-neon-yellow px-1.5 text-[11px] font-black text-[oklch(0.18_0.11_305)] shadow-[0_0_12px_rgba(255,215,60,0.6)]">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-black uppercase tracking-[0.22em] text-neon-yellow/90">
+            Central de novidades
+          </div>
+          <div className="mt-0.5 font-display text-2xl font-black leading-tight text-white">
+            {unreadCount > 0
+              ? `${unreadCount} nova${unreadCount === 1 ? "" : "s"} pra você`
+              : "Tudo em dia por aqui"}
+          </div>
+          <div className="mt-1 text-[11px] text-white/60">
+            Promoções, recompensas e recadinhos da Quero Bis.
+          </div>
+        </div>
+      </div>
+      {unreadCount > 0 && (
+        <button
+          onClick={markAllRead}
+          className="relative mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-white/15"
+        >
+          <CheckCheck className="h-3.5 w-3.5" /> Marcar tudo como lido
+        </button>
+      )}
+    </div>
+  );
+
   if (items.length === 0) {
     return (
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
-        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-neon-pink/20 text-neon-pink">
-          <Bell className="h-6 w-6" />
-        </div>
-        <div className="font-display text-lg font-black text-white">Sem novidades por aqui</div>
-        <div className="mt-1 text-xs text-white/60">
-          Ative as notificações para receber promoções e novidades em primeira mão.
+      <div className="relative">
+        <Hero />
+        <div className="relative overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[0.04] p-8 text-center">
+          <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-neon-pink/20 blur-3xl" />
+          <div className="relative mx-auto mb-3 grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/30 to-neon-cyan/20 text-neon-pink shadow-[0_0_24px_rgba(236,72,153,0.35)]">
+            <Sparkles className="h-7 w-7" />
+          </div>
+          <div className="font-display text-lg font-black text-white">Sem novidades por aqui</div>
+          <div className="mx-auto mt-1 max-w-xs text-xs text-white/60">
+            Ative as notificações para receber promoções e novidades em primeira mão.
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between px-1">
-        <div className="text-[11px] font-bold uppercase tracking-widest text-white/60">
-          {unreadCount > 0 ? `${unreadCount} não lida${unreadCount === 1 ? "" : "s"}` : "Tudo em dia"}
-        </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllRead}
-            className="text-[11px] font-semibold text-neon-cyan hover:underline"
-          >
-            Marcar tudo como lido
-          </button>
-        )}
-      </div>
-
-      {items.map((item) => {
-        const c = item.campaign;
-        const clickable = !!c.url;
-        return (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => {
-              markRead(item);
-              if (c.url) {
-                if (c.url.startsWith("http")) window.open(c.url, "_blank");
-                else window.location.href = c.url;
-              }
-            }}
-            className={cn(
-              "group relative flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition",
-              item.anyUnread
-                ? "border-neon-pink/40 bg-gradient-to-br from-neon-pink/10 to-purple-800/10"
-                : "border-white/10 bg-white/5",
-              clickable && "hover:border-neon-cyan/40",
-            )}
-          >
-            {c.image ? (
-              <img
-                src={c.image}
-                alt=""
-                className="h-14 w-14 shrink-0 rounded-xl object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-neon-pink/20 text-neon-pink">
-                <Bell className="h-5 w-5" />
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                {item.anyUnread && (
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-neon-pink shadow-[0_0_8px_theme(colors.pink.400)]" />
-                )}
-                <div className="min-w-0 flex-1 truncate font-display text-sm font-black text-white">
-                  {c.title}
+    <div>
+      <Hero />
+      <div className="space-y-2.5">
+        {items.map((item) => {
+          const c = item.campaign;
+          const clickable = !!c.url;
+          return (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => {
+                markRead(item);
+                if (c.url) {
+                  if (c.url.startsWith("http")) window.open(c.url, "_blank");
+                  else window.location.href = c.url;
+                }
+              }}
+              className={cn(
+                "group relative flex w-full items-start gap-3 overflow-hidden rounded-2xl border p-3 text-left transition active:scale-[.99]",
+                item.anyUnread
+                  ? "border-neon-pink/40 bg-gradient-to-br from-neon-pink/15 via-purple-900/10 to-neon-cyan/10 shadow-[0_0_0_1px_rgba(236,72,153,0.15),0_8px_24px_-12px_rgba(236,72,153,0.5)]"
+                  : "border-white/10 bg-white/[0.04] hover:bg-white/[0.06]",
+                clickable && "hover:border-neon-cyan/40",
+              )}
+            >
+              {item.anyUnread && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-neon-pink to-neon-yellow"
+                />
+              )}
+              {c.image ? (
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10">
+                  <img
+                    src={c.image}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
-                <div className="shrink-0 text-[10px] uppercase tracking-widest text-white/40">
-                  {timeAgo(item.latest)}
-                </div>
-              </div>
-              <div className="mt-0.5 line-clamp-2 text-xs text-white/70">{c.body}</div>
-              {clickable && (
-                <div className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-neon-cyan">
-                  Abrir <ExternalLink className="h-3 w-3" />
+              ) : (
+                <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-neon-pink/25 to-neon-cyan/15 text-neon-pink ring-1 ring-white/10">
+                  <Bell className="h-6 w-6" />
                 </div>
               )}
-            </div>
-          </button>
-        );
-      })}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  {item.anyUnread && (
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon-pink opacity-70" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-neon-pink shadow-[0_0_8px_theme(colors.pink.400)]" />
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1 truncate font-display text-sm font-black text-white">
+                    {c.title}
+                  </div>
+                  <div className="shrink-0 text-[10px] uppercase tracking-widest text-white/40">
+                    {timeAgo(item.latest)}
+                  </div>
+                </div>
+                <div className="mt-0.5 line-clamp-2 text-xs text-white/70">{c.body}</div>
+                {clickable && (
+                  <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/30">
+                    Abrir <ExternalLink className="h-3 w-3" />
+                  </div>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
+
 }
 
 export function useUnreadNotifications() {
