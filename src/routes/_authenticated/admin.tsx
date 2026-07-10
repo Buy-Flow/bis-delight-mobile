@@ -175,26 +175,7 @@ function AdminPage() {
               Painel <span className="text-neon-yellow">Admin</span>
             </h1>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/notificacoes"
-              className="inline-flex items-center gap-1 rounded-full border border-neon-pink/40 bg-neon-pink/15 px-3 py-1.5 text-xs font-semibold text-neon-pink transition hover:bg-neon-pink/25"
-            >
-              <BellRing className="h-3.5 w-3.5" /> Notificações
-            </Link>
-            <Link
-              to="/"
-              className="hidden items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white sm:inline-flex"
-            >
-              <Home className="h-3.5 w-3.5" /> Ver site
-            </Link>
-            <button
-              onClick={signOut}
-              className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white"
-            >
-              <LogOut className="h-3.5 w-3.5" /> Sair
-            </button>
-          </div>
+          <AdminNavMenu />
         </div>
         <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
           {tabs.map((t) => (
