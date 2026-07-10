@@ -49,6 +49,12 @@ export function InstallPWAButton() {
       setInstalled(true);
       return;
     }
+    // Não exibe em desktop — só mobile
+    const isMobile =
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+      (window.matchMedia?.("(pointer: coarse)").matches &&
+        window.matchMedia?.("(max-width: 900px)").matches);
+    if (!isMobile) return;
 
     const onBIP = (e: Event) => {
       e.preventDefault();
