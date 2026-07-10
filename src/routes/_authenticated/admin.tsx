@@ -874,6 +874,56 @@ function ProductEditor({
                 </div>
               </Field>
 
+              <Field label="Estoque (deixe vazio para ilimitado)">
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={p.stock ?? ""}
+                  onChange={(e) => setField("stock", e.target.value === "" ? null : Number(e.target.value))}
+                  placeholder="Ilimitado"
+                />
+                <div className="mt-1 text-[11px] text-white/40">
+                  Estoque cai automaticamente quando o pedido é pago.
+                </div>
+              </Field>
+
+              <Field label="Alerta 'últimas unidades' quando estoque ≤">
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={p.lowStockThreshold ?? 5}
+                  onChange={(e) => setField("lowStockThreshold", Number(e.target.value) || 0)}
+                />
+              </Field>
+
+              <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 accent-neon-pink"
+                  checked={!!p.isUpsell}
+                  onChange={(e) => setField("isUpsell", e.target.checked)}
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-white">Oferecer como upsell no carrinho</div>
+                  <div className="text-[11px] text-white/50">Aparece na vitrine "Que tal adicionar por menos?".</div>
+                </div>
+              </label>
+
+              {p.isUpsell && (
+                <Field label="Preço promocional no upsell">
+                  <input
+                    type="number"
+                    step="0.01"
+                    className={inputCls}
+                    value={p.upsellPrice ?? ""}
+                    onChange={(e) => setField("upsellPrice", e.target.value === "" ? null : Number(e.target.value))}
+                    placeholder={`Padrão: ${p.basePrice}`}
+                  />
+                </Field>
+              )}
+
               <Field label="ID técnico (slug)">
                 <input
                   className={cn(inputCls, "font-mono text-xs")}
