@@ -371,13 +371,19 @@ function OrdersPanel() {
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     novo: "bg-neon-cyan/20 text-neon-cyan",
+    pendente: "bg-neon-yellow/20 text-neon-yellow",
+    pago: "bg-emerald-500/20 text-emerald-300",
     preparando: "bg-neon-yellow/20 text-neon-yellow",
+    saiu_para_entrega: "bg-neon-pink/20 text-neon-pink",
     entregue: "bg-green-500/20 text-green-400",
     cancelado: "bg-red-500/20 text-red-400",
   };
   const labels: Record<string, string> = {
     novo: "Novo",
+    pendente: "Pendente",
+    pago: "Pago",
     preparando: "Preparando",
+    saiu_para_entrega: "Saiu para entrega",
     entregue: "Entregue",
     cancelado: "Cancelado",
   };

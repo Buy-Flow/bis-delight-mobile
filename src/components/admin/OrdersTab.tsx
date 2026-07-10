@@ -8,6 +8,7 @@ import {
   Clock,
   XCircle,
   Truck,
+  Bike,
   ChefHat,
   
   Package,
@@ -26,7 +27,7 @@ import { brl } from "@/lib/cart-context";
 import { ensurePushSubscriptionSaved, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
 import { sendAdminTestPush } from "@/lib/push.functions";
 
-type OrderStatus = "pendente" | "pago" | "preparando" | "entregue" | "cancelado";
+type OrderStatus = "pendente" | "pago" | "preparando" | "saiu_para_entrega" | "entregue" | "cancelado";
 
 type OrderItem = {
   id: string;
@@ -91,6 +92,14 @@ const STATUS_THEME: Record<OrderStatus, StatusTheme> = {
     accent: "text-neon-cyan",
     ringGlow: "shadow-[0_0_25px_-8px_var(--neon-cyan)]",
   },
+  saiu_para_entrega: {
+    label: "Saiu para entrega",
+    icon: Bike,
+    badge: "bg-neon-pink text-[oklch(0.13_0.08_305)]",
+    border: "border-neon-pink/30",
+    accent: "text-neon-pink",
+    ringGlow: "shadow-[0_0_25px_-8px_var(--neon-pink)]",
+  },
   entregue: {
     label: "Entregue",
     icon: Truck,
@@ -116,6 +125,7 @@ const FILTERS: { id: FilterId; label: string; color: string }[] = [
   { id: "pendente", label: "Pendentes", color: "border-neon-yellow/50 text-neon-yellow" },
   { id: "pago", label: "Pagos", color: "border-emerald-400/50 text-emerald-300" },
   { id: "preparando", label: "Preparando", color: "border-neon-cyan/50 text-neon-cyan" },
+  { id: "saiu_para_entrega", label: "Saiu p/ entrega", color: "border-neon-pink/50 text-neon-pink" },
   { id: "entregue", label: "Entregues", color: "border-white/20 text-white/70" },
   { id: "cancelado", label: "Cancelados", color: "border-red-500/50 text-red-300" },
 ];
@@ -378,7 +388,7 @@ export function OrdersTab() {
     const list = orders ?? [];
     const today = list.filter((o) => isToday(new Date(o.created_at)));
     const paidToday = today.filter((o) =>
-      ["pago", "preparando", "entregue"].includes(o.status),
+      ["pago", "preparando", "saiu_para_entrega", "entregue"].includes(o.status),
     );
     const revenue = paidToday.reduce((s, o) => s + Number(o.total || 0), 0);
     const avg = paidToday.length > 0 ? revenue / paidToday.length : 0;
@@ -747,7 +757,16 @@ function OrderCard({
                 <ChefHat className="h-3.5 w-3.5" /> Iniciar preparo
               </button>
             )}
-            {order.status === "preparando" && (
+            {order.status === "preparando" && order.mode === "entrega" && (
+              <button
+                onClick={() => onStatus(order, "saiu_para_entrega")}
+                disabled={busy}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-neon-pink px-5 py-3 text-xs font-black uppercase tracking-tighter text-[oklch(0.13_0.08_305)] shadow-[0_4px_15px_rgba(255,46,151,0.35)] transition-all hover:brightness-110 disabled:opacity-50"
+              >
+                <Bike className="h-3.5 w-3.5" /> Saiu para entrega
+              </button>
+            )}
+            {order.status === "preparando" && order.mode !== "entrega" && (
               <button
                 onClick={() => onStatus(order, "entregue")}
                 disabled={busy}
@@ -756,7 +775,16 @@ function OrderCard({
                 <Truck className="h-3.5 w-3.5" /> Marcar entregue
               </button>
             )}
-            {["pago", "preparando", "entregue"].includes(order.status) && phoneDigits && (
+            {order.status === "saiu_para_entrega" && (
+              <button
+                onClick={() => onStatus(order, "entregue")}
+                disabled={busy}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-5 py-3 text-xs font-black uppercase tracking-tighter text-[oklch(0.13_0.08_305)] transition-all hover:bg-white disabled:opacity-50"
+              >
+                <Truck className="h-3.5 w-3.5" /> Marcar entregue
+              </button>
+            )}
+            {["pago", "preparando", "saiu_para_entrega", "entregue"].includes(order.status) && phoneDigits && (
               <a
                 href={`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(
                   `Oi ${order.customer_name.split(" ")[0]}! 💜 Aqui é da Quero Bis. Seu pedido foi confirmado e queremos saber: como foi sua experiência? Sua avaliação ajuda demais a gente a melhorar! ⭐️⭐️⭐️⭐️⭐️`
