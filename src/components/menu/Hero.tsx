@@ -37,7 +37,7 @@ export function Hero({
         }}
       />
       {/* Side illustrations — configurable via admin (Início) */}
-      {heroImages && (
+      {heroImages?.left?.url && (
         <>
           <img
             aria-hidden="true"
