@@ -143,7 +143,7 @@ function RecompensasPage() {
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
                   Sua trilha de sabor
                 </div>
-                <div className="text-sm text-white/70">A cada 10 pedidos, R$ 20 no próximo.</div>
+                <div className="text-sm text-white/70">A cada 10 pedidos acima de R$ 20, R$ 20 off no próximo.</div>
               </div>
             </div>
 
