@@ -113,7 +113,7 @@ export function AppDownloadSection() {
             className="absolute inset-0 scale-75 rounded-full bg-gradient-to-tr from-fuchsia-500/30 to-purple-500/30 blur-3xl"
           />
 
-          <div className="relative h-[500px] w-[248px] animate-[float_6s_ease-in-out_infinite] rounded-[3rem] border-[8px] border-zinc-800 bg-zinc-900 shadow-[0_0_60px_-12px_rgba(192,38,211,0.55)] sm:h-[580px] sm:w-[288px]">
+          <div className="relative h-[500px] w-[248px] animate-float-slow rounded-[3rem] border-[8px] border-zinc-800 bg-zinc-900 shadow-[0_0_60px_-12px_rgba(192,38,211,0.55)] sm:h-[580px] sm:w-[288px]">
             {/* screen */}
             <div className="flex h-full w-full flex-col overflow-hidden rounded-[2.3rem] bg-[#2D033B] p-4">
               <div className="mx-auto mt-2 mb-6 h-6 w-24 rounded-full bg-zinc-800" />
