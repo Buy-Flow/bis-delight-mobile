@@ -9,12 +9,14 @@ import {
   Users,
   Home,
   LogOut,
+  Flame,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/admin", label: "Painel administrador", icon: LayoutDashboard },
+  { to: "/rush", label: "Rush (tempo real)", icon: Flame },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/financeiro", label: "Financeiro", icon: LineChart },
   { to: "/clientes", label: "Clientes", icon: Users },
