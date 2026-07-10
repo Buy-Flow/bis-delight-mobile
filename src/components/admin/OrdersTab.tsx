@@ -388,7 +388,7 @@ export function OrdersTab() {
     const list = orders ?? [];
     const today = list.filter((o) => isToday(new Date(o.created_at)));
     const paidToday = today.filter((o) =>
-      ["pago", "preparando", "entregue"].includes(o.status),
+      ["pago", "preparando", "saiu_para_entrega", "entregue"].includes(o.status),
     );
     const revenue = paidToday.reduce((s, o) => s + Number(o.total || 0), 0);
     const avg = paidToday.length > 0 ? revenue / paidToday.length : 0;
