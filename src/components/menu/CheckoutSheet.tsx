@@ -227,6 +227,27 @@ export function CheckoutSheet() {
         }
       }
 
+      notifyCRM("order_placed", {
+        order_id: order.id,
+        user_id: user.id,
+        customer_name: name.trim(),
+        phone: phone.trim(),
+        address: mode === "entrega" ? address.trim() : null,
+        mode,
+        subtotal,
+        delivery_fee: fee,
+        total,
+        coupon_code: couponApplied?.code ?? null,
+        items: items.map((it) => ({
+          product_id: it.productId,
+          name: it.name,
+          size: it.size ?? null,
+          flavor: it.flavor ?? null,
+          quantity: it.quantity,
+          unit_price: it.unitPrice,
+        })),
+      });
+
       const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
       const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
       window.open(url, "_blank");
