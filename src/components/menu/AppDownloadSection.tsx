@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Download, Share, Zap, Bell, Heart, Sparkles, ArrowDown } from "lucide-react";
-import logo from "@/assets/querobis-logo.png.asset.json";
+import { Download, Share, Zap, Bell, Heart, Sparkles } from "lucide-react";
+import heroBg from "@/assets/app-download-hero.jpg";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -25,34 +25,10 @@ function isAndroid() {
 }
 
 const perks = [
-  {
-    icon: Zap,
-    title: "Abre instantâneo",
-    text: "Direto da tela inicial, sem navegador.",
-    dot: "bg-fuchsia-500 shadow-[0_0_12px_rgba(217,70,239,0.9)]",
-    ring: "bg-fuchsia-500/15 border-fuchsia-500/30",
-  },
-  {
-    icon: Bell,
-    title: "Notificações",
-    text: "Promoções e status do pedido em tempo real.",
-    dot: "bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.9)]",
-    ring: "bg-purple-500/15 border-purple-500/30",
-  },
-  {
-    icon: Heart,
-    title: "Bis Recompensas",
-    text: "Acompanhe seus selos e ganhe açaí grátis.",
-    dot: "bg-pink-500 shadow-[0_0_12px_rgba(236,72,153,0.9)]",
-    ring: "bg-pink-500/15 border-pink-500/30",
-  },
-  {
-    icon: Sparkles,
-    title: "Funciona offline",
-    text: "Cardápio sempre disponível, mesmo sem internet.",
-    dot: "bg-fuchsia-400 shadow-[0_0_12px_rgba(232,121,249,0.9)]",
-    ring: "bg-fuchsia-400/15 border-fuchsia-400/30",
-  },
+  { icon: Zap, title: "Abre instantâneo", text: "Direto da tela inicial." },
+  { icon: Bell, title: "Notificações", text: "Promoções e status em tempo real." },
+  { icon: Heart, title: "Bis Recompensas", text: "Selos e açaí grátis." },
+  { icon: Sparkles, title: "Funciona offline", text: "Cardápio sempre à mão." },
 ];
 
 export function AppDownloadSection() {
@@ -95,129 +71,105 @@ export function AppDownloadSection() {
     <section
       id="baixar-app"
       aria-labelledby="baixar-app-title"
-      className="relative isolate flex min-h-[calc(100vh-64px)] w-full items-center justify-center overflow-hidden bg-[#1a0b2e] px-6 py-14 selection:bg-fuchsia-500 selection:text-white sm:py-20"
+      className="relative isolate min-h-screen w-full overflow-hidden bg-[#1a0a2e] text-white selection:bg-fuchsia-500 selection:text-white"
     >
-      {/* Animated background blobs */}
+      {/* Full-bleed background image */}
+      <img
+        src={heroBg}
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover object-center"
+      />
+
+      {/* Gradient scrims for text legibility */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-[#1a0a2e]/85 via-[#1a0a2e]/40 to-[#1a0a2e]/95"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-[#1a0a2e]/80 via-transparent to-[#1a0a2e]/70"
+      />
+
+      {/* Ambient glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-24 -top-24 h-[28rem] w-[28rem] animate-pulse rounded-full bg-fuchsia-600/25 blur-[120px]" />
-        <div className="absolute -bottom-24 -right-24 h-[28rem] w-[28rem] animate-pulse rounded-full bg-purple-600/25 blur-[120px] [animation-delay:700ms]" />
-        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-pink-500/10 blur-3xl" />
+        <div className="absolute -left-24 top-1/3 h-96 w-96 rounded-full bg-fuchsia-600/25 blur-[120px]" />
+        <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-purple-600/25 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-        {/* Phone mockup */}
-        <div className="relative flex items-center justify-center">
-          {/* Glow behind phone */}
-          <div
-            aria-hidden
-            className="absolute inset-0 scale-75 rounded-full bg-gradient-to-tr from-fuchsia-500/30 to-purple-500/30 blur-3xl"
-          />
-
-          <div className="relative h-[500px] w-[248px] animate-float-slow rounded-[3rem] border-[8px] border-zinc-800 bg-zinc-900 shadow-[0_0_60px_-12px_rgba(192,38,211,0.55)] sm:h-[580px] sm:w-[288px]">
-            {/* screen */}
-            <div className="flex h-full w-full flex-col overflow-hidden rounded-[2.3rem] bg-[#2D033B] p-4">
-              <div className="mx-auto mt-2 mb-6 h-6 w-24 rounded-full bg-zinc-800" />
-
-              <div className="flex aspect-square items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-400 to-purple-600 p-4 shadow-inner">
-                <img
-                  src={logo.url}
-                  alt="Quero Bis"
-                  className="h-full w-auto drop-shadow-[0_8px_20px_rgba(255,80,180,0.55)]"
-                />
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <div className="h-3 w-3/4 rounded-full bg-white/15" />
-                <div className="h-3 w-1/2 rounded-full bg-white/10" />
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-2.5">
-                <div className="h-16 rounded-xl border border-white/10 bg-white/5" />
-                <div className="h-16 rounded-xl border border-white/10 bg-white/5" />
-                <div className="h-16 rounded-xl border border-white/10 bg-white/5" />
-                <div className="h-16 rounded-xl border border-white/10 bg-white/5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Floating handwritten labels */}
-          <div className="absolute -right-4 -top-2 rotate-6 rounded-2xl border border-white/20 bg-white/10 p-3 shadow-xl backdrop-blur-md sm:-right-8">
-            <p className="font-caveat text-2xl text-fuchsia-300">O melhor açaí!</p>
-          </div>
-          <div className="absolute bottom-16 -left-4 -rotate-6 rounded-2xl border border-white/20 bg-white/10 p-3 shadow-xl backdrop-blur-md sm:-left-10">
-            <p className="font-caveat text-2xl text-purple-200">Peça em segundos</p>
-          </div>
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center justify-between px-6 pt-20 pb-28 text-center sm:pt-28">
+        {/* Top badge */}
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-fuchsia-200 backdrop-blur-md">
+          <Sparkles className="h-3.5 w-3.5" />
+          App oficial
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col space-y-8 text-center lg:text-left">
-          <div className="space-y-4">
-            <h1
-              id="baixar-app-title"
-              className="font-fredoka text-5xl font-bold leading-[1.05] text-white md:text-6xl lg:text-7xl"
+        {/* Headline */}
+        <div className="mt-10 space-y-5">
+          <h1
+            id="baixar-app-title"
+            className="font-fredoka text-5xl font-bold leading-[0.95] drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)] sm:text-6xl md:text-7xl"
+          >
+            Baixe o
+            <br />
+            <span className="bg-gradient-to-r from-fuchsia-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">
+              Quero Bis
+            </span>
+          </h1>
+          <p className="mx-auto max-w-md font-fredoka text-lg text-white/85 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] md:text-xl">
+            Seu açaí favorito em 2 toques. Rápido, offline e com recompensas.
+          </p>
+        </div>
+
+        {/* Perks — compact glass chips */}
+        <ul className="mt-10 grid w-full max-w-md grid-cols-2 gap-3">
+          {perks.map((p) => (
+            <li
+              key={p.title}
+              className="flex items-start gap-3 rounded-2xl border border-white/15 bg-white/10 p-3 text-left backdrop-blur-xl"
             >
-              Baixe nosso
-              <br />
-              <span className="bg-gradient-to-r from-fuchsia-400 via-pink-300 to-purple-400 bg-clip-text text-transparent">
-                aplicativo
-              </span>
-            </h1>
-            <p className="mx-auto max-w-md font-fredoka text-lg text-purple-200/75 md:text-xl lg:mx-0">
-              Tenha o Quero Bis na palma da sua mão. Peça seu açaí favorito com muito mais rapidez e facilidade.
-            </p>
-          </div>
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500/40 to-purple-600/40 ring-1 ring-white/15">
+                <p.icon className="h-4 w-4 text-fuchsia-100" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-fredoka text-sm font-semibold leading-tight text-white">
+                  {p.title}
+                </p>
+                <p className="mt-0.5 text-[11px] leading-snug text-white/60">{p.text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
 
-          {/* Perks */}
-          <ul className="space-y-4">
-            {perks.map((p) => (
-              <li
-                key={p.title}
-                className="flex items-center gap-4 lg:justify-start"
-              >
-                <div
-                  className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border ${p.ring}`}
-                >
-                  <span className={`block h-3 w-3 rounded-full ${p.dot}`} />
-                </div>
-                <div className="min-w-0 text-left">
-                  <p className="font-fredoka text-lg font-medium leading-tight text-white">
-                    {p.title}
-                  </p>
-                  <p className="text-sm text-purple-200/60">{p.text}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {/* CTA */}
+        {/* CTA */}
+        <div className="mt-10 flex w-full flex-col items-center">
           {!installed ? (
-            <div className="pt-2">
+            <>
               <button
                 type="button"
                 onClick={handleInstall}
-                className="group relative inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-fuchsia-600 to-purple-600 px-10 py-5 font-fredoka text-xl font-bold text-white transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_40px_-5px_rgba(192,38,211,0.7)] active:scale-95"
+                className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-fuchsia-500 via-pink-500 to-purple-600 px-10 py-5 font-fredoka text-xl font-bold text-white shadow-[0_10px_50px_-10px_rgba(236,72,153,0.9)] transition-all duration-300 hover:scale-[1.03] active:scale-95"
               >
-                <Download className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
-                <span>Instalar agora</span>
-                <ArrowDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
+                <span
+                  aria-hidden
+                  className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-1000 group-hover:translate-x-full"
+                />
+                <Download className="relative h-5 w-5" />
+                <span className="relative">Instalar agora</span>
               </button>
-              <p className="mt-3 font-caveat text-xl text-fuchsia-300 lg:ml-4">
+              <p className="mt-4 font-caveat text-xl text-fuchsia-200 drop-shadow">
                 Leve, rápido e sem ocupar memória!
               </p>
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-purple-300/60 lg:justify-start">
-                <button
-                  type="button"
-                  onClick={() => setHelp(isIOS() ? "ios" : isAndroid() ? "android" : "desktop")}
-                  className="font-semibold uppercase tracking-widest underline-offset-4 transition hover:text-white hover:underline"
-                >
-                  Como instalar?
-                </button>
-                <span aria-hidden>·</span>
-                <span>Funciona em iPhone, Android e computador</span>
-              </div>
-            </div>
+              <button
+                type="button"
+                onClick={() => setHelp(isIOS() ? "ios" : isAndroid() ? "android" : "desktop")}
+                className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-purple-200/70 underline-offset-4 hover:text-white hover:underline"
+              >
+                Como instalar?
+              </button>
+            </>
           ) : (
-            <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/40 bg-fuchsia-500/15 px-5 py-3 font-fredoka text-sm font-semibold text-fuchsia-100">
+            <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-400/40 bg-fuchsia-500/15 px-5 py-3 font-fredoka text-sm font-semibold text-fuchsia-100 backdrop-blur-md">
               <Sparkles className="h-4 w-4" />
               App já instalado — aproveite!
             </div>
