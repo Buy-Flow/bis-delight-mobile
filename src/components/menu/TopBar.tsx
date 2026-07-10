@@ -1,7 +1,6 @@
 import { Menu } from "lucide-react";
 import { BRAND } from "@/data/menu";
 import { useSiteSettings } from "@/lib/menu-data";
-import { AccountButton } from "./AccountButton";
 import { NotificationsBell } from "./NotificationsBell";
 
 
@@ -39,7 +38,6 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
 
         <div className="flex items-center gap-2">
           <NotificationsBell />
-          <AccountButton />
         </div>
 
 
