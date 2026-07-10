@@ -198,6 +198,10 @@ export type Product = {
   heroImageScale?: number;
   isCustom?: boolean;
   optionGroups?: OptionGroup[];
+  isUpsell?: boolean;
+  upsellPrice?: number | null;
+  stock?: number | null;
+  lowStockThreshold?: number;
 };
 
 /* Reusable size presets */
