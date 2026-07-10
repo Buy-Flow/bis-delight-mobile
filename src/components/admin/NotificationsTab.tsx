@@ -103,6 +103,23 @@ const durationOptions: { value: number | null; label: string }[] = [
   { value: null, label: "Nunca" },
 ];
 
+const repeatIntervalOptions: { value: number; label: string }[] = [
+  { value: 60, label: "1 h" },
+  { value: 60 * 6, label: "6 h" },
+  { value: 60 * 12, label: "12 h" },
+  { value: 60 * 24, label: "1 dia" },
+  { value: 60 * 24 * 3, label: "3 dias" },
+  { value: 60 * 24 * 7, label: "7 dias" },
+];
+
+function labelForMinutes(m: number): string {
+  if (m < 60) return `${m} min`;
+  if (m < 60 * 24) return `${Math.round(m / 60)} h`;
+  return `${Math.round(m / (60 * 24))} dia(s)`;
+}
+
+
+
 const AUTO_META: Record<AutoKind, { label: string; hint: string; icon: typeof Gift; accent: string; ring: string }> = {
   birthday: {
     label: "Aniversário",
@@ -362,7 +379,10 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
   const [audience, setAudience] = useState<Audience>("all");
   const [durationMin, setDurationMin] = useState<number | null>(60 * 24);
   const [scheduledAt, setScheduledAt] = useState<string>("");
+  const [repeatCount, setRepeatCount] = useState<number>(1);
+  const [repeatIntervalMin, setRepeatIntervalMin] = useState<number>(60 * 24);
   const [sending, setSending] = useState(false);
+
 
   const preview = useMemo(
     () => ({
@@ -385,28 +405,39 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
     setSending(true);
     try {
       const { data: user } = await supabase.auth.getUser();
-      const expiresAt =
-        durationMin !== null ? new Date(Date.now() + durationMin * 60_000).toISOString() : null;
-      const { data: campaign, error } = await supabase
-        .from("push_campaigns")
-        .insert({
+      const baseTime = scheduledIso ? new Date(scheduledIso).getTime() : Date.now();
+      const totalReps = Math.max(1, Math.min(20, repeatCount));
+      const intervalMs = repeatIntervalMin * 60_000;
+
+      // Build all occurrences. The first uses baseTime; subsequent add interval.
+      const occurrences = Array.from({ length: totalReps }, (_, i) => baseTime + i * intervalMs);
+      const nowMs = Date.now();
+
+      // Insert campaigns. First is "sent" if base is now (no schedule); others always scheduled.
+      const rows = occurrences.map((t, i) => {
+        const isImmediate = i === 0 && !scheduledIso;
+        return {
           title: title.trim(),
           body: body.trim(),
           url: url.trim() || null,
           image: image.trim() || null,
           audience,
-          expires_at: expiresAt,
+          expires_at: durationMin !== null ? new Date(t + durationMin * 60_000).toISOString() : null,
           created_by: user.user?.id ?? null,
-          status: scheduledIso ? "scheduled" : "sent",
-          scheduled_for: scheduledIso,
-        } as any)
-        .select()
-        .single();
-      if (error || !campaign) throw error;
+          status: isImmediate ? "sent" : "scheduled",
+          scheduled_for: isImmediate ? null : new Date(t).toISOString(),
+        } as any;
+      });
 
-      if (scheduledIso) {
-        toast.success(`Agendada para ${new Date(scheduledIso).toLocaleString("pt-BR")}`);
-      } else {
+      const { data: campaigns, error } = await supabase
+        .from("push_campaigns")
+        .insert(rows)
+        .select();
+      if (error || !campaigns?.length) throw error;
+
+      // Fire the first one immediately if base was "now".
+      const immediate = campaigns.find((c) => c.status === "sent" && !c.scheduled_for);
+      if (immediate) {
         const { data: session } = await supabase.auth.getSession();
         const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
         const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -417,19 +448,29 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
             apikey: anon,
             Authorization: `Bearer ${session.session?.access_token ?? anon}`,
           },
-          body: JSON.stringify({ campaignId: campaign.id }),
+          body: JSON.stringify({ campaignId: immediate.id }),
         });
         const result = await res.json();
         if (!res.ok) throw new Error(result?.error || "Falha no envio");
+        const extras = totalReps - 1;
         toast.success(
-          `Enviado! ${result.sent} entregues${result.failed ? `, ${result.failed} falharam` : ""}.`,
+          `Enviado! ${result.sent} entregues${extras ? ` · +${extras} repetições agendadas` : ""}.`,
+        );
+      } else {
+        toast.success(
+          totalReps === 1
+            ? `Agendada para ${new Date(baseTime).toLocaleString("pt-BR")}`
+            : `${totalReps} envios agendados a cada ${labelForMinutes(repeatIntervalMin)}, a partir de ${new Date(baseTime).toLocaleString("pt-BR")}`,
         );
       }
+
       setTitle("");
       setBody("");
       setUrl("");
       setImage("");
       setScheduledAt("");
+      setRepeatCount(1);
+
       await onSent();
     } catch (e: any) {
       toast.error(e.message || "Erro ao enviar");
@@ -554,7 +595,58 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
               </span>
             </div>
           </Field>
+          <Field label="Repetir envio">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white/50">Quantas vezes</span>
+                <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setRepeatCount((n) => Math.max(1, n - 1))}
+                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10"
+                    aria-label="Diminuir"
+                  >−</button>
+                  <span className="w-8 text-center text-sm font-black text-neon-yellow">{repeatCount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setRepeatCount((n) => Math.min(20, n + 1))}
+                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10"
+                    aria-label="Aumentar"
+                  >+</button>
+                </div>
+                <span className="text-[10px] text-white/40">
+                  {repeatCount === 1 ? "Envio único" : `${repeatCount} envios no total`}
+                </span>
+              </div>
+              {repeatCount > 1 && (
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-white/50">A cada</span>
+                  <div className="flex flex-wrap gap-2">
+                    {repeatIntervalOptions.map((r) => {
+                      const active = repeatIntervalMin === r.value;
+                      return (
+                        <button
+                          key={r.value}
+                          type="button"
+                          onClick={() => setRepeatIntervalMin(r.value)}
+                          className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                            active
+                              ? "border-neon-yellow bg-neon-yellow/15 text-neon-yellow"
+                              : "border-white/10 bg-black/20 text-white/70 hover:border-white/30"
+                          }`}
+                        >
+                          <Clock className="h-3 w-3" />
+                          {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Field>
         </FieldGroup>
+
 
         <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/30 p-4">
           <p className="text-xs text-white/70">
