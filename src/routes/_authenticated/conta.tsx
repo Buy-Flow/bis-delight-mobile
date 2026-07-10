@@ -26,7 +26,8 @@ import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
 import { useIsAdmin, useProducts } from "@/lib/menu-data";
 import { ProductModal } from "@/components/menu/ProductModal";
 import type { Product } from "@/data/menu";
-import { Heart as HeartIcon, Trash2 } from "lucide-react";
+import { Heart as HeartIcon } from "lucide-react";
+import { ProductCard } from "@/components/menu/ProductCard";
 
 
 
