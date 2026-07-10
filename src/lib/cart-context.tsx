@@ -104,6 +104,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (items.length === 0) {
           // Cart emptied: mark recovered (or leave if already gone)
           await supabase.from("abandoned_carts").delete().eq("user_id", userId);
+          notifyCRM("cart_cleared", { user_id: userId });
         } else {
           await supabase.from("abandoned_carts").upsert({
             user_id: userId,
@@ -112,6 +113,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
             item_count: count,
             notified_at: null,
             recovered_at: null,
+          });
+          notifyCRM("cart_updated", {
+            user_id: userId,
+            subtotal,
+            item_count: count,
+            items: items.map((i) => ({
+              product_id: i.productId,
+              name: i.name,
+              size: i.size ?? null,
+              flavor: i.flavor ?? null,
+              quantity: i.quantity,
+              unit_price: i.unitPrice,
+            })),
           });
         }
       } catch {}
