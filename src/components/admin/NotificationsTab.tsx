@@ -473,6 +473,7 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
       setImage("");
       setScheduledAt("");
       setRepeatCount(1);
+      setRepeatInfinite(false);
 
       await onSent();
     } catch (e: any) {
