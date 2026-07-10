@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Heart,
   Award,
-  
   ChevronRight,
   RotateCcw,
   Copy,
@@ -15,8 +14,13 @@ import {
   Sparkles,
   Bell,
   Shield,
-
+  Check,
+  CreditCard,
+  ChefHat,
+  Bike,
+  PackageCheck,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, signOut } from "@/lib/use-auth";
