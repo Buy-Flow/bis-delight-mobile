@@ -112,6 +112,13 @@ const repeatIntervalOptions: { value: number; label: string }[] = [
   { value: 60 * 24 * 7, label: "7 dias" },
 ];
 
+function labelForMinutes(m: number): string {
+  if (m < 60) return `${m} min`;
+  if (m < 60 * 24) return `${Math.round(m / 60)} h`;
+  return `${Math.round(m / (60 * 24))} dia(s)`;
+}
+
+
 
 const AUTO_META: Record<AutoKind, { label: string; hint: string; icon: typeof Gift; accent: string; ring: string }> = {
   birthday: {
