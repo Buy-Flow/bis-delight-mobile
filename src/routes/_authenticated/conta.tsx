@@ -19,6 +19,7 @@ import {
   ChefHat,
   Bike,
   PackageCheck,
+  MapPin,
 } from "lucide-react";
 
 import { toast } from "sonner";
