@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
           await webpush.sendNotification(
             { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
             payload,
-            { TTL: 60 * 60 * 24 },
+            { TTL: 60 * 60 * 24, urgency: "high" },
           );
           sent++;
           if (deliveryId) await admin.from("push_deliveries").update({ status: "sent" }).eq("id", deliveryId);
