@@ -681,6 +681,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "push_deliveries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "push_campaigns_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "push_deliveries_subscription_id_fkey"
             columns: ["subscription_id"]
             isOneToOne: false
@@ -987,6 +994,36 @@ export type Database = {
       }
     }
     Views: {
+      push_campaigns_public: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string | null
+          image: string | null
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          image?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          image?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       storefront_settings: {
         Row: {
           accepts_delivery: boolean | null
@@ -1079,6 +1116,32 @@ export type Database = {
       }
     }
     Functions: {
+      admin_list_push_campaigns: {
+        Args: { _limit?: number }
+        Returns: {
+          audience: string
+          body: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          failed_count: number
+          id: string
+          image: string | null
+          opened_count: number
+          scheduled_for: string | null
+          sent_at: string | null
+          sent_count: number
+          status: string
+          title: string
+          url: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "push_campaigns"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
