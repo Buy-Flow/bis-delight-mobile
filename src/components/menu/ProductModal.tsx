@@ -738,7 +738,8 @@ export function ProductModal({
                 steps.push({
                   key: "flavor",
                   name: "Sabor",
-                  isValid: () => true,
+                  required: true,
+                  isValid: () => !!flavor,
                   render: () => (
                     <div className="grid grid-cols-2 gap-2">
                       {flavorList.map((f) => {
