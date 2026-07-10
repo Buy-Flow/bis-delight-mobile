@@ -53,6 +53,7 @@ export function NotificationsBell() {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
+  const notifVars = useNotifVars();
 
   const loadUnread = async () => {
     if (!user) return;
