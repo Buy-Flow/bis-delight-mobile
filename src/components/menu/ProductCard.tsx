@@ -30,14 +30,16 @@ export function ProductCard({
 
     <div
       role="button"
-      tabIndex={0}
-      onClick={() => onOpen(product)}
+      tabIndex={outOfStock ? -1 : 0}
+      onClick={() => !outOfStock && onOpen(product)}
       onKeyDown={(e) => {
+        if (outOfStock) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onOpen(product);
         }
       }}
+      aria-disabled={outOfStock || undefined}
       className={cn(
         "group relative flex h-full w-full cursor-pointer flex-col overflow-visible rounded-[22px] text-left select-none",
         "touch-manipulation [-webkit-tap-highlight-color:transparent]",
