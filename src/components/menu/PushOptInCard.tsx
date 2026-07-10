@@ -3,6 +3,7 @@ import { Bell, BellOff, X } from "lucide-react";
 import {
   pushSupported,
   iosStandaloneRequired,
+  isStandaloneApp,
   currentSubscription,
   subscribeToPush,
   unsubscribeFromPush,
@@ -28,7 +29,7 @@ export function PushOptInCard() {
       setSubscribed(!!sub);
       if (sub) return; // already subscribed — hide card
       if (Notification.permission === "denied") return;
-      if (dismissed) return;
+      if (dismissed && !isStandaloneApp()) return;
       if (iosStandaloneRequired()) {
         setIosBlock(true);
       }
@@ -43,7 +44,7 @@ export function PushOptInCard() {
 
   async function handleEnable() {
     setBusy(true);
-    const res = await subscribeToPush();
+    const res = await subscribeToPush({ forceNew: isStandaloneApp() });
     setBusy(false);
     if (res.ok) {
       setSubscribed(true);
@@ -129,7 +130,7 @@ export function PushToggle() {
       setSubscribed(false);
       toast.success("Notificações desativadas.");
     } else {
-      const res = await subscribeToPush();
+      const res = await subscribeToPush({ forceNew: isStandaloneApp() });
       if (res.ok) {
         setSubscribed(true);
         toast.success("Notificações ativadas!");

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
-import { iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
+import { currentSubscription, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
 
 type OrderStatus = "pendente" | "pago" | "preparando" | "entregue" | "cancelado";
 
@@ -140,6 +140,23 @@ export function OrdersTab() {
   useEffect(() => {
     notifyOnRef.current = notifyOn;
   }, [notifyOn]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!notifyOnRef.current) return () => {
+      alive = false;
+    };
+
+    currentSubscription().then((sub) => {
+      if (!alive || sub) return;
+      setNotifyOn(false);
+      localStorage.setItem("orders-notify", "0");
+    });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const playBeep = () => {
     try {
