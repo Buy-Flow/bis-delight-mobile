@@ -591,6 +591,55 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
               );
             })}
           </div>
+
+          {audience === "category" && (
+            <div className="mt-3 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-3">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-neon-cyan">
+                Escolha a categoria favorita
+              </p>
+              {categories.length === 0 ? (
+                <p className="text-xs text-white/50">Nenhuma categoria ativa.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((c) => {
+                    const fans = categoryFans[c.id] ?? 0;
+                    const active = audienceCategory === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setAudienceCategory(c.id)}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                          active
+                            ? "border-neon-cyan bg-neon-cyan/20 text-white shadow-lg shadow-neon-cyan/10"
+                            : "border-white/10 bg-black/20 text-white/70 hover:border-white/30"
+                        }`}
+                      >
+                        <span className="text-sm">{c.emoji}</span>
+                        {c.name}
+                        <span
+                          className={`ml-1 rounded-full px-1.5 py-0.5 text-[9px] ${
+                            active ? "bg-white/20 text-white" : "bg-white/10 text-white/60"
+                          }`}
+                        >
+                          {fans}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {audienceCategory && (
+                <p className="mt-2 text-[11px] text-white/60">
+                  <Sparkles className="mr-1 inline h-3 w-3 text-neon-yellow" />
+                  Alcance estimado:{" "}
+                  <b className="text-white">{categoryFans[audienceCategory] ?? 0}</b>{" "}
+                  fã(s) de <b>{categories.find((c) => c.id === audienceCategory)?.name}</b>
+                  {" "}(só quem tem push ativo receberá)
+                </p>
+              )}
+            </div>
+          )}
         </FieldGroup>
 
         <FieldGroup icon={Clock} label="Duração e agendamento" tone="yellow">
