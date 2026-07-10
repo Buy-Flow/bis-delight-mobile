@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/use-auth";
 import { useUnreadNotifications } from "./NotificationsInbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { applyNotifTokens, useNotifVars } from "@/lib/notif-tokens";
 
 type Campaign = {
   id: string;
@@ -52,6 +53,7 @@ export function NotificationsBell() {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
+  const notifVars = useNotifVars();
 
   const loadUnread = async () => {
     if (!user) return;
@@ -213,13 +215,13 @@ export function NotificationsBell() {
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-neon-pink" />
                         <div className="min-w-0 flex-1 truncate text-[13px] font-semibold text-white">
-                          {c.title}
+                          {applyNotifTokens(c.title, notifVars)}
                         </div>
                         <div className="shrink-0 text-[10px] text-white/40">
                           {timeAgo(item.latest)}
                         </div>
                       </div>
-                      <div className="mt-0.5 line-clamp-2 pl-3.5 text-[11px] text-white/60">{c.body}</div>
+                      <div className="mt-0.5 line-clamp-2 pl-3.5 text-[11px] text-white/60">{applyNotifTokens(c.body, notifVars)}</div>
                     </div>
                   </button>
                 );

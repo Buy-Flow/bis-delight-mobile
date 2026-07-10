@@ -3,6 +3,7 @@ import { Bell, BellRing, CheckCheck, ExternalLink, Loader2, Sparkles } from "luc
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
+import { applyNotifTokens, useNotifVars } from "@/lib/notif-tokens";
 
 
 type Campaign = {
@@ -47,6 +48,7 @@ export function NotificationsInbox() {
   const { user } = useAuth();
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const notifVars = useNotifVars();
 
   const load = async () => {
     if (!user) return;
@@ -263,13 +265,13 @@ export function NotificationsInbox() {
                     </span>
                   )}
                   <div className="min-w-0 flex-1 truncate font-display text-sm font-black text-white">
-                    {c.title}
+                    {applyNotifTokens(c.title, notifVars)}
                   </div>
                   <div className="shrink-0 text-[10px] uppercase tracking-widest text-white/40">
                     {timeAgo(item.latest)}
                   </div>
                 </div>
-                <div className="mt-0.5 line-clamp-2 text-xs text-white/70">{c.body}</div>
+                <div className="mt-0.5 line-clamp-2 text-xs text-white/70">{applyNotifTokens(c.body, notifVars)}</div>
                 {clickable && (
                   <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/30">
                     Abrir <ExternalLink className="h-3 w-3" />
