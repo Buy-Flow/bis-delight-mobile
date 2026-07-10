@@ -537,9 +537,12 @@ function Content() {
 
       
 
+      <InstallAppBanner />
+
       <div>
         <LocationSection />
       </div>
+
 
 
 
