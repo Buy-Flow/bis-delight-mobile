@@ -5,6 +5,7 @@ import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
+import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
 
 const ProductModal = lazy(() =>
   import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
