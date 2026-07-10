@@ -139,13 +139,6 @@ const AUTO_META: Record<AutoKind, { label: string; hint: string; icon: typeof Gi
     accent: "text-neon-pink",
     ring: "ring-neon-pink/40",
   },
-  abandoned_cart: {
-    label: "Carrinho abandonado",
-    hint: "X minutos depois do cliente parar sem finalizar.",
-    icon: Zap,
-    accent: "text-neon-pink",
-    ring: "ring-neon-pink/40",
-  },
   payment_pending: {
     label: "Pagamento pendente",
     hint: "Lembrete quando o pedido continua 'pendente' após X minutos.",
