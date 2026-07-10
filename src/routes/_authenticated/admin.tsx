@@ -177,6 +177,12 @@ function AdminPage() {
           </Link>
           <div className="flex items-center gap-2">
             <Link
+              to="/notificacoes"
+              className="inline-flex items-center gap-1 rounded-full border border-neon-pink/40 bg-neon-pink/15 px-3 py-1.5 text-xs font-semibold text-neon-pink transition hover:bg-neon-pink/25"
+            >
+              <BellRing className="h-3.5 w-3.5" /> Notificações
+            </Link>
+            <Link
               to="/"
               className="hidden items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white sm:inline-flex"
             >
