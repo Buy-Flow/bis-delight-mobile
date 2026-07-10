@@ -469,6 +469,8 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
       setUrl("");
       setImage("");
       setScheduledAt("");
+      setRepeatCount(1);
+
       await onSent();
     } catch (e: any) {
       toast.error(e.message || "Erro ao enviar");
