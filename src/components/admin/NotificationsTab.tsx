@@ -183,7 +183,7 @@ export function NotificationsTab() {
   const refresh = async () => {
     const [{ count }, { data: campaigns }, { data: autos }] = await Promise.all([
       supabase.from("push_subscriptions").select("id", { count: "exact", head: true }),
-      supabase.from("push_campaigns").select("*").order("created_at", { ascending: false }).limit(40),
+      supabase.rpc("admin_list_push_campaigns", { _limit: 40 }),
       supabase.from("push_automations").select("*").order("created_at", { ascending: false }),
     ]);
     setTotalSubs(count ?? 0);
