@@ -49,6 +49,7 @@ export function CustomProductBuilder({
   editItem?: CartItem | null;
 }) {
   const { add, update } = useCart();
+  useBackDismiss(true, onClose);
   const groups = useMemo(() => product.optionGroups ?? [], [product.optionGroups]);
 
   const seededSelection = useMemo<Selection>(() => {
