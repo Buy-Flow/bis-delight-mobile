@@ -6,6 +6,7 @@ import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
+import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
 
 const ProductModal = lazy(() =>
   import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
