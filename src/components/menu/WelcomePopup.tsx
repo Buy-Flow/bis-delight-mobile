@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useRouterState, useNavigate } from "@tanstack/react-router";
 import { useSiteSettings } from "@/lib/menu-data";
-import { cn } from "@/lib/utils";
+
 
 const STORAGE_KEY = "querobis:welcome-popup-dismissed";
 
