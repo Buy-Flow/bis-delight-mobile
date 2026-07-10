@@ -408,7 +408,8 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
     try {
       const { data: user } = await supabase.auth.getUser();
       const baseTime = scheduledIso ? new Date(scheduledIso).getTime() : Date.now();
-      const totalReps = Math.max(1, Math.min(20, repeatCount));
+      const INFINITE_CAP = 200;
+      const totalReps = repeatInfinite ? INFINITE_CAP : Math.max(1, Math.min(200, repeatCount));
       const intervalMs = repeatIntervalMin * 60_000;
 
       // Build all occurrences. The first uses baseTime; subsequent add interval.
