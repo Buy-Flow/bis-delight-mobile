@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/use-auth";
 import {
   loadAudienceContext,
   markPopupDismissed,
+  markPopupShownThisSession,
   pickPopupToShow,
   type SitePopup,
 } from "@/lib/popups";
@@ -41,7 +42,10 @@ export function WelcomePopup() {
       const winner = pickPopupToShow(popups, ctx);
       if (!winner) return;
       setPopup(winner);
-      const t = setTimeout(() => setOpen(true), 400);
+      const t = setTimeout(() => {
+        markPopupShownThisSession(winner);
+        setOpen(true);
+      }, 400);
       return () => clearTimeout(t);
     })();
     return () => {
@@ -60,6 +64,18 @@ export function WelcomePopup() {
   const linkRaw = (popup.link ?? "").trim();
   const isExternal = /^https?:\/\//i.test(linkRaw);
   const internalTo = linkRaw && !isExternal ? (linkRaw.startsWith("/") ? linkRaw : `/${linkRaw}`) : "";
+  const hasLink = Boolean(internalTo || isExternal);
+
+  const openLink = () => {
+    if (!hasLink) return;
+    markPopupDismissed(popup);
+    setOpen(false);
+    if (isExternal) {
+      window.open(linkRaw, "_blank", "noopener,noreferrer");
+      return;
+    }
+    navigate({ to: internalTo });
+  };
 
   return (
     <div
@@ -76,9 +92,15 @@ export function WelcomePopup() {
         <X className="h-5 w-5" />
       </button>
 
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[92dvh] max-w-[92vw] flex-col items-center gap-4 animate-in zoom-in-95 duration-300"
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          openLink();
+        }}
+        disabled={!hasLink}
+        className="relative flex max-h-[92dvh] max-w-[92vw] flex-col items-center gap-4 border-0 bg-transparent p-0 text-center animate-in zoom-in-95 duration-300 disabled:cursor-default"
+        aria-label={hasLink ? popup.cta || popup.title || "Abrir pop-up" : popup.title || "Pop-up"}
       >
         {popup.image_url && (
           <img
@@ -93,7 +115,7 @@ export function WelcomePopup() {
           />
         )}
 
-        {(popup.title || popup.body || ((internalTo || isExternal) && popup.cta)) && (
+        {(popup.title || popup.body) && (
           <div className="w-full max-w-md space-y-3 text-center">
             {popup.title && (
               <h3 className="font-display text-2xl font-black leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
@@ -106,34 +128,9 @@ export function WelcomePopup() {
               </p>
             )}
 
-            {(internalTo || isExternal) && popup.cta && (
-              isExternal ? (
-                <a
-                  href={linkRaw}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => markPopupDismissed(popup)}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
-                >
-                  {popup.cta}
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    markPopupDismissed(popup);
-                    setOpen(false);
-                    navigate({ to: internalTo });
-                  }}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
-                >
-                  {popup.cta}
-                </button>
-              )
-            )}
           </div>
         )}
-      </div>
+      </button>
     </div>
   );
 }

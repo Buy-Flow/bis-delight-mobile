@@ -73,8 +73,26 @@ export function makeDefaultPopup(): Omit<SitePopup, "id" | "created_at" | "updat
 }
 
 const KEY_PREFIX = "querobis:popup-dismissed:";
+const SESSION_SHOWN_PREFIX = "querobis:popup-shown-this-session:";
+
+function hasPopupShownThisSession(p: SitePopup): boolean {
+  try {
+    return sessionStorage.getItem(SESSION_SHOWN_PREFIX + p.id) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function markPopupShownThisSession(p: SitePopup) {
+  try {
+    sessionStorage.setItem(SESSION_SHOWN_PREFIX + p.id, "1");
+  } catch {
+    // ignore
+  }
+}
 
 export function shouldShowPopup(p: SitePopup): boolean {
+  if (hasPopupShownThisSession(p)) return false;
   if (p.frequency === "always") return true;
   try {
     const key = KEY_PREFIX + p.id;
