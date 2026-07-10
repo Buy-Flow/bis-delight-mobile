@@ -595,7 +595,9 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
               alt="QR code"
               className="mx-auto h-56 w-56 rounded-lg bg-white p-2"
             />
-            <p className="mt-3 text-[10px] text-white/40">Atualizando a cada 5s…</p>
+            <p className="mt-3 text-[10px] text-white/40">
+              Verificando conexão a cada 5s. Se o WhatsApp rejeitar, toque em Recriar conexão.
+            </p>
             <div className="mt-3 flex justify-center gap-2">
               <button
                 onClick={load}
