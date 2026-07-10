@@ -420,6 +420,7 @@ function RecompensasPage() {
           </ol>
         </section>
       </div>
+      )}
     </main>
   );
 }
