@@ -578,7 +578,7 @@ function Content() {
             />
           );
         })()}
-        {isCartOpen && <CartSheet />}
+        
         {isCheckoutOpen && <CheckoutSheet />}
       </Suspense>
 
