@@ -251,7 +251,7 @@ function CartPage() {
       {/* Footer fixo */}
       {items.length > 0 && (
         <div
-          className="fixed inset-x-0 z-30 border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur bottom-[calc(76px+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]"
+          className="fixed inset-x-0 z-30 bg-gradient-to-t from-[oklch(0.14_0.09_305)] via-[oklch(0.14_0.09_305)]/85 to-transparent pt-6 backdrop-blur-xl bottom-[calc(76px+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]"
         >
 
           <div className="mx-auto max-w-2xl px-5 pb-4 pt-4">
