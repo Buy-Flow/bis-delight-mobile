@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
+import { sendCrmEvent } from "@/lib/crm.functions";
 
 type Mode = "entrega" | "retirada";
 
