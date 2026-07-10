@@ -335,7 +335,7 @@ export function ProductModal({
 
 
   const canSubmit = !isCustom
-    ? true
+    ? !flavorList || !!flavor
     : optionGroups.every((g) => (!g.required ? true : (groupSel[g.id] ?? []).length > 0));
 
   const submit = () => {
