@@ -16,6 +16,7 @@ import { LocationSection } from "@/components/menu/LocationSection";
 import { InstallAppBanner } from "@/components/menu/InstallAppBanner";
 import { WelcomePopup } from "@/components/menu/WelcomePopup";
 import { UrgencyBanner } from "@/components/menu/UrgencyBanner";
+import { ActiveOrderCard } from "@/components/menu/ActiveOrderCard";
 import { BirthdayBanner } from "@/components/menu/BirthdayBanner";
 
 
@@ -278,6 +279,7 @@ function Content() {
       <WelcomePopup />
       <Hero onScrollMenu={scrollToMenu} />
       <UrgencyBanner />
+      <ActiveOrderCard />
       <BirthdayBanner />
       <Reveal><Benefits /></Reveal>
       <Reveal><LoyaltyProgress /></Reveal>
