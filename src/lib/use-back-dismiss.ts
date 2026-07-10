@@ -52,7 +52,7 @@ export function useBackDismiss(open: boolean, onClose: () => void) {
       cleanupTimerRef.current = null;
     }
 
-    const id = idRef.current ?? ++overlaySequence;
+    const id = idRef.current ?? getCurrentOverlayId() ?? ++overlaySequence;
     idRef.current = id;
     if (!overlayStack.includes(id)) overlayStack.push(id);
 
