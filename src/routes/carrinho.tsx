@@ -216,6 +216,9 @@ function CartPage() {
                         </span>
                       </div>
                       <div className="p-2">
+                        <div className="mb-0.5 line-clamp-1 text-[9px] font-black uppercase tracking-wider text-neon-cyan">
+                          {p.reason}
+                        </div>
                         <div className="truncate text-[12px] font-extrabold leading-tight text-white">
                           {p.name}
                         </div>
