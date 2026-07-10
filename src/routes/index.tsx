@@ -274,6 +274,7 @@ function Content() {
       <Hero onScrollMenu={scrollToMenu} />
       <Reveal><Benefits /></Reveal>
       <Reveal><LoyaltyProgress /></Reveal>
+      <PushOptInCard />
       
       
 
