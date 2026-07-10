@@ -87,6 +87,7 @@ import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS 
 import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
 import { OrdersTab } from "@/components/admin/OrdersTab";
+import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
 import { ClipboardList } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
