@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Gift, Check, Ticket, Star, ShoppingBag, CreditCard, Award, Tag } from "lucide-react";
+import { Sparkles, Gift, Check, Ticket, Star, ShoppingBag, CreditCard, Award, Tag, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import rewardTrophy from "@/assets/reward-trophy.png";
+
 
 
 
@@ -86,6 +87,31 @@ function RecompensasPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
+      {/* Cart-style sticky header */}
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#1a0b2e]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
+          <Link
+            to="/"
+            aria-label="Voltar ao cardápio"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/10 active:scale-95"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
+            <Award className="h-5 w-5 text-neon-yellow" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow shadow-[0_0_8px_theme(colors.neon-yellow)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neon-yellow/90">Programa</span>
+            </div>
+            <h1 className="text-[20px] font-black leading-tight text-white">
+              Bis <span className="bg-gradient-to-r from-neon-pink to-neon-yellow bg-clip-text text-transparent">Recompensa</span>
+            </h1>
+          </div>
+        </div>
+      </div>
+
       {/* ambient background blobs */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[520px] overflow-hidden">
         <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-neon-pink/25 blur-[120px]" />
@@ -93,7 +119,8 @@ function RecompensasPage() {
         <div className="absolute top-32 -left-24 h-72 w-72 rounded-full bg-neon-cyan/20 blur-[100px]" />
       </div>
 
-      <div className="relative mx-auto max-w-2xl px-4 pt-8">
+      <div className="relative mx-auto max-w-2xl px-4 pt-5">
+
         {/* Hero card */}
         <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240] p-6 shadow-[0_30px_80px_-40px_rgba(255,52,153,0.6)]">
           {/* decorative stars */}
@@ -104,9 +131,9 @@ function RecompensasPage() {
           <div aria-hidden className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-neon-cyan/20 blur-3xl" />
 
           <div className="relative">
-            {/* Title row */}
+            {/* Trophy */}
             <div className="flex items-center gap-3">
-              <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
                 <div aria-hidden className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-yellow via-neon-pink to-neon-cyan blur-xl opacity-70" />
                 <img
                   src={rewardTrophy}
@@ -114,22 +141,17 @@ function RecompensasPage() {
                   width={128}
                   height={128}
                   loading="lazy"
-                  className="relative h-16 w-16 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
+                  className="relative h-14 w-14 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
                 />
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1a0b2e] text-[10px] font-black text-neon-yellow ring-2 ring-neon-yellow/60">
-                  <Sparkles className="h-3 w-3" />
-                </span>
               </div>
-
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
-                  Programa de fidelidade
+                  Sua trilha de sabor
                 </div>
-                <h1 className="text-2xl font-black leading-tight tracking-tight">
-                  Bis <span className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-cyan bg-clip-text text-transparent">Recompensa</span>
-                </h1>
+                <div className="text-sm text-white/70">A cada 10 pedidos, R$ 20 no próximo.</div>
               </div>
             </div>
+
 
             {/* Big counter */}
             <div className="mt-6 flex items-end justify-between gap-4">
