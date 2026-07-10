@@ -513,7 +513,7 @@ function EditCampaignModal({
         patch.expires_at =
           durationMin === null ? null : new Date(Date.now() + durationMin * 60_000).toISOString();
       }
-      const { error } = await supabase.from("push_campaigns").update(patch).eq("id", campaign.id);
+      const { error } = await supabase.from("push_campaigns").update(patch as any).eq("id", campaign.id);
       if (error) throw error;
       toast.success("Notificação atualizada");
       onSaved();
