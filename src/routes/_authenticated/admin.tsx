@@ -203,7 +203,7 @@ function AdminPage() {
                   Notificações
                 </Link>
               )}
-            </>
+            </React.Fragment>
           ))}
         </nav>
       </header>
