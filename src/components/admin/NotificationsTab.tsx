@@ -40,7 +40,7 @@ import { supabase } from "@/integrations/supabase/client";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 
-type Audience = "all" | "recent_30d" | "birthday_month" | "dormant_60d";
+type Audience = "all" | "recent_30d" | "birthday_month" | "dormant_60d" | "category";
 type AutoKind =
   | "birthday"
   | "dormant"
@@ -59,6 +59,7 @@ interface Campaign {
   url: string | null;
   image: string | null;
   audience: string;
+  audience_category?: string | null;
   sent_count: number;
   opened_count: number;
   failed_count: number;
@@ -91,6 +92,7 @@ const audiences: { value: Audience; label: string; icon: typeof Users; hint: str
   { value: "recent_30d", label: "Compraram nos últimos 30 dias", icon: Users, hint: "Clientes ativos" },
   { value: "birthday_month", label: "Aniversariantes do mês", icon: Cake, hint: "Com data cadastrada" },
   { value: "dormant_60d", label: "Sem compra há 60+ dias", icon: Moon, hint: "Traga de volta" },
+  { value: "category", label: "Fãs de uma categoria", icon: Star, hint: "Quem já comprou o tipo" },
 ];
 
 const durationOptions: { value: number | null; label: string }[] = [
