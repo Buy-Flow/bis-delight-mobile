@@ -57,16 +57,18 @@ export function NotificationsBell() {
     setLoading(true);
     const { data } = await supabase
       .from("push_deliveries")
-      .select("id, opened_at, created_at, campaign_id, campaign:push_campaigns(id, title, body, image, url, created_at)")
+      .select("id, opened_at, created_at, campaign_id, campaign:push_campaigns(id, title, body, image, url, created_at, expires_at)")
       .is("opened_at", null)
       .order("created_at", { ascending: false })
       .limit(30);
 
     const rows = (data ?? []) as Delivery[];
+    const now = Date.now();
     const map = new Map<string, Item>();
     for (const d of rows) {
       const c = Array.isArray(d.campaign) ? d.campaign[0] : d.campaign;
       if (!c) continue;
+      if (c.expires_at && new Date(c.expires_at).getTime() <= now) continue;
       const prev = map.get(d.campaign_id);
       if (prev) {
         prev.deliveryIds.push(d.id);
