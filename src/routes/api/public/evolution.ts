@@ -15,6 +15,23 @@ export const Route = createFileRoute("/api/public/evolution")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
 
+      GET: async () => {
+        const url = process.env.EVOLUTION_API_URL;
+        const key = process.env.EVOLUTION_API_KEY;
+        const out: any = { hasUrl: !!url, hasKey: !!key, url };
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 12000);
+          const r = await fetch(`${url}/instance/fetchInstances`, { headers: { apikey: key || "" }, signal: ctrl.signal });
+          clearTimeout(t);
+          out.status = r.status;
+          out.body = (await r.text()).slice(0, 800);
+        } catch (e: any) {
+          out.error = String(e?.message || e);
+        }
+        return Response.json(out, { headers: CORS });
+      },
+
       POST: async ({ request }) => {
         const expectedKey = process.env.EVOLUTION_API_KEY;
         const providedKey = request.headers.get("apikey") ?? request.headers.get("authorization");
