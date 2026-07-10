@@ -132,7 +132,7 @@ export function LoyaltyProgress() {
             </div>
           </div>
         </div>
-      </div>
+      </Link>
     </section>
   );
 }
