@@ -13,16 +13,19 @@ import {
   Loader2,
   LogOut,
   Sparkles,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, signOut } from "@/lib/use-auth";
 import { useCart, brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
 
 const searchSchema = z.object({
-  tab: z.enum(["perfil", "pedidos", "favoritos", "fidelidade"]).optional(),
+  tab: z.enum(["perfil", "pedidos", "favoritos", "fidelidade", "notificacoes"]).optional(),
 });
+
 
 export const Route = createFileRoute("/_authenticated/conta")({
   head: () => ({
