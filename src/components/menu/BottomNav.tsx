@@ -61,8 +61,7 @@ export function BottomNav() {
   const { pathname, searchStr } = useRouterState({
     select: (s) => ({ pathname: s.location.pathname, searchStr: s.location.searchStr }),
   });
-  const navigate = useNavigate();
-  const { openCart, count } = useCart();
+  const { count } = useCart();
   const search = new URLSearchParams(searchStr ?? "");
 
   // Hide on admin / auth-only routes
@@ -70,16 +69,7 @@ export function BottomNav() {
   if (hiddenPrefixes.some((p) => pathname.startsWith(p))) return null;
 
   const isHome = pathname === "/";
-
-  const handleCartClick = () => {
-    if (pathname !== "/") {
-      navigate({ to: "/" });
-      // Small delay to let CartSheet mount on home route
-      setTimeout(() => openCart(), 60);
-    } else {
-      openCart();
-    }
-  };
+  const isCart = pathname === "/carrinho";
 
   return (
     <>
