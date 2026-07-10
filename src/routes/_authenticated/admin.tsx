@@ -167,6 +167,7 @@ function AdminPage() {
     { id: "extras", label: "Complementos", icon: Plus },
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "notifications", label: "Notificações", icon: BellRing },
+    { id: "promos", label: "Promos & Combos", icon: Flame },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
