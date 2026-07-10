@@ -1095,14 +1095,14 @@ function AutomationEditor({
                     className={inputCls}
                   />
                 </Field>
-                <label className="mt-6 flex items-center gap-2 text-xs text-white/70">
+                <Field label="Reenviar a cada X dias" hint="0 = envia só uma vez.">
                   <input
-                    type="checkbox"
-                    checked={Boolean(cfg.repeat_weekly)}
-                    onChange={(e) => setC("repeat_weekly", e.target.checked)}
+                    type="number" min={0} max={90}
+                    value={cfg.repeat_days ?? 0}
+                    onChange={(e) => setC("repeat_days", Math.max(0, Math.min(90, Number(e.target.value) || 0)))}
+                    className={inputCls}
                   />
-                  Repetir toda semana
-                </label>
+                </Field>
               </div>
             )}
             {kind === "abandoned_cart" && (
