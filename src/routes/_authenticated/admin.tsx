@@ -89,6 +89,7 @@ import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
+import { ProductPicker } from "@/components/admin/ProductPicker";
 import { OrdersTab } from "@/components/admin/OrdersTab";
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
@@ -5550,6 +5551,7 @@ function PopupSection({
   const update = (patch: Partial<PopupConfig>) => set("popup", { ...popup, ...patch });
 
   const [busy, setBusy] = useState(false);
+  const [picking, setPicking] = useState(false);
   const upload = async (file: File) => {
     setBusy(true);
     try {
@@ -5561,6 +5563,27 @@ function PopupSection({
       setBusy(false);
     }
   };
+
+  // Tipo de link derivado do valor atual
+  const linkRaw = (popup.link ?? "").trim();
+  const isExternal = /^https?:\/\//i.test(linkRaw);
+  const isProduct = /^\/produto\//i.test(linkRaw);
+  const linkType: "none" | "product" | "page" | "external" = !linkRaw
+    ? "none"
+    : isProduct
+      ? "product"
+      : isExternal
+        ? "external"
+        : "page";
+  const productId = isProduct ? linkRaw.replace(/^\/produto\//i, "").split(/[?#]/)[0] : "";
+
+  const pagePresets: { value: string; label: string }[] = [
+    { value: "/", label: "Início" },
+    { value: "/carrinho", label: "Carrinho" },
+    { value: "/recompensas", label: "Recompensas" },
+    { value: "/baixar-app", label: "Baixar app" },
+    { value: "/conta", label: "Minha conta" },
+  ];
 
   const freqOptions: { value: PopupFrequency; label: string; hint: string }[] = [
     { value: "session", label: "Uma vez por visita", hint: "Some ao fechar a aba" },
@@ -5595,38 +5618,61 @@ function PopupSection({
         </button>
       </div>
 
-      {/* Preview */}
+      {/* Preview — espelha o pop-up real (sem card, X flutuando, texto sobre a imagem) */}
       <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-          Preview
+        <div className="mb-2 flex items-center justify-between">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+            Preview (como o cliente vê)
+          </div>
+          <div className="text-[10px] text-white/30">Fundo escurecido em cima da página</div>
         </div>
-        <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-b from-[oklch(0.22_0.14_305)] to-[oklch(0.14_0.10_305)] shadow-xl">
-          {popup.imageUrl && (
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/30">
+        <div className="relative mx-auto aspect-[9/16] w-full max-w-[240px] overflow-hidden rounded-3xl border border-white/15 bg-[url('https://lcntjixsisawwblcgwry.supabase.co/storage/v1/object/public/product-images/hero-bg-preview.png')] bg-cover bg-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          {/* X flutuante */}
+          <div className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white shadow">
+            <X className="h-3.5 w-3.5" />
+          </div>
+          {/* Conteúdo centralizado */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+            {popup.imageUrl ? (
               <img
                 src={popup.imageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-contain"
+                className="max-h-[55%] max-w-full select-none object-contain"
                 style={{
                   transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
                   transformOrigin: "center center",
                 }}
               />
-            </div>
-          )}
-          <div className="space-y-2 p-4 text-center">
-            {popup.title && (
-              <div className="font-display text-lg font-black leading-tight text-white">{popup.title}</div>
+            ) : (
+              <div className="grid aspect-square w-24 place-items-center rounded-2xl border border-dashed border-white/20 text-[10px] text-white/40">
+                sem imagem
+              </div>
             )}
-            {popup.body && <div className="whitespace-pre-line text-xs text-white/80">{popup.body}</div>}
-            {popup.cta && (popup.link || popup.imageUrl) && (
-              <div className="mt-2 rounded-2xl bg-neon-yellow py-2 text-xs font-black text-[oklch(0.15_0.10_305)]">
+            {(popup.title || popup.body) && (
+              <div className="w-full space-y-1 text-center">
+                {popup.title && (
+                  <div className="font-display text-sm font-black leading-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                    {popup.title}
+                  </div>
+                )}
+                {popup.body && (
+                  <div className="line-clamp-2 whitespace-pre-line text-[10px] text-white/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    {popup.body}
+                  </div>
+                )}
+              </div>
+            )}
+            {popup.cta && linkRaw && (
+              <div className="mt-1 rounded-2xl bg-neon-yellow px-4 py-1.5 text-[10px] font-black text-[oklch(0.15_0.10_305)] shadow-lg">
                 {popup.cta}
               </div>
             )}
           </div>
         </div>
       </div>
+
 
       {/* Texto */}
       <div className="grid gap-3 sm:grid-cols-2">
@@ -5664,21 +5710,136 @@ function PopupSection({
       </div>
 
       {/* Link */}
-      <div>
-        <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60">
-          Link ao clicar
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <label className="block text-[11px] font-bold uppercase tracking-wider text-white/60">
+          Link ao clicar no botão
         </label>
-        <input
-          type="text"
-          value={popup.link}
-          onChange={(e) => update({ link: e.target.value })}
-          placeholder="/produto/abc123 ou https://..."
-          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
-        />
-        <div className="mt-1 text-[10px] text-white/40">
-          Use um caminho do site (ex.: <code className="text-white/60">/produto/ID</code>, <code className="text-white/60">/carrinho</code>, <code className="text-white/60">/recompensas</code>) ou uma URL completa.
+
+        {/* Tipo de link */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { v: "none", label: "Nenhum" },
+            { v: "product", label: "Produto" },
+            { v: "page", label: "Página" },
+            { v: "external", label: "URL externa" },
+          ].map((opt) => {
+            const active = linkType === opt.v;
+            return (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => {
+                  if (opt.v === "none") update({ link: "" });
+                  else if (opt.v === "page") update({ link: "/" });
+                  else if (opt.v === "product") update({ link: "" });
+                  else if (opt.v === "external") update({ link: "https://" });
+                }}
+                className={cn(
+                  "rounded-xl border px-3 py-2 text-xs font-bold transition",
+                  active
+                    ? "border-neon-yellow bg-neon-yellow/10 text-neon-yellow"
+                    : "border-white/10 bg-black/30 text-white/70 hover:border-white/30",
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
+
+        {linkType === "product" && (
+          <div className="space-y-2">
+            {productId ? (
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 p-2">
+                <Package className="h-4 w-4 shrink-0 text-neon-pink" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] uppercase tracking-wider text-white/40">Produto selecionado</div>
+                  <div className="truncate font-mono text-[11px] text-white/80">{productId}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPicking(true)}
+                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-bold text-white hover:bg-white/10"
+                >
+                  Trocar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update({ link: "" })}
+                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-bold text-white/70 hover:bg-white/10"
+                  aria-label="Remover produto"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPicking(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/20 px-3 py-3 text-xs font-bold text-white/80 hover:border-neon-pink/60 hover:text-white"
+              >
+                <Package className="h-4 w-4" /> Escolher produto
+              </button>
+            )}
+          </div>
+        )}
+
+        {linkType === "page" && (
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {pagePresets.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => update({ link: p.value })}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-[11px] font-semibold transition",
+                    linkRaw === p.value
+                      ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+                      : "border-white/10 bg-black/20 text-white/70 hover:border-white/30",
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={linkRaw}
+              onChange={(e) => update({ link: e.target.value })}
+              placeholder="/carrinho"
+              className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+            />
+          </div>
+        )}
+
+        {linkType === "external" && (
+          <input
+            type="text"
+            value={linkRaw}
+            onChange={(e) => update({ link: e.target.value })}
+            placeholder="https://..."
+            className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+          />
+        )}
+
+        {linkType === "none" && (
+          <p className="text-[10px] text-white/40">
+            Sem link — o botão de ação não vai aparecer.
+          </p>
+        )}
       </div>
+
+      {picking && (
+        <ProductPicker
+          onClose={() => setPicking(false)}
+          onPick={(id) => {
+            update({ link: `/produto/${id}` });
+            setPicking(false);
+          }}
+        />
+      )}
+
 
       {/* Imagem + ajuste */}
       <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
