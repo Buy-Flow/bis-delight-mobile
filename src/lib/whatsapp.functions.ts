@@ -177,7 +177,11 @@ export const resetEvolutionInstance = createServerFn({ method: "POST" })
     } catch {
       /* may not exist */
     }
-    await createInstance();
+    try {
+      await createInstance();
+    } catch {
+      /* if delete is unavailable, reuse the existing logged-out instance */
+    }
     const qr = await connectInstance();
     return { ok: true, state: qr, reset: true };
   });
