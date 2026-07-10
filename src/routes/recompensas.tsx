@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Gift, Check, Ticket, Trophy, Star } from "lucide-react";
+import { Sparkles, Gift, Check, Ticket, Star, ShoppingBag, CreditCard, Award, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import rewardTrophy from "@/assets/reward-trophy.png";
+
 
 
 const GOAL = 10;
@@ -104,12 +106,21 @@ function RecompensasPage() {
           <div className="relative">
             {/* Title row */}
             <div className="flex items-center gap-3">
-              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-neon-yellow to-neon-pink text-[#1a0b2e] shadow-lg shadow-neon-pink/40">
-                <Trophy className="h-7 w-7" strokeWidth={2.5} />
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1a0b2e] text-[10px] font-black text-neon-yellow ring-2 ring-neon-yellow/50">
+              <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+                <div aria-hidden className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-yellow via-neon-pink to-neon-cyan blur-xl opacity-70" />
+                <img
+                  src={rewardTrophy}
+                  alt="Troféu Bis Recompensa"
+                  width={128}
+                  height={128}
+                  loading="lazy"
+                  className="relative h-16 w-16 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
+                />
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1a0b2e] text-[10px] font-black text-neon-yellow ring-2 ring-neon-yellow/60">
                   <Sparkles className="h-3 w-3" />
                 </span>
               </div>
+
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
                   Programa de fidelidade
@@ -152,12 +163,18 @@ function RecompensasPage() {
             {/* Progress bar */}
             <div className="mt-5 h-3 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-inset ring-white/10">
               <div
-                className="relative h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-[width] duration-700"
+                className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-[width] duration-700"
                 style={{ width: `${pct}%` }}
               >
                 <div className="absolute inset-0 rounded-full bg-white/25 mix-blend-overlay" />
+                <div
+                  aria-hidden
+                  className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/70 to-transparent animate-[shine_2.4s_ease-in-out_infinite]"
+                />
               </div>
             </div>
+
+
 
             {/* Stamps grid */}
             <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-10">
@@ -250,15 +267,37 @@ function RecompensasPage() {
           </>
         )}
 
-        <section className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <h3 className="mb-2 font-bold">Como funciona</h3>
-          <ol className="space-y-1.5 text-sm text-white/75">
-            <li>1. Faça pedidos no Quero Bis com sua conta logada.</li>
-            <li>2. A cada pedido pago, você ganha 1 selo.</li>
-            <li>3. Ao completar 10 selos, um cupom de R$ 20 é liberado automaticamente.</li>
-            <li>4. Use o código do cupom no checkout do próximo pedido.</li>
+        <section className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neon-pink/20 text-neon-pink">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <h3 className="text-base font-black tracking-tight">Como funciona</h3>
+          </div>
+          <ol className="grid gap-3 sm:grid-cols-2">
+            {[
+              { icon: ShoppingBag, title: "Faça pedidos", desc: "Compre logado na sua conta.", color: "from-neon-pink to-neon-pink/60" },
+              { icon: CreditCard, title: "Ganhe selos", desc: "1 selo a cada pedido pago.", color: "from-neon-yellow to-orange-400" },
+              { icon: Award, title: "Complete 10", desc: "Cupom de R$ 20 liberado.", color: "from-neon-cyan to-cyan-400" },
+              { icon: Tag, title: "Use no checkout", desc: "Desconto direto no próximo pedido.", color: "from-fuchsia-400 to-neon-pink" },
+            ].map((step, idx) => {
+              const Icon = step.icon;
+              return (
+                <li key={idx} className="relative flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-[#1a0b2e] shadow-lg", step.color)}>
+                    <Icon className="h-5 w-5" strokeWidth={2.5} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-white/50">Passo {idx + 1}</div>
+                    <div className="text-sm font-bold text-white">{step.title}</div>
+                    <div className="text-xs text-white/60">{step.desc}</div>
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </section>
+
       </div>
     </main>
   );
