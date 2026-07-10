@@ -64,38 +64,7 @@ function CarrinhosPage() {
               Carrinhos
             </span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/pedidos"
-              className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
-            >
-              <ClipboardList className="h-3.5 w-3.5" /> Pedidos
-            </Link>
-            <Link
-              to="/financeiro"
-              className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
-            >
-              <LineChart className="h-3.5 w-3.5" /> Financeiro
-            </Link>
-            <Link
-              to="/clientes"
-              className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-900/30 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-purple-800/50 hover:text-white"
-            >
-              <Users className="h-3.5 w-3.5" /> Clientes
-            </Link>
-            <Link
-              to="/"
-              className="hidden items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white sm:inline-flex"
-            >
-              <Home className="h-3.5 w-3.5" /> Ver site
-            </Link>
-            <button
-              onClick={signOut}
-              className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:text-white"
-            >
-              <LogOut className="h-3.5 w-3.5" /> Sair
-            </button>
-          </div>
+          <AdminNavMenu />
         </div>
       </header>
 
