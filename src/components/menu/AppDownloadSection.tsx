@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, Share, Zap, Bell, Heart, Sparkles } from "lucide-react";
-import heroBg from "@/assets/app-download-hero.jpg";
+import heroBgAsset from "@/assets/app-download-hero.jpg.asset.json";
+const heroBg = heroBgAsset.url;
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;

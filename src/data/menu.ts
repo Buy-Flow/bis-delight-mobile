@@ -97,13 +97,20 @@ import imgPoteSorvete from "@/assets/p11-11-X29.png.asset.json";
 
 import texturePurple from "@/assets/p12-01-X4.jpg.asset.json";
 import logoAsset from "@/assets/querobis-logo.png.asset.json";
-import categoryAcaiMix from "@/assets/category-acai-mix.png";
-import categoryAcai from "@/assets/category-acai.png";
-import categoryTaca from "@/assets/category-taca.png";
-import categoryMix from "@/assets/category-mix.png";
-import categoryCasquinha from "@/assets/category-casquinha.png";
-import categoryShake from "@/assets/category-shake.png";
-import categoryCopo from "@/assets/category-copo.png";
+import categoryAcaiMixAsset from "@/assets/category-acai-mix.png.asset.json";
+import categoryAcaiAsset from "@/assets/category-acai.png.asset.json";
+import categoryTacaAsset from "@/assets/category-taca.png.asset.json";
+import categoryMixAsset from "@/assets/category-mix.png.asset.json";
+import categoryCasquinhaAsset from "@/assets/category-casquinha.png.asset.json";
+import categoryShakeAsset from "@/assets/category-shake.png.asset.json";
+import categoryCopoAsset from "@/assets/category-copo.png.asset.json";
+const categoryAcaiMix = categoryAcaiMixAsset.url;
+const categoryAcai = categoryAcaiAsset.url;
+const categoryTaca = categoryTacaAsset.url;
+const categoryMix = categoryMixAsset.url;
+const categoryCasquinha = categoryCasquinhaAsset.url;
+const categoryShake = categoryShakeAsset.url;
+const categoryCopo = categoryCopoAsset.url;
 
 export const BRAND = {
   name: "Quero Bis",

@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Download, Sparkles, Bell, Gift, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
-import heroImg from "@/assets/app-download-hero.jpg";
+import heroImgAsset from "@/assets/app-download-hero.jpg.asset.json";
+const heroImg = heroImgAsset.url;
 
 function isStandalonePWA() {
   if (typeof window === "undefined") return true;
