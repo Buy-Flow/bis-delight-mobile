@@ -22,18 +22,24 @@ export function ProductCard({
 }) {
   const { data: isAdmin } = useIsAdmin();
   const navigate = useNavigate();
+  const stock = product.stock;
+  const outOfStock = typeof stock === "number" && stock <= 0;
+  const lowThreshold = product.lowStockThreshold ?? 5;
+  const lowStock = typeof stock === "number" && stock > 0 && stock <= lowThreshold;
   return (
 
     <div
       role="button"
-      tabIndex={0}
-      onClick={() => onOpen(product)}
+      tabIndex={outOfStock ? -1 : 0}
+      onClick={() => !outOfStock && onOpen(product)}
       onKeyDown={(e) => {
+        if (outOfStock) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onOpen(product);
         }
       }}
+      aria-disabled={outOfStock || undefined}
       className={cn(
         "group relative flex h-full w-full cursor-pointer flex-col overflow-visible rounded-[22px] text-left select-none",
         "touch-manipulation [-webkit-tap-highlight-color:transparent]",
@@ -101,6 +107,19 @@ export function ProductCard({
           >
             <Flame className="h-[10px] w-[10px] fill-current" strokeWidth={2.5} />
             {product.badge}
+          </div>
+        )}
+        {/* Low stock / Out of stock overlay */}
+        {lowStock && (
+          <div className="absolute bottom-3 left-2 z-20 rounded-full bg-neon-pink px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg">
+            Últimas {stock}!
+          </div>
+        )}
+        {outOfStock && (
+          <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/70 backdrop-blur-sm">
+            <span className="rounded-full border border-white/30 bg-black/60 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white">
+              Esgotado
+            </span>
           </div>
         )}
         {/* Favorite heart top-right */}

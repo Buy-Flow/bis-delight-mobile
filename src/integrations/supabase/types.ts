@@ -156,6 +156,45 @@ export type Database = {
         }
         Relationships: []
       }
+      combos: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string
+          discount_percent: number
+          id: string
+          image_url: string | null
+          name: string
+          rules: Json
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string
+          discount_percent?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          rules?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string
+          discount_percent?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          rules?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -359,12 +398,16 @@ export type Database = {
           image_url: string | null
           ingredients: Json
           is_custom: boolean
+          is_upsell: boolean
+          low_stock_threshold: number
           name: string
           option_groups: Json | null
           removable: Json | null
           sizes: Json
           sort_order: number
+          stock: number | null
           updated_at: string
+          upsell_price: number | null
         }
         Insert: {
           active?: boolean
@@ -387,12 +430,16 @@ export type Database = {
           image_url?: string | null
           ingredients?: Json
           is_custom?: boolean
+          is_upsell?: boolean
+          low_stock_threshold?: number
           name: string
           option_groups?: Json | null
           removable?: Json | null
           sizes?: Json
           sort_order?: number
+          stock?: number | null
           updated_at?: string
+          upsell_price?: number | null
         }
         Update: {
           active?: boolean
@@ -415,12 +462,16 @@ export type Database = {
           image_url?: string | null
           ingredients?: Json
           is_custom?: boolean
+          is_upsell?: boolean
+          low_stock_threshold?: number
           name?: string
           option_groups?: Json | null
           removable?: Json | null
           sizes?: Json
           sort_order?: number
+          stock?: number | null
           updated_at?: string
+          upsell_price?: number | null
         }
         Relationships: [
           {
@@ -440,6 +491,7 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          preferred_payment: string | null
           reference: string | null
           updated_at: string
         }
@@ -450,6 +502,7 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          preferred_payment?: string | null
           reference?: string | null
           updated_at?: string
         }
@@ -460,6 +513,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          preferred_payment?: string | null
           reference?: string | null
           updated_at?: string
         }
@@ -856,6 +910,10 @@ export type Database = {
           tiktok: string
           title_font: string
           updated_at: string
+          urgency_active: boolean
+          urgency_coupon_code: string | null
+          urgency_ends_at: string | null
+          urgency_text: string | null
           whatsapp: string
           whatsapp_display: string
         }
@@ -910,6 +968,10 @@ export type Database = {
           tiktok?: string
           title_font?: string
           updated_at?: string
+          urgency_active?: boolean
+          urgency_coupon_code?: string | null
+          urgency_ends_at?: string | null
+          urgency_text?: string | null
           whatsapp?: string
           whatsapp_display?: string
         }
@@ -964,6 +1026,10 @@ export type Database = {
           tiktok?: string
           title_font?: string
           updated_at?: string
+          urgency_active?: boolean
+          urgency_coupon_code?: string | null
+          urgency_ends_at?: string | null
+          urgency_text?: string | null
           whatsapp?: string
           whatsapp_display?: string
         }

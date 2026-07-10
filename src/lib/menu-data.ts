@@ -74,6 +74,21 @@ export type SiteSettings = {
   titleFont: string;
   heroImages: HeroImagesConfig;
   popup: PopupConfig;
+  urgency: UrgencyConfig;
+};
+
+export type UrgencyConfig = {
+  active: boolean;
+  text: string;
+  endsAt: string | null;
+  couponCode: string;
+};
+
+export const DEFAULT_URGENCY: UrgencyConfig = {
+  active: false,
+  text: "Sexta Especial acaba em",
+  endsAt: null,
+  couponCode: "",
 };
 
 export type PopupFrequency = "session" | "always" | "daily";
@@ -156,6 +171,10 @@ function rowToProduct(row: Record<string, unknown>): Product {
     heroImageScale: row.hero_image_scale !== undefined && row.hero_image_scale !== null ? Number(row.hero_image_scale) : 1.4,
     isCustom: Boolean(row.is_custom ?? false),
     optionGroups: normalizeOptionGroups(row.option_groups),
+    isUpsell: Boolean(row.is_upsell ?? false),
+    upsellPrice: row.upsell_price !== undefined && row.upsell_price !== null ? Number(row.upsell_price) : null,
+    stock: row.stock !== undefined && row.stock !== null ? Number(row.stock) : null,
+    lowStockThreshold: row.low_stock_threshold !== undefined && row.low_stock_threshold !== null ? Number(row.low_stock_threshold) : 5,
   };
 }
 
@@ -302,6 +321,7 @@ const DEFAULT_EXTRA: Pick<
   | "titleFont"
   | "heroImages"
   | "popup"
+  | "urgency"
 
 > = {
   instagram: "",
@@ -333,6 +353,7 @@ const DEFAULT_EXTRA: Pick<
   titleFont: "Barlow Condensed",
   heroImages: DEFAULT_HERO_IMAGES,
   popup: DEFAULT_POPUP,
+  urgency: DEFAULT_URGENCY,
 };
 
 function parseHeroImages(raw: unknown): HeroImagesConfig {
@@ -432,6 +453,12 @@ export const siteSettingsQueryOptions = queryOptions({
         imageScale: Number((data as Record<string, unknown>).popup_image_scale ?? 1),
         frequency: (String((data as Record<string, unknown>).popup_frequency ?? "session") as PopupFrequency),
       },
+      urgency: {
+        active: Boolean((data as Record<string, unknown>).urgency_active ?? false),
+        text: String((data as Record<string, unknown>).urgency_text ?? "Sexta Especial acaba em"),
+        endsAt: ((data as Record<string, unknown>).urgency_ends_at as string | null) ?? null,
+        couponCode: String((data as Record<string, unknown>).urgency_coupon_code ?? ""),
+      },
     };
   },
   staleTime: 60_000,
@@ -464,7 +491,114 @@ export function useInvalidateMenu() {
     qc.invalidateQueries({ queryKey: ["products"] });
     qc.invalidateQueries({ queryKey: ["categories"] });
     qc.invalidateQueries({ queryKey: ["site_settings"] });
+    qc.invalidateQueries({ queryKey: ["combos"] });
   };
+}
+
+// ==================== COMBOS ====================
+export type ComboRule = {
+  category: string;      // category id (or "any")
+  minQty: number;        // qty required
+  label?: string;        // display label e.g. "3 açaí"
+};
+
+export type Combo = {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  rules: ComboRule[];
+  discountPercent: number;
+  active: boolean;
+  sortOrder: number;
+};
+
+function rowToCombo(row: Record<string, unknown>): Combo {
+  const rawRules = row.rules as unknown;
+  const rules: ComboRule[] = Array.isArray(rawRules)
+    ? rawRules.map((r) => {
+        const rr = (r ?? {}) as Record<string, unknown>;
+        return {
+          category: String(rr.category ?? "any"),
+          minQty: Number(rr.minQty ?? rr.min_qty ?? 1),
+          label: rr.label ? String(rr.label) : undefined,
+        };
+      })
+    : [];
+  return {
+    id: String(row.id),
+    name: String(row.name ?? ""),
+    description: String(row.description ?? ""),
+    imageUrl: (row.image_url as string) ?? "",
+    rules,
+    discountPercent: Number(row.discount_percent ?? 0),
+    active: Boolean(row.active ?? true),
+    sortOrder: Number(row.sort_order ?? 0),
+  };
+}
+
+export const combosQueryOptions = queryOptions({
+  queryKey: ["combos"],
+  queryFn: async (): Promise<Combo[]> => {
+    const { data, error } = await supabase
+      .from("combos" as never)
+      .select("*")
+      .eq("active", true)
+      .order("sort_order", { ascending: true });
+    if (error) return [];
+    return ((data ?? []) as Record<string, unknown>[]).map(rowToCombo);
+  },
+  staleTime: 60_000,
+});
+
+export function useCombos() {
+  return useQuery(combosQueryOptions);
+}
+
+export function useAllCombos() {
+  return useQuery({
+    queryKey: ["combos", "all"],
+    queryFn: async (): Promise<Combo[]> => {
+      const { data, error } = await supabase
+        .from("combos" as never)
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) return [];
+      return ((data ?? []) as Record<string, unknown>[]).map(rowToCombo);
+    },
+  });
+}
+
+export function useUpsertCombo() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (c: Combo) => {
+      const payload = {
+        id: c.id || undefined,
+        name: c.name,
+        description: c.description,
+        image_url: c.imageUrl || null,
+        rules: c.rules,
+        discount_percent: c.discountPercent,
+        active: c.active,
+        sort_order: c.sortOrder,
+      };
+      const { error } = await supabase.from("combos" as never).upsert(payload as never, { onConflict: "id" });
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteCombo() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("combos" as never).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
 }
 
 /** Seed DB with the initial static menu (idempotent via upsert). */
@@ -544,6 +678,10 @@ export type ProductInput = {
   image_scale?: number;
   is_custom?: boolean;
   option_groups?: OptionGroup[] | null;
+  is_upsell?: boolean;
+  upsell_price?: number | null;
+  stock?: number | null;
+  low_stock_threshold?: number;
 };
 
 export function useUpsertProduct() {
@@ -710,9 +848,10 @@ export function useUpdateSettings() {
         popup_image_pos_y: s.popup.imagePosY,
         popup_image_scale: s.popup.imageScale,
         popup_frequency: s.popup.frequency,
-
-
-
+        urgency_active: s.urgency.active,
+        urgency_text: s.urgency.text,
+        urgency_ends_at: s.urgency.endsAt,
+        urgency_coupon_code: s.urgency.couponCode,
       }, { onConflict: "id" });
       if (error) throw error;
     },

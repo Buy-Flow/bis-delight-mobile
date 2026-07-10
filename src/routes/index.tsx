@@ -15,6 +15,7 @@ import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { InstallAppBanner } from "@/components/menu/InstallAppBanner";
 import { WelcomePopup } from "@/components/menu/WelcomePopup";
+import { UrgencyBanner } from "@/components/menu/UrgencyBanner";
 
 
 import { FloatingActions } from "@/components/menu/FloatingActions";
@@ -275,6 +276,7 @@ function Content() {
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
       <WelcomePopup />
       <Hero onScrollMenu={scrollToMenu} />
+      <UrgencyBanner />
       <Reveal><Benefits /></Reveal>
       <Reveal><LoyaltyProgress /></Reveal>
       <PushOptInCard />

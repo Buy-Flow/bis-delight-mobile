@@ -44,6 +44,8 @@ import {
   Eraser,
   Link as LinkIcon,
   BellRing,
+  Flame,
+
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -94,13 +96,15 @@ import { ProductPicker } from "@/components/admin/ProductPicker";
 import { OrdersTab } from "@/components/admin/OrdersTab";
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
+import { CombosSection } from "@/components/admin/CombosSection";
+import { UrgencySection } from "@/components/admin/UrgencySection";
 import { ClipboardList } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "settings"] as const;
+    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "settings"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
@@ -116,7 +120,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "settings";
+type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -165,6 +169,7 @@ function AdminPage() {
     { id: "extras", label: "Complementos", icon: Plus },
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "notifications", label: "Notificações", icon: BellRing },
+    { id: "promos", label: "Promos & Combos", icon: Flame },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
@@ -212,6 +217,7 @@ function AdminPage() {
         {tab === "extras" && <ExtrasTab />}
         {tab === "news" && <NewsTab />}
         {tab === "notifications" && <NotificationsTab />}
+        {tab === "promos" && <PromosTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
@@ -528,6 +534,10 @@ function ProductEditor({
       image_scale: Number(p.imageScale ?? 1.1),
       is_custom: !!p.isCustom,
       option_groups: p.isCustom ? (p.optionGroups ?? []) : null,
+      is_upsell: !!p.isUpsell,
+      upsell_price: p.upsellPrice ?? null,
+      stock: p.stock ?? null,
+      low_stock_threshold: p.lowStockThreshold ?? 5,
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
@@ -869,6 +879,56 @@ function ProductEditor({
                   O cliente pode desmarcar esses itens ao montar o produto.
                 </div>
               </Field>
+
+              <Field label="Estoque (deixe vazio para ilimitado)">
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={p.stock ?? ""}
+                  onChange={(e) => setField("stock", e.target.value === "" ? null : Number(e.target.value))}
+                  placeholder="Ilimitado"
+                />
+                <div className="mt-1 text-[11px] text-white/40">
+                  Estoque cai automaticamente quando o pedido é pago.
+                </div>
+              </Field>
+
+              <Field label="Alerta 'últimas unidades' quando estoque ≤">
+                <input
+                  type="number"
+                  min={0}
+                  className={inputCls}
+                  value={p.lowStockThreshold ?? 5}
+                  onChange={(e) => setField("lowStockThreshold", Number(e.target.value) || 0)}
+                />
+              </Field>
+
+              <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 accent-neon-pink"
+                  checked={!!p.isUpsell}
+                  onChange={(e) => setField("isUpsell", e.target.checked)}
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-white">Oferecer como upsell no carrinho</div>
+                  <div className="text-[11px] text-white/50">Aparece na vitrine "Que tal adicionar por menos?".</div>
+                </div>
+              </label>
+
+              {p.isUpsell && (
+                <Field label="Preço promocional no upsell">
+                  <input
+                    type="number"
+                    step="0.01"
+                    className={inputCls}
+                    value={p.upsellPrice ?? ""}
+                    onChange={(e) => setField("upsellPrice", e.target.value === "" ? null : Number(e.target.value))}
+                    placeholder={`Padrão: ${p.basePrice}`}
+                  />
+                </Field>
+              )}
 
               <Field label="ID técnico (slug)">
                 <input
@@ -5946,6 +6006,16 @@ function PopupSection({
       >
         Reiniciar para testar novamente
       </button>
+    </div>
+  );
+}
+
+function PromosTab() {
+  return (
+    <div className="space-y-8">
+      <UrgencySection />
+      <div className="h-px bg-white/10" />
+      <CombosSection />
     </div>
   );
 }
