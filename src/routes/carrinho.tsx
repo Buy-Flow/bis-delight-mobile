@@ -55,13 +55,8 @@ function CartPage() {
   const fee = items.length ? BRAND.deliveryFee : 0;
   const total = subtotal + fee;
 
-  const goBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      window.history.back();
-    } else {
-      navigate({ to: "/" });
-    }
-  };
+
+
 
   const handleSuggestion = (id: string) => {
     requestOpenProduct(id);
