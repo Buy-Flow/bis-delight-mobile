@@ -92,14 +92,21 @@ export function WelcomePopup() {
         <X className="h-5 w-5" />
       </button>
 
-      <button
-        type="button"
+      <div
         onClick={(e) => {
           e.stopPropagation();
           openLink();
         }}
-        disabled={!hasLink}
-        className="relative flex max-h-[92dvh] max-w-[92vw] flex-col items-center gap-4 border-0 bg-transparent p-0 text-center animate-in zoom-in-95 duration-300 disabled:cursor-default"
+        role={hasLink ? "link" : "document"}
+        tabIndex={hasLink ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (!hasLink) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openLink();
+          }
+        }}
+        className="relative flex max-h-[92dvh] max-w-[92vw] flex-col items-center gap-4 text-center animate-in zoom-in-95 duration-300"
         aria-label={hasLink ? popup.cta || popup.title || "Abrir pop-up" : popup.title || "Pop-up"}
       >
         {popup.image_url && (
@@ -130,7 +137,7 @@ export function WelcomePopup() {
 
           </div>
         )}
-      </button>
+      </div>
     </div>
   );
 }
