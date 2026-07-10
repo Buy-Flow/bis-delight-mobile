@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { sendCrmEvent } from "@/lib/crm.functions";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -83,8 +82,6 @@ function AuthPage() {
           setMode("signin");
           return;
         }
-        // Notify CRM of the new contact (fire-and-forget, runs after session is set).
-        void sendCrmEvent({ data: { event_type: "contact_created" } }).catch(() => {});
         toast.success("Bem-vindo à Quero Bis!");
         navigate({ to: next });
       } else {

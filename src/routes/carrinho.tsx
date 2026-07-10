@@ -1,10 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
-import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 
 const ProductModal = lazy(() =>
   import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
@@ -40,7 +39,14 @@ function CartPage() {
   } = useCart();
   const { data: allProducts = [] } = useProducts();
 
-  const suggestions = usePersonalizedSuggestions(items, allProducts);
+  const suggestions = useMemo(() => {
+    if (!items.length) return [];
+    const inCart = new Set(items.map((i) => i.productId));
+    return allProducts
+      .filter((p) => !inCart.has(p.id) && !p.isCustom && p.basePrice > 0)
+      .sort((a, b) => a.basePrice - b.basePrice)
+      .slice(0, 6);
+  }, [allProducts, items]);
 
   const editingProduct = editingItem
     ? allProducts.find((x) => x.id === editingItem.productId)
@@ -193,7 +199,7 @@ function CartPage() {
                     <Sparkles className="h-3.5 w-3.5" />
                   </span>
                   <div className="text-[11px] font-black uppercase tracking-[0.16em] text-neon-cyan">
-                    Selecionado pra você
+                    Que tal levar também?
                   </div>
                 </div>
                 <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -216,9 +222,6 @@ function CartPage() {
                         </span>
                       </div>
                       <div className="p-2">
-                        <div className="mb-0.5 line-clamp-1 text-[9px] font-black uppercase tracking-wider text-neon-cyan">
-                          {p.reason}
-                        </div>
                         <div className="truncate text-[12px] font-extrabold leading-tight text-white">
                           {p.name}
                         </div>

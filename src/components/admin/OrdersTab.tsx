@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { sendCrmEvent } from "@/lib/crm.functions";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -146,7 +145,6 @@ export function OrdersTab() {
   const [filter, setFilter] = useState<FilterId>("pendente");
   const [busy, setBusy] = useState<string | null>(null);
   const [testBusy, setTestBusy] = useState(false);
-  const [crmBusy, setCrmBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [notifyOn, setNotifyOn] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -323,26 +321,6 @@ export function OrdersTab() {
     }
   };
 
-  const sendCrmTest = async (eventType?: string) => {
-    setCrmBusy(true);
-    try {
-      const { testCrmWebhook } = await import("@/lib/crm.functions");
-      const result = await testCrmWebhook({ data: { event_type: eventType } });
-      const label = eventType ?? "test";
-      if (result.ok) {
-        toast.success(`CRM ${label} → ${result.status} OK`);
-      } else {
-        toast.error(`CRM ${label} → ${result.status || "erro"}: ${result.body?.slice(0, 120) || "sem resposta"}`);
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro ao testar o CRM.");
-    } finally {
-      setCrmBusy(false);
-    }
-  };
-
-
-
   const load = async () => {
     setRefreshing(true);
     const { data, error } = await supabase
@@ -433,9 +411,6 @@ export function OrdersTab() {
     }
     toast.success(`Pedido atualizado para ${STATUS_THEME[status].label.toLowerCase()}.`);
     setOrders((prev) => (prev ? prev.map((o) => (o.id === order.id ? { ...o, status } : o)) : prev));
-    // Notify CRM about the status change (fire-and-forget).
-    const eventType = status === "entregue" ? "order_completed" : "order_status_changed";
-    void sendCrmEvent({ data: { event_type: eventType, order_id: order.id, extra: { status } } }).catch(() => {});
   };
 
   if (orders === null) {
@@ -488,18 +463,6 @@ export function OrdersTab() {
             {testBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             Teste push
           </button>
-          {(["contact_created", "order_placed", "order_status", "cart_abandoned"] as const).map((ev) => (
-            <button
-              key={ev}
-              onClick={() => sendCrmTest(ev)}
-              disabled={crmBusy}
-              className="inline-flex items-center gap-2 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-neon-pink transition-all hover:bg-neon-pink/15 disabled:cursor-not-allowed disabled:opacity-60"
-              title={`Disparar evento ${ev} para o CRM`}
-            >
-              {crmBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-              CRM · {ev}
-            </button>
-          ))}
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-900/30 px-4 py-2">
             <span
               className={cn(

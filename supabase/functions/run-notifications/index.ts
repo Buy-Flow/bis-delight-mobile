@@ -1,13 +1,8 @@
-// Cron-driven worker. Runs every 5 minutes.
-//   1) Fires push_campaigns with status='scheduled' AND scheduled_for <= now()
-//   2) Runs every ACTIVE push_automation (multiple per kind allowed):
-//        - birthday       config: { hour?: 0-23, days_offset?: int }  (negative = before)
-//        - dormant        config: { days: int, repeat_weekly?: bool }
-//        - welcome        config: { delay_minutes?: int }
-//        - after_order    config: { delay_minutes?: int, only_first?: bool }
-//        - abandoned_cart config: { delay_minutes?: int }
-//      filters (optional, applied AFTER kind resolution):
-//        { min_orders?, max_orders?, ordered_within_days?, not_ordered_within_days?, min_spent_total? }
+// Cron-driven worker that:
+//   1. Fires push_campaigns where status='scheduled' AND scheduled_for <= now()
+//   2. Runs active push_automations (birthday-of-day, dormant, welcome after 1st order)
+//
+// Auth: shared bearer ORDER_NOTIFY_TOKEN. Called by pg_cron every 5 minutes.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
@@ -23,6 +18,7 @@ const cors = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+
   const auth = req.headers.get("Authorization") ?? "";
   if (auth !== `Bearer ${NOTIFY_TOKEN}`) return json({ error: "unauthorized" }, 401);
 
@@ -31,7 +27,6 @@ Deno.serve(async (req) => {
   });
 
   const results: Record<string, unknown> = {};
-  const now = new Date();
 
   try {
     // 1) Scheduled campaigns due now
@@ -39,77 +34,78 @@ Deno.serve(async (req) => {
       .from("push_campaigns")
       .select("id, title")
       .eq("status", "scheduled")
-      .lte("scheduled_for", now.toISOString());
+      .lte("scheduled_for", new Date().toISOString());
     const dueList = due ?? [];
     if (dueList.length) {
-      await admin.from("push_campaigns").update({ status: "sending" }).in(
-        "id",
-        dueList.map((d: any) => d.id),
-      );
-      for (const d of dueList) await callSendPush({ campaignId: d.id });
+      // Mark as 'sending' so we don't re-enter
+      await admin
+        .from("push_campaigns")
+        .update({ status: "sending" })
+        .in("id", dueList.map((d: any) => d.id));
+      for (const d of dueList) {
+        await callSendPush({ campaignId: d.id });
+      }
     }
     results.scheduledFired = dueList.length;
 
     // 2) Automations
-    const { data: autos } = await admin.from("push_automations").select("*").eq("active", true);
+    const { data: autos } = await admin
+      .from("push_automations")
+      .select("*")
+      .eq("active", true);
+
+    const today = new Date();
+    const todayKey = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
     const runReport: Array<Record<string, unknown>> = [];
 
     for (const a of autos ?? []) {
-      const kind = (a as any).kind as string;
-      const cfg = ((a as any).config ?? {}) as Record<string, any>;
-      const filters = ((a as any).filters ?? {}) as Record<string, any>;
-
+      const kind = (a as any).kind as "birthday" | "dormant" | "welcome";
       let eligibleUserIds: string[] = [];
-      let runKey = now.toISOString().slice(0, 10); // default: per day
-      let payloadPerUser: Map<string, Record<string, any>> | null = null;
+      let runKey = todayKey;
 
       if (kind === "birthday") {
-        const hour = Number(cfg.hour ?? 9);
-        // Only run once per day, only after configured hour
-        if (now.getHours() < hour) {
-          runReport.push({ id: a.id, kind, skipped: `before_hour_${hour}` });
-          continue;
-        }
-        const daysOffset = Number(cfg.days_offset ?? 0);
-        // Target birthday = today - daysOffset  (so days_offset=-3 means "3 days before birthday")
-        const target = new Date(now.getTime() - daysOffset * 24 * 3600 * 1000);
-        const mm = String(target.getMonth() + 1).padStart(2, "0");
-        const dd = String(target.getDate()).padStart(2, "0");
+        // Users whose birthday MM-DD matches today
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
         const { data: profs } = await admin
           .from("profiles")
           .select("id, birthday")
           .not("birthday", "is", null);
         eligibleUserIds = (profs ?? [])
-          .filter((p: any) => p.birthday && p.birthday.slice(5, 7) === mm && p.birthday.slice(8, 10) === dd)
+          .filter((p: any) => {
+            const b: string = p.birthday;
+            return b && b.slice(5, 7) === mm && b.slice(8, 10) === dd;
+          })
           .map((p: any) => p.id);
       } else if (kind === "dormant") {
-        const days = Number(cfg.days ?? 60);
-        const cutoff = new Date(now.getTime() - days * 24 * 3600 * 1000).toISOString();
+        const days = Number(((a as any).config?.days) ?? 60);
+        const cutoff = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
         const { data: recent } = await admin
           .from("orders")
           .select("user_id")
           .gte("created_at", cutoff)
           .not("user_id", "is", null);
         const activeIds = new Set((recent ?? []).map((o: any) => o.user_id));
+        // Only users who ordered before cutoff and NOT after
         const { data: allOrderers } = await admin
           .from("orders")
           .select("user_id")
           .not("user_id", "is", null);
         const allIds = Array.from(new Set((allOrderers ?? []).map((o: any) => o.user_id)));
         eligibleUserIds = allIds.filter((id) => !activeIds.has(id));
-        runKey = cfg.repeat_weekly ? `w-${weekKey(now)}-d${days}` : `d${days}`;
+        // Only re-notify once per week
+        runKey = `w-${weekKey(today)}`;
       } else if (kind === "welcome") {
-        const delay = Number(cfg.delay_minutes ?? 0);
-        const upper = new Date(now.getTime() - delay * 60 * 1000).toISOString();
-        const lower = new Date(now.getTime() - (delay + 30) * 60 * 1000).toISOString();
+        // Users whose only paid order was placed in last 24h
+        const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
         const { data: recent } = await admin
           .from("orders")
-          .select("user_id, id, created_at")
-          .gte("created_at", lower)
-          .lte("created_at", upper)
+          .select("user_id, created_at")
+          .gte("created_at", since)
           .not("user_id", "is", null);
-        // Keep users whose total order count is exactly 1
         const candidates = Array.from(new Set((recent ?? []).map((o: any) => o.user_id))) as string[];
+        // Keep only those whose order count is exactly 1
         const kept: string[] = [];
         for (const uid of candidates) {
           const { count } = await admin
@@ -120,77 +116,24 @@ Deno.serve(async (req) => {
         }
         eligibleUserIds = kept;
         runKey = `first-order`;
-      } else if (kind === "after_order") {
-        const delay = Number(cfg.delay_minutes ?? 60);
-        const onlyFirst = Boolean(cfg.only_first);
-        const upper = new Date(now.getTime() - delay * 60 * 1000).toISOString();
-        const lower = new Date(now.getTime() - (delay + 30) * 60 * 1000).toISOString();
-        const { data: recent } = await admin
-          .from("orders")
-          .select("id, user_id, created_at, status")
-          .gte("created_at", lower)
-          .lte("created_at", upper)
-          .not("user_id", "is", null);
-        const list = (recent ?? []).filter((o: any) => o.status !== "cancelado");
-        // Use order id as run_key so each order triggers once
-        payloadPerUser = new Map();
-        for (const o of list) {
-          if (onlyFirst) {
-            const { count } = await admin
-              .from("orders")
-              .select("id", { count: "exact", head: true })
-              .eq("user_id", o.user_id)
-              .lte("created_at", o.created_at);
-            if ((count ?? 0) !== 1) continue;
-          }
-          payloadPerUser.set(o.user_id, { runKey: `o-${o.id}` });
-        }
-        eligibleUserIds = Array.from(payloadPerUser.keys());
-      } else if (kind === "abandoned_cart") {
-        const delay = Number(cfg.delay_minutes ?? 15);
-        const upper = new Date(now.getTime() - delay * 60 * 1000).toISOString();
-        const lower = new Date(now.getTime() - (delay + 30) * 60 * 1000).toISOString();
-        const { data: carts } = await admin
-          .from("abandoned_carts")
-          .select("id, user_id, updated_at, recovered_at")
-          .gte("updated_at", lower)
-          .lte("updated_at", upper)
-          .is("recovered_at", null)
-          .not("user_id", "is", null);
-        payloadPerUser = new Map();
-        for (const c of carts ?? []) payloadPerUser.set((c as any).user_id, { runKey: `c-${(c as any).id}` });
-        eligibleUserIds = Array.from(payloadPerUser.keys());
-      } else {
-        runReport.push({ id: a.id, kind, skipped: "unknown-kind" });
-        continue;
-      }
-
-      // Apply combined filters
-      if (eligibleUserIds.length && Object.keys(filters).length) {
-        eligibleUserIds = await applyFilters(admin, eligibleUserIds, filters, now);
       }
 
       if (eligibleUserIds.length === 0) {
-        runReport.push({ id: a.id, kind, eligible: 0 });
+        runReport.push({ kind, eligible: 0 });
         continue;
       }
 
-      // Dedupe against automation_runs
-      const keysToCheck = payloadPerUser
-        ? Array.from(new Set(Array.from(payloadPerUser.values()).map((v) => v.runKey)))
-        : [runKey];
+      // Filter out users already notified for this run_key
       const { data: alreadyRuns } = await admin
         .from("automation_runs")
-        .select("user_id, run_key")
+        .select("user_id")
         .eq("automation_id", (a as any).id)
-        .in("run_key", keysToCheck)
+        .eq("run_key", runKey)
         .in("user_id", eligibleUserIds);
-      const alreadySet = new Set((alreadyRuns ?? []).map((r: any) => `${r.user_id}::${r.run_key}`));
-
-      const perUserRunKey = (uid: string) => (payloadPerUser?.get(uid)?.runKey ?? runKey);
-      const toNotify = eligibleUserIds.filter((uid) => !alreadySet.has(`${uid}::${perUserRunKey(uid)}`));
+      const alreadySet = new Set((alreadyRuns ?? []).map((r: any) => r.user_id));
+      const toNotify = eligibleUserIds.filter((id) => !alreadySet.has(id));
       if (toNotify.length === 0) {
-        runReport.push({ id: a.id, kind, eligible: eligibleUserIds.length, skipped: "all-notified" });
+        runReport.push({ kind, eligible: eligibleUserIds.length, skipped: "all-notified" });
         continue;
       }
 
@@ -204,22 +147,26 @@ Deno.serve(async (req) => {
           image: (a as any).image,
           audience: `auto:${kind}`,
           status: "sent",
-          sent_at: now.toISOString(),
+          sent_at: new Date().toISOString(),
         } as any)
         .select("id")
         .single();
 
       if (camp?.id) {
+        // Record runs BEFORE sending (idempotency)
         await admin.from("automation_runs").insert(
           toNotify.map((uid) => ({
             automation_id: (a as any).id,
             user_id: uid,
-            run_key: perUserRunKey(uid),
+            run_key: runKey,
           })),
         );
         await callSendPush({ campaignId: camp.id, userIds: toNotify });
-        await admin.from("push_automations").update({ last_run_at: now.toISOString() }).eq("id", (a as any).id);
-        runReport.push({ id: a.id, kind, notified: toNotify.length });
+        await admin
+          .from("push_automations")
+          .update({ last_run_at: new Date().toISOString() })
+          .eq("id", (a as any).id);
+        runReport.push({ kind, notified: toNotify.length });
       }
     }
 
@@ -231,52 +178,13 @@ Deno.serve(async (req) => {
   }
 });
 
-async function applyFilters(
-  admin: any,
-  userIds: string[],
-  filters: Record<string, any>,
-  now: Date,
-): Promise<string[]> {
-  if (!userIds.length) return userIds;
-  const { data: orders } = await admin
-    .from("orders")
-    .select("user_id, total, created_at, status")
-    .in("user_id", userIds);
-  const stats = new Map<string, { count: number; lastAt: string | null; total: number }>();
-  for (const uid of userIds) stats.set(uid, { count: 0, lastAt: null, total: 0 });
-  for (const o of (orders ?? []) as any[]) {
-    if (o.status === "cancelado") continue;
-    const s = stats.get(o.user_id)!;
-    s.count += 1;
-    s.total += Number(o.total ?? 0);
-    if (!s.lastAt || o.created_at > s.lastAt) s.lastAt = o.created_at;
-  }
-  const minO = Number(filters.min_orders ?? -1);
-  const maxO = filters.max_orders != null ? Number(filters.max_orders) : Infinity;
-  const withinD = filters.ordered_within_days != null ? Number(filters.ordered_within_days) : null;
-  const notWithinD = filters.not_ordered_within_days != null ? Number(filters.not_ordered_within_days) : null;
-  const minSpent = Number(filters.min_spent_total ?? 0);
-  return userIds.filter((uid) => {
-    const s = stats.get(uid)!;
-    if (s.count < minO) return false;
-    if (s.count > maxO) return false;
-    if (s.total < minSpent) return false;
-    if (withinD != null) {
-      const cutoff = new Date(now.getTime() - withinD * 24 * 3600 * 1000).toISOString();
-      if (!s.lastAt || s.lastAt < cutoff) return false;
-    }
-    if (notWithinD != null) {
-      const cutoff = new Date(now.getTime() - notWithinD * 24 * 3600 * 1000).toISOString();
-      if (s.lastAt && s.lastAt >= cutoff) return false;
-    }
-    return true;
-  });
-}
-
 async function callSendPush(body: { campaignId: string; userIds?: string[] }) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
     method: "POST",
-    headers: { "content-type": "application/json", Authorization: `Bearer ${NOTIFY_TOKEN}` },
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${NOTIFY_TOKEN}`,
+    },
     body: JSON.stringify(body),
   });
   if (!res.ok) console.error("send-push call failed", res.status, await res.text().catch(() => ""));
