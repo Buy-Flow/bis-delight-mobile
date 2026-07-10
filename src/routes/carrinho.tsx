@@ -92,7 +92,7 @@ function CartPage() {
       </div>
 
       {/* Body */}
-      <div className="mx-auto max-w-2xl px-4 pb-40 pt-4">
+      <div className="mx-auto max-w-2xl px-4 pt-4">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
             <div className="grid h-16 w-16 place-items-center rounded-full bg-white/5">
