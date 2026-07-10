@@ -180,9 +180,8 @@ function AdminPage() {
         </div>
         <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
           {tabs.map((t) => (
-            <>
+            <React.Fragment key={t.id}>
               <button
-                key={t.id}
                 onClick={() => setTab(t.id)}
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
