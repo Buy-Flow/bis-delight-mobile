@@ -3,7 +3,7 @@ import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 import { Toaster, toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageCircle, Loader2, Send, Bot, User as UserIcon, PhoneCall, Search, PauseCircle, PlayCircle, QrCode, RefreshCw, Wifi, WifiOff, Copy } from "lucide-react";
+import { MessageCircle, Loader2, Send, Bot, User as UserIcon, PhoneCall, Search, PauseCircle, PlayCircle, QrCode, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
 import {
@@ -13,13 +13,12 @@ import {
   getEvolutionStatus,
   getEvolutionConnectionState,
   resetEvolutionInstance,
-  configureEvolutionWebhook,
 } from "@/lib/whatsapp.functions";
 
 export const Route = createFileRoute("/_authenticated/conversas")({
   head: () => ({
     meta: [
-      { title: "Conversas — CRM WhatsApp Quero Bis" },
+      { title: "Conversas — WhatsApp Quero Bis" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -484,15 +483,11 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
   const statusFn = useServerFn(getEvolutionStatus);
   const pollStateFn = useServerFn(getEvolutionConnectionState);
   const resetFn = useServerFn(resetEvolutionInstance);
-  const webhookFn = useServerFn(configureEvolutionWebhook);
   const [state, setState] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
   const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
   const [qrLoadedAt, setQrLoadedAt] = useState<number | null>(null);
-  const [webhookUrl] = useState(
-    typeof window !== "undefined" ? `${window.location.origin}/api/public/evolution` : "",
-  );
 
   const load = async () => {
     setLoading(true);
@@ -564,19 +559,6 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
     state?.state?.instance?.state === "open" || state?.state?.state === "open";
   const qrBase64: string | undefined =
     state?.state?.qrcode?.base64 ?? state?.state?.base64 ?? state?.state?.qr;
-
-  const saveWebhook = async () => {
-    try {
-      const res = await webhookFn({ data: { webhookUrl } });
-      if (res?.ok === false) {
-        toast.error(res?.message ?? "Não consegui configurar o webhook agora.");
-        return;
-      }
-      toast.success("Webhook configurado! A Evolution vai enviar as mensagens pro site.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro");
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={onClose}>
@@ -667,31 +649,6 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50">
-            Webhook (uma vez só)
-          </p>
-          <div className="mt-1 flex items-center gap-2">
-            <code className="flex-1 truncate rounded bg-black/40 px-2 py-1 text-[10px] text-neon-yellow">
-              {webhookUrl}
-            </code>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(webhookUrl);
-                toast.success("Copiado");
-              }}
-              className="rounded-full border border-white/10 bg-white/5 p-1.5 text-white/60 hover:text-white"
-            >
-              <Copy className="h-3 w-3" />
-            </button>
-          </div>
-          <button
-            onClick={saveWebhook}
-            className="mt-2 w-full rounded-full bg-neon-pink px-3 py-1.5 text-xs font-bold text-white hover:brightness-110"
-          >
-            Configurar webhook na Evolution
-          </button>
-        </div>
       </div>
     </div>
   );
