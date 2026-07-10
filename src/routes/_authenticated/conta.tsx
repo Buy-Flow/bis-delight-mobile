@@ -557,33 +557,31 @@ function ProfilePanel() {
         <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
       </Link>
 
-      <div className="pt-2 text-[11px] font-semibold uppercase tracking-wide text-white/50">
-        Dados pessoais
-      </div>
-
-      <Input label="Nome completo" value={fullName} onChange={setFullName} autoComplete="name" />
-      <Input label="Telefone (WhatsApp)" value={phone} onChange={setPhone} autoComplete="tel" type="tel" />
-      <Input label="Endereço padrão" value={address} onChange={setAddress} autoComplete="street-address" />
-      <Input label="Ponto de referência" value={reference} onChange={setReference} />
-      <div>
-        <label className="mb-1 block text-[12px] font-semibold text-white/80">
-          Data de aniversário <span className="text-white/40">(ganha 1 selo bônus no mês 🎂)</span>
-        </label>
-        <input
-          type="date"
-          value={birthday}
-          onChange={(e) => setBirthday(e.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none focus:border-neon-cyan"
-        />
-      </div>
-      <button
-        onClick={save}
-        disabled={saving}
-        className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-60"
-      >
-        {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-        Salvar perfil
-      </button>
+      <DadosPessoaisCard>
+        <Input label="Nome completo" value={fullName} onChange={setFullName} autoComplete="name" />
+        <Input label="Telefone (WhatsApp)" value={phone} onChange={setPhone} autoComplete="tel" type="tel" />
+        <Input label="Endereço padrão" value={address} onChange={setAddress} autoComplete="street-address" />
+        <Input label="Ponto de referência" value={reference} onChange={setReference} />
+        <div>
+          <label className="mb-1 block text-[12px] font-semibold text-white/80">
+            Data de aniversário <span className="text-white/40">(ganha 1 selo bônus no mês 🎂)</span>
+          </label>
+          <input
+            type="date"
+            value={birthday}
+            onChange={(e) => setBirthday(e.target.value)}
+            className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none focus:border-neon-cyan"
+          />
+        </div>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-60"
+        >
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+          Salvar perfil
+        </button>
+      </DadosPessoaisCard>
     </div>
   );
 }
@@ -613,6 +611,37 @@ function Input({
         className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-cyan"
       />
     </label>
+  );
+}
+
+function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="group flex w-full items-center gap-3 p-3 text-left transition hover:bg-white/[0.06]"
+        aria-expanded={open}
+      >
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30">
+          <UserIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold text-white">Dados pessoais</div>
+          <div className="text-[11px] text-white/60">Nome, contato, endereço e aniversário</div>
+        </div>
+        <ChevronRight
+          className={cn(
+            "h-4 w-4 text-white/40 transition",
+            open ? "rotate-90 text-white" : "group-hover:translate-x-0.5 group-hover:text-white",
+          )}
+        />
+      </button>
+      {open && (
+        <div className="space-y-3 border-t border-white/10 bg-black/10 p-3">{children}</div>
+      )}
+    </div>
   );
 }
 
