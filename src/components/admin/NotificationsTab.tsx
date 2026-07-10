@@ -112,6 +112,11 @@ export function NotificationsTab() {
       toast.error("Preencha título e mensagem.");
       return;
     }
+    const scheduledIso = scheduledAt ? new Date(scheduledAt).toISOString() : null;
+    if (scheduledIso && new Date(scheduledIso).getTime() < Date.now() - 60_000) {
+      toast.error("Escolha uma data/hora no futuro.");
+      return;
+    }
     setSending(true);
     try {
       const { data: user } = await supabase.auth.getUser();
@@ -127,33 +132,41 @@ export function NotificationsTab() {
           audience,
           expires_at: expiresAt,
           created_by: user.user?.id ?? null,
+          status: scheduledIso ? "scheduled" : "sent",
+          scheduled_for: scheduledIso,
         } as any)
         .select()
         .single();
       if (error || !campaign) throw error;
 
-      const { data: session } = await supabase.auth.getSession();
-      const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
-      const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-      const res = await fetch(`${projectUrl}/functions/v1/send-push`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          apikey: anon,
-          Authorization: `Bearer ${session.session?.access_token ?? anon}`,
-        },
-        body: JSON.stringify({ campaignId: campaign.id }),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result?.error || "Falha no envio");
-
-      toast.success(
-        `Enviado! ${result.sent} entregues${result.failed ? `, ${result.failed} falharam` : ""}.`,
-      );
+      if (scheduledIso) {
+        toast.success(
+          `Agendada para ${new Date(scheduledIso).toLocaleString("pt-BR")} — vai disparar sozinha.`,
+        );
+      } else {
+        const { data: session } = await supabase.auth.getSession();
+        const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
+        const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+        const res = await fetch(`${projectUrl}/functions/v1/send-push`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            apikey: anon,
+            Authorization: `Bearer ${session.session?.access_token ?? anon}`,
+          },
+          body: JSON.stringify({ campaignId: campaign.id }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result?.error || "Falha no envio");
+        toast.success(
+          `Enviado! ${result.sent} entregues${result.failed ? `, ${result.failed} falharam` : ""}.`,
+        );
+      }
       setTitle("");
       setBody("");
       setUrl("");
       setImage("");
+      setScheduledAt("");
       await refresh();
     } catch (e: any) {
       toast.error(e.message || "Erro ao enviar");
