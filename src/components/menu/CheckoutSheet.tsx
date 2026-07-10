@@ -39,6 +39,8 @@ function formatPhone(v: string) {
 
 export function CheckoutSheet() {
   const { isCheckoutOpen, closeCheckout, items, update, subtotal, clear } = useCart();
+  const { isCheckoutOpen, closeCheckout, items, update, subtotal, clear } = useCart();
+  useBackDismiss(isCheckoutOpen, closeCheckout);
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
