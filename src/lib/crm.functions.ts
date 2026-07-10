@@ -139,7 +139,7 @@ export const testCrmWebhook = createServerFn({ method: "POST" })
           order_id: "TEST-ORDER-001",
           items: [{ name: "Açaí 500ml", qty: 1, price: 24.9 }],
           total: 24.9,
-          new_status: "entregue",
+          status: "entregue",
           updated_at: now,
           note: "Disparo manual de teste — order_status.",
         });
