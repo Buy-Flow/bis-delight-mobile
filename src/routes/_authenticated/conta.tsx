@@ -111,31 +111,6 @@ function AccountPage() {
 }
 
 
-function TabBtn({
-  active,
-  onClick,
-  icon: Icon,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: typeof UserIcon;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex flex-col items-center gap-0.5 rounded-xl px-2 py-2 text-[10px] font-bold uppercase tracking-wide transition",
-        active ? "bg-neon-pink text-white glow-pink" : "text-white/60 hover:text-white",
-      )}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </button>
-  );
-}
-
 /* ============= FIDELIDADE ============= */
 
 function LoyaltyPanel() {
