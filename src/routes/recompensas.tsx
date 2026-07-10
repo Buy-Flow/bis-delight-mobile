@@ -145,7 +145,11 @@ function RecompensasPage() {
         <div className="absolute top-32 -left-24 h-72 w-72 rounded-full bg-neon-cyan/20 blur-[100px]" />
       </div>
 
+      {loading && userId ? (
+        <RecompensasSkeleton />
+      ) : (
       <div className="relative mx-auto max-w-2xl px-4 pt-5">
+
 
         {/* Hero card com nível atual */}
         <section className={cn("relative overflow-hidden rounded-[32px] border p-6 shadow-[0_30px_80px_-40px_rgba(255,52,153,0.6)]", "border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240]")}>
