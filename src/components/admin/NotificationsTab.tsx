@@ -232,6 +232,25 @@ export function NotificationsTab() {
               className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-neon-pink"
             />
             <span className="text-[10px] text-white/40">{body.length}/180</span>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                Personalizar:
+              </span>
+              {[
+                { tok: "{{primeiro_nome}}", label: "primeiro nome" },
+                { tok: "{{nome}}", label: "nome completo" },
+              ].map((v) => (
+                <button
+                  key={v.tok}
+                  type="button"
+                  onClick={() => setBody((b) => (b + " " + v.tok).trim())}
+                  className="rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-semibold text-neon-cyan hover:bg-neon-cyan/20"
+                  title={`Insere ${v.tok} — trocado pelo ${v.label} de cada cliente`}
+                >
+                  + {v.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
