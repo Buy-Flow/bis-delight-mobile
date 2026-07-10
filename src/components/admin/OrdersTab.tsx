@@ -147,11 +147,19 @@ export function OrdersTab() {
       alive = false;
     };
 
-    currentSubscription().then((sub) => {
-      if (!alive || sub) return;
+    (async () => {
+      const sub = await currentSubscription();
+      if (!alive) return;
+      if (!sub) {
+        setNotifyOn(false);
+        localStorage.setItem("orders-notify", "0");
+        return;
+      }
+      const res = await subscribeToPush({ forceNew: isStandaloneApp() });
+      if (!alive || res.ok) return;
       setNotifyOn(false);
       localStorage.setItem("orders-notify", "0");
-    });
+    })();
 
     return () => {
       alive = false;
