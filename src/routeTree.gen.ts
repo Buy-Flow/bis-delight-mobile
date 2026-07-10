@@ -23,6 +23,7 @@ import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicEvolutionRouteImport } from './routes/api/public/evolution'
 
 const RecompensasRoute = RecompensasRouteImport.update({
   id: '/recompensas',
@@ -94,6 +95,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicEvolutionRoute = ApiPublicEvolutionRouteImport.update({
+  id: '/api/public/evolution',
+  path: '/api/public/evolution',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/api/public/evolution': typeof ApiPublicEvolutionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/api/public/evolution': typeof ApiPublicEvolutionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/api/public/evolution': typeof ApiPublicEvolutionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/pedidos'
     | '/produto/$id'
+    | '/api/public/evolution'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/pedidos'
     | '/produto/$id'
+    | '/api/public/evolution'
   id:
     | '__root__'
     | '/'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/pedidos'
     | '/produto/$id'
+    | '/api/public/evolution'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -199,6 +211,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   RecompensasRoute: typeof RecompensasRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
+  ApiPublicEvolutionRoute: typeof ApiPublicEvolutionRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/evolution': {
+      id: '/api/public/evolution'
+      path: '/api/public/evolution'
+      fullPath: '/api/public/evolution'
+      preLoaderRoute: typeof ApiPublicEvolutionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -335,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   RecompensasRoute: RecompensasRoute,
   ProdutoIdRoute: ProdutoIdRoute,
+  ApiPublicEvolutionRoute: ApiPublicEvolutionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
