@@ -231,6 +231,8 @@ export function CheckoutSheet() {
       const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
       const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
       window.open(url, "_blank");
+      // Fire-and-forget: notify CRM of the new order. Never blocks the user flow.
+      void sendCrmEvent({ data: { event_type: "order_placed", order_id: order.id } }).catch(() => {});
       toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
       setTimeout(() => {
         clear();
