@@ -87,6 +87,31 @@ function RecompensasPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
+      {/* Cart-style sticky header */}
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#1a0b2e]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
+          <Link
+            to="/"
+            aria-label="Voltar ao cardápio"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/10 active:scale-95"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
+            <Award className="h-5 w-5 text-neon-yellow" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow shadow-[0_0_8px_theme(colors.neon-yellow)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neon-yellow/90">Programa</span>
+            </div>
+            <h1 className="text-[20px] font-black leading-tight text-white">
+              Bis <span className="bg-gradient-to-r from-neon-pink to-neon-yellow bg-clip-text text-transparent">Recompensa</span>
+            </h1>
+          </div>
+        </div>
+      </div>
+
       {/* ambient background blobs */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[520px] overflow-hidden">
         <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-neon-pink/25 blur-[120px]" />
@@ -94,7 +119,8 @@ function RecompensasPage() {
         <div className="absolute top-32 -left-24 h-72 w-72 rounded-full bg-neon-cyan/20 blur-[100px]" />
       </div>
 
-      <div className="relative mx-auto max-w-2xl px-4 pt-8">
+      <div className="relative mx-auto max-w-2xl px-4 pt-5">
+
         {/* Hero card */}
         <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240] p-6 shadow-[0_30px_80px_-40px_rgba(255,52,153,0.6)]">
           {/* decorative stars */}
