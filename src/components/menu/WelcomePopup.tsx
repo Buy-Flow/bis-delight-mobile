@@ -67,7 +67,7 @@ export function WelcomePopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[120] grid place-items-center bg-black/70 p-4 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-[120] grid place-items-center bg-black/65 p-5 backdrop-blur-sm animate-in fade-in"
       onClick={close}
       role="dialog"
       aria-modal="true"
@@ -75,7 +75,8 @@ export function WelcomePopup() {
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/15",
+          "relative w-full max-w-[min(88vw,21rem)] overflow-hidden rounded-3xl border border-white/15",
+          "max-h-[82dvh] overflow-y-auto overscroll-contain",
           "bg-gradient-to-b from-[oklch(0.22_0.14_305)] to-[oklch(0.14_0.10_305)]",
           "shadow-2xl animate-in zoom-in-95 duration-300"
         )}
@@ -89,12 +90,12 @@ export function WelcomePopup() {
         </button>
 
         {popup.imageUrl && (
-          <div className="relative aspect-square w-full overflow-hidden bg-black/30">
+          <div className="relative aspect-[4/3] max-h-[38dvh] w-full overflow-hidden bg-black/30">
             <img
               src={popup.imageUrl}
               alt={popup.title || "Novidade"}
               draggable={false}
-              className="absolute inset-0 h-full w-full object-cover select-none"
+              className="absolute inset-0 h-full w-full object-contain select-none"
               style={{
                 transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
                 transformOrigin: "center center",
@@ -103,9 +104,9 @@ export function WelcomePopup() {
           </div>
         )}
 
-        <div className="space-y-3 p-5 text-center">
+        <div className="space-y-3 p-4 text-center">
           {popup.title && (
-            <h3 className="font-display text-2xl font-black leading-tight text-white">
+            <h3 className="font-display text-xl font-black leading-tight text-white">
               {popup.title}
             </h3>
           )}
