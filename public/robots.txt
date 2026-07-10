@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /auth
 Disallow: /_authenticated
 
-Sitemap: https://bis-delight-mobile.lovable.app/sitemap.xml
+Sitemap: https://querobis.lovable.app/sitemap.xml

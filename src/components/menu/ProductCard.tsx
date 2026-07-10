@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { productImageSources } from "@/lib/image-optimize";
 import { FavoriteButton } from "./FavoriteButton";
 import { useIsAdmin } from "@/lib/menu-data";
 
@@ -76,18 +77,32 @@ export function ProductCard({
             "group-active:scale-[.98] group-active:duration-100",
           )}
         >
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)]"
-            style={{
-              transform: `translate3d(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%, 0) scale(${product.imageScale ?? 1.75})`,
-              transformOrigin: "center",
-            }}
-          />
+          {(() => {
+            const sources = productImageSources(product.image, { width: 400, quality: 78 });
+            const imgEl = (
+              <img
+                src={product.image}
+                alt={product.name}
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-[0_14px_18px_rgba(0,0,0,0.55)]"
+                style={{
+                  transform: `translate3d(${product.imagePosX ?? 0}%, ${product.imagePosY ?? 0}%, 0) scale(${product.imageScale ?? 1.75})`,
+                  transformOrigin: "center",
+                }}
+              />
+            );
+            return sources ? (
+              <picture>
+                <source type="image/avif" srcSet={sources.avif} />
+                <source type="image/webp" srcSet={sources.webp} />
+                {imgEl}
+              </picture>
+            ) : (
+              imgEl
+            );
+          })()}
         </div>
 
 

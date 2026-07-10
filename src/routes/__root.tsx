@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import caveatFontUrl from "@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart-context";
 import { ConfirmDialogHost } from "@/lib/confirm";
@@ -114,12 +115,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: caveatFontUrl,
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
         as: "style",
-        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&display=swap",
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&family=Caveat:wght@600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Barlow+Condensed:wght@900&family=Fredoka:wght@600;700&display=swap",
       },
       // LCP: preload hero images so they arrive before hydration
       {

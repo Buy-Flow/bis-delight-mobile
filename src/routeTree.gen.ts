@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RecompensasRouteImport } from './routes/recompensas'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as BaixarAppRouteImport } from './routes/baixar-app'
@@ -27,6 +28,11 @@ import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecompensasRoute = RecompensasRouteImport.update({
   id: '/recompensas',
   path: '/recompensas',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
   '/recompensas': typeof RecompensasRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
   '/recompensas': typeof RecompensasRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
   '/recompensas': typeof RecompensasRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/baixar-app'
     | '/carrinho'
     | '/recompensas'
+    | '/sitemap.xml'
     | '/admin'
     | '/carrinhos'
     | '/clientes'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/baixar-app'
     | '/carrinho'
     | '/recompensas'
+    | '/sitemap.xml'
     | '/admin'
     | '/carrinhos'
     | '/clientes'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/baixar-app'
     | '/carrinho'
     | '/recompensas'
+    | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
@@ -235,11 +247,19 @@ export interface RootRouteChildren {
   BaixarAppRoute: typeof BaixarAppRoute
   CarrinhoRoute: typeof CarrinhoRoute
   RecompensasRoute: typeof RecompensasRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/recompensas': {
       id: '/recompensas'
       path: '/recompensas'
@@ -398,6 +418,7 @@ const rootRouteChildren: RootRouteChildren = {
   BaixarAppRoute: BaixarAppRoute,
   CarrinhoRoute: CarrinhoRoute,
   RecompensasRoute: RecompensasRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ProdutoIdRoute: ProdutoIdRoute,
 }
 export const routeTree = rootRouteImport
