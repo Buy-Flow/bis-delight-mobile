@@ -23,6 +23,16 @@ const getCurrentOverlayId = () => {
     : null;
 };
 
+const clearCurrentOverlayMarker = () => {
+  if (getCurrentOverlayId() === null) return;
+  const state =
+    window.history.state && typeof window.history.state === "object"
+      ? { ...(window.history.state as Record<string, unknown>) }
+      : {};
+  delete state[OVERLAY_STATE_KEY];
+  window.history.replaceState(state, "", window.location.href);
+};
+
 const removeFromStack = (id: number) => {
   const index = overlayStack.lastIndexOf(id);
   if (index >= 0) overlayStack.splice(index, 1);
@@ -53,6 +63,7 @@ export function useBackDismiss(open: boolean, onClose: () => void) {
       if (overlayStack[overlayStack.length - 1] !== id) return;
 
       poppedByBack = true;
+      clearCurrentOverlayMarker();
       onCloseRef.current?.();
     };
     window.addEventListener("popstate", handlePop);
@@ -60,6 +71,7 @@ export function useBackDismiss(open: boolean, onClose: () => void) {
     return () => {
       window.removeEventListener("popstate", handlePop);
       removeFromStack(id);
+      if (!poppedByBack) clearCurrentOverlayMarker();
     };
   }, [open]);
 }
