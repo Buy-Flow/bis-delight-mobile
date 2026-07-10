@@ -423,61 +423,6 @@ export function useInvalidateMenu() {
   };
 }
 
-/** Seed DB with the initial static menu (idempotent via upsert). */
-export async function seedInitialMenu() {
-  const catRows = STATIC_CATEGORIES.filter((c) => c.id !== "all").map((c, i) => ({
-    id: c.id,
-    name: c.name,
-    emoji: c.emoji,
-    image_url: c.image,
-    sort_order: i,
-    active: true,
-  }));
-  const { error: catErr } = await supabase.from("categories").upsert(catRows, { onConflict: "id" });
-  if (catErr) throw catErr;
-
-  const prodRows = STATIC_PRODUCTS.map((p, i) => ({
-    id: p.id,
-    name: p.name,
-    category: p.category,
-    image_url: p.image,
-    description: p.description,
-    ingredients: p.ingredients,
-    base_price: p.basePrice,
-    sizes: p.sizes,
-    flavors: p.flavors ?? null,
-    extras: p.extras ?? null,
-    removable: p.removable ?? null,
-    badge: p.badge ?? null,
-    hero: !!p.hero,
-    sort_order: i,
-    active: true,
-  }));
-  const { error: prodErr } = await supabase.from("products").upsert(prodRows, { onConflict: "id" });
-  if (prodErr) throw prodErr;
-
-  const { error: sErr } = await supabase.from("site_settings").upsert(
-    {
-      id: 1,
-      name: STATIC_BRAND.name,
-      tagline: STATIC_BRAND.tagline,
-      city: STATIC_BRAND.city,
-      address: STATIC_BRAND.address,
-      hours: STATIC_BRAND.hours,
-      whatsapp: STATIC_BRAND.whatsapp,
-      whatsapp_display: STATIC_BRAND.whatsappDisplay,
-      maps_url: STATIC_BRAND.mapsUrl,
-      map_embed: STATIC_BRAND.mapEmbed,
-      delivery_fee: STATIC_BRAND.deliveryFee,
-      logo_url: STATIC_BRAND.logo,
-      texture_url: STATIC_BRAND.texture,
-    },
-    { onConflict: "id" },
-  );
-  if (sErr) throw sErr;
-
-  return { categories: catRows.length, products: prodRows.length };
-}
 
 export type ProductInput = {
   id: string;
