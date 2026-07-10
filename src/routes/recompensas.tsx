@@ -294,7 +294,7 @@ function RecompensasPage() {
           <ol className="grid gap-3 sm:grid-cols-2">
             {[
               { icon: ShoppingBag, title: "Faça pedidos", desc: "Compre logado na sua conta.", color: "from-neon-pink to-neon-pink/60" },
-              { icon: CreditCard, title: "Ganhe selos", desc: "1 selo a cada pedido pago.", color: "from-neon-yellow to-orange-400" },
+              { icon: CreditCard, title: "Ganhe selos", desc: "1 selo por pedido acima de R$ 20.", color: "from-neon-yellow to-orange-400" },
               { icon: Award, title: "Complete 10", desc: "Cupom de R$ 20 liberado.", color: "from-neon-cyan to-cyan-400" },
               { icon: Tag, title: "Use no checkout", desc: "Desconto direto no próximo pedido.", color: "from-fuchsia-400 to-neon-pink" },
             ].map((step, idx) => {
