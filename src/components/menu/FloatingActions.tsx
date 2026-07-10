@@ -1,9 +1,10 @@
 import { ShoppingBag } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 
 export function FloatingActions() {
-  const { count, openCart, subtotal } = useCart();
+  const { count, subtotal } = useCart();
 
   const wa = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent("Olá! Vim pelo cardápio digital 🍦")}`;
 
