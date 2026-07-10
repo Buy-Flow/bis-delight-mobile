@@ -36,15 +36,24 @@ export function WelcomePopup() {
   const { data } = useSiteSettings();
   const popup = data?.popup;
   const [open, setOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminRoute =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/pedidos") ||
+    pathname.startsWith("/clientes") ||
+    pathname.startsWith("/financeiro") ||
+    pathname.startsWith("/conta");
 
   useEffect(() => {
+    if (isAdminRoute) return;
     if (!popup?.active) return;
     if (!popup.title && !popup.body && !popup.imageUrl) return;
     if (!shouldShow(popup.frequency)) return;
     const t = setTimeout(() => setOpen(true), 400);
     return () => clearTimeout(t);
-  }, [popup?.active, popup?.title, popup?.body, popup?.imageUrl, popup?.frequency]);
+  }, [popup?.active, popup?.title, popup?.body, popup?.imageUrl, popup?.frequency, isAdminRoute]);
 
+  if (isAdminRoute) return null;
   if (!open || !popup) return null;
 
   const close = () => {
