@@ -83,6 +83,8 @@ function AuthPage() {
           setMode("signin");
           return;
         }
+        // Notify CRM of the new contact (fire-and-forget, runs after session is set).
+        void sendCrmEvent({ data: { event_type: "contact_created" } }).catch(() => {});
         toast.success("Bem-vindo à Quero Bis!");
         navigate({ to: next });
       } else {
