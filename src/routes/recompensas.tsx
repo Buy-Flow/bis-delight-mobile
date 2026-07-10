@@ -131,9 +131,9 @@ function RecompensasPage() {
           <div aria-hidden className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-neon-cyan/20 blur-3xl" />
 
           <div className="relative">
-            {/* Title row */}
+            {/* Trophy */}
             <div className="flex items-center gap-3">
-              <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
                 <div aria-hidden className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-yellow via-neon-pink to-neon-cyan blur-xl opacity-70" />
                 <img
                   src={rewardTrophy}
@@ -141,22 +141,17 @@ function RecompensasPage() {
                   width={128}
                   height={128}
                   loading="lazy"
-                  className="relative h-16 w-16 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
+                  className="relative h-14 w-14 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
                 />
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1a0b2e] text-[10px] font-black text-neon-yellow ring-2 ring-neon-yellow/60">
-                  <Sparkles className="h-3 w-3" />
-                </span>
               </div>
-
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
-                  Programa de fidelidade
+                  Sua trilha de sabor
                 </div>
-                <h1 className="text-2xl font-black leading-tight tracking-tight">
-                  Bis <span className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-cyan bg-clip-text text-transparent">Recompensa</span>
-                </h1>
+                <div className="text-sm text-white/70">A cada 10 pedidos, R$ 20 no próximo.</div>
               </div>
             </div>
+
 
             {/* Big counter */}
             <div className="mt-6 flex items-end justify-between gap-4">
