@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
@@ -90,6 +91,7 @@ export function ProductModal({
   editItem?: CartItem | null;
 }) {
   const { add, update } = useCart();
+  useBackDismiss(!!product, onClose);
   const { data: settings } = useSiteSettings();
   const { data: categories = [] } = useCategories();
 
