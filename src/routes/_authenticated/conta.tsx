@@ -14,6 +14,8 @@ import {
   LogOut,
   Sparkles,
   Bell,
+  Shield,
+
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +23,8 @@ import { useAuth, signOut } from "@/lib/use-auth";
 import { useCart, brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
+import { useIsAdmin } from "@/lib/menu-data";
+
 
 const searchSchema = z.object({
   tab: z.enum(["perfil", "pedidos", "favoritos", "fidelidade", "notificacoes"]).optional(),
@@ -436,6 +440,8 @@ function FavoritesPanel() {
 
 function ProfilePanel() {
   const { user } = useAuth();
+  const isAdmin = useIsAdmin();
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -483,6 +489,22 @@ function ProfilePanel() {
 
   return (
     <div className="space-y-3">
+      {isAdmin && (
+        <Link
+          to="/admin"
+          className="group flex items-center gap-3 rounded-2xl border border-neon-cyan/40 bg-neon-cyan/10 p-3 transition hover:border-neon-cyan/70 hover:bg-neon-cyan/15"
+        >
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-neon-cyan/20 text-neon-cyan ring-1 ring-neon-cyan/40">
+            <Shield className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold text-white">Painel administrador</div>
+            <div className="text-[11px] text-white/60">Pedidos, cardápio, clientes e mais</div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
+        </Link>
+      )}
+
       <Link
         to="/conta"
         search={{ tab: "pedidos" } as never}
