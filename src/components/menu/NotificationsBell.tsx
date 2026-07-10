@@ -133,113 +133,83 @@ export function NotificationsBell() {
       <PopoverContent
         align="end"
         sideOffset={10}
-        className="z-[70] w-[min(92vw,360px)] overflow-hidden rounded-3xl border border-white/10 bg-[oklch(0.14_0.08_305)]/95 p-0 text-white shadow-2xl backdrop-blur-xl"
+        className="z-[70] w-[min(92vw,340px)] overflow-hidden rounded-2xl border border-white/10 bg-[oklch(0.14_0.08_305)]/95 p-0 text-white shadow-xl backdrop-blur-xl"
       >
         {/* Header */}
-        <div
-          className="relative px-4 pt-4 pb-3"
-          style={{
-            background:
-              "radial-gradient(120% 100% at 20% 0%, oklch(0.42 0.22 340) 0%, oklch(0.22 0.15 310) 55%, transparent 100%)",
-          }}
-        >
-          <div aria-hidden className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-neon-cyan/25 blur-3xl" />
-          <div className="relative flex items-center gap-3">
-            <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink via-neon-pink to-neon-yellow text-white shadow-[0_0_20px_rgba(236,72,153,0.55)]">
-              {items.length > 0 ? (
-                <BellRing className="h-5 w-5 animate-[wiggle_1.2s_ease-in-out_infinite]" />
-              ) : (
-                <Bell className="h-5 w-5" />
-              )}
+        <div className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2.5">
+          <div className="min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+              Notificações
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-neon-yellow/90">
-                Central de novidades
-              </div>
-              <div className="truncate font-display text-base font-black leading-tight text-white">
-                {items.length > 0 ? `${items.length} nova${items.length === 1 ? "" : "s"}` : "Tudo em dia"}
-              </div>
+            <div className="truncate text-sm font-semibold text-white">
+              {items.length > 0 ? `${items.length} nova${items.length === 1 ? "" : "s"}` : "Tudo em dia"}
             </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {items.length > 0 && (
+              <button
+                onClick={markAllRead}
+                aria-label="Marcar tudo como lido"
+                title="Marcar tudo como lido"
+                className="grid h-8 w-8 place-items-center rounded-full text-white/60 transition hover:bg-white/5 hover:text-white"
+              >
+                <CheckCheck className="h-4 w-4" />
+              </button>
+            )}
             <button
               onClick={() => setOpen(false)}
               aria-label="Fechar"
-              className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 transition hover:bg-white/15"
+              className="grid h-8 w-8 place-items-center rounded-full text-white/60 transition hover:bg-white/5 hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
-          {items.length > 0 && (
-            <button
-              onClick={markAllRead}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-white ring-1 ring-white/15 transition hover:bg-white/15"
-            >
-              <CheckCheck className="h-3.5 w-3.5" /> Marcar tudo como lido
-            </button>
-          )}
         </div>
 
+        <div className="mx-4 h-px bg-white/10" />
+
         {/* Body */}
-        <div className="max-h-[55vh] overflow-y-auto px-3 pb-3">
+        <div className="max-h-[55vh] overflow-y-auto px-2 py-2">
           {loading ? (
             <div className="grid place-items-center py-10 text-white/40 text-xs">Carregando…</div>
           ) : items.length === 0 ? (
-            <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/15 bg-white/[0.04] p-5 text-center">
-              <div className="mx-auto mb-2 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/30 to-neon-cyan/20 text-neon-pink shadow-[0_0_18px_rgba(236,72,153,0.3)]">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div className="font-display text-sm font-black text-white">Nenhuma nova</div>
-              <div className="mx-auto mt-1 max-w-xs text-[11px] text-white/60">
-                Volte mais tarde ou veja o histórico completo.
+            <div className="px-4 py-8 text-center">
+              <div className="text-sm text-white/70">Nenhuma nova</div>
+              <div className="mt-1 text-[11px] text-white/40">
+                Volte mais tarde ou veja o histórico.
               </div>
             </div>
           ) : (
-            <div className="space-y-2 pt-2">
+            <div className="space-y-0.5">
               {items.map((item) => {
                 const c = item.campaign;
-                const clickable = !!c.url;
                 return (
                   <button
                     key={c.id}
                     type="button"
                     onClick={() => openItem(item)}
-                    className={cn(
-                      "group relative flex w-full items-start gap-3 overflow-hidden rounded-2xl border p-2.5 text-left transition active:scale-[.99]",
-                      "border-neon-pink/40 bg-gradient-to-br from-neon-pink/15 via-purple-900/10 to-neon-cyan/10",
-                      clickable && "hover:border-neon-cyan/40",
-                    )}
+                    className="group relative flex w-full items-start gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-white/5"
                   >
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-neon-pink to-neon-yellow"
-                    />
                     {c.image ? (
-                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-white/10">
                         <img src={c.image} alt="" className="h-full w-full object-cover" loading="lazy" />
                       </div>
                     ) : (
-                      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-neon-pink/25 to-neon-cyan/15 text-neon-pink ring-1 ring-white/10">
-                        <Bell className="h-5 w-5" />
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/5 text-white/60 ring-1 ring-white/10">
+                        <Bell className="h-4 w-4" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="relative flex h-2 w-2 shrink-0">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon-pink opacity-70" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-neon-pink shadow-[0_0_8px_theme(colors.pink.400)]" />
-                        </span>
-                        <div className="min-w-0 flex-1 truncate font-display text-xs font-black text-white">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-neon-pink" />
+                        <div className="min-w-0 flex-1 truncate text-[13px] font-semibold text-white">
                           {c.title}
                         </div>
-                        <div className="shrink-0 text-[9px] uppercase tracking-widest text-white/40">
+                        <div className="shrink-0 text-[10px] text-white/40">
                           {timeAgo(item.latest)}
                         </div>
                       </div>
-                      <div className="mt-0.5 line-clamp-2 text-[11px] text-white/70">{c.body}</div>
-                      {clickable && (
-                        <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-neon-cyan/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-neon-cyan ring-1 ring-neon-cyan/30">
-                          Abrir <ExternalLink className="h-2.5 w-2.5" />
-                        </div>
-                      )}
+                      <div className="mt-0.5 line-clamp-2 pl-3.5 text-[11px] text-white/60">{c.body}</div>
                     </div>
                   </button>
                 );
@@ -248,18 +218,18 @@ export function NotificationsBell() {
           )}
         </div>
 
+        <div className="mx-4 h-px bg-white/10" />
+
         {/* Footer */}
-        <div className="border-t border-white/10 bg-white/[0.03] p-2.5">
-          <button
-            onClick={() => {
-              setOpen(false);
-              navigate({ to: "/conta", search: { tab: "notificacoes" } as never });
-            }}
-            className="flex w-full items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-neon-pink to-neon-yellow px-4 py-2 text-xs font-black uppercase tracking-wider text-[oklch(0.18_0.11_305)] shadow-[0_0_18px_rgba(236,72,153,0.45)] transition active:scale-[.98]"
-          >
-            Ver histórico completo <ArrowRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setOpen(false);
+            navigate({ to: "/conta", search: { tab: "notificacoes" } as never });
+          }}
+          className="flex w-full items-center justify-center gap-1.5 px-4 py-3 text-[12px] font-medium text-white/70 transition hover:bg-white/5 hover:text-white"
+        >
+          Ver histórico <ArrowRight className="h-3.5 w-3.5" />
+        </button>
       </PopoverContent>
     </Popover>
   );
