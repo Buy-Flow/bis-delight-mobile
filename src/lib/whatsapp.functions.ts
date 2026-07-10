@@ -143,6 +143,45 @@ export const getEvolutionStatus = createServerFn({ method: "GET" })
     }
   });
 
+export const getEvolutionConnectionState = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { connectionState } = await import("@/lib/evolution.server");
+    const state = await connectionState();
+    return { ok: true, state };
+  });
+
+export const resetEvolutionInstance = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { connectInstance, createInstance, deleteInstance, logoutInstance } = await import(
+      "@/lib/evolution.server"
+    );
+    try {
+      await logoutInstance();
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      await deleteInstance();
+    } catch {
+      /* may not exist */
+    }
+    await createInstance();
+    const qr = await connectInstance();
+    return { ok: true, state: qr, reset: true };
+  });
+
 const ConfigureWebhookInput = z.object({
   webhookUrl: z.string().url(),
 });
