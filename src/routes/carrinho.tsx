@@ -126,7 +126,7 @@ function CartPage() {
                 className="relative flex cursor-pointer gap-3 rounded-3xl border border-white/10 bg-white/[0.04] p-3 transition active:scale-[0.99] hover:border-white/20"
               >
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-[oklch(0.24_0.14_305)]">
-                  <img src={it.image} alt={it.name} className="h-full w-full object-cover" loading="lazy" />
+                  <img src={it.image} alt={it.name} className="absolute inset-0 h-full w-full object-contain p-1" loading="lazy" />
                 </div>
 
                 <div className="min-w-0 flex-1 pr-8">
