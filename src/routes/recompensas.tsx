@@ -16,7 +16,7 @@ export const Route = createFileRoute("/recompensas")({
       { title: "Bis Recompensa — Quero Bis" },
       { name: "description", content: "Acompanhe seus selos e resgate cupons de R$ 20 no Programa Bis Recompensa." },
       { property: "og:title", content: "Bis Recompensa — Quero Bis" },
-      { property: "og:description", content: "A cada 10 pedidos, você ganha R$ 20 de desconto." },
+      { property: "og:description", content: "A cada 10 pedidos acima de R$ 20, você ganha R$ 20 de desconto." },
     ],
   }),
   component: RecompensasPage,
