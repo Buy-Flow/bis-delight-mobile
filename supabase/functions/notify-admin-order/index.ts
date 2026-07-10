@@ -55,9 +55,11 @@ Deno.serve(async (req) => {
       currency: "BRL",
     });
     const payload = JSON.stringify({
-      title: "🛎️ Novo pedido recebido!",
-      body: `${order.customer_name ?? "Cliente"} · ${total}`,
+      title: "🛎️ Novo pedido · Quero Bis",
+      body: `${order.customer_name ?? "Cliente"} acabou de pedir • ${total}`,
       url: "/pedidos",
+      kind: "order",
+      tag: `qb-order-${order.id}`,
     });
 
     let sent = 0;
