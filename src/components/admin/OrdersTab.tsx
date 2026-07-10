@@ -435,7 +435,7 @@ export function OrdersTab() {
     setOrders((prev) => (prev ? prev.map((o) => (o.id === order.id ? { ...o, status } : o)) : prev));
     // Notify CRM about the status change (fire-and-forget).
     const eventType = status === "entregue" ? "order_completed" : "order_status_changed";
-    void sendCrmEvent({ data: { event_type: eventType, order_id: order.id, extra: { new_status: status } } }).catch(() => {});
+    void sendCrmEvent({ data: { event_type: eventType, order_id: order.id, extra: { status } } }).catch(() => {});
   };
 
   if (orders === null) {
