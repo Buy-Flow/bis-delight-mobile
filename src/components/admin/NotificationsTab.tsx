@@ -380,7 +380,9 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
   const [durationMin, setDurationMin] = useState<number | null>(60 * 24);
   const [scheduledAt, setScheduledAt] = useState<string>("");
   const [repeatCount, setRepeatCount] = useState<number>(1);
+  const [repeatInfinite, setRepeatInfinite] = useState<boolean>(false);
   const [repeatIntervalMin, setRepeatIntervalMin] = useState<number>(60 * 24);
+  const [customHours, setCustomHours] = useState<string>("");
   const [sending, setSending] = useState(false);
 
 
