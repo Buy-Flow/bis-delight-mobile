@@ -27,6 +27,7 @@ import { useIsAdmin } from "@/lib/menu-data";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { FinanceDashboardSkeleton } from "@/components/ui/skeletons";
+import { FinanceComparative } from "@/components/admin/FinanceComparative";
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
