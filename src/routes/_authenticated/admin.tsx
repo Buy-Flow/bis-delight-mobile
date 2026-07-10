@@ -182,30 +182,19 @@ function AdminPage() {
         </div>
         <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
           {tabs.map((t) => (
-            <React.Fragment key={t.id}>
-              <button
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                  tab === t.id
-                    ? "bg-neon-pink text-white glow-pink"
-                    : "border border-white/10 text-white/70 hover:text-white",
-                )}
-              >
-                <t.icon className="h-3.5 w-3.5" />
-                {t.label}
-              </button>
-              {t.id === "categories" && (
-                <Link
-                  key="notif-link"
-                  to="/notificacoes"
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/70 transition hover:text-white"
-                >
-                  <BellRing className="h-3.5 w-3.5" />
-                  Notificações
-                </Link>
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                tab === t.id
+                  ? "bg-neon-pink text-white glow-pink"
+                  : "border border-white/10 text-white/70 hover:text-white",
               )}
-            </React.Fragment>
+            >
+              <t.icon className="h-3.5 w-3.5" />
+              {t.label}
+            </button>
           ))}
         </nav>
       </header>
@@ -217,6 +206,7 @@ function AdminPage() {
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
         {tab === "news" && <NewsTab />}
+        {tab === "notifications" && <NotificationsTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
