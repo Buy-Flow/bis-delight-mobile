@@ -31,8 +31,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body,
-    icon: "/pwa-192.png",
-    badge: "/badge-72.png",
+    icon: "/__l5e/assets-v1/175a0ea7-ba17-4aba-bb5b-d339f2ac8fd5/notif-mascot.png",
+    badge: "/__l5e/assets-v1/175a0ea7-ba17-4aba-bb5b-d339f2ac8fd5/notif-mascot.png",
     image: payload.image || undefined,
     tag: payload.tag || (isOrder ? "qb-order" : "qb-campaign"),
     renotify: true,
