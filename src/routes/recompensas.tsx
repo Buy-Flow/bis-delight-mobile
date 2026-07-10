@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Gift, Check, Ticket, Trophy, Star } from "lucide-react";
+import { Sparkles, Gift, Check, Ticket, Star, ShoppingBag, CreditCard, Award, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import rewardTrophy from "@/assets/reward-trophy.png";
+
 
 
 const GOAL = 10;
