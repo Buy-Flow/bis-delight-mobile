@@ -5618,60 +5618,65 @@ function PopupSection({
         </button>
       </div>
 
-      {/* Preview — espelha o pop-up real (sem card, X flutuando, texto sobre a imagem) */}
-      <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
-            Preview (como o cliente vê)
-          </div>
-          <div className="text-[10px] text-white/30">Fundo escurecido em cima da página</div>
-        </div>
-        <div className="relative mx-auto aspect-[9/16] w-full max-w-[240px] overflow-hidden rounded-3xl border border-white/15 bg-[url('https://lcntjixsisawwblcgwry.supabase.co/storage/v1/object/public/product-images/hero-bg-preview.png')] bg-cover bg-center">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          {/* X flutuante */}
-          <div className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white shadow">
-            <X className="h-3.5 w-3.5" />
-          </div>
-          {/* Conteúdo centralizado */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
-            {popup.imageUrl ? (
-              <img
-                src={popup.imageUrl}
-                alt=""
-                className="max-h-[55%] max-w-full select-none object-contain"
-                style={{
-                  transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
-                  transformOrigin: "center center",
-                }}
-              />
-            ) : (
-              <div className="grid aspect-square w-24 place-items-center rounded-2xl border border-dashed border-white/20 text-[10px] text-white/40">
-                sem imagem
+      {/* Preview interativo — o próprio "como o cliente vê" é a área de arraste/zoom da imagem */}
+      {popup.imageUrl ? (
+        <ImageAdjustPanel
+          values={{ posX: popup.imagePosX, posY: popup.imagePosY, scale: popup.imageScale }}
+          onChange={(p) => update({
+            ...(p.posX !== undefined ? { imagePosX: p.posX } : {}),
+            ...(p.posY !== undefined ? { imagePosY: p.posY } : {}),
+            ...(p.scale !== undefined ? { imageScale: p.scale } : {}),
+          })}
+          defaults={{ posX: 0, posY: 0, scale: 1 }}
+          previewMaxWidth={260}
+          previewLabel="Preview (como o cliente vê) — arraste a imagem pra posicionar"
+          previewHint="Arraste dentro do celular pra mover · use o zoom abaixo"
+          renderPreview={(v) => (
+            <div className="relative mx-auto aspect-[9/16] w-full overflow-hidden rounded-3xl border border-white/15 bg-[url('https://lcntjixsisawwblcgwry.supabase.co/storage/v1/object/public/product-images/hero-bg-preview.png')] bg-cover bg-center">
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+              <div className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white shadow">
+                <X className="h-3.5 w-3.5" />
               </div>
-            )}
-            {(popup.title || popup.body) && (
-              <div className="w-full space-y-1 text-center">
-                {popup.title && (
-                  <div className="font-display text-sm font-black leading-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-                    {popup.title}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+                <img
+                  src={popup.imageUrl}
+                  alt=""
+                  draggable={false}
+                  className="max-h-[55%] max-w-full select-none object-contain"
+                  style={{
+                    transform: `translate(${v.posX}%, ${v.posY}%) scale(${v.scale})`,
+                    transformOrigin: "center center",
+                  }}
+                />
+                {(popup.title || popup.body) && (
+                  <div className="w-full space-y-1 text-center">
+                    {popup.title && (
+                      <div className="font-display text-sm font-black leading-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                        {popup.title}
+                      </div>
+                    )}
+                    {popup.body && (
+                      <div className="line-clamp-2 whitespace-pre-line text-[10px] text-white/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                        {popup.body}
+                      </div>
+                    )}
                   </div>
                 )}
-                {popup.body && (
-                  <div className="line-clamp-2 whitespace-pre-line text-[10px] text-white/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                    {popup.body}
+                {popup.cta && linkRaw && (
+                  <div className="mt-1 rounded-2xl bg-neon-yellow px-4 py-1.5 text-[10px] font-black text-[oklch(0.15_0.10_305)] shadow-lg">
+                    {popup.cta}
                   </div>
                 )}
               </div>
-            )}
-            {popup.cta && linkRaw && (
-              <div className="mt-1 rounded-2xl bg-neon-yellow px-4 py-1.5 text-[10px] font-black text-[oklch(0.15_0.10_305)] shadow-lg">
-                {popup.cta}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
+        />
+      ) : (
+        <div className="rounded-2xl border border-dashed border-white/15 bg-black/30 p-6 text-center text-xs text-white/50">
+          Envie uma imagem abaixo pra ver o preview e ajustar a posição.
         </div>
-      </div>
+      )}
+
 
 
       {/* Texto */}
@@ -5841,19 +5846,9 @@ function PopupSection({
       )}
 
 
-      {/* Imagem + ajuste */}
+      {/* Imagem (só upload/URL — o ajuste acontece direto no preview acima) */}
       <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-extrabold text-white">Imagem do pop-up</div>
-          <button
-            type="button"
-            onClick={() => update({ imagePosX: 0, imagePosY: 0, imageScale: 1 })}
-            className="text-[11px] font-semibold text-white/60 hover:text-white"
-          >
-            Resetar ajuste
-          </button>
-        </div>
-
+        <div className="text-sm font-extrabold text-white">Imagem do pop-up</div>
         <div className="flex items-center gap-3">
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40">
             {popup.imageUrl ? (
@@ -5902,34 +5897,8 @@ function PopupSection({
             )}
           </div>
         </div>
-
-        {popup.imageUrl && (
-          <ImageAdjustPanel
-            values={{ posX: popup.imagePosX, posY: popup.imagePosY, scale: popup.imageScale }}
-            onChange={(p) => update({
-              ...(p.posX !== undefined ? { imagePosX: p.posX } : {}),
-              ...(p.posY !== undefined ? { imagePosY: p.posY } : {}),
-              ...(p.scale !== undefined ? { imageScale: p.scale } : {}),
-            })}
-            defaults={{ posX: 0, posY: 0, scale: 1 }}
-            previewMaxWidth={260}
-            renderPreview={(v) => (
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/15 bg-black/30">
-                <img
-                  src={popup.imageUrl}
-                  alt=""
-                  draggable={false}
-                  className="absolute inset-0 h-full w-full object-contain select-none"
-                  style={{
-                    transform: `translate(${v.posX}%, ${v.posY}%) scale(${v.scale})`,
-                    transformOrigin: "center center",
-                  }}
-                />
-              </div>
-            )}
-          />
-        )}
       </div>
+
 
       {/* Frequência */}
       <div>
