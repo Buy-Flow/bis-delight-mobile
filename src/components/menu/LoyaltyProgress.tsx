@@ -76,9 +76,11 @@ export function LoyaltyProgress() {
 
   return (
     <section className="relative z-30 mt-3 px-4">
-      <div
+      <Link
+        to="/recompensas"
+        aria-label="Abrir Programa Bis Recompensa"
         className={cn(
-          "relative overflow-hidden rounded-[28px] border p-4 shadow-lg",
+          "relative block overflow-hidden rounded-[28px] border p-4 shadow-lg transition-transform active:scale-[0.98] hover:brightness-110",
           complete
             ? "border-neon-yellow/50 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#3a1f5c]"
             : "border-white/10",
