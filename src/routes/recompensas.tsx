@@ -16,7 +16,7 @@ export const Route = createFileRoute("/recompensas")({
       { title: "Bis Recompensa — Quero Bis" },
       { name: "description", content: "Acompanhe seus selos e resgate cupons de R$ 20 no Programa Bis Recompensa." },
       { property: "og:title", content: "Bis Recompensa — Quero Bis" },
-      { property: "og:description", content: "A cada 10 pedidos acima de R$ 20, você ganha R$ 20 de desconto." },
+      { property: "og:description", content: "A cada 10 pedidos, você ganha R$ 20 de desconto." },
     ],
   }),
   component: RecompensasPage,
@@ -143,7 +143,7 @@ function RecompensasPage() {
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
                   Sua trilha de sabor
                 </div>
-                <div className="text-sm text-white/70">A cada 10 pedidos acima de R$ 20, R$ 20 off no próximo.</div>
+                <div className="text-sm text-white/70">A cada 10 pedidos, R$ 20 no próximo.</div>
               </div>
             </div>
 
@@ -294,7 +294,7 @@ function RecompensasPage() {
           <ol className="grid gap-3 sm:grid-cols-2">
             {[
               { icon: ShoppingBag, title: "Faça pedidos", desc: "Compre logado na sua conta.", color: "from-neon-pink to-neon-pink/60" },
-              { icon: CreditCard, title: "Ganhe selos", desc: "1 selo por pedido acima de R$ 20.", color: "from-neon-yellow to-orange-400" },
+              { icon: CreditCard, title: "Ganhe selos", desc: "1 selo a cada pedido pago.", color: "from-neon-yellow to-orange-400" },
               { icon: Award, title: "Complete 10", desc: "Cupom de R$ 20 liberado.", color: "from-neon-cyan to-cyan-400" },
               { icon: Tag, title: "Use no checkout", desc: "Desconto direto no próximo pedido.", color: "from-fuchsia-400 to-neon-pink" },
             ].map((step, idx) => {

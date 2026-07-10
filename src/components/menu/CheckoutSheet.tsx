@@ -287,7 +287,7 @@ export function CheckoutSheet() {
                     Entre para finalizar seu pedido
                   </div>
                   <div className="mt-1 text-[11px] leading-relaxed text-white/70">
-                    A cada pedido acima de R$ 20 você ganha 1 selo Bis Recompensa. 10 selos = R$ 20 de desconto!
+                    A cada pedido você ganha 1 selo Bis Recompensa. 10 selos = R$ 20 de desconto!
                   </div>
                 </div>
               </div>
