@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Heart,
   Award,
-  
   ChevronRight,
   RotateCcw,
   Copy,
@@ -15,8 +14,13 @@ import {
   Sparkles,
   Bell,
   Shield,
-
+  Check,
+  CreditCard,
+  ChefHat,
+  Bike,
+  PackageCheck,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, signOut } from "@/lib/use-auth";
@@ -288,19 +292,34 @@ function OrdersPanel() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("orders")
-      .select("id, created_at, total, mode, status, order_items(name, quantity, size, flavor, extras, unit_price, product_id)")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(30)
-      .then(({ data }) => {
-        setOrders(
-          (data ?? []).map((o: any) => ({ ...o, items: o.order_items ?? [] })),
-        );
-        setLoading(false);
-      });
+    const load = () => {
+      supabase
+        .from("orders")
+        .select("id, created_at, total, mode, status, order_items(name, quantity, size, flavor, extras, unit_price, product_id)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(30)
+        .then(({ data }) => {
+          setOrders(
+            (data ?? []).map((o: any) => ({ ...o, items: o.order_items ?? [] })),
+          );
+          setLoading(false);
+        });
+    };
+    load();
+    const channel = supabase
+      .channel(`orders-user-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
+
 
   const reorder = (o: OrderRow) => {
     o.items.forEach((it: any) => {
@@ -347,6 +366,7 @@ function OrdersPanel() {
               <div className="text-[10px] text-white/50">{o.mode === "entrega" ? "Entrega" : "Retirada"}</div>
             </div>
           </div>
+          <OrderTracker status={o.status} mode={o.mode} />
           <div className="mt-3 space-y-0.5 text-xs text-white/70">
             {o.items.slice(0, 3).map((it: any, i: number) => (
               <div key={i} className="truncate">
@@ -359,6 +379,7 @@ function OrdersPanel() {
           <button
             onClick={() => reorder(o)}
             className="mt-3 flex w-full items-center justify-center gap-1 rounded-xl bg-neon-cyan/20 py-2 text-xs font-bold text-neon-cyan"
+
           >
             <RotateCcw className="h-3.5 w-3.5" /> Pedir novamente
           </button>
@@ -392,6 +413,98 @@ function StatusBadge({ status }: { status: string }) {
       {labels[status] || status}
     </span>
   );
+}
+
+function OrderTracker({ status, mode }: { status: string; mode: string }) {
+  if (status === "cancelado") {
+    return (
+      <div className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-red-300">
+        Pedido cancelado
+      </div>
+    );
+  }
+
+  const isDelivery = mode === "entrega";
+  const steps = isDelivery
+    ? [
+        { key: "pago", label: "Confirmado", icon: CreditCard },
+        { key: "preparando", label: "Preparando", icon: ChefHat },
+        { key: "saiu_para_entrega", label: "A caminho", icon: Bike },
+        { key: "entregue", label: "Entregue", icon: PackageCheck },
+      ]
+    : [
+        { key: "pago", label: "Confirmado", icon: CreditCard },
+        { key: "preparando", label: "Preparando", icon: ChefHat },
+        { key: "entregue", label: "Pronto", icon: PackageCheck },
+      ];
+
+  // rank map: any status >= this index is considered done
+  const rankMap: Record<string, number> = {
+    novo: 0,
+    pendente: 0,
+    pago: 0,
+    preparando: 1,
+    saiu_para_entrega: 2,
+    entregue: steps.length - 1,
+  };
+  const currentIdx = rankMap[status] ?? 0;
+
+  return (
+    <div className="mt-3 rounded-2xl border border-white/10 bg-black/30 p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+          Acompanhe seu pedido
+        </div>
+        <div className="flex items-center gap-1 text-[10px] text-neon-cyan">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon-cyan opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-neon-cyan" />
+          </span>
+          Ao vivo
+        </div>
+      </div>
+      <div className="relative flex items-start justify-between">
+        {/* progress line */}
+        <div className="absolute left-4 right-4 top-3.5 h-0.5 bg-white/10" />
+        <div
+          className="absolute left-4 top-3.5 h-0.5 bg-gradient-to-r from-neon-pink to-neon-yellow transition-all duration-700"
+          style={{
+            width: `calc(${(currentIdx / Math.max(1, steps.length - 1)) * 100}% - ${currentIdx === steps.length - 1 ? "0px" : "0px"})`,
+            maxWidth: "calc(100% - 2rem)",
+          }}
+        />
+        {steps.map((s, i) => {
+          const done = i < currentIdx;
+          const active = i === currentIdx;
+          const Icon = s.icon;
+          return (
+            <div key={s.key} className="relative z-10 flex flex-1 flex-col items-center gap-1">
+              <div
+                className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-full border transition-all",
+                  done && "border-neon-pink bg-neon-pink text-black",
+                  active &&
+                    "border-neon-yellow bg-neon-yellow/20 text-neon-yellow shadow-[0_0_12px_rgba(255,214,10,0.6)] animate-pulse",
+                  !done && !active && "border-white/15 bg-black/40 text-white/40",
+                )}
+              >
+                {done ? <Check className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
+              </div>
+              <div
+                className={cn(
+                  "text-center text-[9px] font-bold uppercase leading-tight tracking-wide",
+                  (done || active) ? "text-white" : "text-white/40",
+                )}
+              >
+                {s.label}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
 }
 
 /* ============= FAVORITOS ============= */
