@@ -23,6 +23,8 @@ import { useAuth, signOut } from "@/lib/use-auth";
 import { useCart, brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
+import { useIsAdmin } from "@/lib/menu-data";
+
 
 const searchSchema = z.object({
   tab: z.enum(["perfil", "pedidos", "favoritos", "fidelidade", "notificacoes"]).optional(),
