@@ -6,7 +6,7 @@ import {
   ClipboardList,
   Heart,
   Award,
-  ArrowLeft,
+  
   ChevronRight,
   RotateCcw,
   Copy,
