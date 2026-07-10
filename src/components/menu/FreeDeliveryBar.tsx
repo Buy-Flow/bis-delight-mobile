@@ -1,5 +1,5 @@
 import { Truck, PartyPopper } from "lucide-react";
-import { useSettings } from "@/lib/menu-data";
+import { useSiteSettings } from "@/lib/menu-data";
 import { brl, useCart } from "@/lib/cart-context";
 
 export function FreeDeliveryBar() {
