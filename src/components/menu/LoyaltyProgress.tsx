@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
