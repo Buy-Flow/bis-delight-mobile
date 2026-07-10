@@ -89,6 +89,7 @@ import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
+import { ProductPicker } from "@/components/admin/ProductPicker";
 import { OrdersTab } from "@/components/admin/OrdersTab";
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
