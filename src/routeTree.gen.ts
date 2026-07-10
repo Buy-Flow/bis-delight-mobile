@@ -19,6 +19,7 @@ import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedConversasRouteImport } from './routes/_authenticated/conversas'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
@@ -75,6 +76,11 @@ const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConversasRoute = AuthenticatedConversasRouteImport.update({
+  id: '/conversas',
+  path: '/conversas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
   id: '/conta',
   path: '/conta',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/conversas': typeof AuthenticatedConversasRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/conversas': typeof AuthenticatedConversasRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
+  '/_authenticated/conversas': typeof AuthenticatedConversasRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/carrinhos'
     | '/clientes'
     | '/conta'
+    | '/conversas'
     | '/financeiro'
     | '/notificacoes'
     | '/pedidos'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/carrinhos'
     | '/clientes'
     | '/conta'
+    | '/conversas'
     | '/financeiro'
     | '/notificacoes'
     | '/pedidos'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
     | '/_authenticated/conta'
+    | '/_authenticated/conversas'
     | '/_authenticated/financeiro'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pedidos'
@@ -286,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversas': {
+      id: '/_authenticated/conversas'
+      path: '/conversas'
+      fullPath: '/conversas'
+      preLoaderRoute: typeof AuthenticatedConversasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conta': {
       id: '/_authenticated/conta'
       path: '/conta'
@@ -329,6 +348,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCarrinhosRoute: typeof AuthenticatedCarrinhosRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
+  AuthenticatedConversasRoute: typeof AuthenticatedConversasRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPedidosRoute: typeof AuthenticatedPedidosRoute
@@ -339,6 +359,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCarrinhosRoute: AuthenticatedCarrinhosRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
+  AuthenticatedConversasRoute: AuthenticatedConversasRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPedidosRoute: AuthenticatedPedidosRoute,
