@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
+import { iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
 
 type OrderStatus = "pendente" | "pago" | "preparando" | "entregue" | "cancelado";
 
@@ -174,16 +175,29 @@ export function OrdersTab() {
       toast.info("Notificações desativadas.");
       return;
     }
-    if ("Notification" in window && Notification.permission !== "granted") {
-      const perm = await Notification.requestPermission();
-      if (perm !== "granted") {
-        toast.error("Permissão negada para notificações do navegador.");
+
+    const res = await subscribeToPush({ forceNew: isStandaloneApp() });
+    if (!res.ok) {
+      if (res.reason === "ios-install-required") {
+        toast.info("Abra pelo ícone instalado do Quero Bis e ative os alertas por lá.");
+      } else if (res.reason === "denied") {
+        toast.error("Permissão bloqueada. Ative as notificações nas configurações do app.");
+      } else if (res.reason === "unsupported") {
+        toast.error("Este aparelho não suporta notificações do app.");
+      } else {
+        toast.error("Não consegui registrar este aparelho. Abra o app instalado e tente novamente.");
       }
+      return;
     }
+
     setNotifyOn(true);
     localStorage.setItem("orders-notify", "1");
     playBeep();
-    toast.success("Notificações ativadas — teste de som tocando.");
+    toast.success(
+      iosStandaloneRequired()
+        ? "Abra pelo ícone instalado para receber como app."
+        : "Alertas do aplicativo ativados — teste de som tocando.",
+    );
   };
 
   const load = async () => {
@@ -218,7 +232,7 @@ export function OrdersTab() {
           const body = `${o.customer_name ?? "Cliente"} — R$ ${Number(o.total ?? 0).toFixed(2).replace(".", ",")}`;
           if ("Notification" in window && Notification.permission === "granted") {
             try {
-              new Notification(title, { body, tag: "new-order", icon: "/favicon.ico" });
+              new Notification(title, { body, tag: "new-order", icon: "/pwa-192.png", badge: "/badge-72.png" });
             } catch {
               /* noop */
             }
