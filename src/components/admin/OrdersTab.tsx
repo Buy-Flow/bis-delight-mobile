@@ -323,15 +323,16 @@ export function OrdersTab() {
     }
   };
 
-  const sendCrmTest = async () => {
+  const sendCrmTest = async (eventType?: string) => {
     setCrmBusy(true);
     try {
       const { testCrmWebhook } = await import("@/lib/crm.functions");
-      const result = await testCrmWebhook();
+      const result = await testCrmWebhook({ data: { event_type: eventType } });
+      const label = eventType ?? "test";
       if (result.ok) {
-        toast.success(`CRM respondeu ${result.status}: teste entregue.`);
+        toast.success(`CRM ${label} → ${result.status} OK`);
       } else {
-        toast.error(`CRM respondeu ${result.status || "erro"}: ${result.body?.slice(0, 100) || "sem resposta"}`);
+        toast.error(`CRM ${label} → ${result.status || "erro"}: ${result.body?.slice(0, 120) || "sem resposta"}`);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao testar o CRM.");
@@ -339,6 +340,7 @@ export function OrdersTab() {
       setCrmBusy(false);
     }
   };
+
 
 
   const load = async () => {
