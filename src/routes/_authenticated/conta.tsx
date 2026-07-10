@@ -23,7 +23,11 @@ import { useAuth, signOut } from "@/lib/use-auth";
 import { useCart, brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
-import { useIsAdmin } from "@/lib/menu-data";
+import { useIsAdmin, useProducts } from "@/lib/menu-data";
+import { ProductModal } from "@/components/menu/ProductModal";
+import type { Product } from "@/lib/types";
+import { Heart as HeartIcon, Trash2 } from "lucide-react";
+
 
 
 const searchSchema = z.object({
