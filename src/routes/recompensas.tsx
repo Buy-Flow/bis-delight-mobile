@@ -5,6 +5,7 @@ import { Sparkles, Gift, Check, Ticket, Star, ShoppingBag, CreditCard, Award, Ta
 import { cn } from "@/lib/utils";
 import rewardTrophyAsset from "@/assets/reward-trophy.png.asset.json";
 import { TierBadge, TIER_META, type LoyaltyTier } from "@/components/menu/TierBadge";
+import { RecompensasSkeleton } from "@/components/ui/skeletons";
 
 const rewardTrophy = rewardTrophyAsset.url;
 const GOAL = 10;
