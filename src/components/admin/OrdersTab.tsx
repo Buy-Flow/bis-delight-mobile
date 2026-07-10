@@ -143,6 +143,18 @@ export function OrdersTab() {
 
   useEffect(() => {
     let alive = true;
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      (async () => {
+        const res = await ensurePushSubscriptionSaved({ forceNew: isStandaloneApp() });
+        if (!alive || !res.ok) return;
+        setNotifyOn(true);
+        localStorage.setItem("orders-notify", "1");
+      })();
+      return () => {
+        alive = false;
+      };
+    }
+
     if (!notifyOnRef.current) return () => {
       alive = false;
     };
