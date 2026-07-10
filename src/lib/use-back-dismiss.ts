@@ -8,42 +8,70 @@ import { useEffect, useRef } from "react";
  * the extra history entry is popped so the browser history stays clean.
  */
 
-// Module-level flag shared across all overlays. When we programmatically
-// call history.back() during cleanup, the resulting popstate event must NOT
-// trigger onClose on any other mounted overlay (which would immediately
-// close a modal that just opened).
-let programmaticBackPending = 0;
+const OVERLAY_STATE_KEY = "__lovableOverlayId";
+
+// Module-level controls shared across all overlays. Only the top-most overlay
+// should react to the browser/system back button; otherwise nested overlays
+// like cart → edit product can all close at once.
+let overlaySequence = 0;
+const overlayStack: number[] = [];
+
+const getCurrentOverlayId = () => {
+  const state = window.history.state as Record<string, unknown> | null;
+  return typeof state?.[OVERLAY_STATE_KEY] === "number"
+    ? (state[OVERLAY_STATE_KEY] as number)
+    : null;
+};
+
+const clearCurrentOverlayMarker = () => {
+  if (getCurrentOverlayId() === null) return;
+  const state =
+    window.history.state && typeof window.history.state === "object"
+      ? { ...(window.history.state as Record<string, unknown>) }
+      : {};
+  delete state[OVERLAY_STATE_KEY];
+  window.history.replaceState(state, "", window.location.href);
+};
+
+const removeFromStack = (id: number) => {
+  const index = overlayStack.lastIndexOf(id);
+  if (index >= 0) overlayStack.splice(index, 1);
+};
 
 export function useBackDismiss(open: boolean, onClose: () => void) {
   const onCloseRef = useRef(onClose);
+  const idRef = useRef<number | null>(null);
   onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open || typeof window === "undefined") return;
 
-    window.history.pushState({ __overlay: true }, "");
+    const id = idRef.current ?? getCurrentOverlayId() ?? ++overlaySequence;
+    idRef.current = id;
+    if (!overlayStack.includes(id)) overlayStack.push(id);
+
+    if (getCurrentOverlayId() !== id) {
+      const baseState =
+        window.history.state && typeof window.history.state === "object"
+          ? { ...(window.history.state as Record<string, unknown>) }
+          : {};
+      window.history.pushState({ ...baseState, [OVERLAY_STATE_KEY]: id }, "", window.location.href);
+    }
 
     let poppedByBack = false;
     const handlePop = () => {
-      if (programmaticBackPending > 0) {
-        programmaticBackPending -= 1;
-        return;
-      }
+      if (overlayStack[overlayStack.length - 1] !== id) return;
+
       poppedByBack = true;
+      clearCurrentOverlayMarker();
       onCloseRef.current?.();
     };
     window.addEventListener("popstate", handlePop);
 
     return () => {
       window.removeEventListener("popstate", handlePop);
-      if (!poppedByBack) {
-        try {
-          programmaticBackPending += 1;
-          window.history.back();
-        } catch {
-          programmaticBackPending = Math.max(0, programmaticBackPending - 1);
-        }
-      }
+      removeFromStack(id);
+      if (!poppedByBack) clearCurrentOverlayMarker();
     };
   }, [open]);
 }
