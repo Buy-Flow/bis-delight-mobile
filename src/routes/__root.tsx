@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart-context";
 import { ConfirmDialogHost } from "@/lib/confirm";
 import { InstallPWAButton } from "@/components/InstallPWAButton";
+import { BottomNav } from "@/components/menu/BottomNav";
 import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
@@ -256,6 +257,7 @@ function RootComponent() {
         <Outlet />
         <ConfirmDialogHost />
         <InstallPWAButton />
+        <BottomNav />
       </CartProvider>
     </QueryClientProvider>
 
