@@ -5551,6 +5551,7 @@ function PopupSection({
   const update = (patch: Partial<PopupConfig>) => set("popup", { ...popup, ...patch });
 
   const [busy, setBusy] = useState(false);
+  const [picking, setPicking] = useState(false);
   const upload = async (file: File) => {
     setBusy(true);
     try {
@@ -5562,6 +5563,27 @@ function PopupSection({
       setBusy(false);
     }
   };
+
+  // Tipo de link derivado do valor atual
+  const linkRaw = (popup.link ?? "").trim();
+  const isExternal = /^https?:\/\//i.test(linkRaw);
+  const isProduct = /^\/produto\//i.test(linkRaw);
+  const linkType: "none" | "product" | "page" | "external" = !linkRaw
+    ? "none"
+    : isProduct
+      ? "product"
+      : isExternal
+        ? "external"
+        : "page";
+  const productId = isProduct ? linkRaw.replace(/^\/produto\//i, "").split(/[?#]/)[0] : "";
+
+  const pagePresets: { value: string; label: string }[] = [
+    { value: "/", label: "Início" },
+    { value: "/carrinho", label: "Carrinho" },
+    { value: "/recompensas", label: "Recompensas" },
+    { value: "/baixar-app", label: "Baixar app" },
+    { value: "/conta", label: "Minha conta" },
+  ];
 
   const freqOptions: { value: PopupFrequency; label: string; hint: string }[] = [
     { value: "session", label: "Uma vez por visita", hint: "Some ao fechar a aba" },
