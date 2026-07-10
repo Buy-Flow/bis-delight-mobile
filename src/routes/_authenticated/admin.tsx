@@ -96,6 +96,8 @@ import { ProductPicker } from "@/components/admin/ProductPicker";
 import { OrdersTab } from "@/components/admin/OrdersTab";
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
+import { CombosSection } from "@/components/admin/CombosSection";
+import { UrgencySection } from "@/components/admin/UrgencySection";
 import { ClipboardList } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
