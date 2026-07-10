@@ -1,5 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 import { AppDownloadSection } from "@/components/menu/AppDownloadSection";
 
 export const Route = createFileRoute("/baixar-app")({
@@ -24,10 +23,6 @@ export const Route = createFileRoute("/baixar-app")({
 function BaixarAppPage() {
   return (
     <main className="min-h-screen bg-[#1a0a2e] text-white">
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-[#1a0a2e]/80 px-4 py-3 backdrop-blur">
-        <h1 className="font-fredoka text-lg">Baixar aplicativo</h1>
-      </header>
-
       <AppDownloadSection />
     </main>
   );
