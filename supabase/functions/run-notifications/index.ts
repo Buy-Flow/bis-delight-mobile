@@ -84,20 +84,29 @@ Deno.serve(async (req) => {
           .map((p: any) => p.id);
       } else if (kind === "dormant") {
         const days = Number(cfg.days ?? 60);
-        const cutoff = new Date(now.getTime() - days * 24 * 3600 * 1000).toISOString();
-        const { data: recent } = await admin
+        const repeatDays = Number(cfg.repeat_days ?? 0); // 0 = single-shot
+        // Fetch all orders per user to compute last order date
+        const { data: allOrders } = await admin
           .from("orders")
-          .select("user_id")
-          .gte("created_at", cutoff)
+          .select("user_id, created_at")
           .not("user_id", "is", null);
-        const activeIds = new Set((recent ?? []).map((o: any) => o.user_id));
-        const { data: allOrderers } = await admin
-          .from("orders")
-          .select("user_id")
-          .not("user_id", "is", null);
-        const allIds = Array.from(new Set((allOrderers ?? []).map((o: any) => o.user_id)));
-        eligibleUserIds = allIds.filter((id) => !activeIds.has(id));
-        runKey = cfg.repeat_weekly ? `w-${weekKey(now)}-d${days}` : `d${days}`;
+        const lastByUser = new Map<string, string>();
+        for (const o of (allOrders ?? []) as any[]) {
+          const prev = lastByUser.get(o.user_id);
+          if (!prev || o.created_at > prev) lastByUser.set(o.user_id, o.created_at);
+        }
+        payloadPerUser = new Map();
+        for (const [uid, lastAt] of lastByUser.entries()) {
+          const daysSince = Math.floor((now.getTime() - new Date(lastAt).getTime()) / (24 * 3600 * 1000));
+          if (daysSince < days) continue;
+          let cycle = 0;
+          if (repeatDays > 0) cycle = Math.floor((daysSince - days) / repeatDays);
+          const rk = repeatDays > 0
+            ? `d${days}-r${repeatDays}-c${cycle}`
+            : (cfg.repeat_weekly ? `w-${weekKey(now)}-d${days}` : `d${days}`);
+          payloadPerUser.set(uid, { runKey: rk });
+        }
+        eligibleUserIds = Array.from(payloadPerUser.keys());
       } else if (kind === "welcome") {
         const delay = Number(cfg.delay_minutes ?? 0);
         const upper = new Date(now.getTime() - delay * 60 * 1000).toISOString();
