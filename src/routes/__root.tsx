@@ -257,6 +257,7 @@ function RootComponent() {
         <Outlet />
         <ConfirmDialogHost />
         <InstallPWAButton />
+        <BottomNav />
       </CartProvider>
     </QueryClientProvider>
 
