@@ -420,6 +420,18 @@ export const siteSettingsQueryOptions = queryOptions({
       cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
       titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
       heroImages: parseHeroImages((data as Record<string, unknown>).hero_images),
+      popup: {
+        active: Boolean((data as Record<string, unknown>).popup_active ?? false),
+        title: String((data as Record<string, unknown>).popup_title ?? ""),
+        body: String((data as Record<string, unknown>).popup_body ?? ""),
+        imageUrl: String((data as Record<string, unknown>).popup_image_url ?? ""),
+        link: String((data as Record<string, unknown>).popup_link ?? ""),
+        cta: String((data as Record<string, unknown>).popup_cta ?? "Ver agora"),
+        imagePosX: Number((data as Record<string, unknown>).popup_image_pos_x ?? 0),
+        imagePosY: Number((data as Record<string, unknown>).popup_image_pos_y ?? 0),
+        imageScale: Number((data as Record<string, unknown>).popup_image_scale ?? 1),
+        frequency: (String((data as Record<string, unknown>).popup_frequency ?? "session") as PopupFrequency),
+      },
     };
   },
   staleTime: 60_000,
