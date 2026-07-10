@@ -2,7 +2,7 @@
 // The VAPID public key is safe to expose (that's the whole point).
 
 import { supabase } from "@/integrations/supabase/client";
-import { savePushSubscription } from "@/lib/push.functions";
+import { deletePushSubscription, savePushSubscription } from "@/lib/push.functions";
 
 export const VAPID_PUBLIC_KEY =
   "BMtivcZcLmG17_XC1y1tjUVSG-CjnRH8dSJW9ZnquiCmHsu5usB2YjmqoarKZzVDVzJfYTbeFqvXARWdcx5aXJg";
@@ -42,10 +42,51 @@ export function iosStandaloneRequired(): boolean {
   return isIOS && !isStandaloneApp();
 }
 
+function isPreviewHost(hostname: string) {
+  return (
+    hostname.startsWith("id-preview--") ||
+    hostname.startsWith("preview--") ||
+    hostname === "lovableproject.com" ||
+    hostname.endsWith(".lovableproject.com") ||
+    hostname === "lovableproject-dev.com" ||
+    hostname.endsWith(".lovableproject-dev.com") ||
+    hostname === "beta.lovable.dev" ||
+    hostname.endsWith(".beta.lovable.dev")
+  );
+}
+
+function canRegisterAppServiceWorker() {
+  if (typeof window === "undefined") return false;
+  return (
+    import.meta.env.PROD &&
+    window.self === window.top &&
+    !isPreviewHost(window.location.hostname) &&
+    new URLSearchParams(window.location.search).get("sw") !== "off"
+  );
+}
+
 async function getReadyRegistration(): Promise<ServiceWorkerRegistration | null> {
   if (!pushSupported()) return null;
   try {
-    return await navigator.serviceWorker.ready;
+    let existing = await navigator.serviceWorker.getRegistration("/");
+    if (!existing && canRegisterAppServiceWorker()) {
+      existing = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
+    } else if (existing) {
+      try {
+        await existing.update();
+      } catch {
+        /* noop */
+      }
+    }
+
+    const ready = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 6000)),
+    ]);
+
+    if (ready) return ready;
+    existing = existing ?? (await navigator.serviceWorker.getRegistration("/"));
+    return existing?.active ? existing : null;
   } catch {
     return null;
   }
@@ -84,7 +125,7 @@ export async function subscribeToPush(options: { forceNew?: boolean } = {}): Pro
     const endpoint = sub.endpoint;
     try {
       await sub.unsubscribe();
-      await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+      await deletePushSubscription({ data: { endpoint } });
     } catch {
       /* keep going and try to create a fresh app subscription */
     }
@@ -134,6 +175,10 @@ export async function unsubscribeFromPush(): Promise<boolean> {
   } catch {
     /* noop */
   }
-  await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+  try {
+    await deletePushSubscription({ data: { endpoint } });
+  } catch {
+    await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+  }
   return true;
 }

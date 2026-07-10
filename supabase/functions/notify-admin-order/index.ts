@@ -24,19 +24,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { orderId } = await req.json();
-    if (!orderId) return json({ error: "orderId required" }, 400);
+    const { orderId, test, userId } = await req.json();
+    if (!orderId && !test) return json({ error: "orderId required" }, 400);
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const { data: order } = await admin
-      .from("orders")
-      .select("id, total, customer_name")
-      .eq("id", orderId)
-      .single();
-    if (!order) return json({ error: "order not found" }, 404);
+    let order: { id: string; total: number | null; customer_name: string | null } | null = null;
+    if (!test) {
+      const { data } = await admin
+        .from("orders")
+        .select("id, total, customer_name")
+        .eq("id", orderId)
+        .single();
+      order = data;
+      if (!order) return json({ error: "order not found" }, 404);
+    }
 
     const { data: admins } = await admin
       .from("user_roles")
@@ -45,24 +49,37 @@ Deno.serve(async (req) => {
     const adminIds = (admins ?? []).map((a: any) => a.user_id);
     if (!adminIds.length) return json({ sent: 0, total: 0 });
 
+    const targetAdminIds = test && userId && adminIds.includes(userId) ? [userId] : adminIds;
+
     const { data: subs } = await admin
       .from("push_subscriptions")
       .select("id,endpoint,p256dh,auth")
-      .in("user_id", adminIds);
+      .in("user_id", targetAdminIds);
 
-    const total = Number(order.total || 0).toLocaleString("pt-BR", {
+    const total = Number(order?.total || 0).toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
     });
-    const payload = JSON.stringify({
-      title: "🛎️ Novo pedido · Quero Bis",
-      body: `${order.customer_name ?? "Cliente"} acabou de pedir • ${total}`,
-      url: "/pedidos",
-      kind: "order",
-      tag: `qb-order-${order.id}`,
-    });
+    const payload = JSON.stringify(
+      test
+        ? {
+            title: "✅ Teste do app Quero Bis",
+            body: "Se esta mensagem apareceu no telefone, o push do aplicativo está funcionando.",
+            url: "/pedidos",
+            kind: "test",
+            tag: `qb-test-${Date.now()}`,
+          }
+        : {
+            title: "🛎️ Novo pedido · Quero Bis",
+            body: `${order?.customer_name ?? "Cliente"} acabou de pedir • ${total}`,
+            url: "/pedidos",
+            kind: "order",
+            tag: `qb-order-${order?.id}`,
+          },
+    );
 
     let sent = 0;
+    let failed = 0;
     const stale: string[] = [];
     await Promise.all(
       (subs ?? []).map(async (s: any) => {
@@ -74,6 +91,8 @@ Deno.serve(async (req) => {
           );
           sent++;
         } catch (err: any) {
+          failed++;
+          console.error("webpush send failed", { statusCode: err?.statusCode, body: err?.body });
           const code = err?.statusCode;
           if (code === 404 || code === 410) stale.push(s.id);
         }
@@ -81,7 +100,8 @@ Deno.serve(async (req) => {
     );
     if (stale.length) await admin.from("push_subscriptions").delete().in("id", stale);
 
-    return json({ sent, total: subs?.length ?? 0 });
+    console.log("notify-admin-order result", { test: !!test, sent, failed, total: subs?.length ?? 0 });
+    return json({ sent, failed, total: subs?.length ?? 0 });
   } catch (e) {
     console.error("notify-admin-order error", e);
     return json({ error: String(e) }, 500);
