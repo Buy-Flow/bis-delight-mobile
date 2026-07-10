@@ -34,6 +34,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
+import { ClientsListSkeleton, ClientDetailSkeleton } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
   head: () => ({
