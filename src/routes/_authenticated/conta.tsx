@@ -440,6 +440,8 @@ function FavoritesPanel() {
 
 function ProfilePanel() {
   const { user } = useAuth();
+  const isAdmin = useIsAdmin();
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
