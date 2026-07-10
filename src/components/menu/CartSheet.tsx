@@ -241,7 +241,7 @@ export function CartSheet() {
               </div>
             </div>
             <button
-              onClick={handleCheckoutClick}
+              onClick={openCheckout}
               className="w-full rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
               Continuar para finalização
@@ -249,16 +249,10 @@ export function CartSheet() {
           </div>
         )}
       </div>
-      <InstallAppPrompt
-        open={showInstall}
-        onClose={() => {
-          setShowInstall(false);
-          openCheckout();
-        }}
-      />
     </div>
   );
 }
+
 
 
 function SummaryRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
