@@ -80,6 +80,7 @@ export function NotificationsTab() {
   const [totalSubs, setTotalSubs] = useState<number | null>(null);
   const [history, setHistory] = useState<Campaign[]>([]);
   const [editing, setEditing] = useState<Campaign | null>(null);
+  const [scheduledAt, setScheduledAt] = useState<string>(""); // local datetime-local value
 
   useEffect(() => {
     void refresh();
