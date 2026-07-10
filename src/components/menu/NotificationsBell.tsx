@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, BellRing, CheckCheck, ExternalLink, Sparkles, ArrowRight, X } from "lucide-react";
+import notifMascot from "@/assets/notif-mascot.png.asset.json";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
