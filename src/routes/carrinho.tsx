@@ -106,6 +106,7 @@ function CartPage() {
           </div>
         ) : (
           <div className="space-y-3">
+            <FreeDeliveryBar />
             {items.map((it) => (
               <div
                 key={it.uid}
