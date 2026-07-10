@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 import { Toaster, toast } from "sonner";
@@ -152,7 +152,7 @@ function AdminPage() {
     );
   }
 
-  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
+  const tabs: { id: Tab; label: string; icon: React.ElementType; to?: string }[] = [
     { id: "products", label: "Produtos", icon: Package },
     { id: "highlights", label: "Destaques", icon: Star },
     { id: "news", label: "Novidades", icon: Sparkles },
@@ -180,19 +180,30 @@ function AdminPage() {
         </div>
         <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
           {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                tab === t.id
-                  ? "bg-neon-pink text-white glow-pink"
-                  : "border border-white/10 text-white/70 hover:text-white",
+            <React.Fragment key={t.id}>
+              <button
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+                  tab === t.id
+                    ? "bg-neon-pink text-white glow-pink"
+                    : "border border-white/10 text-white/70 hover:text-white",
+                )}
+              >
+                <t.icon className="h-3.5 w-3.5" />
+                {t.label}
+              </button>
+              {t.id === "categories" && (
+                <Link
+                  key="notif-link"
+                  to="/notificacoes"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/70 transition hover:text-white"
+                >
+                  <BellRing className="h-3.5 w-3.5" />
+                  Notificações
+                </Link>
               )}
-            >
-              <t.icon className="h-3.5 w-3.5" />
-              {t.label}
-            </button>
+            </React.Fragment>
           ))}
         </nav>
       </header>
