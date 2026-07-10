@@ -88,13 +88,13 @@ export type HeroImagesConfig = {
 
 export const DEFAULT_HERO_IMAGES: HeroImagesConfig = {
   left: {
-    url: "/__l5e/assets-v1/8626345c-ea94-4e70-85f8-f368c5fed843/hero-cone-neon.png",
+    url: "",
     offsetX: -150,
     offsetY: 0,
     scale: 1,
   },
   right: {
-    url: "/__l5e/assets-v1/f8fbc15c-a137-4963-9213-125b7b8f78b7/hero-acai-bowl.png",
+    url: "",
     offsetX: -150,
     offsetY: 0,
     scale: 1,
