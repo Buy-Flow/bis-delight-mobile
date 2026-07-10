@@ -215,6 +215,7 @@ function AdminPage() {
         {tab === "extras" && <ExtrasTab />}
         {tab === "news" && <NewsTab />}
         {tab === "notifications" && <NotificationsTab />}
+        {tab === "promos" && <PromosTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
