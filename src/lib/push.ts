@@ -2,6 +2,7 @@
 // The VAPID public key is safe to expose (that's the whole point).
 
 import { supabase } from "@/integrations/supabase/client";
+import { savePushSubscription } from "@/lib/push.functions";
 
 export const VAPID_PUBLIC_KEY =
   "BMtivcZcLmG17_XC1y1tjUVSG-CjnRH8dSJW9ZnquiCmHsu5usB2YjmqoarKZzVDVzJfYTbeFqvXARWdcx5aXJg";
@@ -97,20 +98,18 @@ export async function subscribeToPush(options: { forceNew?: boolean } = {}): Pro
   }
 
   const json = sub.toJSON();
-  const { data: userRes } = await supabase.auth.getUser();
-  const payload = {
-    user_id: userRes.user?.id ?? null,
-    endpoint: sub.endpoint,
-    p256dh: json.keys?.p256dh ?? "",
-    auth: json.keys?.auth ?? "",
-    user_agent: navigator.userAgent,
-    last_seen_at: new Date().toISOString(),
-  };
-
-  const { error } = await supabase
-    .from("push_subscriptions")
-    .upsert(payload, { onConflict: "endpoint" });
-  if (error) return { ok: false, reason: error.message };
+  try {
+    await savePushSubscription({
+      data: {
+        endpoint: sub.endpoint,
+        p256dh: json.keys?.p256dh ?? "",
+        auth: json.keys?.auth ?? "",
+        userAgent: navigator.userAgent,
+      },
+    });
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : "save-failed" };
+  }
 
   // Hand the SW the Supabase config so it can ping mark_push_opened on click.
   try {
