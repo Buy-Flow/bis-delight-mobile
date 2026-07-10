@@ -204,14 +204,7 @@ function RastrearPage() {
   }, [order, isDelivery, tick]);
 
   if (loading) {
-    return (
-      <main className="grid min-h-screen place-items-center bg-[#1a0b2e] text-white/70">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-neon-cyan" />
-          <span>Carregando pedido…</span>
-        </div>
-      </main>
-    );
+    return <TrackingPageSkeleton />;
   }
 
   if (!order) {
