@@ -106,12 +106,21 @@ function RecompensasPage() {
           <div className="relative">
             {/* Title row */}
             <div className="flex items-center gap-3">
-              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-neon-yellow to-neon-pink text-[#1a0b2e] shadow-lg shadow-neon-pink/40">
-                <Trophy className="h-7 w-7" strokeWidth={2.5} />
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1a0b2e] text-[10px] font-black text-neon-yellow ring-2 ring-neon-yellow/50">
+              <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+                <div aria-hidden className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-yellow via-neon-pink to-neon-cyan blur-xl opacity-70" />
+                <img
+                  src={rewardTrophy}
+                  alt="Troféu Bis Recompensa"
+                  width={128}
+                  height={128}
+                  loading="lazy"
+                  className="relative h-16 w-16 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
+                />
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1a0b2e] text-[10px] font-black text-neon-yellow ring-2 ring-neon-yellow/60">
                   <Sparkles className="h-3 w-3" />
                 </span>
               </div>
+
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
                   Programa de fidelidade
