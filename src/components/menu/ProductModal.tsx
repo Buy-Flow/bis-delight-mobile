@@ -147,9 +147,7 @@ export function ProductModal({
   const [sizeId, setSizeId] = useState<string>(
     seed?.sizeId ?? getSizes(product)[0].id,
   );
-  const [flavor, setFlavor] = useState<string | undefined>(
-    seed?.flavor ?? product?.flavors?.[0],
-  );
+  const [flavor, setFlavor] = useState<string | undefined>(seed?.flavor);
   const [extras, setExtras] = useState<Record<string, number>>(seed?.extras ?? {});
   const [removed, setRemoved] = useState<string[]>(seed?.removed ?? []);
   const [qty, setQty] = useState(seed?.qty ?? 1);
@@ -189,7 +187,7 @@ export function ProductModal({
     if (product) {
       const s = initialFromEdit(product);
       setSizeId(s?.sizeId ?? getSizes(product)[0].id);
-      setFlavor(s?.flavor ?? product.flavors?.[0]);
+      setFlavor(s?.flavor);
       setExtras(s?.extras ?? {});
       setRemoved(s?.removed ?? []);
       setQty(s?.qty ?? 1);
@@ -337,7 +335,7 @@ export function ProductModal({
 
 
   const canSubmit = !isCustom
-    ? true
+    ? !flavorList || !!flavor
     : optionGroups.every((g) => (!g.required ? true : (groupSel[g.id] ?? []).length > 0));
 
   const submit = () => {
@@ -740,7 +738,8 @@ export function ProductModal({
                 steps.push({
                   key: "flavor",
                   name: "Sabor",
-                  isValid: () => true,
+                  required: true,
+                  isValid: () => !!flavor,
                   render: () => (
                     <div className="grid grid-cols-2 gap-2">
                       {flavorList.map((f) => {
