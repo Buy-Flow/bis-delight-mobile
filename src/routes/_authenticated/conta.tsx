@@ -565,7 +565,7 @@ function FavoritesPanel() {
   // Removal is handled inside ProductCard's FavoriteButton (heart toggle).
 
 
-  if (favIds === null) return <PanelSpinner />;
+  if (favIds === null) return <FavoritesGridSkeleton />;
 
   return (
     <div className="relative">
