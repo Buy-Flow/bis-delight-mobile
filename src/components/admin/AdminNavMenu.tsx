@@ -5,7 +5,6 @@ import {
   X,
   LayoutDashboard,
   ClipboardList,
-  ShoppingCart,
   LineChart,
   Users,
   Home,
@@ -17,7 +16,6 @@ import { cn } from "@/lib/utils";
 const items = [
   { to: "/admin", label: "Painel administrador", icon: LayoutDashboard },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
-  { to: "/carrinhos", label: "Carrinhos", icon: ShoppingCart },
   { to: "/financeiro", label: "Financeiro", icon: LineChart },
   { to: "/clientes", label: "Clientes", icon: Users },
 
