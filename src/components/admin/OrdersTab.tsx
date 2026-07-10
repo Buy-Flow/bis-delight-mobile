@@ -92,6 +92,14 @@ const STATUS_THEME: Record<OrderStatus, StatusTheme> = {
     accent: "text-neon-cyan",
     ringGlow: "shadow-[0_0_25px_-8px_var(--neon-cyan)]",
   },
+  saiu_para_entrega: {
+    label: "Saiu para entrega",
+    icon: Bike,
+    badge: "bg-neon-pink text-[oklch(0.13_0.08_305)]",
+    border: "border-neon-pink/30",
+    accent: "text-neon-pink",
+    ringGlow: "shadow-[0_0_25px_-8px_var(--neon-pink)]",
+  },
   entregue: {
     label: "Entregue",
     icon: Truck,
