@@ -278,6 +278,7 @@ function Content() {
       <WelcomePopup />
       <Hero onScrollMenu={scrollToMenu} />
       <UrgencyBanner />
+      <BirthdayBanner />
       <Reveal><Benefits /></Reveal>
       <Reveal><LoyaltyProgress /></Reveal>
       <PushOptInCard />
