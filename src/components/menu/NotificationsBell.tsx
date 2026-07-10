@@ -125,12 +125,11 @@ export function NotificationsBell() {
           aria-label={unread > 0 ? `Notificações (${unread} não lidas)` : "Notificações"}
           className="relative grid h-11 w-11 place-items-center rounded-2xl card-acai text-neon-cyan active:scale-95 transition"
         >
-          <img
-            src={notifMascot.url}
-            alt=""
-            className="h-8 w-8 object-contain drop-shadow-[0_0_6px_rgba(236,72,153,0.35)]"
-            draggable={false}
-          />
+          {unread > 0 ? (
+            <BellRing className="h-5 w-5 animate-[wiggle_1.2s_ease-in-out_infinite]" />
+          ) : (
+            <Bell className="h-5 w-5" />
+          )}
           {unread > 0 && !open && (
             <>
               <span className="absolute -right-1 -top-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white shadow-[0_0_10px_rgba(236,72,153,0.7)]">
