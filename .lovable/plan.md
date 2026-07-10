@@ -1,57 +1,52 @@
+# Notificações Push para clientes com app instalado
 
-# Objetivo
-Fazer o site pintar de uma vez — texto, Hero, cards e rodapé aparecendo juntos — em vez de em ondas.
+Quando alguém instala o Quero Bis no celular, você (admin) poderá disparar notificações que chegam direto na tela, mesmo com o app fechado. Uso ideal: promoções, novidades, cupom especial, aviso de "chegou o sabor X".
 
-# Causa
-A rota `/` só busca produtos, categorias e configurações **depois** que o HTML já foi renderizado (`useQuery` puro no cliente). Cada query resolve num momento diferente e cada imagem chega quando quer. Sem `aspect-ratio` nos `<img>`, cada foto que chega empurra o layout.
+## Fluxo pro cliente
+1. Cliente instala o app (já existe).
+2. Ao abrir, aparece um card discreto: "Quer receber ofertas e novidades?" → botão **Ativar notificações**.
+3. Navegador pede permissão. Se aceitar, o dispositivo dele fica registrado no banco.
+4. Ele pode desativar quando quiser (mesmo card vira "Desativar").
 
-# O que vou mudar
+## Fluxo pro admin
+Nova aba **Notificações** no painel admin com:
+- Campo **Título** e **Mensagem**.
+- Campo opcional **Link** (ex.: abrir uma categoria ou produto ao tocar).
+- Campo opcional **Imagem** (aparece na notificação em Android).
+- Filtros do público: **Todos**, **Só quem comprou nos últimos 30 dias**, **Aniversariantes do mês**, **Sem compra há 60+ dias**.
+- Preview de como fica na tela e contador de "vai chegar em X dispositivos".
+- Botão **Enviar agora**.
+- Histórico das últimas campanhas com quantos receberam / quantos abriram.
 
-## 1. Pré-carregar dados no loader da rota (principal)
-Em `src/routes/index.tsx`:
-- `loader: async ({ context }) => { await Promise.all([ ensureQueryData(products), ensureQueryData(categories), ensureQueryData(siteSettings) ]); return { heroImages, texture } }`.
-- No SSR o HTML já sai com os dados hidratados → sem "pop-in" de conteúdo nem de layout.
-- Component lê com `useSuspenseQuery` (padrão canônico Router + Query).
+## Detalhes técnicos
 
-## 2. Preload da imagem LCP e das laterais no `head()` da rota `/`
-Usando `head({ loaderData }).links` (per-route, não sitewide):
-- `{ rel: "preload", as: "image", href: heroImages.left.url, fetchpriority: "high" }` — a imagem esquerda é a LCP candidata.
-- `{ rel: "preload", as: "image", href: heroImages.right.url }` (sem `fetchpriority`, só uma LCP).
-- `{ rel: "preload", as: "image", href: texture }`.
+Backend (Lovable Cloud):
+- Nova tabela `push_subscriptions` (user_id nullable, endpoint, p256dh, auth, user_agent, created_at, last_seen_at). RLS: usuário insere/deleta a própria; admin lê tudo.
+- Nova tabela `push_campaigns` (título, corpo, url, image, filtro, sent_count, opened_count, created_by, created_at). RLS: só admin.
+- Nova tabela `push_deliveries` (campaign_id, subscription_id, status, opened_at) para métricas e limpar assinaturas quebradas.
+- Chaves VAPID: gero um par com `generate_secret` e salvo `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`. A pública vai pro frontend via `site_settings` (ou variável pública) — é seguro expor.
+- Edge Function `send-push` (admin-only, valida `has_role('admin')`): recebe campaign_id, busca assinaturas pelo filtro e envia via Web Push protocol usando as chaves VAPID. Marca inválidas (410/404) pra remoção. Atualiza `sent_count`.
+- Edge Function pública `push-opened` (chamada pelo service worker no clique) só incrementa `opened_count`.
 
-## 3. Reservar espaço nos elementos com imagem
-Prevenir layout shift:
-- `Hero.tsx`: dimensões explícitas e `aspect-ratio` nos `<img>` laterais.
-- `ProductCard.tsx`, `NewsCarousel.tsx` (`NewsPosterCard`) e `HighlightCard.tsx`: `aspect-ratio` + `width`/`height` nos `<img>` e fundo roxo da marca como placeholder.
+Frontend:
+- `src/lib/push.ts`: helpers `subscribeToPush()` / `unsubscribeFromPush()` usando `serviceWorker.pushManager` + a chave pública VAPID.
+- Componente `PushOptInCard` na home (só aparece se app instalado + permissão ainda não decidida ou revogada).
+- Service worker já existe (vite-plugin-pwa); adiciono handlers `push` (mostra notificação com título/corpo/imagem/data) e `notificationclick` (abre a URL e faz ping em `push-opened`). Como o plugin gera o SW, uso `injectManifest` mode ou custom `additionalManifestEntries` — na verdade migro pra `injectManifest` só se preciso; caso contrário uso `workbox.runtimeCaching` + um handler push adicional via `importScripts` no `src/sw-push.js`.
+- Página admin `/notificacoes` com o formulário, preview e histórico.
 
-## 4. Fontes sem trocar de peso
-No `__root.tsx` (sitewide — Google Fonts é usado em todas as rotas):
-- `<link rel="preconnect" href="https://fonts.googleapis.com">`
-- `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`
-- Garantir `&display=swap` no `<link>` das Google Fonts.
-- `<link rel="preload" as="font" crossorigin>` para a Barlow Condensed 900 (usada no título do Hero, tipografia mais visível).
+Notas importantes:
+- **iOS**: só recebe push se o usuário **instalou o app na tela inicial** (iOS 16.4+). No Safari normal não funciona. Vou avisar isso no card de opt-in.
+- **Android/Chrome/Edge**: funciona no navegador e no app instalado.
+- Sem envio agendado nesta primeira versão — só "enviar agora". Se quiser agendar depois, adiciono `scheduled_for` + cron.
+- Sem segmentação por produto favorito nesta versão (dá pra adicionar depois).
 
-## 5. Placeholders coloridos
-Fundo roxo da marca por trás da imagem dos cards para eles já parecerem "cheios" antes da foto baixar.
+## Ordem de implementação
+1. Migração das 3 tabelas + RLS + grants.
+2. Gerar VAPID keys e salvar como secrets.
+3. Edge Function `send-push` + `push-opened`.
+4. Service worker: handlers de `push` e `notificationclick`.
+5. Frontend: helpers + card de opt-in na home.
+6. Painel admin `/notificacoes`.
+7. Teste ponta-a-ponta enviando pra minha própria assinatura de preview.
 
-## 6. Splash opcional
-Só se após 1–5 ainda ficar irregular: overlay com logo que some quando `document.readyState === "complete"`. Provavelmente desnecessário depois dos passos anteriores.
-
-# Detalhes técnicos
-- `ensureQueryData` respeita o `staleTime` das queries — sem refetch extra.
-- LCP: só um `fetchpriority: "high"` por página (imagem esquerda do Hero).
-- Preloads de imagens ficam no `head()` da rota `/`, nunca no `__root.tsx`, para não penalizar outras rotas.
-- Nenhum dado sensível no HTML — produtos/settings já são públicos.
-- Sem alteração em carrinho, checkout, admin ou backend.
-
-# Ordem
-1. Loader + `ensureQueryData` (70% do problema)
-2. Preload de imagens no `head()` da rota `/` (LCP com `fetchpriority: "high"`)
-3. `aspect-ratio` nos `<img>` de Hero e cards
-4. Fontes (`preconnect` + `preload` + `display=swap`) no `__root.tsx`
-5. Placeholders coloridos nos cards
-6. Reavaliar; splash só se necessário
-
-# Fora de escopo
-- Converter PNGs para WebP/AVIF e trocar CDN de imagens (posso propor em plano separado se ainda pesar).
-- Lógica de negócio.
+Posso seguir?
