@@ -1115,6 +1115,73 @@ function AutomationEditor({
                 />
               </Field>
             )}
+            {kind === "payment_pending" && (
+              <Field label="Minutos com pedido pendente" hint="Só dispara se o pedido continuar 'pendente' após esse tempo.">
+                <input
+                  type="number" min={1}
+                  value={cfg.delay_minutes ?? 20}
+                  onChange={(e) => setC("delay_minutes", Math.max(1, Number(e.target.value) || 20))}
+                  className={inputCls}
+                />
+              </Field>
+            )}
+            {kind === "feedback_request" && (
+              <Field label="Horas após entrega" hint="Aguarda esse tempo depois do pedido ser marcado como 'entregue'.">
+                <input
+                  type="number" min={1} max={168}
+                  value={cfg.delay_hours ?? 24}
+                  onChange={(e) => setC("delay_hours", Math.max(1, Math.min(168, Number(e.target.value) || 24)))}
+                  className={inputCls}
+                />
+              </Field>
+            )}
+            {kind === "loyalty_close" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Selos mínimos (0-10)" hint="7 = a 3 selos da recompensa.">
+                  <input
+                    type="number" min={1} max={9}
+                    value={cfg.min_stamps ?? 7}
+                    onChange={(e) => setC("min_stamps", Math.max(1, Math.min(9, Number(e.target.value) || 7)))}
+                    className={inputCls}
+                  />
+                </Field>
+                <label className="mt-6 flex items-center gap-2 text-xs text-white/70">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(cfg.repeat_weekly)}
+                    onChange={(e) => setC("repeat_weekly", e.target.checked)}
+                  />
+                  Repetir toda semana
+                </label>
+              </div>
+            )}
+            {kind === "weekly_promo" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Dia da semana">
+                  <select
+                    value={cfg.dow ?? 5}
+                    onChange={(e) => setC("dow", Number(e.target.value))}
+                    className={inputCls}
+                  >
+                    <option value={0}>Domingo</option>
+                    <option value={1}>Segunda</option>
+                    <option value={2}>Terça</option>
+                    <option value={3}>Quarta</option>
+                    <option value={4}>Quinta</option>
+                    <option value={5}>Sexta</option>
+                    <option value={6}>Sábado</option>
+                  </select>
+                </Field>
+                <Field label="Hora (0-23)">
+                  <input
+                    type="number" min={0} max={23}
+                    value={cfg.hour ?? 18}
+                    onChange={(e) => setC("hour", Math.max(0, Math.min(23, Number(e.target.value) || 18)))}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+            )}
           </FieldGroup>
 
           <FieldGroup icon={Filter} label="Filtro de público (opcional)" tone="cyan">
