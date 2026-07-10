@@ -102,7 +102,7 @@ import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "settings"] as const;
+    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "settings"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
