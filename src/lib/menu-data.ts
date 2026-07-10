@@ -453,6 +453,12 @@ export const siteSettingsQueryOptions = queryOptions({
         imageScale: Number((data as Record<string, unknown>).popup_image_scale ?? 1),
         frequency: (String((data as Record<string, unknown>).popup_frequency ?? "session") as PopupFrequency),
       },
+      urgency: {
+        active: Boolean((data as Record<string, unknown>).urgency_active ?? false),
+        text: String((data as Record<string, unknown>).urgency_text ?? "Sexta Especial acaba em"),
+        endsAt: ((data as Record<string, unknown>).urgency_ends_at as string | null) ?? null,
+        couponCode: String((data as Record<string, unknown>).urgency_coupon_code ?? ""),
+      },
     };
   },
   staleTime: 60_000,
