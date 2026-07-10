@@ -486,6 +486,10 @@ export function CheckoutSheet() {
             )}
           </div>
 
+          <div className="mt-4">
+            <CheckoutUpsellStrip />
+          </div>
+
           <div className="h-20" />
 
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
