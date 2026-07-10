@@ -25,22 +25,28 @@ export function Reveal({
   as?: keyof React.JSX.IntrinsicElements;
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  const [visible, setVisible] = useState(false);
+  // IMPORTANTE: começa visível. Nunca escondemos conteúdo por padrão —
+  // isso evita "seções sumindo" após navegação/scroll restaurado.
+  // A animação de entrada só acontece quando explicitamente detectamos
+  // que o elemento estava fora do viewport no primeiro paint.
+  const [visible, setVisible] = useState(true);
+  const [animateIn, setAnimateIn] = useState(false);
 
-  // Se o elemento já estiver visível no primeiro paint (above-the-fold),
-  // marca como visível de forma síncrona para evitar o "flash" de conteúdo
-  // aparecendo em pedaços no carregamento inicial.
   useIsoLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const vh = window.innerHeight || document.documentElement.clientHeight;
-    if (rect.top < vh && rect.bottom > 0) {
-      setVisible(true);
+    // Se está fora do viewport no primeiro paint, permite animação de entrada
+    // (mas o conteúdo continua "visível" no fluxo — só translada).
+    if (rect.top >= vh || rect.bottom <= 0) {
+      setAnimateIn(true);
+      setVisible(false);
     }
   }, []);
 
   useEffect(() => {
+    if (!animateIn) return;
     const el = ref.current;
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
@@ -61,8 +67,15 @@ export function Reveal({
       { threshold: 0.05, rootMargin: "0px 0px 10% 0px" },
     );
     io.observe(el);
-    return () => io.disconnect();
-  }, [once]);
+    // Fallback: se por qualquer motivo o IO não disparar (scroll restaurado,
+    // navegação bfcache, etc), garantimos visibilidade após 600ms.
+    const fallback = window.setTimeout(() => setVisible(true), 600);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(fallback);
+    };
+  }, [once, animateIn]);
+
 
 
   const offset =
