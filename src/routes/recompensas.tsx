@@ -52,7 +52,7 @@ function RecompensasPage() {
         supabase.from("loyalty").select("stamps").eq("user_id", userId).maybeSingle(),
         supabase
           .from("loyalty_coupons")
-          .select("id, code, amount_cents, used_at, created_at")
+          .select("id, code, used_at, created_at")
           .eq("user_id", userId)
           .order("created_at", { ascending: false }),
       ]);
@@ -178,7 +178,7 @@ function RecompensasPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-extrabold text-neon-yellow">
-                          R$ {(c.amount_cents / 100).toFixed(2).replace(".", ",")}
+                          R$ {COUPON_VALUE},00
                         </div>
                         <div className="text-[11px] text-white/60">Use no checkout</div>
                       </div>
@@ -202,7 +202,7 @@ function RecompensasPage() {
                         <div className="text-[11px] text-white/50">Utilizado</div>
                       </div>
                       <div className="text-sm text-white/60 line-through">
-                        R$ {(c.amount_cents / 100).toFixed(2).replace(".", ",")}
+                        R$ {COUPON_VALUE},00
                       </div>
                     </div>
                   ))}
