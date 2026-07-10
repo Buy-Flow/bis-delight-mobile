@@ -27,7 +27,7 @@ import { brl } from "@/lib/cart-context";
 import { ensurePushSubscriptionSaved, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
 import { sendAdminTestPush } from "@/lib/push.functions";
 
-type OrderStatus = "pendente" | "pago" | "preparando" | "entregue" | "cancelado";
+type OrderStatus = "pendente" | "pago" | "preparando" | "saiu_para_entrega" | "entregue" | "cancelado";
 
 type OrderItem = {
   id: string;
