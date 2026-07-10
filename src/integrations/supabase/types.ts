@@ -490,6 +490,7 @@ export type Database = {
           body: string
           created_at: string
           created_by: string | null
+          expires_at: string | null
           failed_count: number
           id: string
           image: string | null
@@ -503,6 +504,7 @@ export type Database = {
           body: string
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
           failed_count?: number
           id?: string
           image?: string | null
@@ -516,6 +518,7 @@ export type Database = {
           body?: string
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
           failed_count?: number
           id?: string
           image?: string | null
