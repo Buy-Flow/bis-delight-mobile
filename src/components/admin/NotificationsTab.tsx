@@ -139,9 +139,54 @@ const AUTO_META: Record<AutoKind, { label: string; hint: string; icon: typeof Gi
     accent: "text-neon-pink",
     ring: "ring-neon-pink/40",
   },
+  abandoned_cart: {
+    label: "Carrinho abandonado",
+    hint: "X minutos depois do cliente parar sem finalizar.",
+    icon: Zap,
+    accent: "text-neon-pink",
+    ring: "ring-neon-pink/40",
+  },
+  payment_pending: {
+    label: "Pagamento pendente",
+    hint: "Lembrete quando o pedido continua 'pendente' após X minutos.",
+    icon: CreditCard,
+    accent: "text-neon-yellow",
+    ring: "ring-neon-yellow/40",
+  },
+  feedback_request: {
+    label: "Pedir avaliação",
+    hint: "X horas após o pedido ser marcado como 'entregue'.",
+    icon: Star,
+    accent: "text-neon-cyan",
+    ring: "ring-neon-cyan/40",
+  },
+  loyalty_close: {
+    label: "Perto da recompensa",
+    hint: "Cliente com N+ selos — dá aquele empurrão pra completar 10.",
+    icon: Trophy,
+    accent: "text-neon-yellow",
+    ring: "ring-neon-yellow/40",
+  },
+  weekly_promo: {
+    label: "Promoção semanal",
+    hint: "Envio recorrente todo dia X da semana, em uma hora fixa.",
+    icon: CalendarDays,
+    accent: "text-neon-pink",
+    ring: "ring-neon-pink/40",
+  },
 };
 
-const KIND_OPTIONS: AutoKind[] = ["birthday", "welcome", "after_order", "dormant", "abandoned_cart"];
+const KIND_OPTIONS: AutoKind[] = [
+  "birthday",
+  "welcome",
+  "after_order",
+  "dormant",
+  "abandoned_cart",
+  "payment_pending",
+  "feedback_request",
+  "loyalty_close",
+  "weekly_promo",
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
