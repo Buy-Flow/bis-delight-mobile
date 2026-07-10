@@ -5618,38 +5618,61 @@ function PopupSection({
         </button>
       </div>
 
-      {/* Preview */}
+      {/* Preview — espelha o pop-up real (sem card, X flutuando, texto sobre a imagem) */}
       <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-          Preview
+        <div className="mb-2 flex items-center justify-between">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+            Preview (como o cliente vê)
+          </div>
+          <div className="text-[10px] text-white/30">Fundo escurecido em cima da página</div>
         </div>
-        <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-b from-[oklch(0.22_0.14_305)] to-[oklch(0.14_0.10_305)] shadow-xl">
-          {popup.imageUrl && (
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/30">
+        <div className="relative mx-auto aspect-[9/16] w-full max-w-[240px] overflow-hidden rounded-3xl border border-white/15 bg-[url('https://lcntjixsisawwblcgwry.supabase.co/storage/v1/object/public/product-images/hero-bg-preview.png')] bg-cover bg-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          {/* X flutuante */}
+          <div className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white shadow">
+            <X className="h-3.5 w-3.5" />
+          </div>
+          {/* Conteúdo centralizado */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+            {popup.imageUrl ? (
               <img
                 src={popup.imageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-contain"
+                className="max-h-[55%] max-w-full select-none object-contain"
                 style={{
                   transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
                   transformOrigin: "center center",
                 }}
               />
-            </div>
-          )}
-          <div className="space-y-2 p-4 text-center">
-            {popup.title && (
-              <div className="font-display text-lg font-black leading-tight text-white">{popup.title}</div>
+            ) : (
+              <div className="grid aspect-square w-24 place-items-center rounded-2xl border border-dashed border-white/20 text-[10px] text-white/40">
+                sem imagem
+              </div>
             )}
-            {popup.body && <div className="whitespace-pre-line text-xs text-white/80">{popup.body}</div>}
-            {popup.cta && (popup.link || popup.imageUrl) && (
-              <div className="mt-2 rounded-2xl bg-neon-yellow py-2 text-xs font-black text-[oklch(0.15_0.10_305)]">
+            {(popup.title || popup.body) && (
+              <div className="w-full space-y-1 text-center">
+                {popup.title && (
+                  <div className="font-display text-sm font-black leading-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                    {popup.title}
+                  </div>
+                )}
+                {popup.body && (
+                  <div className="line-clamp-2 whitespace-pre-line text-[10px] text-white/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    {popup.body}
+                  </div>
+                )}
+              </div>
+            )}
+            {popup.cta && linkRaw && (
+              <div className="mt-1 rounded-2xl bg-neon-yellow px-4 py-1.5 text-[10px] font-black text-[oklch(0.15_0.10_305)] shadow-lg">
                 {popup.cta}
               </div>
             )}
           </div>
         </div>
       </div>
+
 
       {/* Texto */}
       <div className="grid gap-3 sm:grid-cols-2">
