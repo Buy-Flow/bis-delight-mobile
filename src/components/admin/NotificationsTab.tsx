@@ -398,28 +398,39 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
     setSending(true);
     try {
       const { data: user } = await supabase.auth.getUser();
-      const expiresAt =
-        durationMin !== null ? new Date(Date.now() + durationMin * 60_000).toISOString() : null;
-      const { data: campaign, error } = await supabase
-        .from("push_campaigns")
-        .insert({
+      const baseTime = scheduledIso ? new Date(scheduledIso).getTime() : Date.now();
+      const totalReps = Math.max(1, Math.min(20, repeatCount));
+      const intervalMs = repeatIntervalMin * 60_000;
+
+      // Build all occurrences. The first uses baseTime; subsequent add interval.
+      const occurrences = Array.from({ length: totalReps }, (_, i) => baseTime + i * intervalMs);
+      const nowMs = Date.now();
+
+      // Insert campaigns. First is "sent" if base is now (no schedule); others always scheduled.
+      const rows = occurrences.map((t, i) => {
+        const isImmediate = i === 0 && !scheduledIso;
+        return {
           title: title.trim(),
           body: body.trim(),
           url: url.trim() || null,
           image: image.trim() || null,
           audience,
-          expires_at: expiresAt,
+          expires_at: durationMin !== null ? new Date(t + durationMin * 60_000).toISOString() : null,
           created_by: user.user?.id ?? null,
-          status: scheduledIso ? "scheduled" : "sent",
-          scheduled_for: scheduledIso,
-        } as any)
-        .select()
-        .single();
-      if (error || !campaign) throw error;
+          status: isImmediate ? "sent" : "scheduled",
+          scheduled_for: isImmediate ? null : new Date(t).toISOString(),
+        } as any;
+      });
 
-      if (scheduledIso) {
-        toast.success(`Agendada para ${new Date(scheduledIso).toLocaleString("pt-BR")}`);
-      } else {
+      const { data: campaigns, error } = await supabase
+        .from("push_campaigns")
+        .insert(rows)
+        .select();
+      if (error || !campaigns?.length) throw error;
+
+      // Fire the first one immediately if base was "now".
+      const immediate = campaigns.find((c) => c.status === "sent" && !c.scheduled_for);
+      if (immediate) {
         const { data: session } = await supabase.auth.getSession();
         const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
         const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -430,14 +441,22 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
             apikey: anon,
             Authorization: `Bearer ${session.session?.access_token ?? anon}`,
           },
-          body: JSON.stringify({ campaignId: campaign.id }),
+          body: JSON.stringify({ campaignId: immediate.id }),
         });
         const result = await res.json();
         if (!res.ok) throw new Error(result?.error || "Falha no envio");
+        const extras = totalReps - 1;
         toast.success(
-          `Enviado! ${result.sent} entregues${result.failed ? `, ${result.failed} falharam` : ""}.`,
+          `Enviado! ${result.sent} entregues${extras ? ` · +${extras} repetições agendadas` : ""}.`,
+        );
+      } else {
+        toast.success(
+          totalReps === 1
+            ? `Agendada para ${new Date(baseTime).toLocaleString("pt-BR")}`
+            : `${totalReps} envios agendados a cada ${labelForMinutes(repeatIntervalMin)}, a partir de ${new Date(baseTime).toLocaleString("pt-BR")}`,
         );
       }
+
       setTitle("");
       setBody("");
       setUrl("");
