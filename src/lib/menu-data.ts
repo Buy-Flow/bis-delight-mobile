@@ -73,6 +73,34 @@ export type SiteSettings = {
   cardGlow: boolean;
   titleFont: string;
   heroImages: HeroImagesConfig;
+  popup: PopupConfig;
+};
+
+export type PopupFrequency = "session" | "always" | "daily";
+export type PopupConfig = {
+  active: boolean;
+  title: string;
+  body: string;
+  imageUrl: string;
+  link: string;
+  cta: string;
+  imagePosX: number;
+  imagePosY: number;
+  imageScale: number;
+  frequency: PopupFrequency;
+};
+
+export const DEFAULT_POPUP: PopupConfig = {
+  active: false,
+  title: "",
+  body: "",
+  imageUrl: "",
+  link: "",
+  cta: "Ver agora",
+  imagePosX: 0,
+  imagePosY: 0,
+  imageScale: 1,
+  frequency: "session",
 };
 
 export type HeroImageConfig = {
