@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
+import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
@@ -63,6 +64,11 @@ const ProdutoIdRoute = ProdutoIdRouteImport.update({
 const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
   id: '/rush',
   path: '/rush',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPrevisaoRoute = AuthenticatedPrevisaoRouteImport.update({
+  id: '/previsao',
+  path: '/previsao',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPedidosRoute = AuthenticatedPedidosRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
+  '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
+  '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
+  '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/notificacoes'
     | '/pedidos'
+    | '/previsao'
     | '/rush'
     | '/produto/$id'
     | '/rastrear/$orderId'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/notificacoes'
     | '/pedidos'
+    | '/previsao'
     | '/rush'
     | '/produto/$id'
     | '/rastrear/$orderId'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/_authenticated/financeiro'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pedidos'
+    | '/_authenticated/previsao'
     | '/_authenticated/rush'
     | '/produto/$id'
     | '/_authenticated/rastrear/$orderId'
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRushRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/previsao': {
+      id: '/_authenticated/previsao'
+      path: '/previsao'
+      fullPath: '/previsao'
+      preLoaderRoute: typeof AuthenticatedPrevisaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pedidos': {
       id: '/_authenticated/pedidos'
       path: '/pedidos'
@@ -351,6 +370,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPedidosRoute: typeof AuthenticatedPedidosRoute
+  AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
   AuthenticatedRastrearOrderIdRoute: typeof AuthenticatedRastrearOrderIdRoute
 }
@@ -363,6 +383,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPedidosRoute: AuthenticatedPedidosRoute,
+  AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
   AuthenticatedRastrearOrderIdRoute: AuthenticatedRastrearOrderIdRoute,
 }
