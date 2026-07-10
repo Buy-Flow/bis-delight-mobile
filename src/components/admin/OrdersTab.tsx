@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
-import { currentSubscription, ensurePushSubscriptionSaved, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
+import { ensurePushSubscriptionSaved, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
 
 type OrderStatus = "pendente" | "pago" | "preparando" | "entregue" | "cancelado";
 
