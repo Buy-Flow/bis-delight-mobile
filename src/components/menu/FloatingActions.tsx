@@ -24,8 +24,8 @@ export function FloatingActions() {
       </a>
 
       {count > 0 && (
-        <button
-          onClick={openCart}
+        <Link
+          to="/carrinho"
           className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl bg-neon-pink px-4 py-3 text-white glow-pink touch-manipulation [-webkit-tap-highlight-color:transparent] will-change-transform transition-transform duration-100 ease-out active:scale-[.97]"
         >
           <div className="flex min-w-0 items-center gap-3">
@@ -42,7 +42,7 @@ export function FloatingActions() {
           <div className="font-display text-lg font-extrabold text-neon-yellow glow-yellow-text shrink-0">
             {subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
           </div>
-        </button>
+        </Link>
       )}
     </div>
   );
