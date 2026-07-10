@@ -80,7 +80,12 @@ export function BottomNav() {
         className="fixed inset-x-0 bottom-0 z-40"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="mx-auto max-w-md px-3 pb-2">
+        {/* Solid backdrop strip — blocks page content from showing behind the pill */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[calc(100%+2rem)] bg-gradient-to-t from-[oklch(0.10_0.08_300)] via-[oklch(0.10_0.08_300)]/95 to-transparent"
+        />
+        <div className="relative mx-auto max-w-md px-3 pb-2">
           <div className="relative flex items-end gap-1 rounded-2xl border border-white/10 bg-[#1a0324]/90 px-2 py-1.5 shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.6)] backdrop-blur-xl">
             {leftItems.map((it) => (
               <LinkNavItem key={it.label} item={it} path={pathname} search={search} />
