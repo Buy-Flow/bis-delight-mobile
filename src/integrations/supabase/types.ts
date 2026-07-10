@@ -108,6 +108,44 @@ export type Database = {
           },
         ]
       }
+      birthday_gifts: {
+        Row: {
+          claimed_at: string
+          coupon_code: string
+          coupon_id: string | null
+          id: string
+          used_at: string | null
+          user_id: string
+          year: number
+        }
+        Insert: {
+          claimed_at?: string
+          coupon_code: string
+          coupon_id?: string | null
+          id?: string
+          used_at?: string | null
+          user_id: string
+          year: number
+        }
+        Update: {
+          claimed_at?: string
+          coupon_code?: string
+          coupon_id?: string | null
+          id?: string
+          used_at?: string | null
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "birthday_gifts_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "promo_coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           active: boolean
@@ -1312,6 +1350,25 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      claim_birthday_gift: {
+        Args: never
+        Returns: {
+          code: string
+          discount_value: number
+          expires_at: string
+        }[]
+      }
+      get_birthday_gift_status: {
+        Args: never
+        Returns: {
+          birthday: string
+          discount_value: number
+          gift_code: string
+          gift_expires_at: string
+          gift_used: boolean
+          is_birthday_month: boolean
+        }[]
       }
       has_role: {
         Args: {
