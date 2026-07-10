@@ -593,7 +593,58 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
               </span>
             </div>
           </Field>
+          <Field label="Repetir envio">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white/50">Quantas vezes</span>
+                <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setRepeatCount((n) => Math.max(1, n - 1))}
+                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10"
+                    aria-label="Diminuir"
+                  >−</button>
+                  <span className="w-8 text-center text-sm font-black text-neon-yellow">{repeatCount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setRepeatCount((n) => Math.min(20, n + 1))}
+                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10"
+                    aria-label="Aumentar"
+                  >+</button>
+                </div>
+                <span className="text-[10px] text-white/40">
+                  {repeatCount === 1 ? "Envio único" : `${repeatCount} envios no total`}
+                </span>
+              </div>
+              {repeatCount > 1 && (
+                <div className="space-y-1.5">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-white/50">A cada</span>
+                  <div className="flex flex-wrap gap-2">
+                    {repeatIntervalOptions.map((r) => {
+                      const active = repeatIntervalMin === r.value;
+                      return (
+                        <button
+                          key={r.value}
+                          type="button"
+                          onClick={() => setRepeatIntervalMin(r.value)}
+                          className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                            active
+                              ? "border-neon-yellow bg-neon-yellow/15 text-neon-yellow"
+                              : "border-white/10 bg-black/20 text-white/70 hover:border-white/30"
+                          }`}
+                        >
+                          <Clock className="h-3 w-3" />
+                          {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Field>
         </FieldGroup>
+
 
         <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/30 p-4">
           <p className="text-xs text-white/70">
