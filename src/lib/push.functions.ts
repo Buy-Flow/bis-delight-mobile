@@ -2,8 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+// Anonymous-friendly subscribe: any visitor (logged in or not) can register
+// their device. If a bearer token is present we associate the user_id so
+// admin filters (birthday, recent buyers, etc.) can target them.
 export const savePushSubscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
     z
       .object({
@@ -14,11 +16,27 @@ export const savePushSubscription = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Best-effort: extract user id from bearer token when present
+    let userId: string | null = null;
+    try {
+      const { getRequest } = await import("@tanstack/react-start/server");
+      const req = getRequest();
+      const auth = req.headers.get("authorization") ?? "";
+      const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+      if (token) {
+        const { data: userRes } = await supabaseAdmin.auth.getUser(token);
+        if (userRes?.user) userId = userRes.user.id;
+      }
+    } catch {
+      /* anonymous is fine */
+    }
+
     const { error } = await supabaseAdmin.from("push_subscriptions").upsert(
       {
-        user_id: context.userId,
+        user_id: userId,
         endpoint: data.endpoint,
         p256dh: data.p256dh,
         auth: data.auth,
@@ -33,7 +51,6 @@ export const savePushSubscription = createServerFn({ method: "POST" })
   });
 
 export const deletePushSubscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
     z
       .object({
@@ -41,13 +58,12 @@ export const deletePushSubscription = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("push_subscriptions")
       .delete()
-      .eq("endpoint", data.endpoint)
-      .eq("user_id", context.userId);
+      .eq("endpoint", data.endpoint);
 
     if (error) throw new Error(error.message);
     return { ok: true };
