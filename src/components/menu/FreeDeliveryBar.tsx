@@ -3,7 +3,7 @@ import { useSiteSettings } from "@/lib/menu-data";
 import { brl, useCart } from "@/lib/cart-context";
 
 export function FreeDeliveryBar() {
-  const { data: settings } = useSettings();
+  const { data: settings } = useSiteSettings();
   const { subtotal, items } = useCart();
   const threshold = Number(settings?.freeDeliveryThreshold ?? 0);
   if (!threshold || items.length === 0) return null;
