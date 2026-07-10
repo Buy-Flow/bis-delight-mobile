@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
-import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles } from "lucide-react";
+import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles, Gift } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
