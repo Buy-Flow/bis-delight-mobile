@@ -700,6 +700,16 @@ export function useUpdateSettings() {
         card_glow: s.cardGlow,
         title_font: s.titleFont,
         hero_images: s.heroImages,
+        popup_active: s.popup.active,
+        popup_title: s.popup.title,
+        popup_body: s.popup.body,
+        popup_image_url: s.popup.imageUrl,
+        popup_link: s.popup.link,
+        popup_cta: s.popup.cta,
+        popup_image_pos_x: s.popup.imagePosX,
+        popup_image_pos_y: s.popup.imagePosY,
+        popup_image_scale: s.popup.imageScale,
+        popup_frequency: s.popup.frequency,
 
 
 
