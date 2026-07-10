@@ -24,7 +24,6 @@ import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as ApiPublicEvolutionDiagRouteImport } from './routes/api/public/evolution-diag'
 import { Route as ApiPublicEvolutionRouteImport } from './routes/api/public/evolution'
 
 const RecompensasRoute = RecompensasRouteImport.update({
@@ -102,11 +101,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicEvolutionDiagRoute = ApiPublicEvolutionDiagRouteImport.update({
-  id: '/api/public/evolution-diag',
-  path: '/api/public/evolution-diag',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicEvolutionRoute = ApiPublicEvolutionRouteImport.update({
   id: '/api/public/evolution',
   path: '/api/public/evolution',
@@ -129,7 +123,6 @@ export interface FileRoutesByFullPath {
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/api/public/evolution': typeof ApiPublicEvolutionRoute
-  '/api/public/evolution-diag': typeof ApiPublicEvolutionDiagRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -147,7 +140,6 @@ export interface FileRoutesByTo {
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/api/public/evolution': typeof ApiPublicEvolutionRoute
-  '/api/public/evolution-diag': typeof ApiPublicEvolutionDiagRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,7 +159,6 @@ export interface FileRoutesById {
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/api/public/evolution': typeof ApiPublicEvolutionRoute
-  '/api/public/evolution-diag': typeof ApiPublicEvolutionDiagRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -187,7 +178,6 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/produto/$id'
     | '/api/public/evolution'
-    | '/api/public/evolution-diag'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -205,7 +195,6 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/produto/$id'
     | '/api/public/evolution'
-    | '/api/public/evolution-diag'
   id:
     | '__root__'
     | '/'
@@ -224,7 +213,6 @@ export interface FileRouteTypes {
     | '/_authenticated/pedidos'
     | '/produto/$id'
     | '/api/public/evolution'
-    | '/api/public/evolution-diag'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,7 +224,6 @@ export interface RootRouteChildren {
   RecompensasRoute: typeof RecompensasRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   ApiPublicEvolutionRoute: typeof ApiPublicEvolutionRoute
-  ApiPublicEvolutionDiagRoute: typeof ApiPublicEvolutionDiagRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -346,13 +333,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/evolution-diag': {
-      id: '/api/public/evolution-diag'
-      path: '/api/public/evolution-diag'
-      fullPath: '/api/public/evolution-diag'
-      preLoaderRoute: typeof ApiPublicEvolutionDiagRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/evolution': {
       id: '/api/public/evolution'
       path: '/api/public/evolution'
@@ -397,8 +377,17 @@ const rootRouteChildren: RootRouteChildren = {
   RecompensasRoute: RecompensasRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   ApiPublicEvolutionRoute: ApiPublicEvolutionRoute,
-  ApiPublicEvolutionDiagRoute: ApiPublicEvolutionDiagRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
