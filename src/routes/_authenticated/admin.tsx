@@ -153,12 +153,13 @@ function AdminPage() {
     );
   }
 
-  const tabs: { id: Tab; label: string; icon: React.ElementType; to?: string }[] = [
+  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "products", label: "Produtos", icon: Package },
     { id: "highlights", label: "Destaques", icon: Star },
     { id: "news", label: "Novidades", icon: Sparkles },
     { id: "extras", label: "Complementos", icon: Plus },
     { id: "categories", label: "Categorias", icon: Tag },
+    { id: "notifications", label: "Notificações", icon: BellRing },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
