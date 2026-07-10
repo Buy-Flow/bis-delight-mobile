@@ -32,8 +32,6 @@ import heroTexture from "@/assets/purple-crumpled-bg.png.asset.json";
 import monteAcaiImg from "@/assets/monte-acai.png.asset.json";
 import { Search, Sparkles, X, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
-// CartSheet is eager-loaded so tapping "Ver carrinho" on mobile is instant
-import { CartSheet } from "@/components/menu/CartSheet";
 
 const ProductModal = lazy(() =>
   import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
