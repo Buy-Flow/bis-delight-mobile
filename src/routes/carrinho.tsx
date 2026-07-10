@@ -193,7 +193,7 @@ function CartPage() {
                     <Sparkles className="h-3.5 w-3.5" />
                   </span>
                   <div className="text-[11px] font-black uppercase tracking-[0.16em] text-neon-cyan">
-                    Que tal levar também?
+                    Selecionado pra você
                   </div>
                 </div>
                 <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
