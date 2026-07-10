@@ -634,8 +634,41 @@ function ProfilePanel() {
 
   if (loading) return <PanelSpinner />;
 
+  const displayName = fullName.trim() || user?.email?.split("@")[0] || "Cliente";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase())
+    .join("") || "?";
+
   return (
     <div className="space-y-3">
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-neon-pink/15 via-white/5 to-neon-cyan/10 p-4">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-neon-pink/20 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-neon-cyan/15 blur-2xl" />
+        <div className="relative flex items-center gap-3">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink to-neon-yellow text-lg font-black text-black shadow-[0_0_20px_rgba(255,60,172,0.35)]">
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <div className="truncate text-base font-black text-white">{displayName}</div>
+              {isAdmin && (
+                <span className="inline-flex items-center gap-0.5 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-neon-cyan">
+                  <Shield className="h-2.5 w-2.5" /> Admin
+                </span>
+              )}
+            </div>
+            <div className="truncate text-xs text-white/60">{user?.email}</div>
+            {phone && (
+              <div className="mt-0.5 truncate text-[11px] text-white/50">{phone}</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+
       {isAdmin && (
         <Link
           to="/admin"
