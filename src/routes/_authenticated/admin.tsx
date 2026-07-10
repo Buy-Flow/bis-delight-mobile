@@ -111,7 +111,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "settings";
+type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
