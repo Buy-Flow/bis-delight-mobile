@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useBackDismiss } from "@/lib/use-back-dismiss";
 
 type Mode = "entrega" | "retirada";
 
