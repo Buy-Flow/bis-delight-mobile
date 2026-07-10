@@ -147,9 +147,7 @@ export function ProductModal({
   const [sizeId, setSizeId] = useState<string>(
     seed?.sizeId ?? getSizes(product)[0].id,
   );
-  const [flavor, setFlavor] = useState<string | undefined>(
-    seed?.flavor ?? product?.flavors?.[0],
-  );
+  const [flavor, setFlavor] = useState<string | undefined>(seed?.flavor);
   const [extras, setExtras] = useState<Record<string, number>>(seed?.extras ?? {});
   const [removed, setRemoved] = useState<string[]>(seed?.removed ?? []);
   const [qty, setQty] = useState(seed?.qty ?? 1);
