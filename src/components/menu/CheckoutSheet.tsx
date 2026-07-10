@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
+import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
 
 type Mode = "entrega" | "retirada";
 
@@ -484,6 +485,10 @@ export function CheckoutSheet() {
                 </button>
               </div>
             )}
+          </div>
+
+          <div className="mt-4">
+            <CheckoutUpsellStrip />
           </div>
 
           <div className="h-20" />
