@@ -372,7 +372,10 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
   const [audience, setAudience] = useState<Audience>("all");
   const [durationMin, setDurationMin] = useState<number | null>(60 * 24);
   const [scheduledAt, setScheduledAt] = useState<string>("");
+  const [repeatCount, setRepeatCount] = useState<number>(1);
+  const [repeatIntervalMin, setRepeatIntervalMin] = useState<number>(60 * 24);
   const [sending, setSending] = useState(false);
+
 
   const preview = useMemo(
     () => ({
