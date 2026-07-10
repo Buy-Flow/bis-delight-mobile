@@ -47,35 +47,6 @@ export type Database = {
         }
         Relationships: []
       }
-      ai_conversation_memory: {
-        Row: {
-          conversation_id: string
-          summary: string
-          turns_since_summary: number
-          updated_at: string
-        }
-        Insert: {
-          conversation_id: string
-          summary?: string
-          turns_since_summary?: number
-          updated_at?: string
-        }
-        Update: {
-          conversation_id?: string
-          summary?: string
-          turns_since_summary?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_conversation_memory_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: true
-            referencedRelation: "whatsapp_conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       automation_runs: {
         Row: {
           automation_id: string
@@ -551,12 +522,10 @@ export type Database = {
           body: string
           config: Json
           created_at: string
-          filters: Json
           id: string
           image: string | null
           kind: string
           last_run_at: string | null
-          name: string | null
           title: string
           updated_at: string
           url: string | null
@@ -566,12 +535,10 @@ export type Database = {
           body: string
           config?: Json
           created_at?: string
-          filters?: Json
           id?: string
           image?: string | null
           kind: string
           last_run_at?: string | null
-          name?: string | null
           title: string
           updated_at?: string
           url?: string | null
@@ -581,12 +548,10 @@ export type Database = {
           body?: string
           config?: Json
           created_at?: string
-          filters?: Json
           id?: string
           image?: string | null
           kind?: string
           last_run_at?: string | null
-          name?: string | null
           title?: string
           updated_at?: string
           url?: string | null
@@ -877,113 +842,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      whatsapp_conversations: {
-        Row: {
-          ai_paused: boolean
-          assigned_to: string | null
-          contact_name: string | null
-          created_at: string
-          id: string
-          last_message_at: string
-          last_message_preview: string | null
-          phone: string
-          profile_pic_url: string | null
-          unread_count: number
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          ai_paused?: boolean
-          assigned_to?: string | null
-          contact_name?: string | null
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          last_message_preview?: string | null
-          phone: string
-          profile_pic_url?: string | null
-          unread_count?: number
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          ai_paused?: boolean
-          assigned_to?: string | null
-          contact_name?: string | null
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          last_message_preview?: string | null
-          phone?: string
-          profile_pic_url?: string | null
-          unread_count?: number
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      whatsapp_messages: {
-        Row: {
-          content: string | null
-          conversation_id: string
-          created_at: string
-          direction: string
-          error: string | null
-          evolution_id: string | null
-          id: string
-          media_url: string | null
-          operator_id: string | null
-          raw: Json | null
-          read_at: string | null
-          sent_by: string
-          status: string | null
-          transcript: string | null
-          type: string
-        }
-        Insert: {
-          content?: string | null
-          conversation_id: string
-          created_at?: string
-          direction: string
-          error?: string | null
-          evolution_id?: string | null
-          id?: string
-          media_url?: string | null
-          operator_id?: string | null
-          raw?: Json | null
-          read_at?: string | null
-          sent_by?: string
-          status?: string | null
-          transcript?: string | null
-          type?: string
-        }
-        Update: {
-          content?: string | null
-          conversation_id?: string
-          created_at?: string
-          direction?: string
-          error?: string | null
-          evolution_id?: string | null
-          id?: string
-          media_url?: string | null
-          operator_id?: string | null
-          raw?: Json | null
-          read_at?: string | null
-          sent_by?: string
-          status?: string | null
-          transcript?: string | null
-          type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "whatsapp_messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "whatsapp_conversations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
