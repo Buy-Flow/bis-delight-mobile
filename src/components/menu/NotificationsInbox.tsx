@@ -294,12 +294,21 @@ export function useUnreadNotifications() {
       setCount(0);
       return;
     }
-    const { count: c } = await supabase
+    const { data } = await supabase
       .from("push_deliveries")
-      .select("id", { count: "exact", head: true })
-      .is("opened_at", null);
-    setCount(c ?? 0);
+      .select("id, campaign:push_campaigns(expires_at)")
+      .is("opened_at", null)
+      .limit(200);
+    const now = Date.now();
+    const rows = (data ?? []) as Array<{ id: string; campaign: { expires_at: string | null } | { expires_at: string | null }[] | null }>;
+    const valid = rows.filter((r) => {
+      const c = Array.isArray(r.campaign) ? r.campaign[0] : r.campaign;
+      if (!c?.expires_at) return true;
+      return new Date(c.expires_at).getTime() > now;
+    });
+    setCount(valid.length);
   };
+
 
   useEffect(() => {
     refresh();
