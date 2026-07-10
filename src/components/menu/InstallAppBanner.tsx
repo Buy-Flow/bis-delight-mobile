@@ -12,6 +12,14 @@ function isStandalonePWA() {
   return Boolean(mm || ios);
 }
 
+function isMobileDevice() {
+  if (typeof window === "undefined") return false;
+  const coarse = window.matchMedia?.("(pointer: coarse)").matches;
+  const narrow = window.matchMedia?.("(max-width: 900px)").matches;
+  const ua = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  return Boolean(ua || (coarse && narrow));
+}
+
 const perks = [
   { icon: Zap, label: "Pedidos mais rápidos" },
   { icon: Bell, label: "Notificações de promoções" },
@@ -22,7 +30,7 @@ export function InstallAppBanner() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    setShow(!isStandalonePWA());
+    setShow(isMobileDevice() && !isStandalonePWA());
   }, []);
 
   if (!show) return null;
