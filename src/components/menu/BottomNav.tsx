@@ -74,10 +74,10 @@ export function BottomNav() {
   return (
     <>
       {/* Spacer so content isn't hidden behind the fixed nav */}
-      <div aria-hidden className="h-20 md:hidden" />
+      <div aria-hidden className="h-20" />
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto max-w-md px-3 pb-2">
