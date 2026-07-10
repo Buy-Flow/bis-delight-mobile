@@ -74,10 +74,14 @@ export function makeDefaultPopup(): Omit<SitePopup, "id" | "created_at" | "updat
 
 const KEY_PREFIX = "querobis:popup-dismissed:";
 const SESSION_SHOWN_PREFIX = "querobis:popup-shown-this-session:";
+const ANY_POPUP_SHOWN_THIS_SESSION_KEY = "querobis:any-popup-shown-this-session";
 
 function hasPopupShownThisSession(p: SitePopup): boolean {
   try {
-    return sessionStorage.getItem(SESSION_SHOWN_PREFIX + p.id) === "1";
+    return (
+      sessionStorage.getItem(ANY_POPUP_SHOWN_THIS_SESSION_KEY) === "1" ||
+      sessionStorage.getItem(SESSION_SHOWN_PREFIX + p.id) === "1"
+    );
   } catch {
     return false;
   }
@@ -85,6 +89,7 @@ function hasPopupShownThisSession(p: SitePopup): boolean {
 
 export function markPopupShownThisSession(p: SitePopup) {
   try {
+    sessionStorage.setItem(ANY_POPUP_SHOWN_THIS_SESSION_KEY, "1");
     sessionStorage.setItem(SESSION_SHOWN_PREFIX + p.id, "1");
   } catch {
     // ignore
