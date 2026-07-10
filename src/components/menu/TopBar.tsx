@@ -38,7 +38,6 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
 
         <div className="flex items-center gap-2">
           <NotificationsBell />
-          <AccountButton />
         </div>
 
 
