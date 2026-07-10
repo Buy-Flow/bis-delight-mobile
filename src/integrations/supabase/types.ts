@@ -681,6 +681,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "push_deliveries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "push_campaigns_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "push_deliveries_subscription_id_fkey"
             columns: ["subscription_id"]
             isOneToOne: false
@@ -987,6 +994,36 @@ export type Database = {
       }
     }
     Views: {
+      push_campaigns_public: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string | null
+          image: string | null
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          image?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          image?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       storefront_settings: {
         Row: {
           accepts_delivery: boolean | null
