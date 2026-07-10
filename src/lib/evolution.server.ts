@@ -12,14 +12,20 @@ function getEnv() {
 
 async function evoFetch(path: string, init: RequestInit = {}) {
   const { url, key } = getEnv();
-  const res = await fetch(`${url}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      apikey: key,
-      ...(init.headers ?? {}),
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${url}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        apikey: key,
+        ...(init.headers ?? {}),
+      },
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Evolution indisponível no momento: ${detail}`);
+  }
   const text = await res.text();
   let body: unknown;
   try {

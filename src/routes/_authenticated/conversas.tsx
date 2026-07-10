@@ -488,6 +488,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
   const [state, setState] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
+  const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
   const [qrLoadedAt, setQrLoadedAt] = useState<number | null>(null);
   const [webhookUrl] = useState(
     typeof window !== "undefined" ? `${window.location.origin}/api/public/evolution` : "",
@@ -498,9 +499,12 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
     try {
       const res = await statusFn();
       setState(res);
-      setQrLoadedAt(Date.now());
+      setConnectionMessage(res?.ok === false ? res?.message ?? "A Evolution não respondeu agora." : null);
+      if (res?.ok !== false) setQrLoadedAt(Date.now());
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao consultar Evolution");
+      const msg = err instanceof Error ? err.message : "Erro ao consultar Evolution";
+      setConnectionMessage(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -510,7 +514,12 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
     try {
       const res = await pollStateFn();
       const connected = res?.state?.instance?.state === "open" || res?.state?.state === "open";
-      if (connected) setState(res);
+      if (connected) {
+        setState(res);
+        setConnectionMessage(null);
+      } else if (res?.ok === false) {
+        setConnectionMessage(res?.message ?? "Aguardando a Evolution responder.");
+      }
     } catch {
       /* keep the QR visible while waiting */
     }
@@ -521,8 +530,15 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
     try {
       const res = await resetFn();
       setState(res);
-      setQrLoadedAt(Date.now());
-      toast.success("Conexão recriada. Escaneie o novo QR code.");
+      if (res?.ok === false) {
+        const msg = res?.message ?? "Não consegui recriar a conexão agora.";
+        setConnectionMessage(msg);
+        toast.error(msg);
+      } else {
+        setConnectionMessage(null);
+        setQrLoadedAt(Date.now());
+        toast.success("Conexão recriada. Escaneie o novo QR code.");
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao recriar conexão");
     } finally {
@@ -551,7 +567,11 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
 
   const saveWebhook = async () => {
     try {
-      await webhookFn({ data: { webhookUrl } });
+      const res = await webhookFn({ data: { webhookUrl } });
+      if (res?.ok === false) {
+        toast.error(res?.message ?? "Não consegui configurar o webhook agora.");
+        return;
+      }
       toast.success("Webhook configurado! A Evolution vai enviar as mensagens pro site.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro");
@@ -638,6 +658,12 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
               {resetting ? <Loader2 className="h-3 w-3 animate-spin" /> : <WifiOff className="h-3 w-3" />}
               Recriar conexão
             </button>
+          </div>
+        )}
+
+        {connectionMessage && !isConnected && (
+          <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+            {connectionMessage}
           </div>
         )}
 
