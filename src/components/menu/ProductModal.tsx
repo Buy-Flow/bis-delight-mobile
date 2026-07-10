@@ -90,6 +90,7 @@ export function ProductModal({
   editItem?: CartItem | null;
 }) {
   const { add, update } = useCart();
+  useBackDismiss(!!product, onClose);
   const { data: settings } = useSiteSettings();
   const { data: categories = [] } = useCategories();
 
