@@ -156,7 +156,12 @@ Deno.serve(async (req) => {
     await Promise.all(
       subs.map(async (s) => {
         const full = s.user_id ? nameById.get(s.user_id) ?? "" : "";
-        const vars = { nome: full || "amigo(a)", primeiro_nome: firstName(full) || "amigo(a)" };
+        const stamps = s.user_id ? stampsById.get(s.user_id) ?? 0 : 0;
+        const vars = {
+          nome: full || "amigo(a)",
+          primeiro_nome: firstName(full) || "amigo(a)",
+          selos: String(stamps),
+        };
         const title = usesTokens ? render(campaign.title, vars) : campaign.title;
         const body = usesTokens ? render(campaign.body, vars) : campaign.body;
 
