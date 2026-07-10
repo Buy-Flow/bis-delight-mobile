@@ -490,6 +490,10 @@ export function NotificationsTab() {
         </aside>
       </div>
 
+      <ScheduledCampaigns history={history} onChanged={refresh} />
+
+      <AutomationsPanel />
+
       {editing && (
         <EditCampaignModal
           campaign={editing}
