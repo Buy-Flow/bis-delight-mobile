@@ -109,6 +109,19 @@ export function ProductCard({
             {product.badge}
           </div>
         )}
+        {/* Low stock / Out of stock overlay */}
+        {lowStock && (
+          <div className="absolute bottom-3 left-2 z-20 rounded-full bg-neon-pink px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-lg">
+            Últimas {stock}!
+          </div>
+        )}
+        {outOfStock && (
+          <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/70 backdrop-blur-sm">
+            <span className="rounded-full border border-white/30 bg-black/60 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white">
+              Esgotado
+            </span>
+          </div>
+        )}
         {/* Favorite heart top-right */}
         <div className="absolute right-2 top-2 z-20">
           <FavoriteButton productId={product.id} />
