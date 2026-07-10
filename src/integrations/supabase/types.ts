@@ -764,6 +764,16 @@ export type Database = {
           open_override: string
           payment_methods: Json
           pix_key: string
+          popup_active: boolean
+          popup_body: string
+          popup_cta: string
+          popup_frequency: string
+          popup_image_pos_x: number
+          popup_image_pos_y: number
+          popup_image_scale: number
+          popup_image_url: string
+          popup_link: string
+          popup_title: string
           tagline: string
           texture_opacity: number
           texture_size: string
@@ -808,6 +818,16 @@ export type Database = {
           open_override?: string
           payment_methods?: Json
           pix_key?: string
+          popup_active?: boolean
+          popup_body?: string
+          popup_cta?: string
+          popup_frequency?: string
+          popup_image_pos_x?: number
+          popup_image_pos_y?: number
+          popup_image_scale?: number
+          popup_image_url?: string
+          popup_link?: string
+          popup_title?: string
           tagline?: string
           texture_opacity?: number
           texture_size?: string
@@ -852,6 +872,16 @@ export type Database = {
           open_override?: string
           payment_methods?: Json
           pix_key?: string
+          popup_active?: boolean
+          popup_body?: string
+          popup_cta?: string
+          popup_frequency?: string
+          popup_image_pos_x?: number
+          popup_image_pos_y?: number
+          popup_image_scale?: number
+          popup_image_url?: string
+          popup_link?: string
+          popup_title?: string
           tagline?: string
           texture_opacity?: number
           texture_size?: string

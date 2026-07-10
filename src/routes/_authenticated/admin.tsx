@@ -70,9 +70,12 @@ import {
   uploadProductImage,
   DEFAULT_HOURS,
   DEFAULT_HERO_IMAGES,
+  DEFAULT_POPUP,
   type SiteSettings,
   type HeroImagesConfig,
   type HeroImageConfig,
+  type PopupConfig,
+  type PopupFrequency,
   type DayHours,
   type WeekDay,
   type ProductInput,
@@ -2153,6 +2156,7 @@ type SettingsSection =
   | "payment"
   | "social"
   | "announcement"
+  | "popup"
   | "news"
   | "coupons"
   | "appearance";
@@ -2326,6 +2330,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
     { id: "payment", label: "Pagamento", icon: CreditCard },
     { id: "social", label: "Redes sociais", icon: Globe },
     { id: "announcement", label: "Anúncio", icon: Megaphone },
+    { id: "popup", label: "Pop-up", icon: Sparkles },
     { id: "coupons", label: "Cupons", icon: Tag },
     { id: "appearance", label: "Aparência", icon: Palette },
   ];
@@ -2377,6 +2382,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
         {section === "payment" && <PaymentSection s={s} set={set} />}
         {section === "social" && <SocialSection s={s} set={set} />}
         {section === "announcement" && <AnnouncementSection s={s} set={set} />}
+        {section === "popup" && <PopupSection s={s} set={set} />}
         {section === "news" && <NewsSection s={s} set={set} />}
         {section === "coupons" && <CouponsSection />}
         {section === "appearance" && (
@@ -5531,3 +5537,282 @@ function SliderRow({
   );
 }
 
+
+/* ================= WELCOME POPUP SECTION ================= */
+function PopupSection({
+  s,
+  set,
+}: {
+  s: SiteSettings;
+  set: <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
+}) {
+  const popup: PopupConfig = s.popup ?? DEFAULT_POPUP;
+  const update = (patch: Partial<PopupConfig>) => set("popup", { ...popup, ...patch });
+
+  const [busy, setBusy] = useState(false);
+  const upload = async (file: File) => {
+    setBusy(true);
+    try {
+      update({ imageUrl: await uploadProductImage(file) });
+      toast.success("Imagem enviada");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const freqOptions: { value: PopupFrequency; label: string; hint: string }[] = [
+    { value: "session", label: "Uma vez por visita", hint: "Some ao fechar a aba" },
+    { value: "daily", label: "Uma vez por dia", hint: "Volta a aparecer no dia seguinte" },
+    { value: "always", label: "Sempre", hint: "Toda vez que abrir o site" },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-black">Pop-up de Boas-vindas</h3>
+          <p className="text-xs text-white/50">
+            Aparece no meio da tela quando o cliente abre o site. Pode linkar um produto ou página.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => update({ active: !popup.active })}
+          className={cn(
+            "relative h-7 w-12 shrink-0 rounded-full transition",
+            popup.active ? "bg-neon-yellow" : "bg-white/15",
+          )}
+          aria-label={popup.active ? "Desativar" : "Ativar"}
+        >
+          <span
+            className={cn(
+              "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all",
+              popup.active ? "left-[calc(100%-1.625rem)]" : "left-0.5",
+            )}
+          />
+        </button>
+      </div>
+
+      {/* Preview */}
+      <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          Preview
+        </div>
+        <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-b from-[oklch(0.22_0.14_305)] to-[oklch(0.14_0.10_305)] shadow-xl">
+          {popup.imageUrl && (
+            <div className="relative aspect-square w-full overflow-hidden bg-black/30">
+              <img
+                src={popup.imageUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{
+                  transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
+                  transformOrigin: "center center",
+                }}
+              />
+            </div>
+          )}
+          <div className="space-y-2 p-4 text-center">
+            {popup.title && (
+              <div className="font-display text-lg font-black leading-tight text-white">{popup.title}</div>
+            )}
+            {popup.body && <div className="whitespace-pre-line text-xs text-white/80">{popup.body}</div>}
+            {popup.cta && (popup.link || popup.imageUrl) && (
+              <div className="mt-2 rounded-2xl bg-neon-yellow py-2 text-xs font-black text-[oklch(0.15_0.10_305)]">
+                {popup.cta}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Texto */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60">Título</label>
+          <input
+            type="text"
+            value={popup.title}
+            onChange={(e) => update({ title: e.target.value })}
+            placeholder="Ex: Promoção da semana!"
+            className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60">Botão (CTA)</label>
+          <input
+            type="text"
+            value={popup.cta}
+            onChange={(e) => update({ cta: e.target.value })}
+            placeholder="Ver agora"
+            className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60">Mensagem</label>
+        <textarea
+          value={popup.body}
+          onChange={(e) => update({ body: e.target.value })}
+          rows={3}
+          placeholder="Escreva uma mensagem curta que apareça no pop-up"
+          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+        />
+      </div>
+
+      {/* Link */}
+      <div>
+        <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60">
+          Link ao clicar
+        </label>
+        <input
+          type="text"
+          value={popup.link}
+          onChange={(e) => update({ link: e.target.value })}
+          placeholder="/produto/abc123 ou https://..."
+          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+        />
+        <div className="mt-1 text-[10px] text-white/40">
+          Use um caminho do site (ex.: <code className="text-white/60">/produto/ID</code>, <code className="text-white/60">/carrinho</code>, <code className="text-white/60">/recompensas</code>) ou uma URL completa.
+        </div>
+      </div>
+
+      {/* Imagem + ajuste */}
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-extrabold text-white">Imagem do pop-up</div>
+          <button
+            type="button"
+            onClick={() => update({ imagePosX: 0, imagePosY: 0, imageScale: 1 })}
+            className="text-[11px] font-semibold text-white/60 hover:text-white"
+          >
+            Resetar ajuste
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40">
+            {popup.imageUrl ? (
+              <img src={popup.imageUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid h-full place-items-center text-[10px] text-white/40">Sem imagem</div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <label
+              htmlFor="popup-upload"
+              className={cn(
+                "inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/10",
+                busy && "opacity-60",
+              )}
+            >
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+              Enviar imagem
+            </label>
+            <input
+              id="popup-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) upload(f);
+                e.target.value = "";
+              }}
+            />
+            <input
+              type="text"
+              value={popup.imageUrl}
+              onChange={(e) => update({ imageUrl: e.target.value })}
+              placeholder="Ou cole a URL da imagem"
+              className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-[11px] text-white/80 outline-none focus:border-neon-cyan"
+            />
+            {popup.imageUrl && (
+              <button
+                type="button"
+                onClick={() => update({ imageUrl: "" })}
+                className="inline-flex items-center gap-1 text-[10px] font-semibold text-white/50 hover:text-white"
+              >
+                <ImageOff className="h-3 w-3" /> Remover imagem
+              </button>
+            )}
+          </div>
+        </div>
+
+        {popup.imageUrl && (
+          <ImageAdjustPanel
+            values={{ posX: popup.imagePosX, posY: popup.imagePosY, scale: popup.imageScale }}
+            onChange={(p) => update({
+              ...(p.posX !== undefined ? { imagePosX: p.posX } : {}),
+              ...(p.posY !== undefined ? { imagePosY: p.posY } : {}),
+              ...(p.scale !== undefined ? { imageScale: p.scale } : {}),
+            })}
+            defaults={{ posX: 0, posY: 0, scale: 1 }}
+            previewMaxWidth={260}
+            renderPreview={(v) => (
+              <img
+                src={popup.imageUrl}
+                alt=""
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-cover select-none"
+                style={{
+                  transform: `translate(${v.posX}%, ${v.posY}%) scale(${v.scale})`,
+                  transformOrigin: "center center",
+                }}
+              />
+            )}
+          />
+        )}
+      </div>
+
+      {/* Frequência */}
+      <div>
+        <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-white/60">
+          Quando exibir
+        </label>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {freqOptions.map((opt) => {
+            const active = popup.frequency === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => update({ frequency: opt.value })}
+                className={cn(
+                  "rounded-2xl border p-3 text-left transition",
+                  active
+                    ? "border-neon-yellow bg-neon-yellow/10"
+                    : "border-white/10 bg-black/20 hover:border-white/30",
+                )}
+              >
+                <div className={cn("text-sm font-bold", active ? "text-neon-yellow" : "text-white")}>
+                  {opt.label}
+                </div>
+                <div className="mt-0.5 text-[11px] text-white/50">{opt.hint}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem("querobis:welcome-popup-dismissed");
+            localStorage.removeItem("querobis:welcome-popup-dismissed");
+            toast.success("Contador reiniciado — recarregue a home para ver o pop-up.");
+          } catch {
+            toast.error("Não foi possível reiniciar");
+          }
+        }}
+        className="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-white/70 hover:bg-white/10"
+      >
+        Reiniciar para testar novamente
+      </button>
+    </div>
+  );
+}

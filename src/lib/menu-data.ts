@@ -73,6 +73,34 @@ export type SiteSettings = {
   cardGlow: boolean;
   titleFont: string;
   heroImages: HeroImagesConfig;
+  popup: PopupConfig;
+};
+
+export type PopupFrequency = "session" | "always" | "daily";
+export type PopupConfig = {
+  active: boolean;
+  title: string;
+  body: string;
+  imageUrl: string;
+  link: string;
+  cta: string;
+  imagePosX: number;
+  imagePosY: number;
+  imageScale: number;
+  frequency: PopupFrequency;
+};
+
+export const DEFAULT_POPUP: PopupConfig = {
+  active: false,
+  title: "",
+  body: "",
+  imageUrl: "",
+  link: "",
+  cta: "Ver agora",
+  imagePosX: 0,
+  imagePosY: 0,
+  imageScale: 1,
+  frequency: "session",
 };
 
 export type HeroImageConfig = {
@@ -273,6 +301,7 @@ const DEFAULT_EXTRA: Pick<
   | "cardGlow"
   | "titleFont"
   | "heroImages"
+  | "popup"
 
 > = {
   instagram: "",
@@ -303,6 +332,7 @@ const DEFAULT_EXTRA: Pick<
   cardGlow: false,
   titleFont: "Barlow Condensed",
   heroImages: DEFAULT_HERO_IMAGES,
+  popup: DEFAULT_POPUP,
 };
 
 function parseHeroImages(raw: unknown): HeroImagesConfig {
@@ -390,6 +420,18 @@ export const siteSettingsQueryOptions = queryOptions({
       cardGlow: Boolean((data as Record<string, unknown>).card_glow ?? false),
       titleFont: String((data as Record<string, unknown>).title_font ?? "Barlow Condensed"),
       heroImages: parseHeroImages((data as Record<string, unknown>).hero_images),
+      popup: {
+        active: Boolean((data as Record<string, unknown>).popup_active ?? false),
+        title: String((data as Record<string, unknown>).popup_title ?? ""),
+        body: String((data as Record<string, unknown>).popup_body ?? ""),
+        imageUrl: String((data as Record<string, unknown>).popup_image_url ?? ""),
+        link: String((data as Record<string, unknown>).popup_link ?? ""),
+        cta: String((data as Record<string, unknown>).popup_cta ?? "Ver agora"),
+        imagePosX: Number((data as Record<string, unknown>).popup_image_pos_x ?? 0),
+        imagePosY: Number((data as Record<string, unknown>).popup_image_pos_y ?? 0),
+        imageScale: Number((data as Record<string, unknown>).popup_image_scale ?? 1),
+        frequency: (String((data as Record<string, unknown>).popup_frequency ?? "session") as PopupFrequency),
+      },
     };
   },
   staleTime: 60_000,
@@ -658,6 +700,16 @@ export function useUpdateSettings() {
         card_glow: s.cardGlow,
         title_font: s.titleFont,
         hero_images: s.heroImages,
+        popup_active: s.popup.active,
+        popup_title: s.popup.title,
+        popup_body: s.popup.body,
+        popup_image_url: s.popup.imageUrl,
+        popup_link: s.popup.link,
+        popup_cta: s.popup.cta,
+        popup_image_pos_x: s.popup.imagePosX,
+        popup_image_pos_y: s.popup.imagePosY,
+        popup_image_scale: s.popup.imageScale,
+        popup_frequency: s.popup.frequency,
 
 
 
