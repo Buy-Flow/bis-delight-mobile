@@ -296,17 +296,18 @@ export function useUnreadNotifications() {
     }
     const { data } = await supabase
       .from("push_deliveries")
-      .select("id, campaign:push_campaigns(expires_at)")
+      .select("id, campaign_id, campaign:push_campaigns(expires_at)")
       .is("opened_at", null)
       .limit(200);
     const now = Date.now();
-    const rows = (data ?? []) as Array<{ id: string; campaign: { expires_at: string | null } | { expires_at: string | null }[] | null }>;
-    const valid = rows.filter((r) => {
+    const rows = (data ?? []) as Array<{ id: string; campaign_id: string; campaign: { expires_at: string | null } | { expires_at: string | null }[] | null }>;
+    const uniqueCampaigns = new Set<string>();
+    for (const r of rows) {
       const c = Array.isArray(r.campaign) ? r.campaign[0] : r.campaign;
-      if (!c?.expires_at) return true;
-      return new Date(c.expires_at).getTime() > now;
-    });
-    setCount(valid.length);
+      if (c?.expires_at && new Date(c.expires_at).getTime() <= now) continue;
+      uniqueCampaigns.add(r.campaign_id);
+    }
+    setCount(uniqueCampaigns.size);
   };
 
 
