@@ -183,8 +183,7 @@ export const productsQueryOptions = queryOptions({
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
     if (error) throw error;
-    if (!data || data.length === 0) return STATIC_PRODUCTS;
-    return data.map((r) => rowToProduct(r as Record<string, unknown>));
+    return (data ?? []).map((r) => rowToProduct(r as Record<string, unknown>));
   },
   staleTime: 60_000,
 });
