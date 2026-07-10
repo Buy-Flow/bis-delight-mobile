@@ -119,7 +119,16 @@ export function NotificationsInbox() {
     setItems((prev) => prev.map((i) => ({ ...i, anyUnread: false })));
   };
 
+  if (loading) {
+    return (
+      <div className="grid place-items-center py-16 text-white/50">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
   const unreadCount = items.filter((i) => i.anyUnread).length;
+
 
   const Hero = () => (
     <div
