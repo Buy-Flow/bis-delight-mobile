@@ -163,11 +163,17 @@ function RecompensasPage() {
             {/* Progress bar */}
             <div className="mt-5 h-3 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-inset ring-white/10">
               <div
-                className="relative h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-[width] duration-700"
+                className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-[width] duration-700"
                 style={{ width: `${pct}%` }}
               >
                 <div className="absolute inset-0 rounded-full bg-white/25 mix-blend-overlay" />
+                <div
+                  aria-hidden
+                  className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/70 to-transparent animate-[shine_2.4s_ease-in-out_infinite]"
+                />
               </div>
+            </div>
+
             </div>
 
             {/* Stamps grid */}
