@@ -12,7 +12,9 @@ type Campaign = {
   image: string | null;
   url: string | null;
   created_at: string;
+  expires_at?: string | null;
 };
+
 
 type Delivery = {
   id: string;
