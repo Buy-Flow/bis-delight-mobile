@@ -334,6 +334,34 @@ export function NotificationsTab() {
             </div>
           </div>
 
+          <div className="border-t border-white/10 pt-4">
+            <label className="flex items-center gap-1 text-xs font-semibold text-white/60">
+              <CalendarClock className="h-3 w-3" /> Agendar envio (opcional)
+            </label>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-neon-pink [color-scheme:dark]"
+              />
+              {scheduledAt && (
+                <button
+                  type="button"
+                  onClick={() => setScheduledAt("")}
+                  className="text-[11px] text-white/50 underline hover:text-white"
+                >
+                  limpar
+                </button>
+              )}
+              <span className="text-[10px] text-white/40">
+                {scheduledAt
+                  ? `Vai disparar em ${new Date(scheduledAt).toLocaleString("pt-BR")}`
+                  : "Deixe vazio pra enviar agora."}
+              </span>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between border-t border-white/10 pt-4">
             <p className="text-xs text-white/60">
               {totalSubs !== null ? (
@@ -350,8 +378,20 @@ export function NotificationsTab() {
               disabled={sending || !title.trim() || !body.trim()}
               className="inline-flex items-center gap-2 rounded-full bg-neon-pink px-5 py-2 text-sm font-bold text-white shadow-md transition hover:brightness-110 disabled:opacity-50"
             >
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {sending ? "Enviando..." : "Enviar agora"}
+              {sending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : scheduledAt ? (
+                <CalendarClock className="h-4 w-4" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {sending
+                ? scheduledAt
+                  ? "Agendando..."
+                  : "Enviando..."
+                : scheduledAt
+                ? "Agendar envio"
+                : "Enviar agora"}
             </button>
           </div>
         </section>
