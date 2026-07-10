@@ -391,59 +391,151 @@ function StatusBadge({ status }: { status: string }) {
 
 function FavoritesPanel() {
   const { user } = useAuth();
-  const [favs, setFavs] = useState<Array<{ product_id: string; products: any }>>([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { data: allProducts = [] } = useProducts();
+  const [favIds, setFavIds] = useState<string[] | null>(null);
+  const [selected, setSelected] = useState<Product | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setFavIds([]);
+      return;
+    }
+    let cancel = false;
     supabase
       .from("favorites")
-      .select("product_id, products(id, name, image_url, base_price)")
+      .select("product_id, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        setFavs((data ?? []) as any);
-        setLoading(false);
+        if (cancel) return;
+        setFavIds((data ?? []).map((r: any) => r.product_id as string));
       });
+    return () => {
+      cancel = true;
+    };
   }, [user]);
 
-  if (loading) return <PanelSpinner />;
-  if (favs.length === 0)
-    return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-sm text-white/60">
-        Nenhum favorito ainda.<br />
-        <span className="text-white/40">Toque no ❤️ dos produtos que você mais gosta!</span>
-      </div>
-    );
+  const productsById = useMemo(() => {
+    const m = new Map<string, Product>();
+    for (const p of allProducts) m.set(p.id, p);
+    return m;
+  }, [allProducts]);
+
+  const favs: Product[] = useMemo(() => {
+    if (!favIds) return [];
+    return favIds.map((id) => productsById.get(id)).filter(Boolean) as Product[];
+  }, [favIds, productsById]);
+
+  const remove = async (productId: string) => {
+    if (!user) return;
+    setFavIds((prev) => (prev ?? []).filter((id) => id !== productId));
+    const { error } = await supabase
+      .from("favorites")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("product_id", productId);
+    if (error) toast.error("Não foi possível remover");
+    else toast.success("Removido dos favoritos");
+  };
+
+  if (favIds === null) return <PanelSpinner />;
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {favs.map((f) => {
-        const p = f.products;
-        if (!p) return null;
-        return (
-          <Link
-            key={f.product_id}
-            to="/"
-            className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:border-neon-pink"
+    <div className="relative">
+      {/* Decorative hero */}
+      <div className="relative mb-5 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-pink/30 via-purple-700/25 to-neon-cyan/20 p-5">
+        <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-neon-pink/40 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -left-8 -bottom-10 h-32 w-32 rounded-full bg-neon-cyan/30 blur-3xl" />
+        <div className="relative flex items-center gap-3">
+          <button
+            onClick={() => navigate({ to: "/" })}
+            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white/80 backdrop-blur transition hover:bg-white/20"
+            aria-label="Voltar"
           >
-            <div className="aspect-square w-full overflow-hidden bg-gradient-to-br from-purple-800/40 to-pink-800/40">
-              {p.image_url && (
-                <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
-              )}
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink to-neon-yellow text-white shadow-[0_0_24px_rgba(236,72,153,0.55)]">
+            <HeartIcon className="h-6 w-6 fill-current" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">Meus favoritos</div>
+            <div className="font-display text-2xl font-black leading-tight text-white">
+              {favs.length > 0
+                ? `${favs.length} ${favs.length === 1 ? "delícia salva" : "delícias salvas"}`
+                : "Sua coleção"}
             </div>
-            <div className="p-2">
-              <div className="line-clamp-2 text-[12px] font-bold text-white">{p.name}</div>
-              {p.base_price != null && (
-                <div className="mt-0.5 text-[11px] font-bold text-neon-yellow">a partir de {brl(Number(p.base_price))}</div>
-              )}
-            </div>
-          </Link>
-        );
-      })}
+          </div>
+        </div>
+      </div>
+
+      {favs.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-8 text-center">
+          <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-neon-pink/15 text-neon-pink">
+            <HeartIcon className="h-6 w-6" />
+          </div>
+          <div className="text-sm font-bold text-white">Nenhum favorito ainda</div>
+          <div className="mt-1 text-xs text-white/50">Toque no coração dos produtos que você ama e eles aparecem aqui.</div>
+          <button
+            onClick={() => navigate({ to: "/" })}
+            className="mt-4 rounded-full bg-neon-pink px-5 py-2 text-xs font-black text-white shadow-[0_0_20px_rgba(236,72,153,0.5)] active:scale-95"
+          >
+            Explorar cardápio
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          {favs.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setSelected(p)}
+              className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition hover:border-neon-pink hover:bg-white/[0.07] active:scale-[.98]"
+            >
+              <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-purple-800/40 to-pink-800/40">
+                {p.image && (
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                )}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Remover dos favoritos"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(p.id);
+                  }}
+                  className="absolute right-2 top-2 grid h-8 w-8 cursor-pointer place-items-center rounded-full bg-black/50 text-white/90 backdrop-blur transition hover:bg-red-500/80"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </span>
+                <span className="absolute left-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white shadow-[0_0_12px_rgba(236,72,153,0.7)]">
+                  <HeartIcon className="h-3.5 w-3.5 fill-current" />
+                </span>
+              </div>
+              <div className="p-3">
+                <div className="line-clamp-2 text-[13px] font-bold text-white">{p.name}</div>
+                {p.basePrice != null && (
+                  <div className="mt-1 text-[12px] font-black text-neon-yellow">
+                    a partir de {brl(Number(p.basePrice))}
+                  </div>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <ProductModal product={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }
+
 
 /* ============= PERFIL ============= */
 
