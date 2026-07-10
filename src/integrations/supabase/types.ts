@@ -372,14 +372,19 @@ export type Database = {
       orders: {
         Row: {
           address: string | null
+          canceled_at: string | null
           coupon_code: string | null
           created_at: string
           customer_name: string
+          delivered_at: string | null
           delivery_fee: number
+          dispatched_at: string | null
           id: string
           mode: string
           note: string | null
+          paid_at: string | null
           phone: string
+          preparing_at: string | null
           reference: string | null
           status: string
           subtotal: number
@@ -388,14 +393,19 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          canceled_at?: string | null
           coupon_code?: string | null
           created_at?: string
           customer_name: string
+          delivered_at?: string | null
           delivery_fee?: number
+          dispatched_at?: string | null
           id?: string
           mode: string
           note?: string | null
+          paid_at?: string | null
           phone: string
+          preparing_at?: string | null
           reference?: string | null
           status?: string
           subtotal: number
@@ -404,14 +414,19 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          canceled_at?: string | null
           coupon_code?: string | null
           created_at?: string
           customer_name?: string
+          delivered_at?: string | null
           delivery_fee?: number
+          dispatched_at?: string | null
           id?: string
           mode?: string
           note?: string | null
+          paid_at?: string | null
           phone?: string
+          preparing_at?: string | null
           reference?: string | null
           status?: string
           subtotal?: number
