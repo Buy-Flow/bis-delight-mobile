@@ -18,10 +18,11 @@ export const Route = createFileRoute("/recompensas")({
   component: RecompensasPage,
 });
 
+const COUPON_VALUE = 20;
+
 type Coupon = {
   id: string;
   code: string;
-  amount_cents: number;
   used_at: string | null;
   created_at: string;
 };
