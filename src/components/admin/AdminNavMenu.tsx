@@ -8,7 +8,6 @@ import {
   ShoppingCart,
   LineChart,
   Users,
-  BellRing,
   Home,
   LogOut,
 } from "lucide-react";
