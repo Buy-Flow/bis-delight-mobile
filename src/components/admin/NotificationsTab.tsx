@@ -103,6 +103,16 @@ const durationOptions: { value: number | null; label: string }[] = [
   { value: null, label: "Nunca" },
 ];
 
+const repeatIntervalOptions: { value: number; label: string }[] = [
+  { value: 60, label: "1 h" },
+  { value: 60 * 6, label: "6 h" },
+  { value: 60 * 12, label: "12 h" },
+  { value: 60 * 24, label: "1 dia" },
+  { value: 60 * 24 * 3, label: "3 dias" },
+  { value: 60 * 24 * 7, label: "7 dias" },
+];
+
+
 const AUTO_META: Record<AutoKind, { label: string; hint: string; icon: typeof Gift; accent: string; ring: string }> = {
   birthday: {
     label: "Aniversário",
