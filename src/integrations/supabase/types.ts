@@ -263,6 +263,7 @@ export type Database = {
         Row: {
           created_at: string
           last_birthday_bonus: string | null
+          lifetime_stamps: number
           stamps: number
           total_redeemed: number
           updated_at: string
@@ -271,6 +272,7 @@ export type Database = {
         Insert: {
           created_at?: string
           last_birthday_bonus?: string | null
+          lifetime_stamps?: number
           stamps?: number
           total_redeemed?: number
           updated_at?: string
@@ -279,6 +281,7 @@ export type Database = {
         Update: {
           created_at?: string
           last_birthday_bonus?: string | null
+          lifetime_stamps?: number
           stamps?: number
           total_redeemed?: number
           updated_at?: string
@@ -290,6 +293,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          discount_value: number
           id: string
           used_at: string | null
           user_id: string
@@ -297,6 +301,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          discount_value?: number
           id?: string
           used_at?: string | null
           user_id: string
@@ -304,6 +309,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          discount_value?: number
           id?: string
           used_at?: string | null
           user_id?: string
@@ -1370,6 +1376,19 @@ export type Database = {
           is_birthday_month: boolean
         }[]
       }
+      get_loyalty_status: {
+        Args: never
+        Returns: {
+          active_coupons: number
+          current_stamps: number
+          lifetime_stamps: number
+          next_tier: string
+          reward_value: number
+          stamps_per_order: number
+          stamps_to_next: number
+          tier: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1377,6 +1396,9 @@ export type Database = {
         }
         Returns: boolean
       }
+      loyalty_reward_value: { Args: { _tier: string }; Returns: number }
+      loyalty_stamp_bonus: { Args: { _tier: string }; Returns: number }
+      loyalty_tier: { Args: { _lifetime: number }; Returns: string }
       mark_push_opened: { Args: { _delivery_id: string }; Returns: undefined }
       redeem_loyalty_coupon: {
         Args: { _code: string }
@@ -1397,6 +1419,7 @@ export type Database = {
         Args: { _code: string }
         Returns: {
           code: string
+          discount_value: number
           id: string
         }[]
       }
