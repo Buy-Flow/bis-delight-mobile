@@ -1265,3 +1265,191 @@ function FieldGroup({
     </div>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LinkPicker — collapsible accordion with URL + product picker
+
+const QUICK_LINKS = [
+  { label: "Página inicial", value: "/" },
+  { label: "Carrinho", value: "/carrinho" },
+  { label: "Recompensas", value: "/recompensas" },
+  { label: "Baixar app", value: "/baixar-app" },
+];
+
+function LinkPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(Boolean(value));
+  const [picking, setPicking] = useState(false);
+
+  const label = useMemo(() => {
+    if (!value) return "Nenhum — abre a home";
+    const quick = QUICK_LINKS.find((q) => q.value === value);
+    if (quick) return quick.label;
+    const m = value.match(/^\/produto\/(.+)$/);
+    if (m) return `Produto · ${m[1].slice(0, 8)}…`;
+    return value;
+  }, [value]);
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <Link2 className="h-4 w-4 text-neon-cyan" />
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-white/80">Link ao tocar (opcional)</div>
+            <div className="truncate text-[11px] text-white/50">{label}</div>
+          </div>
+        </div>
+        <ChevronDown className={`h-4 w-4 text-white/50 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="space-y-3 border-t border-white/10 p-3">
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_LINKS.map((q) => {
+              const active = value === q.value;
+              return (
+                <button
+                  key={q.value}
+                  type="button"
+                  onClick={() => onChange(q.value)}
+                  className={`rounded-full border px-3 py-1 text-[11px] font-bold transition ${
+                    active
+                      ? "border-neon-cyan bg-neon-cyan/15 text-neon-cyan"
+                      : "border-white/10 bg-black/30 text-white/70 hover:border-white/30"
+                  }`}
+                >
+                  {q.label}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setPicking(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-3 py-1 text-[11px] font-bold text-neon-pink hover:bg-neon-pink/20"
+            >
+              <Package className="h-3 w-3" /> Escolher produto
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[11px] font-bold text-white/50 hover:bg-white/10"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+              Ou cole uma URL/caminho
+            </label>
+            <input
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="/ · /produto/id · https://…"
+              className={inputCls}
+            />
+          </div>
+        </div>
+      )}
+
+      {picking && (
+        <ProductPickerModal
+          onClose={() => setPicking(false)}
+          onPick={(id) => { onChange(`/produto/${id}`); setPicking(false); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProductPickerModal({
+  onClose, onPick,
+}: { onClose: () => void; onPick: (id: string) => void }) {
+  const [items, setItems] = useState<{ id: string; name: string; image_url: string | null; category_id: string | null }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id,name,image_url,category_id")
+        .order("name");
+      setItems((data ?? []) as any);
+      setLoading(false);
+    })();
+  }, []);
+
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return items;
+    return items.filter((p) => p.name.toLowerCase().includes(s));
+  }, [items, q]);
+
+  return (
+    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-white/10 bg-[oklch(0.13_0.08_305)] text-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-neon-pink" />
+            <span className="font-black">Escolher produto</span>
+          </div>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full text-white/60 hover:bg-white/10">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="border-b border-white/10 p-3">
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2">
+            <Search className="h-4 w-4 text-white/40" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar produto..."
+              className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+              autoFocus
+            />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3">
+          {loading ? (
+            <div className="grid place-items-center py-8"><Loader2 className="h-5 w-5 animate-spin text-white/50" /></div>
+          ) : filtered.length === 0 ? (
+            <p className="py-8 text-center text-xs text-white/40">Nenhum produto encontrado.</p>
+          ) : (
+            <ul className="space-y-1">
+              {filtered.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => onPick(p.id)}
+                    className="flex w-full items-center gap-3 rounded-xl border border-transparent bg-black/20 p-2 text-left transition hover:border-neon-pink/40 hover:bg-neon-pink/[0.06]"
+                  >
+                    <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-black/40">
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Package className="h-4 w-4 text-white/40" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold text-white">{p.name}</div>
+                      <div className="truncate text-[10px] text-white/40">/produto/{p.id}</div>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
