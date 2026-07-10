@@ -3,6 +3,7 @@ import { Bell, BellRing, CheckCheck, ExternalLink, Loader2, Sparkles } from "luc
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
+import { applyNotifTokens, useNotifVars } from "@/lib/notif-tokens";
 
 
 type Campaign = {
