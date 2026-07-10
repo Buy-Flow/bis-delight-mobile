@@ -8,6 +8,7 @@ import {
   Clock,
   XCircle,
   Truck,
+  Bike,
   ChefHat,
   
   Package,
