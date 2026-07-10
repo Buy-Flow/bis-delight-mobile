@@ -36,7 +36,6 @@ function CartPage() {
     editingItem,
     closeEdit,
     requestOpenProduct,
-    isAcaiOpen,
   } = useCart();
   const { data: allProducts = [] } = useProducts();
 
