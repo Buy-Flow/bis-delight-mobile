@@ -737,9 +737,10 @@ export function useUpdateSettings() {
         popup_image_pos_y: s.popup.imagePosY,
         popup_image_scale: s.popup.imageScale,
         popup_frequency: s.popup.frequency,
-
-
-
+        urgency_active: s.urgency.active,
+        urgency_text: s.urgency.text,
+        urgency_ends_at: s.urgency.endsAt,
+        urgency_coupon_code: s.urgency.couponCode,
       }, { onConflict: "id" });
       if (error) throw error;
     },
