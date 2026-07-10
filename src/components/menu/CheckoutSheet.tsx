@@ -111,14 +111,14 @@ export function CheckoutSheet() {
       // 2) Cai para o cupom Bis Recompensa (fidelidade)
       const { data, error } = await supabase.rpc("validate_loyalty_coupon", { _code: code });
       if (error) throw error;
-      const row = Array.isArray(data) ? data[0] : null;
+      const row = Array.isArray(data) ? (data[0] as { id: string; code: string; discount_value?: number } | undefined) : null;
       if (row) {
-        const REWARD_VALUE = 20;
-        if (subtotal < REWARD_VALUE) {
-          toast.error(`Pedido mínimo de ${brl(REWARD_VALUE)} para usar este cupom.`);
+        const rewardValue = Number(row.discount_value) > 0 ? Number(row.discount_value) : 20;
+        if (subtotal < rewardValue) {
+          toast.error(`Pedido mínimo de ${brl(rewardValue)} para usar este cupom.`);
           return;
         }
-        const discountValue = Math.min(REWARD_VALUE, subtotal);
+        const discountValue = Math.min(rewardValue, subtotal);
         setCouponApplied({ id: row.id, code: row.code, discount: discountValue, kind: "loyalty" });
         toast.success(`Cupom aplicado! −${brl(discountValue)}`);
         return;
