@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useRouterState, useNavigate } from "@tanstack/react-router";
 import { useSiteSettings } from "@/lib/menu-data";
-import { cn } from "@/lib/utils";
+
 
 const STORAGE_KEY = "querobis:welcome-popup-dismissed";
 
@@ -35,7 +35,10 @@ function markDismissed(freq: string) {
 export function WelcomePopup() {
   const { data } = useSiteSettings();
   const popup = data?.popup;
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdminRoute =
     pathname.startsWith("/admin") ||
@@ -122,14 +125,19 @@ export function WelcomePopup() {
                   {popup.cta}
                 </a>
               ) : (
-                <Link
-                  to={internalTo}
-                  onClick={close}
+                <button
+                  type="button"
+                  onClick={() => {
+                    markDismissed(popup.frequency);
+                    setOpen(false);
+                    navigate({ to: internalTo });
+                  }}
                   className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
                 >
                   {popup.cta}
-                </Link>
+                </button>
               )
+
             )}
           </div>
         )}
