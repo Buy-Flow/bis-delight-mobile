@@ -49,8 +49,9 @@ function CartPage() {
     ? allProducts.find((x) => x.id === editingItem.productId)
     : null;
 
+  const combo = useComboDiscounts(items, allProducts);
   const fee = items.length ? BRAND.deliveryFee : 0;
-  const total = subtotal + fee;
+  const total = subtotal + fee - combo.discount;
 
 
 
