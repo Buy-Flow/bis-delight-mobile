@@ -22,6 +22,10 @@ export function ProductCard({
 }) {
   const { data: isAdmin } = useIsAdmin();
   const navigate = useNavigate();
+  const stock = product.stock;
+  const outOfStock = typeof stock === "number" && stock <= 0;
+  const lowThreshold = product.lowStockThreshold ?? 5;
+  const lowStock = typeof stock === "number" && stock > 0 && stock <= lowThreshold;
   return (
 
     <div
