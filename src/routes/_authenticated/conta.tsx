@@ -614,6 +614,37 @@ function Input({
   );
 }
 
+function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="group flex w-full items-center gap-3 p-3 text-left transition hover:bg-white/[0.06]"
+        aria-expanded={open}
+      >
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30">
+          <UserIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold text-white">Dados pessoais</div>
+          <div className="text-[11px] text-white/60">Nome, contato, endereço e aniversário</div>
+        </div>
+        <ChevronRight
+          className={cn(
+            "h-4 w-4 text-white/40 transition",
+            open ? "rotate-90 text-white" : "group-hover:translate-x-0.5 group-hover:text-white",
+          )}
+        />
+      </button>
+      {open && (
+        <div className="space-y-3 border-t border-white/10 bg-black/10 p-3">{children}</div>
+      )}
+    </div>
+  );
+}
+
 function PanelSpinner() {
   return (
     <div className="flex items-center justify-center py-12 text-white/50">
