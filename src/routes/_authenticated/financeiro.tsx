@@ -467,6 +467,9 @@ function FinanceiroPage() {
           </div>
         </section>
 
+        {/* Comparativo Semana / Mês / Ano — apples-to-apples com período anterior */}
+        <FinanceComparative />
+
         {loading ? (
           <FinanceDashboardSkeleton />
         ) : (
