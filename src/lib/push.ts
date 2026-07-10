@@ -6,13 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 export const VAPID_PUBLIC_KEY =
   "BMtivcZcLmG17_XC1y1tjUVSG-CjnRH8dSJW9ZnquiCmHsu5usB2YjmqoarKZzVDVzJfYTbeFqvXARWdcx5aXJg";
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
-  const arr = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-  return arr;
+  const buf = new ArrayBuffer(raw.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < raw.length; i++) view[i] = raw.charCodeAt(i);
+  return buf;
 }
 
 export function pushSupported(): boolean {
