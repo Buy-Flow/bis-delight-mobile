@@ -131,6 +131,35 @@ Deno.serve(async (req) => {
         .select("id,endpoint,p256dh,auth,user_id")
         .not("user_id", "is", null);
       subs = (data ?? []).filter((s: any) => !activeIds.has(s.user_id));
+    } else if (audience === "category" && campaign.audience_category) {
+      // Fans of a category: users who bought at least one product in the category
+      // (any paid order historical). We join order_items -> products -> orders.
+      const { data: prods } = await admin
+        .from("products")
+        .select("id")
+        .eq("category", campaign.audience_category);
+      const productIds = (prods ?? []).map((p: any) => p.id);
+      if (productIds.length) {
+        const { data: items } = await admin
+          .from("order_items")
+          .select("order_id, orders!inner(user_id, status)")
+          .in("product_id", productIds);
+        const userIdsSet = new Set<string>();
+        for (const it of items ?? []) {
+          const ord = (it as any).orders;
+          if (ord?.user_id && (ord.status === "pago" || ord.status === "entregue" || ord.status === "preparando" || ord.status === "saiu_para_entrega")) {
+            userIdsSet.add(ord.user_id);
+          }
+        }
+        const ids = Array.from(userIdsSet);
+        if (ids.length) {
+          const { data } = await admin
+            .from("push_subscriptions")
+            .select("id,endpoint,p256dh,auth,user_id")
+            .in("user_id", ids);
+          subs = data ?? [];
+        }
+      }
     }
 
     // Preload names + stamps for personalization if templates contain tokens

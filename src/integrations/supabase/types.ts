@@ -709,6 +709,7 @@ export type Database = {
       push_campaigns: {
         Row: {
           audience: string
+          audience_category: string | null
           body: string
           created_at: string
           created_by: string | null
@@ -726,6 +727,7 @@ export type Database = {
         }
         Insert: {
           audience?: string
+          audience_category?: string | null
           body: string
           created_at?: string
           created_by?: string | null
@@ -743,6 +745,7 @@ export type Database = {
         }
         Update: {
           audience?: string
+          audience_category?: string | null
           body?: string
           created_at?: string
           created_by?: string | null
@@ -758,7 +761,15 @@ export type Database = {
           title?: string
           url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "push_campaigns_audience_category_fkey"
+            columns: ["audience_category"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_deliveries: {
         Row: {
@@ -1350,6 +1361,7 @@ export type Database = {
         Args: { _limit?: number }
         Returns: {
           audience: string
+          audience_category: string | null
           body: string
           created_at: string
           created_by: string | null

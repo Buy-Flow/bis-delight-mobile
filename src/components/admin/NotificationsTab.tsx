@@ -40,7 +40,7 @@ import { supabase } from "@/integrations/supabase/client";
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 
-type Audience = "all" | "recent_30d" | "birthday_month" | "dormant_60d";
+type Audience = "all" | "recent_30d" | "birthday_month" | "dormant_60d" | "category";
 type AutoKind =
   | "birthday"
   | "dormant"
@@ -59,6 +59,7 @@ interface Campaign {
   url: string | null;
   image: string | null;
   audience: string;
+  audience_category?: string | null;
   sent_count: number;
   opened_count: number;
   failed_count: number;
@@ -91,6 +92,7 @@ const audiences: { value: Audience; label: string; icon: typeof Users; hint: str
   { value: "recent_30d", label: "Compraram nos últimos 30 dias", icon: Users, hint: "Clientes ativos" },
   { value: "birthday_month", label: "Aniversariantes do mês", icon: Cake, hint: "Com data cadastrada" },
   { value: "dormant_60d", label: "Sem compra há 60+ dias", icon: Moon, hint: "Traga de volta" },
+  { value: "category", label: "Fãs de uma categoria", icon: Star, hint: "Quem já comprou o tipo" },
 ];
 
 const durationOptions: { value: number | null; label: string }[] = [
@@ -377,6 +379,9 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
   const [url, setUrl] = useState("");
   const [image, setImage] = useState("");
   const [audience, setAudience] = useState<Audience>("all");
+  const [audienceCategory, setAudienceCategory] = useState<string>("");
+  const [categories, setCategories] = useState<{ id: string; name: string; emoji: string }[]>([]);
+  const [categoryFans, setCategoryFans] = useState<Record<string, number>>({});
   const [durationMin, setDurationMin] = useState<number | null>(60 * 24);
   const [scheduledAt, setScheduledAt] = useState<string>("");
   const [repeatCount, setRepeatCount] = useState<number>(1);
@@ -384,6 +389,36 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
   const [repeatIntervalMin, setRepeatIntervalMin] = useState<number>(60 * 24);
   const [customHours, setCustomHours] = useState<string>("");
   const [sending, setSending] = useState(false);
+
+  // Load active categories + count of fans (distinct buyers) per category
+  useEffect(() => {
+    (async () => {
+      const { data: cats } = await supabase
+        .from("categories")
+        .select("id,name,emoji")
+        .eq("active", true)
+        .order("sort_order", { ascending: true });
+      setCategories(cats ?? []);
+
+      // Compute distinct buyer counts per category via order_items joined view.
+      // We do it client-side with a compact aggregation to avoid extra SQL.
+      const { data: items } = await supabase
+        .from("order_items")
+        .select("product_id, products!inner(category), orders!inner(user_id,status)")
+        .in("orders.status", ["pago", "entregue", "preparando", "saiu_para_entrega"]);
+      const byCat = new Map<string, Set<string>>();
+      for (const it of (items as any[]) ?? []) {
+        const cat = it.products?.category;
+        const uid = it.orders?.user_id;
+        if (!cat || !uid) continue;
+        if (!byCat.has(cat)) byCat.set(cat, new Set());
+        byCat.get(cat)!.add(uid);
+      }
+      const counts: Record<string, number> = {};
+      byCat.forEach((set, k) => (counts[k] = set.size));
+      setCategoryFans(counts);
+    })();
+  }, []);
 
 
   const preview = useMemo(
@@ -399,6 +434,10 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
       toast.error("Preencha título e mensagem.");
       return;
     }
+    if (audience === "category" && !audienceCategory) {
+      toast.error("Escolha a categoria para segmentar.");
+      return;
+    }
     const scheduledIso = scheduledAt ? new Date(scheduledAt).toISOString() : null;
     if (scheduledIso && new Date(scheduledIso).getTime() < Date.now() - 60_000) {
       toast.error("Escolha uma data/hora no futuro.");
@@ -412,11 +451,8 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
       const totalReps = repeatInfinite ? INFINITE_CAP : Math.max(1, Math.min(200, repeatCount));
       const intervalMs = repeatIntervalMin * 60_000;
 
-      // Build all occurrences. The first uses baseTime; subsequent add interval.
       const occurrences = Array.from({ length: totalReps }, (_, i) => baseTime + i * intervalMs);
-      const nowMs = Date.now();
 
-      // Insert campaigns. First is "sent" if base is now (no schedule); others always scheduled.
       const rows = occurrences.map((t, i) => {
         const isImmediate = i === 0 && !scheduledIso;
         return {
@@ -425,6 +461,7 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
           url: url.trim() || null,
           image: image.trim() || null,
           audience,
+          audience_category: audience === "category" ? audienceCategory : null,
           expires_at: durationMin !== null ? new Date(t + durationMin * 60_000).toISOString() : null,
           created_by: user.user?.id ?? null,
           status: isImmediate ? "sent" : "scheduled",
@@ -554,6 +591,55 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
               );
             })}
           </div>
+
+          {audience === "category" && (
+            <div className="mt-3 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/5 p-3">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-neon-cyan">
+                Escolha a categoria favorita
+              </p>
+              {categories.length === 0 ? (
+                <p className="text-xs text-white/50">Nenhuma categoria ativa.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((c) => {
+                    const fans = categoryFans[c.id] ?? 0;
+                    const active = audienceCategory === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setAudienceCategory(c.id)}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                          active
+                            ? "border-neon-cyan bg-neon-cyan/20 text-white shadow-lg shadow-neon-cyan/10"
+                            : "border-white/10 bg-black/20 text-white/70 hover:border-white/30"
+                        }`}
+                      >
+                        <span className="text-sm">{c.emoji}</span>
+                        {c.name}
+                        <span
+                          className={`ml-1 rounded-full px-1.5 py-0.5 text-[9px] ${
+                            active ? "bg-white/20 text-white" : "bg-white/10 text-white/60"
+                          }`}
+                        >
+                          {fans}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {audienceCategory && (
+                <p className="mt-2 text-[11px] text-white/60">
+                  <Sparkles className="mr-1 inline h-3 w-3 text-neon-yellow" />
+                  Alcance estimado:{" "}
+                  <b className="text-white">{categoryFans[audienceCategory] ?? 0}</b>{" "}
+                  fã(s) de <b>{categories.find((c) => c.id === audienceCategory)?.name}</b>
+                  {" "}(só quem tem push ativo receberá)
+                </p>
+              )}
+            </div>
+          )}
         </FieldGroup>
 
         <FieldGroup icon={Clock} label="Duração e agendamento" tone="yellow">
