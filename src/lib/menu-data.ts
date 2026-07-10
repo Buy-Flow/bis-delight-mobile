@@ -74,6 +74,21 @@ export type SiteSettings = {
   titleFont: string;
   heroImages: HeroImagesConfig;
   popup: PopupConfig;
+  urgency: UrgencyConfig;
+};
+
+export type UrgencyConfig = {
+  active: boolean;
+  text: string;
+  endsAt: string | null;
+  couponCode: string;
+};
+
+export const DEFAULT_URGENCY: UrgencyConfig = {
+  active: false,
+  text: "Sexta Especial acaba em",
+  endsAt: null,
+  couponCode: "",
 };
 
 export type PopupFrequency = "session" | "always" | "daily";
