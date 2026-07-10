@@ -47,6 +47,38 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_runs: {
+        Row: {
+          automation_id: string
+          created_at: string
+          id: string
+          run_key: string
+          user_id: string
+        }
+        Insert: {
+          automation_id: string
+          created_at?: string
+          id?: string
+          run_key: string
+          user_id: string
+        }
+        Update: {
+          automation_id?: string
+          created_at?: string
+          id?: string
+          run_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_runs_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "push_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           active: boolean
@@ -484,6 +516,48 @@ export type Database = {
         }
         Relationships: []
       }
+      push_automations: {
+        Row: {
+          active: boolean
+          body: string
+          config: Json
+          created_at: string
+          id: string
+          image: string | null
+          kind: string
+          last_run_at: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          config?: Json
+          created_at?: string
+          id?: string
+          image?: string | null
+          kind: string
+          last_run_at?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          config?: Json
+          created_at?: string
+          id?: string
+          image?: string | null
+          kind?: string
+          last_run_at?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       push_campaigns: {
         Row: {
           audience: string
@@ -495,7 +569,10 @@ export type Database = {
           id: string
           image: string | null
           opened_count: number
+          scheduled_for: string | null
+          sent_at: string | null
           sent_count: number
+          status: string
           title: string
           url: string | null
         }
@@ -509,7 +586,10 @@ export type Database = {
           id?: string
           image?: string | null
           opened_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
           sent_count?: number
+          status?: string
           title: string
           url?: string | null
         }
@@ -523,7 +603,10 @@ export type Database = {
           id?: string
           image?: string | null
           opened_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
           sent_count?: number
+          status?: string
           title?: string
           url?: string | null
         }
