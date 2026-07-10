@@ -73,13 +73,8 @@ function CartPage() {
       {/* Header */}
       <div className="sticky top-0 z-20 border-b border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 pr-4">
-          <button
-            onClick={goBack}
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white active:scale-95"
-            aria-label="Voltar"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+
+
 
           <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
             <ShoppingBag className="h-5 w-5 text-neon-yellow" />
