@@ -2,26 +2,14 @@ import { X, Plus, Minus, Trash2, ShoppingBag, Pencil, Heart, Truck, Sparkles } f
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
-import { InstallAppPrompt, isStandalonePWA } from "./InstallAppPrompt";
 
 export function CartSheet() {
   const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit, requestOpenProduct } = useCart();
   const { data: allProducts = [] } = useProducts();
-  const [showInstall, setShowInstall] = useState(false);
   useBackDismiss(isCartOpen, closeCart);
 
-  const handleCheckoutClick = () => {
-    try {
-      if (!isStandalonePWA() && !sessionStorage.getItem("qb_install_prompt_seen")) {
-        sessionStorage.setItem("qb_install_prompt_seen", "1");
-        setShowInstall(true);
-        return;
-      }
-    } catch {}
-    openCheckout();
-  };
 
 
   const suggestions = useMemo(() => {
@@ -253,7 +241,7 @@ export function CartSheet() {
               </div>
             </div>
             <button
-              onClick={handleCheckoutClick}
+              onClick={openCheckout}
               className="w-full rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
               Continuar para finalização
@@ -261,16 +249,10 @@ export function CartSheet() {
           </div>
         )}
       </div>
-      <InstallAppPrompt
-        open={showInstall}
-        onClose={() => {
-          setShowInstall(false);
-          openCheckout();
-        }}
-      />
     </div>
   );
 }
+
 
 
 function SummaryRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
