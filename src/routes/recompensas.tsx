@@ -90,13 +90,8 @@ function RecompensasPage() {
       {/* Cart-style sticky header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-[#1a0b2e] via-[#1a0b2e]/85 to-transparent pb-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
-          <Link
-            to="/"
-            aria-label="Voltar ao cardápio"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/10 active:scale-95"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
+
+
           <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
             <Award className="h-5 w-5 text-neon-yellow" />
           </div>
