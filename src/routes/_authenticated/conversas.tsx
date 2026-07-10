@@ -11,6 +11,8 @@ import {
   toggleConversationAi,
   markConversationRead,
   getEvolutionStatus,
+  getEvolutionConnectionState,
+  resetEvolutionInstance,
   configureEvolutionWebhook,
 } from "@/lib/whatsapp.functions";
 
@@ -480,9 +482,13 @@ function ConversasPage() {
 
 function ConnectModal({ onClose }: { onClose: () => void }) {
   const statusFn = useServerFn(getEvolutionStatus);
+  const pollStateFn = useServerFn(getEvolutionConnectionState);
+  const resetFn = useServerFn(resetEvolutionInstance);
   const webhookFn = useServerFn(configureEvolutionWebhook);
   const [state, setState] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [resetting, setResetting] = useState(false);
+  const [qrLoadedAt, setQrLoadedAt] = useState<number | null>(null);
   const [webhookUrl] = useState(
     typeof window !== "undefined" ? `${window.location.origin}/api/public/evolution` : "",
   );
@@ -492,6 +498,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
     try {
       const res = await statusFn();
       setState(res);
+      setQrLoadedAt(Date.now());
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao consultar Evolution");
     } finally {
@@ -499,12 +506,43 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const pollConnection = async () => {
+    try {
+      const res = await pollStateFn();
+      const connected = res?.state?.instance?.state === "open" || res?.state?.state === "open";
+      if (connected) setState(res);
+    } catch {
+      /* keep the QR visible while waiting */
+    }
+  };
+
+  const resetConnection = async () => {
+    setResetting(true);
+    try {
+      const res = await resetFn();
+      setState(res);
+      setQrLoadedAt(Date.now());
+      toast.success("Conexão recriada. Escaneie o novo QR code.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao recriar conexão");
+    } finally {
+      setResetting(false);
+    }
+  };
+
   useEffect(() => {
     load();
-    const t = setInterval(load, 5000);
+    const t = setInterval(pollConnection, 5000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!qrLoadedAt) return;
+    const t = window.setTimeout(load, 55_000);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrLoadedAt]);
 
   const isConnected =
     state?.state?.instance?.state === "open" || state?.state?.state === "open";
@@ -557,7 +595,26 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
               alt="QR code"
               className="mx-auto h-56 w-56 rounded-lg bg-white p-2"
             />
-            <p className="mt-3 text-[10px] text-white/40">Atualizando a cada 5s…</p>
+            <p className="mt-3 text-[10px] text-white/40">
+              Verificando conexão a cada 5s. Se o WhatsApp rejeitar, toque em Recriar conexão.
+            </p>
+            <div className="mt-3 flex justify-center gap-2">
+              <button
+                onClick={load}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10 disabled:opacity-50"
+              >
+                <RefreshCw className="h-3 w-3" /> Novo QR
+              </button>
+              <button
+                onClick={resetConnection}
+                disabled={resetting}
+                className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-amber-500/20 disabled:opacity-50"
+              >
+                {resetting ? <Loader2 className="h-3 w-3 animate-spin" /> : <WifiOff className="h-3 w-3" />}
+                Recriar conexão
+              </button>
+            </div>
           </div>
         ) : (
           <div className="text-center">
@@ -572,6 +629,14 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
               className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10"
             >
               <RefreshCw className="h-3 w-3" /> Tentar de novo
+            </button>
+            <button
+              onClick={resetConnection}
+              disabled={resetting}
+              className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-amber-500/20 disabled:opacity-50"
+            >
+              {resetting ? <Loader2 className="h-3 w-3 animate-spin" /> : <WifiOff className="h-3 w-3" />}
+              Recriar conexão
             </button>
           </div>
         )}

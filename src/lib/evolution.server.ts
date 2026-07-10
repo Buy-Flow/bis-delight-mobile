@@ -73,6 +73,18 @@ export async function connectInstance() {
   return evoFetch(`/instance/connect/${INSTANCE_NAME}`);
 }
 
+export async function logoutInstance() {
+  return evoFetch(`/instance/logout/${INSTANCE_NAME}`, {
+    method: "DELETE",
+  });
+}
+
+export async function deleteInstance() {
+  return evoFetch(`/instance/delete/${INSTANCE_NAME}`, {
+    method: "DELETE",
+  });
+}
+
 export async function setWebhook(webhookUrl: string) {
   return evoFetch(`/webhook/set/${INSTANCE_NAME}`, {
     method: "POST",
