@@ -428,17 +428,8 @@ function FavoritesPanel() {
     return favIds.map((id) => productsById.get(id)).filter(Boolean) as Product[];
   }, [favIds, productsById]);
 
-  const remove = async (productId: string) => {
-    if (!user) return;
-    setFavIds((prev) => (prev ?? []).filter((id) => id !== productId));
-    const { error } = await supabase
-      .from("favorites")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("product_id", productId);
-    if (error) toast.error("Não foi possível remover");
-    else toast.success("Removido dos favoritos");
-  };
+  // Removal is handled inside ProductCard's FavoriteButton (heart toggle).
+
 
   if (favIds === null) return <PanelSpinner />;
 
