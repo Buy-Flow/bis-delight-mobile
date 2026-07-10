@@ -7,13 +7,12 @@ type BIPEvent = Event & {
 };
 
 const DISMISS_KEY = "pwa-install-dismissed-at";
-const DISMISS_MS = 1000 * 60 * 60 * 24 * 7; // 7 dias
+const DISMISS_MS = 1000 * 60 * 60 * 24; // 1 dia (antes 7)
 
 function isStandalone() {
   if (typeof window === "undefined") return false;
   return (
     window.matchMedia?.("(display-mode: standalone)").matches ||
-    // iOS Safari
     (window.navigator as unknown as { standalone?: boolean }).standalone === true
   );
 }
@@ -22,6 +21,11 @@ function isIOS() {
   if (typeof window === "undefined") return false;
   const ua = window.navigator.userAgent;
   return /iPad|iPhone|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream;
+}
+
+function isAndroid() {
+  if (typeof window === "undefined") return false;
+  return /Android/i.test(window.navigator.userAgent);
 }
 
 function recentlyDismissed() {
@@ -36,7 +40,7 @@ function recentlyDismissed() {
 
 export function InstallPWAButton() {
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
-  const [showIOSHelp, setShowIOSHelp] = useState(false);
+  const [showHelp, setShowHelp] = useState<null | "ios" | "android" | "desktop">(null);
   const [visible, setVisible] = useState(false);
   const [installed, setInstalled] = useState(false);
 
@@ -45,7 +49,6 @@ export function InstallPWAButton() {
       setInstalled(true);
       return;
     }
-    if (recentlyDismissed()) return;
 
     const onBIP = (e: Event) => {
       e.preventDefault();
@@ -61,9 +64,10 @@ export function InstallPWAButton() {
     window.addEventListener("beforeinstallprompt", onBIP);
     window.addEventListener("appinstalled", onInstalled);
 
-    // iOS não dispara beforeinstallprompt — mostra dica manual
-    if (isIOS()) {
-      const t = setTimeout(() => setVisible(true), 2500);
+    // Mostra o banner mesmo sem BIP (iOS, ou navegadores que já dispararam antes).
+    // Só respeita o "dismiss recente" para não incomodar.
+    if (!recentlyDismissed()) {
+      const t = setTimeout(() => setVisible(true), 1500);
       return () => {
         clearTimeout(t);
         window.removeEventListener("beforeinstallprompt", onBIP);
@@ -79,7 +83,7 @@ export function InstallPWAButton() {
 
   const dismiss = () => {
     setVisible(false);
-    setShowIOSHelp(false);
+    setShowHelp(null);
     try {
       localStorage.setItem(DISMISS_KEY, String(Date.now()));
     } catch {
@@ -100,9 +104,9 @@ export function InstallPWAButton() {
       }
       return;
     }
-    if (isIOS()) {
-      setShowIOSHelp(true);
-    }
+    if (isIOS()) setShowHelp("ios");
+    else if (isAndroid()) setShowHelp("android");
+    else setShowHelp("desktop");
   };
 
   if (installed || !visible) return null;
@@ -138,53 +142,81 @@ export function InstallPWAButton() {
         </div>
       </div>
 
-      {showIOSHelp && (
+      {showHelp && (
         <div
           className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 p-4 sm:items-center"
-          onClick={dismiss}
+          onClick={() => setShowHelp(null)}
         >
           <div
             className="w-full max-w-sm rounded-2xl bg-[#2a1240] p-5 text-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold">Adicionar à tela inicial</h3>
+              <h3 className="text-base font-semibold">
+                {showHelp === "ios" ? "Adicionar à tela inicial" : "Instalar aplicativo"}
+              </h3>
               <button
                 type="button"
-                onClick={dismiss}
+                onClick={() => setShowHelp(null)}
                 aria-label="Fechar"
                 className="rounded-full p-1 text-white/60 hover:bg-white/10 hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <ol className="space-y-3 text-sm text-white/85">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
-                  1
-                </span>
-                <span>
-                  Toque em <Share className="mx-1 inline h-4 w-4 align-text-bottom" />{" "}
-                  <b>Compartilhar</b> na barra do Safari.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
-                  2
-                </span>
-                <span>
-                  Escolha <b>Adicionar à Tela de Início</b>.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
-                  3
-                </span>
-                <span>
-                  Toque em <b>Adicionar</b> — pronto, o Quero Bis fica na sua tela inicial 🍧
-                </span>
-              </li>
-            </ol>
+
+            {showHelp === "ios" && (
+              <ol className="space-y-3 text-sm text-white/85">
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">1</span>
+                  <span>
+                    Toque em <Share className="mx-1 inline h-4 w-4 align-text-bottom" /> <b>Compartilhar</b> na barra do Safari.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">2</span>
+                  <span>Escolha <b>Adicionar à Tela de Início</b>.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">3</span>
+                  <span>Toque em <b>Adicionar</b> — pronto, o Quero Bis fica na sua tela inicial 🍧</span>
+                </li>
+              </ol>
+            )}
+
+            {showHelp === "android" && (
+              <ol className="space-y-3 text-sm text-white/85">
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">1</span>
+                  <span>Toque no menu <b>⋮</b> no canto superior direito do Chrome.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">2</span>
+                  <span>Escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">3</span>
+                  <span>Confirme em <b>Instalar</b> 🍧</span>
+                </li>
+              </ol>
+            )}
+
+            {showHelp === "desktop" && (
+              <ol className="space-y-3 text-sm text-white/85">
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">1</span>
+                  <span>Procure o ícone <b>⊕ Instalar</b> na barra de endereço do navegador.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">2</span>
+                  <span>Ou abra o menu do navegador e escolha <b>Instalar Quero Bis</b>.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">3</span>
+                  <span>Confirme para adicionar o app ao seu computador 🍧</span>
+                </li>
+              </ol>
+            )}
           </div>
         </div>
       )}
