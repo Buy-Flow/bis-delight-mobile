@@ -323,6 +323,24 @@ export function OrdersTab() {
     }
   };
 
+  const sendCrmTest = async () => {
+    setCrmBusy(true);
+    try {
+      const { testCrmWebhook } = await import("@/lib/crm.functions");
+      const result = await testCrmWebhook();
+      if (result.ok) {
+        toast.success(`CRM respondeu ${result.status}: teste entregue.`);
+      } else {
+        toast.error(`CRM respondeu ${result.status || "erro"}: ${result.body?.slice(0, 100) || "sem resposta"}`);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao testar o CRM.");
+    } finally {
+      setCrmBusy(false);
+    }
+  };
+
+
   const load = async () => {
     setRefreshing(true);
     const { data, error } = await supabase
