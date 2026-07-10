@@ -152,7 +152,7 @@ function AdminPage() {
     );
   }
 
-  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
+  const tabs: { id: Tab; label: string; icon: React.ElementType; to?: string }[] = [
     { id: "products", label: "Produtos", icon: Package },
     { id: "highlights", label: "Destaques", icon: Star },
     { id: "news", label: "Novidades", icon: Sparkles },
