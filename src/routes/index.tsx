@@ -14,6 +14,7 @@ import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { InstallAppBanner } from "@/components/menu/InstallAppBanner";
+import { WelcomePopup } from "@/components/menu/WelcomePopup";
 
 
 import { FloatingActions } from "@/components/menu/FloatingActions";
