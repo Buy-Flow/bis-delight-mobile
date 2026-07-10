@@ -6,6 +6,7 @@ import { TopBar } from "@/components/menu/TopBar";
 import { Hero } from "@/components/menu/Hero";
 import { Benefits } from "@/components/menu/Benefits";
 import { LoyaltyProgress } from "@/components/menu/LoyaltyProgress";
+import { PushOptInCard } from "@/components/menu/PushOptInCard";
 import { CategoryStrip } from "@/components/menu/CategoryStrip";
 import { ProductCard } from "@/components/menu/ProductCard";
 import { ProductCardSkeleton } from "@/components/menu/ProductCardSkeleton";
@@ -273,6 +274,7 @@ function Content() {
       <Hero onScrollMenu={scrollToMenu} />
       <Reveal><Benefits /></Reveal>
       <Reveal><LoyaltyProgress /></Reveal>
+      <PushOptInCard />
       
       
 
