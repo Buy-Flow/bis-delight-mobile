@@ -125,14 +125,19 @@ export function WelcomePopup() {
                   {popup.cta}
                 </a>
               ) : (
-                <Link
-                  to={internalTo}
-                  onClick={close}
+                <button
+                  type="button"
+                  onClick={() => {
+                    markDismissed(popup.frequency);
+                    setOpen(false);
+                    navigate({ to: internalTo });
+                  }}
                   className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
                 >
                   {popup.cta}
-                </Link>
+                </button>
               )
+
             )}
           </div>
         )}
