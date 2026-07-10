@@ -3,10 +3,12 @@ import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
 import { useMemo } from "react";
+import { useBackDismiss } from "@/lib/use-back-dismiss";
 
 export function CartSheet() {
   const { isCartOpen, closeCart, items, update, remove, subtotal, openCheckout, openEdit, requestOpenProduct } = useCart();
   const { data: allProducts = [] } = useProducts();
+  useBackDismiss(isCartOpen, closeCart);
 
   const suggestions = useMemo(() => {
     if (!items.length) return [];
