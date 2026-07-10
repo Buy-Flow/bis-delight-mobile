@@ -366,6 +366,7 @@ function OrdersPanel() {
               <div className="text-[10px] text-white/50">{o.mode === "entrega" ? "Entrega" : "Retirada"}</div>
             </div>
           </div>
+          <OrderTracker status={o.status} mode={o.mode} />
           <div className="mt-3 space-y-0.5 text-xs text-white/70">
             {o.items.slice(0, 3).map((it: any, i: number) => (
               <div key={i} className="truncate">
@@ -378,6 +379,7 @@ function OrdersPanel() {
           <button
             onClick={() => reorder(o)}
             className="mt-3 flex w-full items-center justify-center gap-1 rounded-xl bg-neon-cyan/20 py-2 text-xs font-bold text-neon-cyan"
+
           >
             <RotateCcw className="h-3.5 w-3.5" /> Pedir novamente
           </button>
