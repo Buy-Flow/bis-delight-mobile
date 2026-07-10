@@ -379,6 +379,9 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
   const [url, setUrl] = useState("");
   const [image, setImage] = useState("");
   const [audience, setAudience] = useState<Audience>("all");
+  const [audienceCategory, setAudienceCategory] = useState<string>("");
+  const [categories, setCategories] = useState<{ id: string; name: string; emoji: string }[]>([]);
+  const [categoryFans, setCategoryFans] = useState<Record<string, number>>({});
   const [durationMin, setDurationMin] = useState<number | null>(60 * 24);
   const [scheduledAt, setScheduledAt] = useState<string>("");
   const [repeatCount, setRepeatCount] = useState<number>(1);
@@ -386,6 +389,36 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
   const [repeatIntervalMin, setRepeatIntervalMin] = useState<number>(60 * 24);
   const [customHours, setCustomHours] = useState<string>("");
   const [sending, setSending] = useState(false);
+
+  // Load active categories + count of fans (distinct buyers) per category
+  useEffect(() => {
+    (async () => {
+      const { data: cats } = await supabase
+        .from("categories")
+        .select("id,name,emoji")
+        .eq("active", true)
+        .order("sort_order", { ascending: true });
+      setCategories(cats ?? []);
+
+      // Compute distinct buyer counts per category via order_items joined view.
+      // We do it client-side with a compact aggregation to avoid extra SQL.
+      const { data: items } = await supabase
+        .from("order_items")
+        .select("product_id, products!inner(category), orders!inner(user_id,status)")
+        .in("orders.status", ["pago", "entregue", "preparando", "saiu_para_entrega"]);
+      const byCat = new Map<string, Set<string>>();
+      for (const it of (items as any[]) ?? []) {
+        const cat = it.products?.category;
+        const uid = it.orders?.user_id;
+        if (!cat || !uid) continue;
+        if (!byCat.has(cat)) byCat.set(cat, new Set());
+        byCat.get(cat)!.add(uid);
+      }
+      const counts: Record<string, number> = {};
+      byCat.forEach((set, k) => (counts[k] = set.size));
+      setCategoryFans(counts);
+    })();
+  }, []);
 
 
   const preview = useMemo(
