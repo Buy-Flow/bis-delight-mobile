@@ -35,7 +35,8 @@ function markDismissed(freq: string) {
 export function WelcomePopup() {
   const { data } = useSiteSettings();
   const popup = data?.popup;
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdminRoute =
     pathname.startsWith("/admin") ||
