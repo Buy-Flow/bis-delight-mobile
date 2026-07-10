@@ -669,3 +669,300 @@ function EditCampaignModal({
     </div>
   );
 }
+
+// -----------------------------------------------------------------------------
+// Scheduled campaigns preview
+
+function ScheduledCampaigns({ history, onChanged }: { history: Campaign[]; onChanged: () => Promise<void> | void }) {
+  const scheduled = history.filter((c: any) => c.status === "scheduled" && c.scheduled_for);
+  if (scheduled.length === 0) return null;
+
+  async function cancel(c: Campaign) {
+    if (!confirm(`Cancelar o envio agendado de "${c.title}"?`)) return;
+    const { error } = await supabase
+      .from("push_campaigns")
+      .update({ status: "canceled" } as any)
+      .eq("id", c.id);
+    if (error) {
+      toast.error("Erro ao cancelar");
+      return;
+    }
+    toast.success("Envio agendado cancelado");
+    await onChanged();
+  }
+
+  return (
+    <section className="mt-6 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/[0.05] p-5">
+      <div className="mb-3 flex items-center gap-2">
+        <CalendarClock className="h-4 w-4 text-neon-cyan" />
+        <h3 className="font-display text-lg font-black">Envios agendados</h3>
+        <span className="rounded-full bg-neon-cyan/15 px-2 py-0.5 text-[10px] font-bold text-neon-cyan">
+          {scheduled.length}
+        </span>
+      </div>
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {scheduled.map((c: any) => (
+          <li key={c.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-bold text-white">{c.title}</div>
+              <div className="line-clamp-2 text-[11px] text-white/60">{c.body}</div>
+              <div className="mt-1 text-[10px] text-neon-cyan">
+                🗓️ {new Date(c.scheduled_for).toLocaleString("pt-BR")}
+              </div>
+            </div>
+            <button
+              onClick={() => cancel(c)}
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-red-400 hover:bg-white/10"
+              title="Cancelar envio"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Automations panel
+
+type AutoKind = "birthday" | "dormant" | "welcome";
+interface Automation {
+  id: string;
+  kind: AutoKind;
+  title: string;
+  body: string;
+  url: string | null;
+  image: string | null;
+  active: boolean;
+  config: Record<string, any>;
+  last_run_at: string | null;
+}
+
+const AUTO_META: Record<AutoKind, { label: string; hint: string; icon: typeof Gift; accent: string }> = {
+  birthday: {
+    label: "Aniversariante do dia",
+    hint: "Toda manhã envia pra quem faz aniversário HOJE.",
+    icon: Cake,
+    accent: "text-neon-yellow",
+  },
+  dormant: {
+    label: "Cliente inativo",
+    hint: "Reengaja quem não pede há X dias. Roda 1x por semana.",
+    icon: Moon,
+    accent: "text-neon-cyan",
+  },
+  welcome: {
+    label: "Boas-vindas (1º pedido)",
+    hint: "Dispara depois do primeiro pedido do cliente.",
+    icon: UserPlus,
+    accent: "text-neon-pink",
+  },
+};
+
+function AutomationsPanel() {
+  const [items, setItems] = useState<Automation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    const { data } = await supabase.from("push_automations").select("*").order("kind");
+    setItems((data ?? []) as Automation[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  return (
+    <section className="mt-6 rounded-2xl border border-neon-pink/30 bg-gradient-to-br from-neon-pink/[0.06] to-purple-950/40 p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <Zap className="h-4 w-4 text-neon-pink" />
+        <h3 className="font-display text-lg font-black">Automações</h3>
+        <span className="text-[10px] text-white/40">
+          Rodam sozinhas a cada 5 min. Personalize com {"{{primeiro_nome}}"} / {"{{nome}}"}.
+        </span>
+      </div>
+      {loading ? (
+        <div className="grid place-items-center py-8 text-white/50">
+          <Loader2 className="h-5 w-5 animate-spin" />
+        </div>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-3">
+          {items.map((a) => (
+            <AutomationCard key={a.id} automation={a} onChanged={load} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function AutomationCard({ automation, onChanged }: { automation: Automation; onChanged: () => void }) {
+  const meta = AUTO_META[automation.kind];
+  const Icon = meta.icon;
+  const [expanded, setExpanded] = useState(false);
+  const [title, setTitle] = useState(automation.title);
+  const [body, setBody] = useState(automation.body);
+  const [url, setUrl] = useState(automation.url ?? "");
+  const [image, setImage] = useState(automation.image ?? "");
+  const [days, setDays] = useState<number>(Number(automation.config?.days ?? 60));
+  const [saving, setSaving] = useState(false);
+
+  const toggleActive = async () => {
+    const { error } = await supabase
+      .from("push_automations")
+      .update({ active: !automation.active } as any)
+      .eq("id", automation.id);
+    if (error) {
+      toast.error("Erro ao atualizar");
+      return;
+    }
+    toast.success(!automation.active ? "Automação ativada" : "Automação desativada");
+    onChanged();
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const patch: Record<string, any> = {
+        title: title.trim(),
+        body: body.trim(),
+        url: url.trim() || null,
+        image: image.trim() || null,
+      };
+      if (automation.kind === "dormant") patch.config = { days };
+      const { error } = await supabase
+        .from("push_automations")
+        .update(patch as any)
+        .eq("id", automation.id);
+      if (error) throw error;
+      toast.success("Automação salva");
+      setExpanded(false);
+      onChanged();
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className={`rounded-xl border p-4 transition ${
+        automation.active
+          ? "border-neon-pink/40 bg-black/30"
+          : "border-white/10 bg-black/20 opacity-80"
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-black/40 ${meta.accent}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="truncate font-bold text-white">{meta.label}</span>
+            <button
+              onClick={toggleActive}
+              className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                automation.active
+                  ? "bg-neon-pink/20 text-neon-pink"
+                  : "bg-white/5 text-white/40"
+              }`}
+              title={automation.active ? "Desativar" : "Ativar"}
+            >
+              <Power className="h-3 w-3" />
+              {automation.active ? "Ativa" : "Desligada"}
+            </button>
+          </div>
+          <p className="mt-0.5 text-[11px] text-white/50">{meta.hint}</p>
+        </div>
+      </div>
+
+      <div className="mt-3 rounded-lg bg-black/30 p-2 text-[11px]">
+        <div className="truncate font-semibold text-white/90">{automation.title}</div>
+        <div className="line-clamp-2 text-white/60">{automation.body}</div>
+      </div>
+
+      {automation.last_run_at && (
+        <div className="mt-2 text-[10px] text-white/40">
+          Última execução: {new Date(automation.last_run_at).toLocaleString("pt-BR")}
+        </div>
+      )}
+
+      <button
+        onClick={() => setExpanded((x) => !x)}
+        className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-neon-cyan hover:underline"
+      >
+        <Pencil className="h-3 w-3" /> {expanded ? "Fechar" : "Editar mensagem"}
+      </button>
+
+      {expanded && (
+        <div className="mt-3 space-y-2">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={60}
+            placeholder="Título"
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-xs outline-none focus:border-neon-pink"
+          />
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={3}
+            maxLength={180}
+            placeholder="Mensagem"
+            className="w-full resize-none rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-xs outline-none focus:border-neon-pink"
+          />
+          <div className="flex flex-wrap gap-1">
+            {["{{primeiro_nome}}", "{{nome}}"].map((tok) => (
+              <button
+                key={tok}
+                type="button"
+                onClick={() => setBody((b) => (b + " " + tok).trim())}
+                className="rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-semibold text-neon-cyan hover:bg-neon-cyan/20"
+              >
+                + {tok}
+              </button>
+            ))}
+          </div>
+          <input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Link ao tocar (opcional, ex: /recompensas)"
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-xs outline-none focus:border-neon-pink"
+          />
+          <input
+            value={image}
+            onChange={(e) => setImage(e.target.value)}
+            placeholder="URL da imagem (opcional)"
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-xs outline-none focus:border-neon-pink"
+          />
+          {automation.kind === "dormant" && (
+            <label className="flex items-center gap-2 text-xs text-white/70">
+              Enviar quem não pede há
+              <input
+                type="number"
+                min={7}
+                max={365}
+                value={days}
+                onChange={(e) => setDays(Math.max(7, Math.min(365, Number(e.target.value) || 60)))}
+                className="w-16 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-center text-xs outline-none focus:border-neon-pink"
+              />
+              dias
+            </label>
+          )}
+          <button
+            onClick={save}
+            disabled={saving || !title.trim() || !body.trim()}
+            className="inline-flex items-center gap-1 rounded-full bg-neon-pink px-4 py-1.5 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+            Salvar automação
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
