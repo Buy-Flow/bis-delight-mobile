@@ -125,6 +125,7 @@ const FILTERS: { id: FilterId; label: string; color: string }[] = [
   { id: "pendente", label: "Pendentes", color: "border-neon-yellow/50 text-neon-yellow" },
   { id: "pago", label: "Pagos", color: "border-emerald-400/50 text-emerald-300" },
   { id: "preparando", label: "Preparando", color: "border-neon-cyan/50 text-neon-cyan" },
+  { id: "saiu_para_entrega", label: "Saiu p/ entrega", color: "border-neon-pink/50 text-neon-pink" },
   { id: "entregue", label: "Entregues", color: "border-white/20 text-white/70" },
   { id: "cancelado", label: "Cancelados", color: "border-red-500/50 text-red-300" },
 ];
