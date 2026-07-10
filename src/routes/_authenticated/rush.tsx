@@ -24,7 +24,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsAdmin, useSiteSettings, useUpdateSiteSettings } from "@/lib/menu-data";
+import { useIsAdmin, useSiteSettings, useUpdateSettings } from "@/lib/menu-data";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 
@@ -152,7 +152,7 @@ function RushPage() {
   const navigate = useNavigate();
   const { data: isAdmin, isLoading } = useIsAdmin();
   const { data: settings } = useSiteSettings();
-  const updateSettings = useUpdateSiteSettings();
+  const updateSettings = useUpdateSettings();
 
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [lane, setLane] = useState<LaneId>("novos");
