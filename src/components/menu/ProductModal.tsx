@@ -490,7 +490,7 @@ export function ProductModal({
           {collapsed ? (
             <div className="flex items-center gap-3 px-5 pb-3 pt-16">
               <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ring-neon-yellow/40">
-                <img src={product.image} alt="" className="h-full w-full object-cover" />
+                <img src={product.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
               </div>
               <h2 className="min-w-0 flex-1 truncate font-display text-lg font-extrabold uppercase tracking-tight text-white">
                 {product.name}
