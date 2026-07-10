@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TrackingPageSkeleton } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/_authenticated/rastrear/$orderId")({
   head: () => ({
