@@ -56,6 +56,16 @@ export async function currentSubscription(): Promise<PushSubscription | null> {
   return await reg.pushManager.getSubscription();
 }
 
+export async function ensurePushSubscriptionSaved(options: { forceNew?: boolean } = {}): Promise<
+  { ok: true } | { ok: false; reason: string }
+> {
+  if (!pushSupported()) return { ok: false, reason: "unsupported" };
+  if (iosStandaloneRequired()) return { ok: false, reason: "ios-install-required" };
+  if (Notification.permission !== "granted") return { ok: false, reason: "permission-required" };
+
+  return subscribeToPush(options);
+}
+
 export async function subscribeToPush(options: { forceNew?: boolean } = {}): Promise<
   { ok: true } | { ok: false; reason: string }
 > {

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
-import { currentSubscription, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
+import { currentSubscription, ensurePushSubscriptionSaved, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
 
 type OrderStatus = "pendente" | "pago" | "preparando" | "entregue" | "cancelado";
 
@@ -148,23 +148,48 @@ export function OrdersTab() {
     };
 
     (async () => {
-      const sub = await currentSubscription();
+      const res = await ensurePushSubscriptionSaved({ forceNew: isStandaloneApp() });
       if (!alive) return;
-      if (!sub) {
+      if (!res.ok) {
         setNotifyOn(false);
         localStorage.setItem("orders-notify", "0");
-        return;
       }
-      const res = await subscribeToPush({ forceNew: isStandaloneApp() });
-      if (!alive || res.ok) return;
-      setNotifyOn(false);
-      localStorage.setItem("orders-notify", "0");
     })();
 
     return () => {
       alive = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!notifyOn) return;
+
+    let cancelled = false;
+    const sync = async () => {
+      const res = await ensurePushSubscriptionSaved({ forceNew: false });
+      if (!cancelled && !res.ok && res.reason !== "permission-required") {
+        setNotifyOn(false);
+        localStorage.setItem("orders-notify", "0");
+      }
+    };
+
+    const onFocus = () => void sync();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void sync();
+    };
+
+    void sync();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = window.setInterval(sync, 60_000);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.clearInterval(interval);
+    };
+  }, [notifyOn]);
 
   const playBeep = () => {
     try {
