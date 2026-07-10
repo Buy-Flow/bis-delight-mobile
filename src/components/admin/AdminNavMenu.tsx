@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const items = [
-  { to: "/admin", label: "Painel", icon: LayoutDashboard },
+  { to: "/admin", label: "Painel administrador", icon: LayoutDashboard },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/carrinhos", label: "Carrinhos", icon: ShoppingCart },
   { to: "/financeiro", label: "Financeiro", icon: LineChart },
