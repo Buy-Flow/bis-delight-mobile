@@ -83,71 +83,108 @@ function RecompensasPage() {
   const used = coupons.filter((c) => c.used_at);
 
   return (
-    <main className="min-h-screen bg-[#1a0b2e] pb-24 text-white">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#1a0b2e]/90 px-4 py-3 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl items-center gap-3">
-          <Link
-            to="/"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-            aria-label="Voltar"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-lg font-extrabold">Bis Recompensa</h1>
-        </div>
-      </header>
+    <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
+      {/* ambient background blobs */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[520px] overflow-hidden">
+        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-neon-pink/25 blur-[120px]" />
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-neon-yellow/20 blur-[100px]" />
+        <div className="absolute top-32 -left-24 h-72 w-72 rounded-full bg-neon-cyan/20 blur-[100px]" />
+      </div>
 
-      <div className="mx-auto max-w-2xl px-4 pt-5">
-        <section className="relative overflow-hidden rounded-[28px] border border-neon-yellow/40 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#3a1f5c] p-5 shadow-xl">
-          <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-neon-pink/30 blur-3xl" />
-          <div aria-hidden className="pointer-events-none absolute -left-8 -bottom-8 h-32 w-32 rounded-full bg-neon-cyan/20 blur-3xl" />
+      <div className="relative mx-auto max-w-2xl px-4 pt-8">
+        {/* Hero card */}
+        <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240] p-6 shadow-[0_30px_80px_-40px_rgba(255,52,153,0.6)]">
+          {/* decorative stars */}
+          <Star aria-hidden className="absolute right-6 top-4 h-3 w-3 text-neon-yellow/70" fill="currentColor" />
+          <Star aria-hidden className="absolute right-16 top-10 h-2 w-2 text-neon-pink/70" fill="currentColor" />
+          <Star aria-hidden className="absolute left-8 bottom-6 h-2.5 w-2.5 text-neon-cyan/60" fill="currentColor" />
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-pink/30 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-neon-cyan/20 blur-3xl" />
 
-          <div className="relative flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neon-yellow/15 text-neon-yellow">
-              <Sparkles className="h-6 w-6" />
+          <div className="relative">
+            {/* Title row */}
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-neon-yellow to-neon-pink text-[#1a0b2e] shadow-lg shadow-neon-pink/40">
+                <Trophy className="h-7 w-7" strokeWidth={2.5} />
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#1a0b2e] text-[10px] font-black text-neon-yellow ring-2 ring-neon-yellow/50">
+                  <Sparkles className="h-3 w-3" />
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
+                  Programa de fidelidade
+                </div>
+                <h1 className="text-2xl font-black leading-tight tracking-tight">
+                  Bis <span className="bg-gradient-to-r from-neon-yellow via-neon-pink to-neon-cyan bg-clip-text text-transparent">Recompensa</span>
+                </h1>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline justify-between gap-2">
-                <h2 className="text-lg font-extrabold">Seu progresso</h2>
-                <span className="text-base font-bold text-neon-yellow tabular-nums">{current}/{GOAL}</span>
-              </div>
-              <p className="mt-1 text-sm text-white/80">
-                {loading
-                  ? "Carregando…"
-                  : !userId
-                    ? "Entre na sua conta para começar a acumular selos."
-                    : remaining === 0
-                      ? "Parabéns! Um cupom de R$ 20 foi liberado."
-                      : remaining === 1
-                        ? "Falta 1 pedido para ganhar R$ 20 de desconto!"
-                        : `Faltam ${remaining} pedidos para ganhar R$ 20 de desconto.`}
-              </p>
 
-              <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-[width] duration-700"
-                  style={{ width: `${pct}%` }}
-                />
+            {/* Big counter */}
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-white/60">Selos acumulados</div>
+                <div className="mt-1 flex items-baseline gap-1.5">
+                  <span className="text-5xl font-black tabular-nums text-white drop-shadow-[0_2px_10px_rgba(255,220,120,0.4)]">
+                    {current}
+                  </span>
+                  <span className="text-2xl font-bold text-white/50">/{GOAL}</span>
+                </div>
               </div>
+              <div className="rounded-2xl border border-neon-yellow/40 bg-neon-yellow/10 px-3 py-2 text-right">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-neon-yellow">Recompensa</div>
+                <div className="text-lg font-black text-neon-yellow">R$ 20</div>
+              </div>
+            </div>
 
-              <div className="mt-3 grid grid-cols-10 gap-1.5">
-                {Array.from({ length: GOAL }).map((_, i) => (
+            <p className="mt-3 text-sm leading-relaxed text-white/80">
+              {loading
+                ? "Carregando…"
+                : !userId
+                  ? "Entre na sua conta para começar a acumular selos."
+                  : remaining === 0
+                    ? "🎉 Parabéns! Um cupom de R$ 20 foi liberado."
+                    : remaining === 1
+                      ? "Falta apenas 1 pedido para ganhar R$ 20 de desconto!"
+                      : `Faltam ${remaining} pedidos para ganhar R$ 20 de desconto.`}
+            </p>
+
+            {/* Progress bar */}
+            <div className="mt-5 h-3 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-inset ring-white/10">
+              <div
+                className="relative h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-[width] duration-700"
+                style={{ width: `${pct}%` }}
+              >
+                <div className="absolute inset-0 rounded-full bg-white/25 mix-blend-overlay" />
+              </div>
+            </div>
+
+            {/* Stamps grid */}
+            <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-10">
+              {Array.from({ length: GOAL }).map((_, i) => {
+                const filled = i < current;
+                return (
                   <div
                     key={i}
                     className={cn(
-                      "flex aspect-square items-center justify-center rounded-full border transition-colors",
-                      i < current
-                        ? "border-neon-yellow bg-neon-yellow/90 text-[#1a0b2e]"
-                        : "border-white/15 bg-white/5 text-white/30",
+                      "relative flex aspect-square items-center justify-center rounded-full border transition-all duration-500",
+                      filled
+                        ? "border-neon-yellow bg-gradient-to-br from-neon-yellow to-neon-pink text-[#1a0b2e] shadow-[0_0_16px_rgba(255,220,120,0.55)]"
+                        : "border-white/15 bg-white/[0.04] text-white/30",
                     )}
                   >
-                    {i < current ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : <span className="text-[10px] font-bold">{i + 1}</span>}
+                    {filled ? (
+                      <Check className="h-4 w-4" strokeWidth={3.5} />
+                    ) : (
+                      <span className="text-[11px] font-bold">{i + 1}</span>
+                    )}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         </section>
+
 
         {userId && (
           <>
