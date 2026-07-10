@@ -48,6 +48,7 @@ export function NotificationsInbox() {
   const { user } = useAuth();
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const notifVars = useNotifVars();
 
   const load = async () => {
     if (!user) return;
