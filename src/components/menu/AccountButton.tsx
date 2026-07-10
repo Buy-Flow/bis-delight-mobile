@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User as UserIcon, LogOut, Award, Heart, ClipboardList, Shield, Users, LineChart } from "lucide-react";
+import { User as UserIcon, LogOut, Award, Heart, ClipboardList, Shield, Users, LineChart, Bell } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth, signOut } from "@/lib/use-auth";
 import { useIsAdmin } from "@/lib/menu-data";
@@ -50,6 +50,14 @@ export function AccountButton() {
             </div>
 
             <MenuItem
+              icon={Bell}
+              label="Notificações"
+              onClick={() => {
+                setOpen(false);
+                navigate({ to: "/conta", search: { tab: "notificacoes" } as never });
+              }}
+            />
+            <MenuItem
               icon={ClipboardList}
               label="Meus pedidos"
               onClick={() => {
@@ -57,6 +65,7 @@ export function AccountButton() {
                 navigate({ to: "/conta", search: { tab: "pedidos" } as never });
               }}
             />
+
             <MenuItem
               icon={Award}
               label="Bis Recompensa"

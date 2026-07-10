@@ -13,16 +13,19 @@ import {
   Loader2,
   LogOut,
   Sparkles,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, signOut } from "@/lib/use-auth";
 import { useCart, brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
 
 const searchSchema = z.object({
-  tab: z.enum(["perfil", "pedidos", "favoritos", "fidelidade"]).optional(),
+  tab: z.enum(["perfil", "pedidos", "favoritos", "fidelidade", "notificacoes"]).optional(),
 });
+
 
 export const Route = createFileRoute("/_authenticated/conta")({
   head: () => ({
@@ -35,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/conta")({
   component: AccountPage,
 });
 
-type Tab = "perfil" | "pedidos" | "favoritos" | "fidelidade";
+type Tab = "perfil" | "pedidos" | "favoritos" | "fidelidade" | "notificacoes";
 
 function AccountPage() {
   const search = useSearch({ from: "/_authenticated/conta" });
@@ -49,12 +52,14 @@ function AccountPage() {
     pedidos: "Meus pedidos",
     favoritos: "Meus favoritos",
     perfil: "Meu perfil",
+    notificacoes: "Notificações",
   };
   const icons: Record<Tab, typeof UserIcon> = {
     fidelidade: Award,
     pedidos: ClipboardList,
     favoritos: Heart,
     perfil: UserIcon,
+    notificacoes: Bell,
   };
   const HeaderIcon = icons[tab];
 
@@ -105,10 +110,12 @@ function AccountPage() {
         {tab === "pedidos" && <OrdersPanel />}
         {tab === "favoritos" && <FavoritesPanel />}
         {tab === "perfil" && <ProfilePanel />}
+        {tab === "notificacoes" && <NotificationsInbox />}
       </div>
     </div>
   );
 }
+
 
 
 /* ============= FIDELIDADE ============= */
