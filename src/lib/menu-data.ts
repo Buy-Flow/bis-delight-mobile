@@ -321,6 +321,7 @@ const DEFAULT_EXTRA: Pick<
   | "titleFont"
   | "heroImages"
   | "popup"
+  | "urgency"
 
 > = {
   instagram: "",
@@ -352,6 +353,7 @@ const DEFAULT_EXTRA: Pick<
   titleFont: "Barlow Condensed",
   heroImages: DEFAULT_HERO_IMAGES,
   popup: DEFAULT_POPUP,
+  urgency: DEFAULT_URGENCY,
 };
 
 function parseHeroImages(raw: unknown): HeroImagesConfig {
