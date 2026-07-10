@@ -67,76 +67,74 @@ export function WelcomePopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[120] grid place-items-center bg-black/65 p-5 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-[120] grid place-items-center bg-black/70 p-4 backdrop-blur-sm animate-in fade-in"
       onClick={close}
       role="dialog"
       aria-modal="true"
     >
+      <button
+        onClick={close}
+        className="fixed right-4 top-4 z-[130] grid h-10 w-10 place-items-center rounded-full bg-black/60 text-white shadow-lg backdrop-blur hover:bg-black/80"
+        aria-label="Fechar"
+      >
+        <X className="h-5 w-5" />
+      </button>
+
       <div
         onClick={(e) => e.stopPropagation()}
-        className={cn(
-          "relative w-full max-w-[min(88vw,21rem)] overflow-hidden rounded-3xl border border-white/15",
-          "max-h-[82dvh] overflow-y-auto overscroll-contain",
-          "bg-gradient-to-b from-[oklch(0.22_0.14_305)] to-[oklch(0.14_0.10_305)]",
-          "shadow-2xl animate-in zoom-in-95 duration-300"
-        )}
+        className="relative flex max-h-[92dvh] max-w-[92vw] flex-col items-center gap-4 animate-in zoom-in-95 duration-300"
       >
-        <button
-          onClick={close}
-          className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-black/50 text-white/80 backdrop-blur hover:bg-black/70 hover:text-white"
-          aria-label="Fechar"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
         {popup.imageUrl && (
-          <div className="relative aspect-[4/3] max-h-[38dvh] w-full overflow-hidden bg-black/30">
-            <img
-              src={popup.imageUrl}
-              alt={popup.title || "Novidade"}
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-contain select-none"
-              style={{
-                transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
-                transformOrigin: "center center",
-              }}
-            />
+          <img
+            src={popup.imageUrl}
+            alt={popup.title || "Novidade"}
+            draggable={false}
+            className="max-h-[85dvh] max-w-[92vw] select-none object-contain"
+            style={{
+              transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
+              transformOrigin: "center center",
+            }}
+          />
+        )}
+
+        {(popup.title || popup.body || ((internalTo || isExternal) && popup.cta)) && (
+          <div className="w-full max-w-md space-y-3 text-center">
+            {popup.title && (
+              <h3 className="font-display text-2xl font-black leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                {popup.title}
+              </h3>
+            )}
+            {popup.body && (
+              <p className="whitespace-pre-line text-sm text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+                {popup.body}
+              </p>
+            )}
+
+            {(internalTo || isExternal) && popup.cta && (
+              isExternal ? (
+                <a
+                  href={linkRaw}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => markDismissed(popup.frequency)}
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
+                >
+                  {popup.cta}
+                </a>
+              ) : (
+                <Link
+                  to={internalTo}
+                  onClick={close}
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
+                >
+                  {popup.cta}
+                </Link>
+              )
+            )}
           </div>
         )}
-
-        <div className="space-y-3 p-4 text-center">
-          {popup.title && (
-            <h3 className="font-display text-xl font-black leading-tight text-white">
-              {popup.title}
-            </h3>
-          )}
-          {popup.body && (
-            <p className="whitespace-pre-line text-sm text-white/80">{popup.body}</p>
-          )}
-
-          {(internalTo || isExternal) && popup.cta && (
-            isExternal ? (
-              <a
-                href={linkRaw}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => markDismissed(popup.frequency)}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
-              >
-                {popup.cta}
-              </a>
-            ) : (
-              <Link
-                to={internalTo}
-                onClick={close}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-neon-yellow px-5 py-3 text-sm font-black text-[oklch(0.15_0.10_305)] shadow-lg transition hover:brightness-110"
-              >
-                {popup.cta}
-              </Link>
-            )
-          )}
-        </div>
       </div>
     </div>
   );
 }
+
