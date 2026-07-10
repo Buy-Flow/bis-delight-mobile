@@ -76,39 +76,43 @@ function AccountPage() {
       }}
     >
       <div className="mx-auto max-w-md px-4 pb-24 pt-6">
-        <div className="mb-4 flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white">
-            <ArrowLeft className="h-4 w-4" /> Cardápio
-          </Link>
-          <button
-            onClick={async () => {
-              await signOut();
-              navigate({ to: "/" });
-            }}
-            className="inline-flex items-center gap-1 text-xs text-white/50 hover:text-red-300"
-          >
-            <LogOut className="h-3.5 w-3.5" /> Sair
-          </button>
-        </div>
-
-        <div className="mb-6 flex items-center gap-3">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-neon-cyan font-black text-[oklch(0.18_0.11_305)]">
-            {(user?.user_metadata?.full_name || user?.email || "?").toString().charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0">
-            <div className="truncate font-display text-xl font-black text-white">
-              {user?.user_metadata?.full_name || "Cliente Bis"}
+        {tab !== "favoritos" && (
+          <>
+            <div className="mb-4 flex items-center justify-between">
+              <Link to="/" className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white">
+                <ArrowLeft className="h-4 w-4" /> Cardápio
+              </Link>
+              <button
+                onClick={async () => {
+                  await signOut();
+                  navigate({ to: "/" });
+                }}
+                className="inline-flex items-center gap-1 text-xs text-white/50 hover:text-red-300"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Sair
+              </button>
             </div>
-            <div className="truncate text-xs text-white/60">{user?.email}</div>
-          </div>
-        </div>
 
-        <div className="mb-5 flex items-center gap-2.5">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink text-white shadow-[0_0_20px_rgba(236,72,153,0.45)]">
-            <HeaderIcon className="h-4 w-4" />
-          </span>
-          <h1 className="font-display text-2xl font-black text-white">{titles[tab]}</h1>
-        </div>
+            <div className="mb-6 flex items-center gap-3">
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-neon-cyan font-black text-[oklch(0.18_0.11_305)]">
+                {(user?.user_metadata?.full_name || user?.email || "?").toString().charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate font-display text-xl font-black text-white">
+                  {user?.user_metadata?.full_name || "Cliente Bis"}
+                </div>
+                <div className="truncate text-xs text-white/60">{user?.email}</div>
+              </div>
+            </div>
+
+            <div className="mb-5 flex items-center gap-2.5">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink text-white shadow-[0_0_20px_rgba(236,72,153,0.45)]">
+                <HeaderIcon className="h-4 w-4" />
+              </span>
+              <h1 className="font-display text-2xl font-black text-white">{titles[tab]}</h1>
+            </div>
+          </>
+        )}
 
         {tab === "fidelidade" && <LoyaltyPanel />}
         {tab === "pedidos" && <OrdersPanel />}
@@ -116,6 +120,7 @@ function AccountPage() {
         {tab === "perfil" && <ProfilePanel />}
         {tab === "notificacoes" && <NotificationsInbox />}
       </div>
+
     </div>
   );
 }
