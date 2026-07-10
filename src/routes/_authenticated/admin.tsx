@@ -2156,6 +2156,7 @@ type SettingsSection =
   | "payment"
   | "social"
   | "announcement"
+  | "popup"
   | "news"
   | "coupons"
   | "appearance";
