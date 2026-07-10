@@ -1097,14 +1097,11 @@ function AutomationEditor({
                 ))}
               </div>
             </Field>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Link ao tocar (opcional)">
-                <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="/carrinho" className={inputCls} />
-              </Field>
-              <Field label="Imagem (opcional)">
-                <input value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://..." className={inputCls} />
-              </Field>
-            </div>
+            <LinkPicker value={url} onChange={setUrl} />
+            <Field label="Imagem (opcional)">
+              <input value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://..." className={inputCls} />
+            </Field>
+
           </FieldGroup>
         </div>
 
