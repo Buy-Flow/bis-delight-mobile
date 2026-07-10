@@ -486,6 +486,15 @@ export function OrdersTab() {
             {testBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             Teste push
           </button>
+          <button
+            onClick={sendCrmTest}
+            disabled={crmBusy}
+            className="inline-flex items-center gap-2 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-neon-pink transition-all hover:bg-neon-pink/15 disabled:cursor-not-allowed disabled:opacity-60"
+            title="Disparar um evento de teste para o CRM conectado"
+          >
+            {crmBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+            Testar CRM
+          </button>
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-900/30 px-4 py-2">
             <span
               className={cn(
