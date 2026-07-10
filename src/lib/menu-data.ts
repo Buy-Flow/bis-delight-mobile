@@ -331,6 +331,7 @@ const DEFAULT_EXTRA: Pick<
   cardGlow: false,
   titleFont: "Barlow Condensed",
   heroImages: DEFAULT_HERO_IMAGES,
+  popup: DEFAULT_POPUP,
 };
 
 function parseHeroImages(raw: unknown): HeroImagesConfig {
