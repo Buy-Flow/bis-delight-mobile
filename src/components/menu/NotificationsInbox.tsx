@@ -12,7 +12,9 @@ type Campaign = {
   image: string | null;
   url: string | null;
   created_at: string;
+  expires_at?: string | null;
 };
+
 
 type Delivery = {
   id: string;
@@ -50,16 +52,18 @@ export function NotificationsInbox() {
     if (!user) return;
     const { data } = await supabase
       .from("push_deliveries")
-      .select("id, opened_at, created_at, campaign_id, campaign:push_campaigns(id, title, body, image, url, created_at)")
+      .select("id, opened_at, created_at, campaign_id, campaign:push_campaigns(id, title, body, image, url, created_at, expires_at)")
       .order("created_at", { ascending: false })
       .limit(200);
 
     const rows = (data ?? []) as Delivery[];
+    const now = Date.now();
     // Dedupe by campaign_id — one card per campaign
     const map = new Map<string, Item>();
     for (const d of rows) {
       const c = Array.isArray(d.campaign) ? d.campaign[0] : d.campaign;
       if (!c) continue;
+      if (c.expires_at && new Date(c.expires_at).getTime() <= now) continue;
       const prev = map.get(d.campaign_id);
       if (prev) {
         prev.deliveryIds.push(d.id);
@@ -290,12 +294,21 @@ export function useUnreadNotifications() {
       setCount(0);
       return;
     }
-    const { count: c } = await supabase
+    const { data } = await supabase
       .from("push_deliveries")
-      .select("id", { count: "exact", head: true })
-      .is("opened_at", null);
-    setCount(c ?? 0);
+      .select("id, campaign:push_campaigns(expires_at)")
+      .is("opened_at", null)
+      .limit(200);
+    const now = Date.now();
+    const rows = (data ?? []) as Array<{ id: string; campaign: { expires_at: string | null } | { expires_at: string | null }[] | null }>;
+    const valid = rows.filter((r) => {
+      const c = Array.isArray(r.campaign) ? r.campaign[0] : r.campaign;
+      if (!c?.expires_at) return true;
+      return new Date(c.expires_at).getTime() > now;
+    });
+    setCount(valid.length);
   };
+
 
   useEffect(() => {
     refresh();
