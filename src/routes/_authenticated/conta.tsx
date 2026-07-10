@@ -26,7 +26,8 @@ import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
 import { useIsAdmin, useProducts } from "@/lib/menu-data";
 import { ProductModal } from "@/components/menu/ProductModal";
 import type { Product } from "@/data/menu";
-import { Heart as HeartIcon, Trash2 } from "lucide-react";
+import { Heart as HeartIcon } from "lucide-react";
+import { ProductCard } from "@/components/menu/ProductCard";
 
 
 
@@ -427,43 +428,46 @@ function FavoritesPanel() {
     return favIds.map((id) => productsById.get(id)).filter(Boolean) as Product[];
   }, [favIds, productsById]);
 
-  const remove = async (productId: string) => {
-    if (!user) return;
-    setFavIds((prev) => (prev ?? []).filter((id) => id !== productId));
-    const { error } = await supabase
-      .from("favorites")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("product_id", productId);
-    if (error) toast.error("Não foi possível remover");
-    else toast.success("Removido dos favoritos");
-  };
+  // Removal is handled inside ProductCard's FavoriteButton (heart toggle).
+
 
   if (favIds === null) return <PanelSpinner />;
 
   return (
     <div className="relative">
       {/* Decorative hero */}
-      <div className="relative mb-5 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-pink/30 via-purple-700/25 to-neon-cyan/20 p-5">
-        <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-neon-pink/40 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -left-8 -bottom-10 h-32 w-32 rounded-full bg-neon-cyan/30 blur-3xl" />
-        <div className="relative flex items-center gap-3">
-          <button
-            onClick={() => navigate({ to: "/" })}
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white/80 backdrop-blur transition hover:bg-white/20"
-            aria-label="Voltar"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink to-neon-yellow text-white shadow-[0_0_24px_rgba(236,72,153,0.55)]">
-            <HeartIcon className="h-6 w-6 fill-current" />
+      <div className="relative mb-6 overflow-hidden rounded-3xl border border-white/10 p-6"
+        style={{
+          background:
+            "radial-gradient(120% 100% at 20% 0%, oklch(0.42 0.22 340) 0%, oklch(0.22 0.15 310) 55%, oklch(0.12 0.08 300) 100%)",
+        }}
+      >
+        <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-pink/40 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -left-10 -bottom-16 h-48 w-48 rounded-full bg-neon-cyan/25 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen"
+          style={{
+            background:
+              "radial-gradient(60% 40% at 80% 90%, oklch(0.85 0.20 100 / 0.25), transparent 70%)",
+          }}
+        />
+        <div className="relative flex items-center gap-4">
+          <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink via-neon-pink to-neon-yellow text-white shadow-[0_0_32px_rgba(236,72,153,0.65)]">
+            <HeartIcon className="h-8 w-8 fill-current" />
+            <span className="absolute -right-1 -top-1 grid h-6 min-w-6 place-items-center rounded-full bg-neon-yellow px-1.5 text-[11px] font-black text-[oklch(0.18_0.11_305)] shadow-[0_0_12px_rgba(255,215,60,0.6)]">
+              {favs.length}
+            </span>
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">Meus favoritos</div>
-            <div className="font-display text-2xl font-black leading-tight text-white">
+            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-neon-yellow/90">
+              Meus favoritos
+            </div>
+            <div className="mt-0.5 font-display text-2xl font-black leading-tight text-white">
+              {favs.length > 0 ? "Sua coleção de delícias" : "Comece sua coleção"}
+            </div>
+            <div className="mt-1 text-[11px] text-white/60">
               {favs.length > 0
-                ? `${favs.length} ${favs.length === 1 ? "delícia salva" : "delícias salvas"}`
-                : "Sua coleção"}
+                ? "Toque para personalizar e pedir novamente."
+                : "Toque no coração dos produtos que você ama."}
             </div>
           </div>
         </div>
@@ -486,47 +490,7 @@ function FavoritesPanel() {
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {favs.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setSelected(p)}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition hover:border-neon-pink hover:bg-white/[0.07] active:scale-[.98]"
-            >
-              <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-purple-800/40 to-pink-800/40">
-                {p.image && (
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                )}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                <span
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Remover dos favoritos"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    remove(p.id);
-                  }}
-                  className="absolute right-2 top-2 grid h-8 w-8 cursor-pointer place-items-center rounded-full bg-black/50 text-white/90 backdrop-blur transition hover:bg-red-500/80"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </span>
-                <span className="absolute left-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white shadow-[0_0_12px_rgba(236,72,153,0.7)]">
-                  <HeartIcon className="h-3.5 w-3.5 fill-current" />
-                </span>
-              </div>
-              <div className="p-3">
-                <div className="line-clamp-2 text-[13px] font-bold text-white">{p.name}</div>
-                {p.basePrice != null && (
-                  <div className="mt-1 text-[12px] font-black text-neon-yellow">
-                    a partir de {brl(Number(p.basePrice))}
-                  </div>
-                )}
-              </div>
-            </button>
+            <ProductCard key={p.id} product={p} onOpen={setSelected} />
           ))}
         </div>
       )}
