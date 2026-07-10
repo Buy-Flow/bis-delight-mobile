@@ -141,7 +141,7 @@ export const Route = createFileRoute("/api/public/evolution")({
               type,
               content,
               media_url: mediaUrl,
-              sent_by: key.fromMe ? "phone" : "customer",
+              sent_by: key.fromMe ? "human" : "customer",
               raw: data,
             });
             if (msgErr && !msgErr.message?.includes("duplicate")) {
