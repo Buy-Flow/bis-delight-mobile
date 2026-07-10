@@ -174,7 +174,7 @@ function RecompensasPage() {
               </div>
             </div>
 
-            </div>
+
 
             {/* Stamps grid */}
             <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-10">
