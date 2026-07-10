@@ -119,7 +119,7 @@ export const getEvolutionStatus = createServerFn({ method: "GET" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("Forbidden");
-    const { connectionState, connectInstance, createInstance, setWebhook } = await import(
+    const { connectionState, connectInstance, createInstance } = await import(
       "@/lib/evolution.server"
     );
     try {
@@ -231,28 +231,3 @@ export const resetEvolutionInstance = createServerFn({ method: "POST" })
     }
   });
 
-const ConfigureWebhookInput = z.object({
-  webhookUrl: z.string().url(),
-});
-
-export const configureEvolutionWebhook = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => ConfigureWebhookInput.parse(data))
-  .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
-    const { setWebhook } = await import("@/lib/evolution.server");
-    try {
-      const res = await setWebhook(data.webhookUrl);
-      return { ok: true, res };
-    } catch (err) {
-      return {
-        ok: false,
-        fallback: true,
-        message: err instanceof Error ? err.message : "Não consegui configurar o webhook agora.",
-      };
-    }
-  });
