@@ -160,6 +160,59 @@ Deno.serve(async (req) => {
         payloadPerUser = new Map();
         for (const c of carts ?? []) payloadPerUser.set((c as any).user_id, { runKey: `c-${(c as any).id}` });
         eligibleUserIds = Array.from(payloadPerUser.keys());
+      } else if (kind === "payment_pending") {
+        // Orders still in 'pendente' after N minutes (payment reminder)
+        const delay = Number(cfg.delay_minutes ?? 20);
+        const upper = new Date(now.getTime() - delay * 60 * 1000).toISOString();
+        const lower = new Date(now.getTime() - (delay + 30) * 60 * 1000).toISOString();
+        const { data: pend } = await admin
+          .from("orders")
+          .select("id, user_id, status, created_at")
+          .gte("created_at", lower)
+          .lte("created_at", upper)
+          .eq("status", "pendente")
+          .not("user_id", "is", null);
+        payloadPerUser = new Map();
+        for (const o of pend ?? []) payloadPerUser.set((o as any).user_id, { runKey: `p-${(o as any).id}` });
+        eligibleUserIds = Array.from(payloadPerUser.keys());
+      } else if (kind === "feedback_request") {
+        // Ask for feedback N hours after order marked 'entregue'
+        const delayH = Number(cfg.delay_hours ?? 24);
+        const upper = new Date(now.getTime() - delayH * 3600 * 1000).toISOString();
+        const lower = new Date(now.getTime() - (delayH * 3600 + 1800) * 1000).toISOString();
+        const { data: done } = await admin
+          .from("orders")
+          .select("id, user_id, status, updated_at")
+          .gte("updated_at", lower)
+          .lte("updated_at", upper)
+          .eq("status", "entregue")
+          .not("user_id", "is", null);
+        payloadPerUser = new Map();
+        for (const o of done ?? []) payloadPerUser.set((o as any).user_id, { runKey: `fb-${(o as any).id}` });
+        eligibleUserIds = Array.from(payloadPerUser.keys());
+      } else if (kind === "loyalty_close") {
+        // Users close to earning a loyalty reward (stamps >= threshold, no unused coupon yet)
+        const minStamps = Number(cfg.min_stamps ?? 7);
+        const { data: rows } = await admin
+          .from("loyalty")
+          .select("user_id, stamps")
+          .gte("stamps", minStamps);
+        eligibleUserIds = (rows ?? []).map((r: any) => r.user_id).filter(Boolean);
+        runKey = cfg.repeat_weekly ? `w-${weekKey(now)}-s${minStamps}` : `s${minStamps}`;
+      } else if (kind === "weekly_promo") {
+        // Recurring weekly at chosen weekday+hour. dow: 0=Sun..6=Sat
+        const dow = Number(cfg.dow ?? 5);
+        const hour = Number(cfg.hour ?? 18);
+        if (now.getDay() !== dow || now.getHours() < hour) {
+          runReport.push({ id: a.id, kind, skipped: `wait_dow${dow}_h${hour}` });
+          continue;
+        }
+        const { data: subs } = await admin
+          .from("push_subscriptions")
+          .select("user_id")
+          .not("user_id", "is", null);
+        eligibleUserIds = Array.from(new Set((subs ?? []).map((s: any) => s.user_id))) as string[];
+        runKey = `w-${weekKey(now)}`;
       } else {
         runReport.push({ id: a.id, kind, skipped: "unknown-kind" });
         continue;
