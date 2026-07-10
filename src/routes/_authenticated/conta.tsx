@@ -56,12 +56,12 @@ function AccountPage() {
 
   const { user } = useAuth();
 
-  const titles: Record<Tab, string> = {
-    fidelidade: "Bis Recompensa",
-    pedidos: "Meus pedidos",
-    favoritos: "Meus favoritos",
-    perfil: "Meu perfil",
-    notificacoes: "Notificações",
+  const headers: Record<Tab, { kicker: string; word1: string; word2: string }> = {
+    perfil: { kicker: "Conta", word1: "Meu", word2: "perfil" },
+    pedidos: { kicker: "Histórico", word1: "Meus", word2: "pedidos" },
+    favoritos: { kicker: "Coleção", word1: "Meus", word2: "favoritos" },
+    fidelidade: { kicker: "Programa", word1: "Bis", word2: "Recompensa" },
+    notificacoes: { kicker: "Central", word1: "Suas", word2: "novidades" },
   };
   const icons: Record<Tab, typeof UserIcon> = {
     fidelidade: Award,
@@ -71,6 +71,7 @@ function AccountPage() {
     notificacoes: Bell,
   };
   const HeaderIcon = icons[tab];
+  const H = headers[tab];
 
   return (
     <div
@@ -80,45 +81,47 @@ function AccountPage() {
           "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.20 0.16 305) 45%, oklch(0.08 0.06 300) 100%)",
       }}
     >
-      <div className="mx-auto max-w-md px-4 pb-24 pt-6">
-        {tab !== "favoritos" && (
-          <>
-            <div className="mb-4 flex items-center justify-between">
-              <Link to="/" className="inline-flex items-center gap-1 text-sm text-white/70 hover:text-white">
-                <ArrowLeft className="h-4 w-4" /> Cardápio
-              </Link>
-              <button
-                onClick={async () => {
-                  await signOut();
-                  navigate({ to: "/" });
-                }}
-                className="inline-flex items-center gap-1 text-xs text-white/50 hover:text-red-300"
-              >
-                <LogOut className="h-3.5 w-3.5" /> Sair
-              </button>
-            </div>
-
-            <div className="mb-6 flex items-center gap-3">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-neon-cyan font-black text-[oklch(0.18_0.11_305)]">
-                {(user?.user_metadata?.full_name || user?.email || "?").toString().charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <div className="truncate font-display text-xl font-black text-white">
-                  {user?.user_metadata?.full_name || "Cliente Bis"}
-                </div>
-                <div className="truncate text-xs text-white/60">{user?.email}</div>
-              </div>
-            </div>
-
-            <div className="mb-5 flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink text-white shadow-[0_0_20px_rgba(236,72,153,0.45)]">
-                <HeaderIcon className="h-4 w-4" />
+      {/* Cart-style sticky header */}
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3">
+          <Link
+            to="/"
+            aria-label="Voltar ao cardápio"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/10 active:scale-95"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
+            <HeaderIcon className="h-5 w-5 text-neon-yellow" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow shadow-[0_0_8px_theme(colors.neon-yellow)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neon-yellow/90">
+                {H.kicker}
               </span>
-              <h1 className="font-display text-2xl font-black text-white">{titles[tab]}</h1>
             </div>
-          </>
-        )}
+            <h1 className="text-[20px] font-black leading-tight text-white">
+              {H.word1}{" "}
+              <span className="bg-gradient-to-r from-neon-pink to-neon-yellow bg-clip-text text-transparent">
+                {H.word2}
+              </span>
+            </h1>
+          </div>
+          <button
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/" });
+            }}
+            aria-label="Sair"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/5 text-white/50 ring-1 ring-white/10 transition hover:bg-red-500/10 hover:text-red-300 active:scale-95"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
+      <div className="mx-auto max-w-md px-4 pb-24 pt-5">
         {tab === "fidelidade" && <LoyaltyPanel />}
         {tab === "pedidos" && <OrdersPanel />}
         {tab === "favoritos" && <FavoritesPanel />}
@@ -129,6 +132,7 @@ function AccountPage() {
     </div>
   );
 }
+
 
 
 
