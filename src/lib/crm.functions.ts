@@ -86,10 +86,11 @@ export const sendCrmEvent = createServerFn({ method: "POST" })
     return sendCrmWebhook(eventType, payload);
   });
 
-// Server fn: admin-only test dispatch, mirrors the example curl.
+// Server fn: admin-only test dispatch — allows firing any event type manually.
 export const testCrmWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((data: { event_type?: string } | undefined) => data ?? {})
+  .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", {
       _user_id: userId,
@@ -98,11 +99,63 @@ export const testCrmWebhook = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Forbidden");
 
     const { sendCrmWebhook } = await import("./crm.server");
-    return sendCrmWebhook("test", {
-      customer: { name: "Teste Quero Bis", phone: "11999998888" },
-      order_id: "test-order-id",
-      items: [{ name: "Açaí 500ml", qty: 1, price: 24.9 }],
-      total: 24.9,
-      note: "Disparo de teste enviado pelo painel administrativo.",
-    });
+    const eventType = normalizeEventType(data?.event_type ?? "test");
+
+    const customer = { name: "Teste Quero Bis", phone: "11999998888", user_id: userId };
+    const now = new Date().toISOString();
+
+    switch (eventType) {
+      case "contact_created":
+        return sendCrmWebhook("contact_created", {
+          customer,
+          created_at: now,
+          note: "Disparo manual de teste — contact_created.",
+        });
+      case "cart_abandoned":
+        return sendCrmWebhook("cart_abandoned", {
+          customer,
+          cart_id: "test-cart-id",
+          items: [
+            { name: "Açaí 500ml", qty: 1, price: 24.9 },
+            { name: "Sundae Ninho", qty: 1, price: 18.0 },
+          ],
+          total: 42.9,
+          abandoned_at: now,
+          note: "Disparo manual de teste — cart_abandoned.",
+        });
+      case "order_placed":
+        return sendCrmWebhook("order_placed", {
+          customer,
+          order_id: "TEST-ORDER-001",
+          items: [{ name: "Açaí 500ml", qty: 1, price: 24.9 }],
+          total: 24.9,
+          status: "pendente",
+          created_at: now,
+          note: "Disparo manual de teste — order_placed.",
+        });
+      case "order_status":
+        return sendCrmWebhook("order_status", {
+          customer,
+          order_id: "TEST-ORDER-001",
+          items: [{ name: "Açaí 500ml", qty: 1, price: 24.9 }],
+          total: 24.9,
+          new_status: "entregue",
+          updated_at: now,
+          note: "Disparo manual de teste — order_status.",
+        });
+      case "birthday_today":
+        return sendCrmWebhook("birthday_today", {
+          customer: { ...customer, birthday: now.slice(0, 10) },
+          note: "Disparo manual de teste — birthday_today.",
+        });
+      default:
+        return sendCrmWebhook("test", {
+          customer,
+          order_id: "test-order-id",
+          items: [{ name: "Açaí 500ml", qty: 1, price: 24.9 }],
+          total: 24.9,
+          note: "Disparo manual de teste — evento genérico.",
+        });
+    }
   });
+

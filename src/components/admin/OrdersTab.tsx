@@ -323,15 +323,16 @@ export function OrdersTab() {
     }
   };
 
-  const sendCrmTest = async () => {
+  const sendCrmTest = async (eventType?: string) => {
     setCrmBusy(true);
     try {
       const { testCrmWebhook } = await import("@/lib/crm.functions");
-      const result = await testCrmWebhook();
+      const result = await testCrmWebhook({ data: { event_type: eventType } });
+      const label = eventType ?? "test";
       if (result.ok) {
-        toast.success(`CRM respondeu ${result.status}: teste entregue.`);
+        toast.success(`CRM ${label} → ${result.status} OK`);
       } else {
-        toast.error(`CRM respondeu ${result.status || "erro"}: ${result.body?.slice(0, 100) || "sem resposta"}`);
+        toast.error(`CRM ${label} → ${result.status || "erro"}: ${result.body?.slice(0, 120) || "sem resposta"}`);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao testar o CRM.");
@@ -339,6 +340,7 @@ export function OrdersTab() {
       setCrmBusy(false);
     }
   };
+
 
 
   const load = async () => {
@@ -486,15 +488,18 @@ export function OrdersTab() {
             {testBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             Teste push
           </button>
-          <button
-            onClick={sendCrmTest}
-            disabled={crmBusy}
-            className="inline-flex items-center gap-2 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-neon-pink transition-all hover:bg-neon-pink/15 disabled:cursor-not-allowed disabled:opacity-60"
-            title="Disparar um evento de teste para o CRM conectado"
-          >
-            {crmBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-            Testar CRM
-          </button>
+          {(["contact_created", "order_placed", "order_status", "cart_abandoned"] as const).map((ev) => (
+            <button
+              key={ev}
+              onClick={() => sendCrmTest(ev)}
+              disabled={crmBusy}
+              className="inline-flex items-center gap-2 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-neon-pink transition-all hover:bg-neon-pink/15 disabled:cursor-not-allowed disabled:opacity-60"
+              title={`Disparar evento ${ev} para o CRM`}
+            >
+              {crmBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              CRM · {ev}
+            </button>
+          ))}
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-900/30 px-4 py-2">
             <span
               className={cn(
