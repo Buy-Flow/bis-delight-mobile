@@ -76,6 +76,13 @@ function AuthPage() {
         });
         if (error) throw error;
 
+        notifyCRM("contact_created", {
+          email,
+          full_name: fullName,
+          phone,
+          birthday: birthday || null,
+        });
+
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) {
           toast.success("Conta criada! Confirme seu e-mail e entre.");
@@ -84,6 +91,7 @@ function AuthPage() {
         }
         toast.success("Bem-vindo à Quero Bis!");
         navigate({ to: next });
+
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
