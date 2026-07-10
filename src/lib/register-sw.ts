@@ -48,7 +48,7 @@ export function registerServiceWorker() {
   }
 
   const register = () => {
-    navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => {
+    navigator.serviceWorker.register(SW_URL, { scope: "/", updateViaCache: "none" }).catch(() => {
       /* noop */
     });
   };

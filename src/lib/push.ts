@@ -70,7 +70,13 @@ async function getReadyRegistration(): Promise<ServiceWorkerRegistration | null>
   try {
     let existing = await navigator.serviceWorker.getRegistration("/");
     if (!existing && canRegisterAppServiceWorker()) {
-      existing = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+      existing = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
+    } else if (existing) {
+      try {
+        await existing.update();
+      } catch {
+        /* noop */
+      }
     }
 
     const ready = await Promise.race([
