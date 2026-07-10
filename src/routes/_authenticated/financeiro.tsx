@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { FinanceDashboardSkeleton } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
