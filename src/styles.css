@@ -309,6 +309,20 @@
     100% { transform: translateX(100%); }
   }
 
+  @keyframes bike-move {
+    0%,100% { transform: translateX(-2px) rotate(-3deg); }
+    50%     { transform: translateX(2px)  rotate(3deg); }
+  }
+  @keyframes chef-shake {
+    0%,100% { transform: rotate(-4deg); }
+    50%     { transform: rotate(4deg); }
+  }
+  @keyframes timeline-flow {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 0% -200%; }
+  }
+
+
 
 
   .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
