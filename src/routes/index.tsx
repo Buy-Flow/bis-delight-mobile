@@ -533,9 +533,12 @@ function Content() {
         )}
       </section>
 
+      <Reveal><AppDownloadSection /></Reveal>
+
       <div>
         <LocationSection />
       </div>
+
 
 
       <footer className="border-t border-white/5 px-4 py-8 text-center">
