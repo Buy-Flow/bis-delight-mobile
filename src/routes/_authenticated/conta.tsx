@@ -40,10 +40,23 @@ type Tab = "perfil" | "pedidos" | "favoritos" | "fidelidade";
 function AccountPage() {
   const search = useSearch({ from: "/_authenticated/conta" });
   const navigate = useNavigate();
-  const tab: Tab = search.tab ?? "fidelidade";
-  const setTab = (t: Tab) => navigate({ to: "/conta", search: { tab: t } as never, replace: true });
+  const tab: Tab = search.tab ?? "perfil";
 
   const { user } = useAuth();
+
+  const titles: Record<Tab, string> = {
+    fidelidade: "Bis Recompensa",
+    pedidos: "Meus pedidos",
+    favoritos: "Meus favoritos",
+    perfil: "Meu perfil",
+  };
+  const icons: Record<Tab, typeof UserIcon> = {
+    fidelidade: Award,
+    pedidos: ClipboardList,
+    favoritos: Heart,
+    perfil: UserIcon,
+  };
+  const HeaderIcon = icons[tab];
 
   return (
     <div
@@ -81,11 +94,11 @@ function AccountPage() {
           </div>
         </div>
 
-        <div className="mb-5 grid grid-cols-4 gap-1 rounded-2xl border border-white/10 bg-white/5 p-1">
-          <TabBtn active={tab === "fidelidade"} onClick={() => setTab("fidelidade")} icon={Award} label="Selos" />
-          <TabBtn active={tab === "pedidos"} onClick={() => setTab("pedidos")} icon={ClipboardList} label="Pedidos" />
-          <TabBtn active={tab === "favoritos"} onClick={() => setTab("favoritos")} icon={Heart} label="Favoritos" />
-          <TabBtn active={tab === "perfil"} onClick={() => setTab("perfil")} icon={UserIcon} label="Perfil" />
+        <div className="mb-5 flex items-center gap-2.5">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-neon-pink text-white shadow-[0_0_20px_rgba(236,72,153,0.45)]">
+            <HeaderIcon className="h-4 w-4" />
+          </span>
+          <h1 className="font-display text-2xl font-black text-white">{titles[tab]}</h1>
         </div>
 
         {tab === "fidelidade" && <LoyaltyPanel />}
@@ -96,6 +109,7 @@ function AccountPage() {
     </div>
   );
 }
+
 
 function TabBtn({
   active,
