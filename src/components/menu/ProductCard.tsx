@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { productImageSources } from "@/lib/image-optimize";
 import { FavoriteButton } from "./FavoriteButton";
 import { useIsAdmin } from "@/lib/menu-data";
 
