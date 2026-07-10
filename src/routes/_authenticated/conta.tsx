@@ -82,7 +82,7 @@ function AccountPage() {
       }}
     >
       {/* Cart-style sticky header */}
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-[oklch(0.14_0.09_305)]/95 backdrop-blur">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[oklch(0.20_0.16_305)] via-[oklch(0.20_0.16_305)]/80 to-transparent pb-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3">
           <Link
             to="/"
