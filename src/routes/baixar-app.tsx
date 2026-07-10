@@ -24,14 +24,7 @@ export const Route = createFileRoute("/baixar-app")({
 function BaixarAppPage() {
   return (
     <main className="min-h-screen bg-[#1a0a2e] text-white">
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-white/5 bg-[#1a0a2e]/80 px-4 py-3 backdrop-blur">
-        <Link
-          to="/"
-          className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-          aria-label="Voltar"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
+      <header className="sticky top-0 z-40 border-b border-white/5 bg-[#1a0a2e]/80 px-4 py-3 backdrop-blur">
         <h1 className="font-fredoka text-lg">Baixar aplicativo</h1>
       </header>
 
