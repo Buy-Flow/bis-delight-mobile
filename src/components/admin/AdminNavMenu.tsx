@@ -9,6 +9,7 @@ import {
   Users,
   Home,
   LogOut,
+  MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -16,9 +17,9 @@ import { cn } from "@/lib/utils";
 const items = [
   { to: "/admin", label: "Painel administrador", icon: LayoutDashboard },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
+  { to: "/conversas", label: "Conversas WhatsApp", icon: MessageCircle },
   { to: "/financeiro", label: "Financeiro", icon: LineChart },
   { to: "/clientes", label: "Clientes", icon: Users },
-
 ] as const;
 
 export function AdminNavMenu() {
