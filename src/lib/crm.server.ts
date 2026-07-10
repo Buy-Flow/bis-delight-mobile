@@ -2,13 +2,12 @@
 // Sends events to the CRM's public webhook receiver with a shared secret header.
 // Never import from client-reachable code — use crm.functions.ts as the boundary.
 
+// Event types supported by the CRM receiver.
 export type CrmEventType =
   | "contact_created"
-  | "cart_updated"
   | "cart_abandoned"
   | "order_placed"
-  | "order_status_changed"
-  | "order_completed"
+  | "order_status"
   | "birthday_today"
   | "test";
 
@@ -39,7 +38,7 @@ export async function sendCrmWebhook(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Webhook-Secret": secret,
+          "x-webhook-secret": secret,
         },
         body,
       });
