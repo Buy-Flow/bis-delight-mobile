@@ -159,7 +159,7 @@ function LoyaltyPanel() {
     });
   }, [user]);
 
-  if (loading) return <PanelSpinner />;
+  if (loading) return <LoyaltyPanelSkeleton />;
 
   const active = coupons.filter((c) => !c.used_at);
   const progress = (stamps % 10) / 10;
