@@ -30,6 +30,10 @@ import {
   Link2,
   Package,
   Search,
+  CreditCard,
+  Star,
+  Trophy,
+  CalendarDays,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,7 +41,16 @@ import { supabase } from "@/integrations/supabase/client";
 // Types
 
 type Audience = "all" | "recent_30d" | "birthday_month" | "dormant_60d";
-type AutoKind = "birthday" | "dormant" | "welcome" | "after_order" | "abandoned_cart";
+type AutoKind =
+  | "birthday"
+  | "dormant"
+  | "welcome"
+  | "after_order"
+  | "abandoned_cart"
+  | "payment_pending"
+  | "feedback_request"
+  | "loyalty_close"
+  | "weekly_promo";
 
 interface Campaign {
   id: string;
@@ -126,9 +139,47 @@ const AUTO_META: Record<AutoKind, { label: string; hint: string; icon: typeof Gi
     accent: "text-neon-pink",
     ring: "ring-neon-pink/40",
   },
+  payment_pending: {
+    label: "Pagamento pendente",
+    hint: "Lembrete quando o pedido continua 'pendente' após X minutos.",
+    icon: CreditCard,
+    accent: "text-neon-yellow",
+    ring: "ring-neon-yellow/40",
+  },
+  feedback_request: {
+    label: "Pedir avaliação",
+    hint: "X horas após o pedido ser marcado como 'entregue'.",
+    icon: Star,
+    accent: "text-neon-cyan",
+    ring: "ring-neon-cyan/40",
+  },
+  loyalty_close: {
+    label: "Perto da recompensa",
+    hint: "Cliente com N+ selos — dá aquele empurrão pra completar 10.",
+    icon: Trophy,
+    accent: "text-neon-yellow",
+    ring: "ring-neon-yellow/40",
+  },
+  weekly_promo: {
+    label: "Promoção semanal",
+    hint: "Envio recorrente todo dia X da semana, em uma hora fixa.",
+    icon: CalendarDays,
+    accent: "text-neon-pink",
+    ring: "ring-neon-pink/40",
+  },
 };
 
-const KIND_OPTIONS: AutoKind[] = ["birthday", "welcome", "after_order", "dormant", "abandoned_cart"];
+const KIND_OPTIONS: AutoKind[] = [
+  "birthday",
+  "welcome",
+  "after_order",
+  "dormant",
+  "abandoned_cart",
+  "payment_pending",
+  "feedback_request",
+  "loyalty_close",
+  "weekly_promo",
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -160,6 +211,16 @@ function summarizeConfig(kind: AutoKind, cfg: any, filters: any): string {
     if (cfg?.repeat_weekly) parts.push("semanal");
   } else if (kind === "abandoned_cart") {
     parts.push(`${Number(cfg?.delay_minutes ?? 15)} min após abandono`);
+  } else if (kind === "payment_pending") {
+    parts.push(`${Number(cfg?.delay_minutes ?? 20)} min pendente`);
+  } else if (kind === "feedback_request") {
+    parts.push(`${Number(cfg?.delay_hours ?? 24)}h após entregue`);
+  } else if (kind === "loyalty_close") {
+    parts.push(`${Number(cfg?.min_stamps ?? 7)}+ selos`);
+    if (cfg?.repeat_weekly) parts.push("semanal");
+  } else if (kind === "weekly_promo") {
+    const dowNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    parts.push(`toda ${dowNames[Number(cfg?.dow ?? 5)]} às ${String(cfg?.hour ?? 18).padStart(2, "0")}h`);
   }
   const f: string[] = [];
   if (filters?.min_orders) f.push(`≥${filters.min_orders} pedidos`);
@@ -1053,6 +1114,73 @@ function AutomationEditor({
                   className={inputCls}
                 />
               </Field>
+            )}
+            {kind === "payment_pending" && (
+              <Field label="Minutos com pedido pendente" hint="Só dispara se o pedido continuar 'pendente' após esse tempo.">
+                <input
+                  type="number" min={1}
+                  value={cfg.delay_minutes ?? 20}
+                  onChange={(e) => setC("delay_minutes", Math.max(1, Number(e.target.value) || 20))}
+                  className={inputCls}
+                />
+              </Field>
+            )}
+            {kind === "feedback_request" && (
+              <Field label="Horas após entrega" hint="Aguarda esse tempo depois do pedido ser marcado como 'entregue'.">
+                <input
+                  type="number" min={1} max={168}
+                  value={cfg.delay_hours ?? 24}
+                  onChange={(e) => setC("delay_hours", Math.max(1, Math.min(168, Number(e.target.value) || 24)))}
+                  className={inputCls}
+                />
+              </Field>
+            )}
+            {kind === "loyalty_close" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Selos mínimos (0-10)" hint="7 = a 3 selos da recompensa.">
+                  <input
+                    type="number" min={1} max={9}
+                    value={cfg.min_stamps ?? 7}
+                    onChange={(e) => setC("min_stamps", Math.max(1, Math.min(9, Number(e.target.value) || 7)))}
+                    className={inputCls}
+                  />
+                </Field>
+                <label className="mt-6 flex items-center gap-2 text-xs text-white/70">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(cfg.repeat_weekly)}
+                    onChange={(e) => setC("repeat_weekly", e.target.checked)}
+                  />
+                  Repetir toda semana
+                </label>
+              </div>
+            )}
+            {kind === "weekly_promo" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Dia da semana">
+                  <select
+                    value={cfg.dow ?? 5}
+                    onChange={(e) => setC("dow", Number(e.target.value))}
+                    className={inputCls}
+                  >
+                    <option value={0}>Domingo</option>
+                    <option value={1}>Segunda</option>
+                    <option value={2}>Terça</option>
+                    <option value={3}>Quarta</option>
+                    <option value={4}>Quinta</option>
+                    <option value={5}>Sexta</option>
+                    <option value={6}>Sábado</option>
+                  </select>
+                </Field>
+                <Field label="Hora (0-23)">
+                  <input
+                    type="number" min={0} max={23}
+                    value={cfg.hour ?? 18}
+                    onChange={(e) => setC("hour", Math.max(0, Math.min(23, Number(e.target.value) || 18)))}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
             )}
           </FieldGroup>
 
