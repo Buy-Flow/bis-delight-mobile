@@ -50,6 +50,14 @@ export function AccountButton() {
             </div>
 
             <MenuItem
+              icon={Bell}
+              label="Notificações"
+              onClick={() => {
+                setOpen(false);
+                navigate({ to: "/conta", search: { tab: "notificacoes" } as never });
+              }}
+            />
+            <MenuItem
               icon={ClipboardList}
               label="Meus pedidos"
               onClick={() => {
@@ -57,6 +65,7 @@ export function AccountButton() {
                 navigate({ to: "/conta", search: { tab: "pedidos" } as never });
               }}
             />
+
             <MenuItem
               icon={Award}
               label="Bis Recompensa"
