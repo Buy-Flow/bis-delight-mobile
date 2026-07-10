@@ -123,17 +123,23 @@ export const getEvolutionStatus = createServerFn({ method: "GET" })
       "@/lib/evolution.server"
     );
     try {
-      const state = await connectionState();
-      return { ok: true, state };
-    } catch (err) {
-      // If not found, try to create + connect
+      const stateResp = await connectionState();
+      const s = stateResp?.instance?.state ?? stateResp?.state;
+      if (s === "open") {
+        return { ok: true, state: stateResp };
+      }
+      // Not connected — fetch QR from /instance/connect
+      const qr = await connectInstance();
+      return { ok: true, state: { ...stateResp, ...qr } };
+    } catch {
+      // Instance likely doesn't exist — create it, then fetch QR
       try {
         await createInstance();
       } catch {
         /* may already exist */
       }
-      const state = await connectInstance();
-      return { ok: true, state, created: true };
+      const qr = await connectInstance();
+      return { ok: true, state: qr, created: true };
     }
   });
 
