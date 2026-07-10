@@ -6009,3 +6009,13 @@ function PopupSection({
     </div>
   );
 }
+
+function PromosTab() {
+  return (
+    <div className="space-y-8">
+      <UrgencySection />
+      <div className="h-px bg-white/10" />
+      <CombosSection />
+    </div>
+  );
+}
