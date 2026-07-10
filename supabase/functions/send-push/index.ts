@@ -133,17 +133,19 @@ Deno.serve(async (req) => {
       subs = (data ?? []).filter((s: any) => !activeIds.has(s.user_id));
     }
 
-    // Preload names for personalization if templates contain tokens
+    // Preload names + stamps for personalization if templates contain tokens
     const usesTokens = /\{\{\s*\w+\s*\}\}/.test(`${campaign.title}\n${campaign.body}`);
     const nameById = new Map<string, string>();
+    const stampsById = new Map<string, number>();
     if (usesTokens) {
       const userIdsPresent = Array.from(new Set(subs.map((s) => s.user_id).filter(Boolean))) as string[];
       if (userIdsPresent.length) {
-        const { data: profs } = await admin
-          .from("profiles")
-          .select("id, full_name")
-          .in("id", userIdsPresent);
-        for (const p of profs ?? []) nameById.set(p.id, (p as any).full_name ?? "");
+        const [{ data: profs }, { data: loys }] = await Promise.all([
+          admin.from("profiles").select("id, full_name").in("id", userIdsPresent),
+          admin.from("loyalty").select("user_id, stamps").in("user_id", userIdsPresent),
+        ]);
+        for (const p of profs ?? []) nameById.set((p as any).id, (p as any).full_name ?? "");
+        for (const l of loys ?? []) stampsById.set((l as any).user_id, Number((l as any).stamps ?? 0) % 10);
       }
     }
 
