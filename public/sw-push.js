@@ -1,6 +1,12 @@
 // Push notification handlers, imported by the generated Workbox service worker.
 /* eslint-disable no-restricted-globals */
 
+function truncate(str, n) {
+  if (!str) return "";
+  const s = String(str);
+  return s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s;
+}
+
 self.addEventListener("push", (event) => {
   let payload = {};
   try {
@@ -9,14 +15,38 @@ self.addEventListener("push", (event) => {
     payload = { title: "Quero Bis", body: event.data ? event.data.text() : "" };
   }
 
-  const title = payload.title || "Quero Bis";
+  const isOrder = payload.kind === "order" || /novo pedido/i.test(payload.title || "");
+  const title = truncate(payload.title || "Quero Bis 💜", 60);
+  const body = truncate(payload.body || "", 140);
+
+  const actions = isOrder
+    ? [
+        { action: "open", title: "Ver pedido" },
+        { action: "dismiss", title: "Depois" },
+      ]
+    : [
+        { action: "open", title: "Abrir" },
+        { action: "dismiss", title: "Dispensar" },
+      ];
+
   const options = {
-    body: payload.body || "",
+    body,
     icon: "/pwa-192.png",
-    badge: "/pwa-192.png",
+    badge: "/badge-72.png",
     image: payload.image || undefined,
-    data: { url: payload.url || "/", deliveryId: payload.deliveryId || null },
-    vibrate: [120, 60, 120],
+    tag: payload.tag || (isOrder ? "qb-order" : "qb-campaign"),
+    renotify: true,
+    requireInteraction: isOrder,
+    silent: false,
+    vibrate: isOrder ? [200, 80, 200, 80, 300] : [120, 60, 120],
+    timestamp: Date.now(),
+    lang: "pt-BR",
+    dir: "auto",
+    actions,
+    data: {
+      url: payload.url || (isOrder ? "/pedidos" : "/"),
+      deliveryId: payload.deliveryId || null,
+    },
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -24,6 +54,8 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  if (event.action === "dismiss") return;
+
   const data = event.notification.data || {};
   const url = data.url || "/";
 
