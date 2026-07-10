@@ -439,44 +439,6 @@ function FavoritesPanel() {
 
   return (
     <div className="relative">
-      {/* Decorative hero */}
-      <div className="relative mb-6 overflow-hidden rounded-3xl border border-white/10 p-6"
-        style={{
-          background:
-            "radial-gradient(120% 100% at 20% 0%, oklch(0.42 0.22 340) 0%, oklch(0.22 0.15 310) 55%, oklch(0.12 0.08 300) 100%)",
-        }}
-      >
-        <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-pink/40 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -left-10 -bottom-16 h-48 w-48 rounded-full bg-neon-cyan/25 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen"
-          style={{
-            background:
-              "radial-gradient(60% 40% at 80% 90%, oklch(0.85 0.20 100 / 0.25), transparent 70%)",
-          }}
-        />
-        <div className="relative flex items-center gap-4">
-          <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink via-neon-pink to-neon-yellow text-white shadow-[0_0_32px_rgba(236,72,153,0.65)]">
-            <HeartIcon className="h-8 w-8 fill-current" />
-            <span className="absolute -right-1 -top-1 grid h-6 min-w-6 place-items-center rounded-full bg-neon-yellow px-1.5 text-[11px] font-black text-[oklch(0.18_0.11_305)] shadow-[0_0_12px_rgba(255,215,60,0.6)]">
-              {favs.length}
-            </span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-black uppercase tracking-[0.22em] text-neon-yellow/90">
-              Meus favoritos
-            </div>
-            <div className="mt-0.5 font-display text-2xl font-black leading-tight text-white">
-              {favs.length > 0 ? "Sua coleção de delícias" : "Comece sua coleção"}
-            </div>
-            <div className="mt-1 text-[11px] text-white/60">
-              {favs.length > 0
-                ? "Toque para personalizar e pedir novamente."
-                : "Toque no coração dos produtos que você ama."}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {favs.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-8 text-center">
           <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-neon-pink/15 text-neon-pink">
@@ -503,6 +465,7 @@ function FavoritesPanel() {
     </div>
   );
 }
+
 
 
 /* ============= PERFIL ============= */
