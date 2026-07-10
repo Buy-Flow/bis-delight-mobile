@@ -260,6 +260,24 @@ function CartPage() {
             <div className="mb-4 space-y-2.5">
               <SummaryRow icon={ShoppingBag} label="Subtotal" value={brl(subtotal)} />
               <SummaryRow icon={Truck} label="Entrega" value={fee > 0 ? brl(fee) : "R$ 0,00"} />
+              {combo.discount > 0 && combo.matches[0] && (
+                <div className="flex items-center justify-between rounded-xl border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-cyan/20 text-neon-cyan">
+                      <Gift className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-[12px] font-black text-neon-cyan">
+                        {combo.matches[0].combo.name}
+                      </div>
+                      <div className="text-[10px] text-white/60">
+                        -{combo.matches[0].combo.discountPercent}% aplicado
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm font-black text-neon-cyan">-{brl(combo.discount)}</span>
+                </div>
+              )}
               <div className="mt-2 flex items-end justify-between border-t border-white/10 pt-3">
                 <span className="font-display text-2xl font-extrabold text-white">Total</span>
                 <div className="text-right">
