@@ -13,7 +13,7 @@ import { ProductCardSkeleton } from "@/components/menu/ProductCardSkeleton";
 import { HighlightCard } from "@/components/menu/HighlightCard";
 import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
-import { AppDownloadSection } from "@/components/menu/AppDownloadSection";
+
 import { FloatingActions } from "@/components/menu/FloatingActions";
 import { Reveal } from "@/components/Reveal";
 import { AdminEditButton } from "@/components/menu/AdminEditButton";
@@ -533,7 +533,7 @@ function Content() {
         )}
       </section>
 
-      <Reveal><AppDownloadSection /></Reveal>
+      
 
       <div>
         <LocationSection />
