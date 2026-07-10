@@ -57,11 +57,16 @@ self.addEventListener("notificationclick", (event) => {
   if (event.action === "dismiss") return;
 
   const data = event.notification.data || {};
-  const url = data.url || "/";
+  const scope = self.registration.scope || self.location.origin + "/";
+  let targetUrl;
+  try {
+    targetUrl = new URL(data.url || "/", scope).href;
+  } catch {
+    targetUrl = scope;
+  }
 
   event.waitUntil(
     (async () => {
-      // Ping open endpoint for analytics (best effort)
       if (data.deliveryId) {
         try {
           const supabaseUrl = self.__SUPABASE_URL || "";
@@ -84,17 +89,38 @@ self.addEventListener("notificationclick", (event) => {
       }
 
       const allClients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+
+      // Prefer a client already on the target URL
       for (const client of allClients) {
-        if ("focus" in client) {
+        if (client.url === targetUrl && "focus" in client) {
           try {
-            await client.navigate(url);
-            return client.focus();
+            return await client.focus();
           } catch {
-            /* ignore navigation errors */
+            /* try next */
           }
         }
       }
-      if (self.clients.openWindow) return self.clients.openWindow(url);
+
+      // Otherwise navigate the first available client
+      for (const client of allClients) {
+        try {
+          if ("navigate" in client) {
+            const navigated = await client.navigate(targetUrl);
+            if (navigated) return await navigated.focus();
+          }
+          if ("focus" in client) return await client.focus();
+        } catch {
+          /* try next */
+        }
+      }
+
+      if (self.clients.openWindow) {
+        try {
+          return await self.clients.openWindow(targetUrl);
+        } catch {
+          return await self.clients.openWindow(scope);
+        }
+      }
     })(),
   );
 });
