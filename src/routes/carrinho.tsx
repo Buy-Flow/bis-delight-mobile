@@ -235,6 +235,9 @@ function CartPage() {
               </div>
             )}
 
+            <CheckoutUpsellStrip />
+
+
             <Link
               to="/"
               className="flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-neon-pink/50 bg-neon-pink/5 px-4 py-3.5 text-sm font-extrabold text-white transition hover:border-neon-pink active:scale-[.99]"
