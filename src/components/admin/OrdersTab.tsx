@@ -146,6 +146,7 @@ export function OrdersTab() {
   const [filter, setFilter] = useState<FilterId>("pendente");
   const [busy, setBusy] = useState<string | null>(null);
   const [testBusy, setTestBusy] = useState(false);
+  const [crmBusy, setCrmBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [notifyOn, setNotifyOn] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
