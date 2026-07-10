@@ -528,6 +528,10 @@ function ProductEditor({
       image_scale: Number(p.imageScale ?? 1.1),
       is_custom: !!p.isCustom,
       option_groups: p.isCustom ? (p.optionGroups ?? []) : null,
+      is_upsell: !!p.isUpsell,
+      upsell_price: p.upsellPrice ?? null,
+      stock: p.stock ?? null,
+      low_stock_threshold: p.lowStockThreshold ?? 5,
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
