@@ -23,16 +23,6 @@ const getCurrentOverlayId = () => {
     : null;
 };
 
-const clearCurrentOverlayState = (id: number) => {
-  if (getCurrentOverlayId() !== id) return;
-  const state =
-    window.history.state && typeof window.history.state === "object"
-      ? { ...(window.history.state as Record<string, unknown>) }
-      : {};
-  delete state[OVERLAY_STATE_KEY];
-  window.history.replaceState(state, "", window.location.href);
-};
-
 const removeFromStack = (id: number) => {
   const index = overlayStack.lastIndexOf(id);
   if (index >= 0) overlayStack.splice(index, 1);
@@ -41,16 +31,10 @@ const removeFromStack = (id: number) => {
 export function useBackDismiss(open: boolean, onClose: () => void) {
   const onCloseRef = useRef(onClose);
   const idRef = useRef<number | null>(null);
-  const cleanupTimerRef = useRef<number | null>(null);
   onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open || typeof window === "undefined") return;
-
-    if (cleanupTimerRef.current !== null) {
-      window.clearTimeout(cleanupTimerRef.current);
-      cleanupTimerRef.current = null;
-    }
 
     const id = idRef.current ?? getCurrentOverlayId() ?? ++overlaySequence;
     idRef.current = id;
@@ -75,12 +59,7 @@ export function useBackDismiss(open: boolean, onClose: () => void) {
 
     return () => {
       window.removeEventListener("popstate", handlePop);
-
-      cleanupTimerRef.current = window.setTimeout(() => {
-        removeFromStack(id);
-        if (!poppedByBack) clearCurrentOverlayState(id);
-        cleanupTimerRef.current = null;
-      }, 0);
+      removeFromStack(id);
     };
   }, [open]);
 }
