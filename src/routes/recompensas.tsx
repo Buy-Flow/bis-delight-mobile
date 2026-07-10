@@ -267,15 +267,37 @@ function RecompensasPage() {
           </>
         )}
 
-        <section className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <h3 className="mb-2 font-bold">Como funciona</h3>
-          <ol className="space-y-1.5 text-sm text-white/75">
-            <li>1. Faça pedidos no Quero Bis com sua conta logada.</li>
-            <li>2. A cada pedido pago, você ganha 1 selo.</li>
-            <li>3. Ao completar 10 selos, um cupom de R$ 20 é liberado automaticamente.</li>
-            <li>4. Use o código do cupom no checkout do próximo pedido.</li>
+        <section className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neon-pink/20 text-neon-pink">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <h3 className="text-base font-black tracking-tight">Como funciona</h3>
+          </div>
+          <ol className="grid gap-3 sm:grid-cols-2">
+            {[
+              { icon: ShoppingBag, title: "Faça pedidos", desc: "Compre logado na sua conta.", color: "from-neon-pink to-neon-pink/60" },
+              { icon: CreditCard, title: "Ganhe selos", desc: "1 selo a cada pedido pago.", color: "from-neon-yellow to-orange-400" },
+              { icon: Award, title: "Complete 10", desc: "Cupom de R$ 20 liberado.", color: "from-neon-cyan to-cyan-400" },
+              { icon: Tag, title: "Use no checkout", desc: "Desconto direto no próximo pedido.", color: "from-fuchsia-400 to-neon-pink" },
+            ].map((step, idx) => {
+              const Icon = step.icon;
+              return (
+                <li key={idx} className="relative flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-[#1a0b2e] shadow-lg", step.color)}>
+                    <Icon className="h-5 w-5" strokeWidth={2.5} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-white/50">Passo {idx + 1}</div>
+                    <div className="text-sm font-bold text-white">{step.title}</div>
+                    <div className="text-xs text-white/60">{step.desc}</div>
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </section>
+
       </div>
     </main>
   );
