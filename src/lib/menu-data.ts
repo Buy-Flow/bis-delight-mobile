@@ -678,6 +678,10 @@ export type ProductInput = {
   image_scale?: number;
   is_custom?: boolean;
   option_groups?: OptionGroup[] | null;
+  is_upsell?: boolean;
+  upsell_price?: number | null;
+  stock?: number | null;
+  low_stock_threshold?: number | null;
 };
 
 export function useUpsertProduct() {
