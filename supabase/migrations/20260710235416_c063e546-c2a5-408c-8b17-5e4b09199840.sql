@@ -1,0 +1,2 @@
+ALTER TABLE public.push_campaigns ADD COLUMN IF NOT EXISTS audience_category text REFERENCES public.categories(id) ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE INDEX IF NOT EXISTS push_campaigns_audience_category_idx ON public.push_campaigns(audience_category) WHERE audience_category IS NOT NULL;
