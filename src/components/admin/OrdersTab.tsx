@@ -580,7 +580,7 @@ function OrderCard({
       className={cn(
         "relative overflow-hidden rounded-3xl border bg-[oklch(0.15_0.09_305)] transition-all animate-fade-in",
         theme.border,
-        theme.ringGlow,
+        
         "hover:border-neon-cyan/50",
       )}
     >
