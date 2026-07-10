@@ -5710,21 +5710,136 @@ function PopupSection({
       </div>
 
       {/* Link */}
-      <div>
-        <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/60">
-          Link ao clicar
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <label className="block text-[11px] font-bold uppercase tracking-wider text-white/60">
+          Link ao clicar no botão
         </label>
-        <input
-          type="text"
-          value={popup.link}
-          onChange={(e) => update({ link: e.target.value })}
-          placeholder="/produto/abc123 ou https://..."
-          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
-        />
-        <div className="mt-1 text-[10px] text-white/40">
-          Use um caminho do site (ex.: <code className="text-white/60">/produto/ID</code>, <code className="text-white/60">/carrinho</code>, <code className="text-white/60">/recompensas</code>) ou uma URL completa.
+
+        {/* Tipo de link */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { v: "none", label: "Nenhum" },
+            { v: "product", label: "Produto" },
+            { v: "page", label: "Página" },
+            { v: "external", label: "URL externa" },
+          ].map((opt) => {
+            const active = linkType === opt.v;
+            return (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => {
+                  if (opt.v === "none") update({ link: "" });
+                  else if (opt.v === "page") update({ link: "/" });
+                  else if (opt.v === "product") update({ link: "" });
+                  else if (opt.v === "external") update({ link: "https://" });
+                }}
+                className={cn(
+                  "rounded-xl border px-3 py-2 text-xs font-bold transition",
+                  active
+                    ? "border-neon-yellow bg-neon-yellow/10 text-neon-yellow"
+                    : "border-white/10 bg-black/30 text-white/70 hover:border-white/30",
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
+
+        {linkType === "product" && (
+          <div className="space-y-2">
+            {productId ? (
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 p-2">
+                <Package className="h-4 w-4 shrink-0 text-neon-pink" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] uppercase tracking-wider text-white/40">Produto selecionado</div>
+                  <div className="truncate font-mono text-[11px] text-white/80">{productId}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPicking(true)}
+                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-bold text-white hover:bg-white/10"
+                >
+                  Trocar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update({ link: "" })}
+                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-bold text-white/70 hover:bg-white/10"
+                  aria-label="Remover produto"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPicking(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-black/20 px-3 py-3 text-xs font-bold text-white/80 hover:border-neon-pink/60 hover:text-white"
+              >
+                <Package className="h-4 w-4" /> Escolher produto
+              </button>
+            )}
+          </div>
+        )}
+
+        {linkType === "page" && (
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {pagePresets.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => update({ link: p.value })}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-[11px] font-semibold transition",
+                    linkRaw === p.value
+                      ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+                      : "border-white/10 bg-black/20 text-white/70 hover:border-white/30",
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={linkRaw}
+              onChange={(e) => update({ link: e.target.value })}
+              placeholder="/carrinho"
+              className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+            />
+          </div>
+        )}
+
+        {linkType === "external" && (
+          <input
+            type="text"
+            value={linkRaw}
+            onChange={(e) => update({ link: e.target.value })}
+            placeholder="https://..."
+            className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-cyan"
+          />
+        )}
+
+        {linkType === "none" && (
+          <p className="text-[10px] text-white/40">
+            Sem link — o botão de ação não vai aparecer.
+          </p>
+        )}
       </div>
+
+      {picking && (
+        <ProductPicker
+          onClose={() => setPicking(false)}
+          onPick={(id) => {
+            update({ link: `/produto/${id}` });
+            setPicking(false);
+          }}
+        />
+      )}
+
 
       {/* Imagem + ajuste */}
       <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
