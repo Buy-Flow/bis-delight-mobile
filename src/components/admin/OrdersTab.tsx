@@ -58,6 +58,61 @@ type Order = {
   order_items: OrderItem[];
 };
 
+const STATUS_PUSH: Partial<Record<OrderStatus, { title: string; body: string }>> = {
+  pago: {
+    title: "Pagamento confirmado ✅",
+    body: "Recebemos seu pagamento, {{primeiro_nome}}! Já vamos preparar o seu pedido 💜",
+  },
+  preparando: {
+    title: "Seu pedido está sendo preparado 👩‍🍳",
+    body: "{{primeiro_nome}}, tô com a colher na mão preparando tudinho com carinho 🍨",
+  },
+  saiu_para_entrega: {
+    title: "Saiu para entrega 🛵",
+    body: "Prepara o coração {{primeiro_nome}}, seu pedido já tá indo até você!",
+  },
+  entregue: {
+    title: "Pedido entregue 🎉",
+    body: "Bom apetite, {{primeiro_nome}}! Aproveita e nos conta o que achou 💜",
+  },
+};
+
+async function notifyOrderStatus(order: Order, status: OrderStatus) {
+  const preset = STATUS_PUSH[status];
+  if (!preset || !order.user_id) return;
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    const { data: campaign, error } = await supabase
+      .from("push_campaigns")
+      .insert({
+        title: preset.title,
+        body: preset.body,
+        url: "/conta",
+        audience: "segment",
+        status: "sent",
+        created_by: user.user?.id ?? null,
+        expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      } as any)
+      .select()
+      .single();
+    if (error || !campaign) return;
+    const { data: session } = await supabase.auth.getSession();
+    const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+    await fetch(`${projectUrl}/functions/v1/send-push`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: anon,
+        Authorization: `Bearer ${session.session?.access_token ?? anon}`,
+      },
+      body: JSON.stringify({ campaignId: (campaign as any).id, userIds: [order.user_id] }),
+    });
+  } catch {
+    // silent — status update already succeeded
+  }
+}
+
 type StatusTheme = {
   label: string;
   icon: typeof Clock;
