@@ -522,10 +522,12 @@ export type Database = {
           body: string
           config: Json
           created_at: string
+          filters: Json
           id: string
           image: string | null
           kind: string
           last_run_at: string | null
+          name: string | null
           title: string
           updated_at: string
           url: string | null
@@ -535,10 +537,12 @@ export type Database = {
           body: string
           config?: Json
           created_at?: string
+          filters?: Json
           id?: string
           image?: string | null
           kind: string
           last_run_at?: string | null
+          name?: string | null
           title: string
           updated_at?: string
           url?: string | null
@@ -548,10 +552,12 @@ export type Database = {
           body?: string
           config?: Json
           created_at?: string
+          filters?: Json
           id?: string
           image?: string | null
           kind?: string
           last_run_at?: string | null
+          name?: string | null
           title?: string
           updated_at?: string
           url?: string | null
