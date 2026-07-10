@@ -88,7 +88,7 @@ function RecompensasPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
       {/* Cart-style sticky header */}
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#1a0b2e]/95 backdrop-blur">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#1a0b2e] via-[#1a0b2e]/85 to-transparent pb-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <Link
             to="/"
