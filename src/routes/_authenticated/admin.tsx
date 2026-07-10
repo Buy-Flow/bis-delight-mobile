@@ -5846,19 +5846,9 @@ function PopupSection({
       )}
 
 
-      {/* Imagem + ajuste */}
+      {/* Imagem (só upload/URL — o ajuste acontece direto no preview acima) */}
       <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-extrabold text-white">Imagem do pop-up</div>
-          <button
-            type="button"
-            onClick={() => update({ imagePosX: 0, imagePosY: 0, imageScale: 1 })}
-            className="text-[11px] font-semibold text-white/60 hover:text-white"
-          >
-            Resetar ajuste
-          </button>
-        </div>
-
+        <div className="text-sm font-extrabold text-white">Imagem do pop-up</div>
         <div className="flex items-center gap-3">
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40">
             {popup.imageUrl ? (
@@ -5907,34 +5897,8 @@ function PopupSection({
             )}
           </div>
         </div>
-
-        {popup.imageUrl && (
-          <ImageAdjustPanel
-            values={{ posX: popup.imagePosX, posY: popup.imagePosY, scale: popup.imageScale }}
-            onChange={(p) => update({
-              ...(p.posX !== undefined ? { imagePosX: p.posX } : {}),
-              ...(p.posY !== undefined ? { imagePosY: p.posY } : {}),
-              ...(p.scale !== undefined ? { imageScale: p.scale } : {}),
-            })}
-            defaults={{ posX: 0, posY: 0, scale: 1 }}
-            previewMaxWidth={260}
-            renderPreview={(v) => (
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/15 bg-black/30">
-                <img
-                  src={popup.imageUrl}
-                  alt=""
-                  draggable={false}
-                  className="absolute inset-0 h-full w-full object-contain select-none"
-                  style={{
-                    transform: `translate(${v.posX}%, ${v.posY}%) scale(${v.scale})`,
-                    transformOrigin: "center center",
-                  }}
-                />
-              </div>
-            )}
-          />
-        )}
       </div>
+
 
       {/* Frequência */}
       <div>
