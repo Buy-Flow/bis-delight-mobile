@@ -647,7 +647,7 @@ function ProfilePanel() {
     else toast.success("Perfil atualizado!");
   };
 
-  if (loading) return <PanelSpinner />;
+  if (loading) return <ProfilePanelSkeleton />;
 
   const displayName = fullName.trim() || user?.email?.split("@")[0] || "Cliente";
   const initials = displayName
