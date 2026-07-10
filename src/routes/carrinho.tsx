@@ -92,7 +92,7 @@ function CartPage() {
       </div>
 
       {/* Body */}
-      <div className="mx-auto max-w-2xl px-4 pb-40 pt-4">
+      <div className="mx-auto max-w-2xl px-4 pt-4">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
             <div className="grid h-16 w-16 place-items-center rounded-full bg-white/5">
@@ -248,13 +248,10 @@ function CartPage() {
         )}
       </div>
 
-      {/* Footer fixo */}
+      {/* Footer inline (rola com o conteúdo) */}
       {items.length > 0 && (
-        <div
-          className="fixed inset-x-0 z-30 bg-gradient-to-t from-[oklch(0.14_0.09_305)] via-[oklch(0.14_0.09_305)]/85 to-transparent pt-6 backdrop-blur-xl bottom-[calc(76px+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]"
-        >
-
-          <div className="mx-auto max-w-2xl px-5 pb-4 pt-4">
+        <div className="mx-auto max-w-2xl px-4 pb-[calc(96px+env(safe-area-inset-bottom))] md:pb-8">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-5">
             <div className="mb-4 space-y-2.5">
               <SummaryRow icon={ShoppingBag} label="Subtotal" value={brl(subtotal)} />
               <SummaryRow icon={Truck} label="Entrega" value={fee > 0 ? brl(fee) : "R$ 0,00"} />
