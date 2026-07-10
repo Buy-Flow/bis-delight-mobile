@@ -7,6 +7,13 @@ import { useEffect, useRef } from "react";
  * When the overlay is closed programmatically (X button, backdrop click),
  * the extra history entry is popped so the browser history stays clean.
  */
+
+// Module-level flag shared across all overlays. When we programmatically
+// call history.back() during cleanup, the resulting popstate event must NOT
+// trigger onClose on any other mounted overlay (which would immediately
+// close a modal that just opened).
+let programmaticBackPending = 0;
+
 export function useBackDismiss(open: boolean, onClose: () => void) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -14,11 +21,14 @@ export function useBackDismiss(open: boolean, onClose: () => void) {
   useEffect(() => {
     if (!open || typeof window === "undefined") return;
 
-    const marker = `overlay-${Math.random().toString(36).slice(2)}`;
-    window.history.pushState({ __overlay: marker }, "");
+    window.history.pushState({ __overlay: true }, "");
 
     let poppedByBack = false;
     const handlePop = () => {
+      if (programmaticBackPending > 0) {
+        programmaticBackPending -= 1;
+        return;
+      }
       poppedByBack = true;
       onCloseRef.current?.();
     };
@@ -27,11 +37,11 @@ export function useBackDismiss(open: boolean, onClose: () => void) {
     return () => {
       window.removeEventListener("popstate", handlePop);
       if (!poppedByBack) {
-        // Overlay closed via UI — remove the marker entry we pushed.
         try {
+          programmaticBackPending += 1;
           window.history.back();
         } catch {
-          /* noop */
+          programmaticBackPending = Math.max(0, programmaticBackPending - 1);
         }
       }
     };
