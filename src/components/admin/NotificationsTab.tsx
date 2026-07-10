@@ -211,6 +211,16 @@ function summarizeConfig(kind: AutoKind, cfg: any, filters: any): string {
     if (cfg?.repeat_weekly) parts.push("semanal");
   } else if (kind === "abandoned_cart") {
     parts.push(`${Number(cfg?.delay_minutes ?? 15)} min após abandono`);
+  } else if (kind === "payment_pending") {
+    parts.push(`${Number(cfg?.delay_minutes ?? 20)} min pendente`);
+  } else if (kind === "feedback_request") {
+    parts.push(`${Number(cfg?.delay_hours ?? 24)}h após entregue`);
+  } else if (kind === "loyalty_close") {
+    parts.push(`${Number(cfg?.min_stamps ?? 7)}+ selos`);
+    if (cfg?.repeat_weekly) parts.push("semanal");
+  } else if (kind === "weekly_promo") {
+    const dowNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    parts.push(`toda ${dowNames[Number(cfg?.dow ?? 5)]} às ${String(cfg?.hour ?? 18).padStart(2, "0")}h`);
   }
   const f: string[] = [];
   if (filters?.min_orders) f.push(`≥${filters.min_orders} pedidos`);
