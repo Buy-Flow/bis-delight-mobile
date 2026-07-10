@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RecompensasRouteImport } from './routes/recompensas'
+import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as BaixarAppRouteImport } from './routes/baixar-app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -26,6 +27,11 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 const RecompensasRoute = RecompensasRouteImport.update({
   id: '/recompensas',
   path: '/recompensas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarrinhoRoute = CarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BaixarAppRoute = BaixarAppRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
+  '/carrinho': typeof CarrinhoRoute
   '/recompensas': typeof RecompensasRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
+  '/carrinho': typeof CarrinhoRoute
   '/recompensas': typeof RecompensasRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
+  '/carrinho': typeof CarrinhoRoute
   '/recompensas': typeof RecompensasRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/baixar-app'
+    | '/carrinho'
     | '/recompensas'
     | '/admin'
     | '/carrinhos'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/baixar-app'
+    | '/carrinho'
     | '/recompensas'
     | '/admin'
     | '/carrinhos'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/baixar-app'
+    | '/carrinho'
     | '/recompensas'
     | '/_authenticated/admin'
     | '/_authenticated/carrinhos'
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   BaixarAppRoute: typeof BaixarAppRoute
+  CarrinhoRoute: typeof CarrinhoRoute
   RecompensasRoute: typeof RecompensasRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
 }
@@ -195,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/recompensas'
       fullPath: '/recompensas'
       preLoaderRoute: typeof RecompensasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carrinho': {
+      id: '/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof CarrinhoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/baixar-app': {
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   BaixarAppRoute: BaixarAppRoute,
+  CarrinhoRoute: CarrinhoRoute,
   RecompensasRoute: RecompensasRoute,
   ProdutoIdRoute: ProdutoIdRoute,
 }

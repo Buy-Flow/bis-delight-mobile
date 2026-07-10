@@ -1,4 +1,4 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Award, Home, Heart, User as UserIcon, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
@@ -61,8 +61,7 @@ export function BottomNav() {
   const { pathname, searchStr } = useRouterState({
     select: (s) => ({ pathname: s.location.pathname, searchStr: s.location.searchStr }),
   });
-  const navigate = useNavigate();
-  const { openCart, count } = useCart();
+  const { count } = useCart();
   const search = new URLSearchParams(searchStr ?? "");
 
   // Hide on admin / auth-only routes
@@ -70,16 +69,7 @@ export function BottomNav() {
   if (hiddenPrefixes.some((p) => pathname.startsWith(p))) return null;
 
   const isHome = pathname === "/";
-
-  const handleCartClick = () => {
-    if (pathname !== "/") {
-      navigate({ to: "/" });
-      // Small delay to let CartSheet mount on home route
-      setTimeout(() => openCart(), 60);
-    } else {
-      openCart();
-    }
-  };
+  const isCart = pathname === "/carrinho";
 
   return (
     <>
@@ -118,14 +108,16 @@ export function BottomNav() {
               </Link>
             </div>
 
-            {/* Carrinho button */}
-            <button
-              type="button"
-              onClick={handleCartClick}
-              className="relative flex flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[10px] font-medium text-white/60 transition hover:text-white"
+            {/* Carrinho */}
+            <Link
+              to="/carrinho"
+              className={cn(
+                "relative flex flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[10px] font-medium transition",
+                isCart ? "text-neon-pink" : "text-white/60 hover:text-white",
+              )}
             >
               <span className="relative">
-                <ShoppingBag className="h-5 w-5" />
+                <ShoppingBag className={cn("h-5 w-5", isCart && "drop-shadow-[0_0_6px_rgba(236,72,153,0.7)]")} />
                 {count > 0 && (
                   <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-neon-pink px-1 text-[9px] font-bold text-white shadow-[0_0_6px_rgba(236,72,153,0.7)]">
                     {count > 99 ? "99+" : count}
@@ -133,7 +125,7 @@ export function BottomNav() {
                 )}
               </span>
               <span className="leading-tight">Carrinho</span>
-            </button>
+            </Link>
 
             <LinkNavItem item={rightPerfil} path={pathname} search={search} />
           </div>

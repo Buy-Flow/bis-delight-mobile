@@ -260,7 +260,8 @@ type OrderRow = {
 
 function OrdersPanel() {
   const { user } = useAuth();
-  const { add, openCart } = useCart();
+  const { add } = useCart();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -295,7 +296,7 @@ function OrdersPanel() {
       });
     });
     toast.success("Itens adicionados ao carrinho!");
-    openCart();
+    navigate({ to: "/carrinho" });
   };
 
   if (loading) return <PanelSpinner />;
