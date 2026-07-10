@@ -434,6 +434,10 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
       toast.error("Preencha título e mensagem.");
       return;
     }
+    if (audience === "category" && !audienceCategory) {
+      toast.error("Escolha a categoria para segmentar.");
+      return;
+    }
     const scheduledIso = scheduledAt ? new Date(scheduledAt).toISOString() : null;
     if (scheduledIso && new Date(scheduledIso).getTime() < Date.now() - 60_000) {
       toast.error("Escolha uma data/hora no futuro.");
@@ -447,11 +451,8 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
       const totalReps = repeatInfinite ? INFINITE_CAP : Math.max(1, Math.min(200, repeatCount));
       const intervalMs = repeatIntervalMin * 60_000;
 
-      // Build all occurrences. The first uses baseTime; subsequent add interval.
       const occurrences = Array.from({ length: totalReps }, (_, i) => baseTime + i * intervalMs);
-      const nowMs = Date.now();
 
-      // Insert campaigns. First is "sent" if base is now (no schedule); others always scheduled.
       const rows = occurrences.map((t, i) => {
         const isImmediate = i === 0 && !scheduledIso;
         return {
@@ -460,6 +461,7 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
           url: url.trim() || null,
           image: image.trim() || null,
           audience,
+          audience_category: audience === "category" ? audienceCategory : null,
           expires_at: durationMin !== null ? new Date(t + durationMin * 60_000).toISOString() : null,
           created_by: user.user?.id ?? null,
           status: isImmediate ? "sent" : "scheduled",
