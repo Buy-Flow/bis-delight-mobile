@@ -376,13 +376,21 @@ function OrdersPanel() {
             ))}
             {o.items.length > 3 && <div className="text-white/40">+ {o.items.length - 3} outros</div>}
           </div>
-          <button
-            onClick={() => reorder(o)}
-            className="mt-3 flex w-full items-center justify-center gap-1 rounded-xl bg-neon-cyan/20 py-2 text-xs font-bold text-neon-cyan"
-
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> Pedir novamente
-          </button>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link
+              to="/rastrear/$orderId"
+              params={{ orderId: o.id }}
+              className="flex items-center justify-center gap-1 rounded-xl bg-neon-cyan/20 py-2 text-xs font-bold text-neon-cyan"
+            >
+              <MapPin className="h-3.5 w-3.5" /> Rastrear
+            </Link>
+            <button
+              onClick={() => reorder(o)}
+              className="flex items-center justify-center gap-1 rounded-xl bg-white/10 py-2 text-xs font-bold text-white"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Pedir de novo
+            </button>
+          </div>
         </div>
       ))}
     </div>
