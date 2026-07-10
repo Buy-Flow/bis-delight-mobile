@@ -20,7 +20,7 @@ const items = [
   { to: "/carrinhos", label: "Carrinhos", icon: ShoppingCart },
   { to: "/financeiro", label: "Financeiro", icon: LineChart },
   { to: "/clientes", label: "Clientes", icon: Users },
-  { to: "/notificacoes", label: "Notificações", icon: BellRing },
+
 ] as const;
 
 export function AdminNavMenu() {
