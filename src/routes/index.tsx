@@ -15,6 +15,7 @@ import { NewsCarousel } from "@/components/menu/NewsCarousel";
 import { LocationSection } from "@/components/menu/LocationSection";
 import { InstallAppBanner } from "@/components/menu/InstallAppBanner";
 import { WelcomePopup } from "@/components/menu/WelcomePopup";
+import { UrgencyBanner } from "@/components/menu/UrgencyBanner";
 
 
 import { FloatingActions } from "@/components/menu/FloatingActions";
