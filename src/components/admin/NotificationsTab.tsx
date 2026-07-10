@@ -26,6 +26,10 @@ import {
   Rocket,
   Filter,
   MessageSquare,
+  ChevronDown,
+  Link2,
+  Package,
+  Search,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
