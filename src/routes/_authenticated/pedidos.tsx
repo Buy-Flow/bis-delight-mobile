@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 import { Toaster } from "sonner";
 import { Home, LogOut, Loader2, ClipboardList, Users, LineChart, ShoppingCart, BellRing } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
