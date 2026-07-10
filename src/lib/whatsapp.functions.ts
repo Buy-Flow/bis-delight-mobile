@@ -129,17 +129,43 @@ export const getEvolutionStatus = createServerFn({ method: "GET" })
         return { ok: true, state: stateResp };
       }
       // Not connected — fetch QR from /instance/connect
-      const qr = await connectInstance();
-      return { ok: true, state: { ...stateResp, ...qr } };
-    } catch {
+      try {
+        const qr = await connectInstance();
+        return { ok: true, state: { ...stateResp, ...qr } };
+      } catch (err) {
+        return {
+          ok: false,
+          recoverable: true,
+          state: stateResp,
+          message:
+            err instanceof Error
+              ? err.message
+              : "Não consegui gerar o QR code agora.",
+        };
+      }
+    } catch (err) {
       // Instance likely doesn't exist — create it, then fetch QR
       try {
         await createInstance();
       } catch {
         /* may already exist */
       }
-      const qr = await connectInstance();
-      return { ok: true, state: qr, created: true };
+      try {
+        const qr = await connectInstance();
+        return { ok: true, state: qr, created: true };
+      } catch (connectErr) {
+        return {
+          ok: false,
+          recoverable: true,
+          state: null,
+          message:
+            connectErr instanceof Error
+              ? connectErr.message
+              : err instanceof Error
+              ? err.message
+              : "A Evolution não respondeu agora.",
+        };
+      }
     }
   });
 
@@ -152,8 +178,17 @@ export const getEvolutionConnectionState = createServerFn({ method: "GET" })
     });
     if (!isAdmin) throw new Error("Forbidden");
     const { connectionState } = await import("@/lib/evolution.server");
-    const state = await connectionState();
-    return { ok: true, state };
+    try {
+      const state = await connectionState();
+      return { ok: true, state };
+    } catch (err) {
+      return {
+        ok: false,
+        recoverable: true,
+        state: null,
+        message: err instanceof Error ? err.message : "A Evolution não respondeu agora.",
+      };
+    }
   });
 
 export const resetEvolutionInstance = createServerFn({ method: "POST" })
@@ -182,8 +217,18 @@ export const resetEvolutionInstance = createServerFn({ method: "POST" })
     } catch {
       /* if delete is unavailable, reuse the existing logged-out instance */
     }
-    const qr = await connectInstance();
-    return { ok: true, state: qr, reset: true };
+    try {
+      const qr = await connectInstance();
+      return { ok: true, state: qr, reset: true };
+    } catch (err) {
+      return {
+        ok: false,
+        recoverable: true,
+        state: null,
+        reset: false,
+        message: err instanceof Error ? err.message : "Não consegui recriar a conexão agora.",
+      };
+    }
   });
 
 const ConfigureWebhookInput = z.object({
@@ -200,6 +245,14 @@ export const configureEvolutionWebhook = createServerFn({ method: "POST" })
     });
     if (!isAdmin) throw new Error("Forbidden");
     const { setWebhook } = await import("@/lib/evolution.server");
-    const res = await setWebhook(data.webhookUrl);
-    return { ok: true, res };
+    try {
+      const res = await setWebhook(data.webhookUrl);
+      return { ok: true, res };
+    } catch (err) {
+      return {
+        ok: false,
+        fallback: true,
+        message: err instanceof Error ? err.message : "Não consegui configurar o webhook agora.",
+      };
+    }
   });
