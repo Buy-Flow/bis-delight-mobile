@@ -412,6 +412,9 @@ export function OrdersTab() {
     }
     toast.success(`Pedido atualizado para ${STATUS_THEME[status].label.toLowerCase()}.`);
     setOrders((prev) => (prev ? prev.map((o) => (o.id === order.id ? { ...o, status } : o)) : prev));
+    // Notify CRM about the status change (fire-and-forget).
+    const eventType = status === "entregue" ? "order_completed" : "order_status_changed";
+    void sendCrmEvent({ data: { event_type: eventType, order_id: order.id, extra: { new_status: status } } }).catch(() => {});
   };
 
   if (orders === null) {
