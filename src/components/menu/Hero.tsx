@@ -1,4 +1,4 @@
-import { useSiteSettings } from "@/lib/menu-data";
+import { useSiteSettings, DEFAULT_HERO_IMAGES } from "@/lib/menu-data";
 import { type HeroImagesConfig } from "@/lib/menu-data";
 import { AdminEditButton } from "./AdminEditButton";
 
@@ -11,7 +11,9 @@ export function Hero({
   heroImagesOverride?: HeroImagesConfig;
 }) {
   const { data: settings } = useSiteSettings();
-  const heroImages = heroImagesOverride ?? settings?.heroImages ?? null;
+  // Fall back to defaults so side illustrations never disappear during
+  // first paint / hydration (before the settings query resolves).
+  const heroImages = heroImagesOverride ?? settings?.heroImages ?? DEFAULT_HERO_IMAGES;
 
   return (
     <section className="relative px-4 pb-0 pt-2">
