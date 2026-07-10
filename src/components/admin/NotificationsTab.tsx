@@ -41,7 +41,16 @@ import { supabase } from "@/integrations/supabase/client";
 // Types
 
 type Audience = "all" | "recent_30d" | "birthday_month" | "dormant_60d";
-type AutoKind = "birthday" | "dormant" | "welcome" | "after_order" | "abandoned_cart";
+type AutoKind =
+  | "birthday"
+  | "dormant"
+  | "welcome"
+  | "after_order"
+  | "abandoned_cart"
+  | "payment_pending"
+  | "feedback_request"
+  | "loyalty_close"
+  | "weekly_promo";
 
 interface Campaign {
   id: string;
