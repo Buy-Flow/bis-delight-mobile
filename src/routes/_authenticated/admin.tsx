@@ -5602,11 +5602,11 @@ function PopupSection({
         </div>
         <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-b from-[oklch(0.22_0.14_305)] to-[oklch(0.14_0.10_305)] shadow-xl">
           {popup.imageUrl && (
-            <div className="relative aspect-square w-full overflow-hidden bg-black/30">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/30">
               <img
                 src={popup.imageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-contain"
                 style={{
                   transform: `translate(${popup.imagePosX}%, ${popup.imagePosY}%) scale(${popup.imageScale})`,
                   transformOrigin: "center center",
@@ -5753,16 +5753,18 @@ function PopupSection({
             defaults={{ posX: 0, posY: 0, scale: 1 }}
             previewMaxWidth={260}
             renderPreview={(v) => (
-              <img
-                src={popup.imageUrl}
-                alt=""
-                draggable={false}
-                className="absolute inset-0 h-full w-full object-cover select-none"
-                style={{
-                  transform: `translate(${v.posX}%, ${v.posY}%) scale(${v.scale})`,
-                  transformOrigin: "center center",
-                }}
-              />
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/15 bg-black/30">
+                <img
+                  src={popup.imageUrl}
+                  alt=""
+                  draggable={false}
+                  className="absolute inset-0 h-full w-full object-contain select-none"
+                  style={{
+                    transform: `translate(${v.posX}%, ${v.posY}%) scale(${v.scale})`,
+                    transformOrigin: "center center",
+                  }}
+                />
+              </div>
             )}
           />
         )}
