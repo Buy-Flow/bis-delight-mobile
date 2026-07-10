@@ -32,11 +32,12 @@ export const Route = createFileRoute("/api/public/evolution")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { fromJid } = await import("@/lib/evolution.server");
 
-        const event = payload?.event as string | undefined;
+        const rawEvent = String(payload?.event ?? payload?.type ?? "");
+        const event = rawEvent.toLowerCase().replace(/_/g, ".");
 
         try {
-          if (event === "messages.upsert") {
-            const data = payload.data;
+          if (event === "messages.upsert" || event === "message.upsert" || event === "messages.update") {
+            const data = Array.isArray(payload.data) ? payload.data[0] : payload.data;
             const key = data?.key;
             const msg = data?.message;
             if (!key || !msg) return new Response("ok", { status: 200, headers: CORS });
