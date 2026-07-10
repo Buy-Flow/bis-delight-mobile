@@ -30,6 +30,10 @@ import {
   Link2,
   Package,
   Search,
+  CreditCard,
+  Star,
+  Trophy,
+  CalendarDays,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
