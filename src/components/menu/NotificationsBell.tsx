@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/use-auth";
 import { useUnreadNotifications } from "./NotificationsInbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { applyNotifTokens, useNotifVars } from "@/lib/notif-tokens";
 
 type Campaign = {
   id: string;
