@@ -757,7 +757,16 @@ function OrderCard({
                 <ChefHat className="h-3.5 w-3.5" /> Iniciar preparo
               </button>
             )}
-            {order.status === "preparando" && (
+            {order.status === "preparando" && order.mode === "entrega" && (
+              <button
+                onClick={() => onStatus(order, "saiu_para_entrega")}
+                disabled={busy}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-neon-pink px-5 py-3 text-xs font-black uppercase tracking-tighter text-[oklch(0.13_0.08_305)] shadow-[0_4px_15px_rgba(255,46,151,0.35)] transition-all hover:brightness-110 disabled:opacity-50"
+              >
+                <Bike className="h-3.5 w-3.5" /> Saiu para entrega
+              </button>
+            )}
+            {order.status === "preparando" && order.mode !== "entrega" && (
               <button
                 onClick={() => onStatus(order, "entregue")}
                 disabled={busy}
@@ -766,7 +775,16 @@ function OrderCard({
                 <Truck className="h-3.5 w-3.5" /> Marcar entregue
               </button>
             )}
-            {["pago", "preparando", "entregue"].includes(order.status) && phoneDigits && (
+            {order.status === "saiu_para_entrega" && (
+              <button
+                onClick={() => onStatus(order, "entregue")}
+                disabled={busy}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-5 py-3 text-xs font-black uppercase tracking-tighter text-[oklch(0.13_0.08_305)] transition-all hover:bg-white disabled:opacity-50"
+              >
+                <Truck className="h-3.5 w-3.5" /> Marcar entregue
+              </button>
+            )}
+            {["pago", "preparando", "saiu_para_entrega", "entregue"].includes(order.status) && phoneDigits && (
               <a
                 href={`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(
                   `Oi ${order.customer_name.split(" ")[0]}! 💜 Aqui é da Quero Bis. Seu pedido foi confirmado e queremos saber: como foi sua experiência? Sua avaliação ajuda demais a gente a melhorar! ⭐️⭐️⭐️⭐️⭐️`
