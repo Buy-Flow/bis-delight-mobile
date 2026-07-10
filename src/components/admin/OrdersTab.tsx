@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -18,10 +19,12 @@ import {
   Star,
   Bell,
   BellOff,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { brl } from "@/lib/cart-context";
 import { ensurePushSubscriptionSaved, iosStandaloneRequired, isStandaloneApp, subscribeToPush } from "@/lib/push";
+import { sendAdminTestPush } from "@/lib/push.functions";
 
 type OrderStatus = "pendente" | "pago" | "preparando" | "entregue" | "cancelado";
 
@@ -127,9 +130,11 @@ const isToday = (d: Date) => {
 };
 
 export function OrdersTab() {
+  const sendTestPush = useServerFn(sendAdminTestPush);
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [filter, setFilter] = useState<FilterId>("pendente");
   const [busy, setBusy] = useState<string | null>(null);
+  const [testBusy, setTestBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [notifyOn, setNotifyOn] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -255,11 +260,55 @@ export function OrdersTab() {
     setNotifyOn(true);
     localStorage.setItem("orders-notify", "1");
     playBeep();
+    try {
+      const result = await sendTestPush();
+      if (result.sent > 0) {
+        toast.success("Enviei uma notificação de teste para este aparelho.");
+      } else {
+        toast.warning("Aparelho registrado, mas ainda não encontrei inscrição ativa para enviar o teste.");
+      }
+    } catch {
+      /* o alerta já ficou ativo; o botão de teste permite tentar novamente */
+    }
     toast.success(
       iosStandaloneRequired()
         ? "Abra pelo ícone instalado para receber como app."
         : "Alertas do aplicativo ativados — teste de som tocando.",
     );
+  };
+
+  const sendPushTest = async () => {
+    setTestBusy(true);
+    try {
+      const registration =
+        typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted"
+          ? await ensurePushSubscriptionSaved({ forceNew: false })
+          : await subscribeToPush({ forceNew: isStandaloneApp() });
+
+      if (!registration.ok) {
+        if (registration.reason === "ios-install-required") {
+          toast.info("Abra pelo ícone instalado do Quero Bis e envie o teste por lá.");
+        } else if (registration.reason === "denied") {
+          toast.error("Permissão bloqueada. Ative as notificações nas configurações do app.");
+        } else {
+          toast.error("Não consegui registrar este aparelho para push.");
+        }
+        return;
+      }
+
+      setNotifyOn(true);
+      localStorage.setItem("orders-notify", "1");
+      const result = await sendTestPush();
+      if (result.sent > 0) {
+        toast.success("Notificação de teste enviada para o app.");
+      } else {
+        toast.error("Nenhum aparelho admin inscrito foi encontrado. Abra pelo app instalado e tente novamente.");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar notificação de teste.");
+    } finally {
+      setTestBusy(false);
+    }
   };
 
   const load = async () => {
@@ -394,6 +443,15 @@ export function OrdersTab() {
           >
             {notifyOn ? <Bell className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
             {notifyOn ? "Alertas ON" : "Alertas OFF"}
+          </button>
+          <button
+            onClick={sendPushTest}
+            disabled={testBusy}
+            className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-neon-cyan transition-all hover:bg-neon-cyan/15 disabled:cursor-not-allowed disabled:opacity-60"
+            title="Enviar notificação de teste para este aparelho"
+          >
+            {testBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+            Teste push
           </button>
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-900/30 px-4 py-2">
             <span
