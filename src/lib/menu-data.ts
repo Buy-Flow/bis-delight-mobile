@@ -156,6 +156,10 @@ function rowToProduct(row: Record<string, unknown>): Product {
     heroImageScale: row.hero_image_scale !== undefined && row.hero_image_scale !== null ? Number(row.hero_image_scale) : 1.4,
     isCustom: Boolean(row.is_custom ?? false),
     optionGroups: normalizeOptionGroups(row.option_groups),
+    isUpsell: Boolean(row.is_upsell ?? false),
+    upsellPrice: row.upsell_price !== undefined && row.upsell_price !== null ? Number(row.upsell_price) : null,
+    stock: row.stock !== undefined && row.stock !== null ? Number(row.stock) : null,
+    lowStockThreshold: row.low_stock_threshold !== undefined && row.low_stock_threshold !== null ? Number(row.low_stock_threshold) : 5,
   };
 }
 
