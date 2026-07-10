@@ -475,6 +475,25 @@ function ProfilePanel() {
 
   return (
     <div className="space-y-3">
+      <Link
+        to="/conta"
+        search={{ tab: "pedidos" } as never}
+        className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition hover:border-neon-pink/40 hover:bg-white/10"
+      >
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-neon-pink/15 text-neon-pink ring-1 ring-neon-pink/30">
+          <ClipboardList className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold text-white">Meus pedidos</div>
+          <div className="text-[11px] text-white/60">Ver histórico e acompanhar entregas</div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
+      </Link>
+
+      <div className="pt-2 text-[11px] font-semibold uppercase tracking-wide text-white/50">
+        Dados pessoais
+      </div>
+
       <Input label="Nome completo" value={fullName} onChange={setFullName} autoComplete="name" />
       <Input label="Telefone (WhatsApp)" value={phone} onChange={setPhone} autoComplete="tel" type="tel" />
       <Input label="Endereço padrão" value={address} onChange={setAddress} autoComplete="street-address" />
@@ -501,6 +520,7 @@ function ProfilePanel() {
     </div>
   );
 }
+
 
 function Input({
   label,
