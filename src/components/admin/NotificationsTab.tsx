@@ -603,36 +603,64 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-white/50">Quantas vezes</span>
-                <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-1">
+                <div className={`inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-1 ${repeatInfinite ? "opacity-40" : ""}`}>
                   <button
                     type="button"
+                    disabled={repeatInfinite}
                     onClick={() => setRepeatCount((n) => Math.max(1, n - 1))}
-                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10"
+                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10 disabled:hover:bg-transparent"
                     aria-label="Diminuir"
                   >−</button>
-                  <span className="w-8 text-center text-sm font-black text-neon-yellow">{repeatCount}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={200}
+                    disabled={repeatInfinite}
+                    value={repeatCount}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value, 10);
+                      if (!Number.isNaN(v)) setRepeatCount(Math.max(1, Math.min(200, v)));
+                    }}
+                    className="w-12 bg-transparent text-center text-sm font-black text-neon-yellow outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
                   <button
                     type="button"
-                    onClick={() => setRepeatCount((n) => Math.min(20, n + 1))}
-                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10"
+                    disabled={repeatInfinite}
+                    onClick={() => setRepeatCount((n) => Math.min(200, n + 1))}
+                    className="h-7 w-7 rounded-full text-white/80 hover:bg-white/10 disabled:hover:bg-transparent"
                     aria-label="Aumentar"
                   >+</button>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setRepeatInfinite((v) => !v)}
+                  className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                    repeatInfinite
+                      ? "border-neon-yellow bg-neon-yellow/15 text-neon-yellow"
+                      : "border-white/10 bg-black/20 text-white/70 hover:border-white/30"
+                  }`}
+                >
+                  ∞ Infinito
+                </button>
                 <span className="text-[10px] text-white/40">
-                  {repeatCount === 1 ? "Envio único" : `${repeatCount} envios no total`}
+                  {repeatInfinite
+                    ? "Repete até você pausar (máx. 200 disparos)"
+                    : repeatCount === 1
+                    ? "Envio único"
+                    : `${repeatCount} envios no total`}
                 </span>
               </div>
-              {repeatCount > 1 && (
+              {(repeatInfinite || repeatCount > 1) && (
                 <div className="space-y-1.5">
                   <span className="block text-[11px] font-bold uppercase tracking-wider text-white/50">A cada</span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {repeatIntervalOptions.map((r) => {
-                      const active = repeatIntervalMin === r.value;
+                      const active = repeatIntervalMin === r.value && !customHours;
                       return (
                         <button
                           key={r.value}
                           type="button"
-                          onClick={() => setRepeatIntervalMin(r.value)}
+                          onClick={() => { setRepeatIntervalMin(r.value); setCustomHours(""); }}
                           className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
                             active
                               ? "border-neon-yellow bg-neon-yellow/15 text-neon-yellow"
@@ -644,7 +672,30 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
                         </button>
                       );
                     })}
+                    <div className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold transition ${
+                      customHours ? "border-neon-yellow bg-neon-yellow/15 text-neon-yellow" : "border-white/10 bg-black/20 text-white/70"
+                    }`}>
+                      <Clock className="h-3 w-3" />
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        placeholder="ex: 2"
+                        value={customHours}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setCustomHours(v);
+                          const n = parseFloat(v);
+                          if (!Number.isNaN(n) && n > 0) setRepeatIntervalMin(Math.round(n * 60));
+                        }}
+                        className="w-12 bg-transparent text-center outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      />
+                      <span>h</span>
+                    </div>
                   </div>
+                  <span className="block text-[10px] text-white/40">
+                    Intervalo atual: {labelForMinutes(repeatIntervalMin)}
+                  </span>
                 </div>
               )}
             </div>
