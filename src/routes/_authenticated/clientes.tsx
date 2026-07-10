@@ -34,6 +34,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
+import { ClientsListSkeleton, ClientDetailSkeleton } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
   head: () => ({
@@ -471,9 +472,7 @@ function ClientesDashboard() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-white/50" />
-          </div>
+          <ClientsListSkeleton count={6} />
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center text-sm text-white/50">
             Nenhum cliente encontrado.
@@ -845,9 +844,7 @@ function ClientDetailDialog({
             </div>
 
             {isLoading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-6 w-6 animate-spin text-white/50" />
-              </div>
+              <ClientDetailSkeleton />
             ) : (
               <>
                 {/* KPIs pessoais */}

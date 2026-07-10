@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { FinanceDashboardSkeleton } from "@/components/ui/skeletons";
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({
@@ -466,9 +467,7 @@ function FinanceiroPage() {
         </section>
 
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 animate-spin text-neon-cyan" />
-          </div>
+          <FinanceDashboardSkeleton />
         ) : (
           <>
             {/* KPIs */}

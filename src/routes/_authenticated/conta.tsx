@@ -33,6 +33,12 @@ import { ProductModal } from "@/components/menu/ProductModal";
 import type { Product } from "@/data/menu";
 import { Heart as HeartIcon } from "lucide-react";
 import { ProductCard } from "@/components/menu/ProductCard";
+import {
+  OrdersListSkeleton,
+  FavoritesGridSkeleton,
+  ProfilePanelSkeleton,
+  LoyaltyPanelSkeleton,
+} from "@/components/ui/skeletons";
 
 
 
@@ -159,7 +165,7 @@ function LoyaltyPanel() {
     });
   }, [user]);
 
-  if (loading) return <PanelSpinner />;
+  if (loading) return <LoyaltyPanelSkeleton />;
 
   const active = coupons.filter((c) => !c.used_at);
   const progress = (stamps % 10) / 10;
@@ -340,7 +346,7 @@ function OrdersPanel() {
     navigate({ to: "/carrinho" });
   };
 
-  if (loading) return <PanelSpinner />;
+  if (loading) return <OrdersListSkeleton />;
   if (orders.length === 0)
     return (
       <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-sm text-white/60">
@@ -559,7 +565,7 @@ function FavoritesPanel() {
   // Removal is handled inside ProductCard's FavoriteButton (heart toggle).
 
 
-  if (favIds === null) return <PanelSpinner />;
+  if (favIds === null) return <FavoritesGridSkeleton />;
 
   return (
     <div className="relative">
@@ -641,7 +647,7 @@ function ProfilePanel() {
     else toast.success("Perfil atualizado!");
   };
 
-  if (loading) return <PanelSpinner />;
+  if (loading) return <ProfilePanelSkeleton />;
 
   const displayName = fullName.trim() || user?.email?.split("@")[0] || "Cliente";
   const initials = displayName
