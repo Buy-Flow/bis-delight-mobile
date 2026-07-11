@@ -114,22 +114,6 @@ function AIGrowthPage() {
     <div className="min-h-screen bg-gradient-to-b from-purple-950 via-purple-950 to-black text-white pb-24">
       <Toaster richColors position="top-center" />
 
-      {/* Header */}
-      <div className="sticky top-0 z-40 border-b border-purple-500/20 bg-purple-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link
-            to="/admin"
-            className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10"
-          >
-            <ChevronLeft className="h-4 w-4" /> Admin
-          </Link>
-          <div className="flex items-center gap-2">
-            <BrainCircuit className="h-5 w-5 text-neon-yellow" />
-            <span className="text-sm font-semibold">AI Growth Engine</span>
-          </div>
-          <AdminNavMenu />
-        </div>
-      </div>
 
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
         {/* Hero */}
