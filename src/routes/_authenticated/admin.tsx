@@ -2684,67 +2684,140 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
   ];
 
 
+  const activeSection = sections.find((sec) => sec.id === section) ?? sections[0];
+
   return (
-    <div className="pb-24">
-      {/* Header */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-2xl font-black">Configurações da Loja</h2>
-          <p className="text-xs text-white/50">
-            Tudo que os clientes veem e como o pedido chega até você.
-          </p>
+    <div className="pb-28">
+      {/* Hero header */}
+      <div className="relative mb-6 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[oklch(0.22_0.16_305)] via-[oklch(0.14_0.10_300)] to-[oklch(0.10_0.08_300)] p-5 sm:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-pink/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-neon-cyan/15 blur-3xl" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
+              <Settings className="h-3 w-3 text-neon-pink" />
+              Painel
+            </div>
+            <h2 className="font-display text-2xl font-black leading-tight sm:text-3xl">
+              Configurações da Loja
+            </h2>
+            <p className="mt-1 max-w-xl text-[13px] text-white/60">
+              Tudo o que os clientes veem e como o pedido chega até você — organizado em um só lugar.
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <StoreStatusBadge s={s} />
+            <div className="text-[10px] uppercase tracking-widest text-white/40">
+              {sections.length} seções
+            </div>
+          </div>
         </div>
-        <StoreStatusBadge s={s} />
+        <div className="relative mt-5">
+          <StorePreview s={s} />
+        </div>
       </div>
 
-      {/* Section chips */}
-      <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
-        {sections.map((sec) => (
-          <button
-            key={sec.id}
-            onClick={() => setSection(sec.id)}
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-              section === sec.id
-                ? "bg-neon-pink text-white glow-pink"
-                : "border border-white/10 text-white/70 hover:text-white",
+      {/* Two-column layout */}
+      <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
+        {/* Section nav — desktop rail */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-4 rounded-3xl border border-white/10 bg-white/[0.03] p-2">
+            <div className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">
+              Seções
+            </div>
+            <nav className="flex flex-col gap-0.5">
+              {sections.map((sec) => {
+                const active = section === sec.id;
+                return (
+                  <button
+                    key={sec.id}
+                    onClick={() => setSection(sec.id)}
+                    className={cn(
+                      "group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-[13px] font-semibold transition",
+                      active
+                        ? "bg-gradient-to-r from-neon-pink/25 to-neon-pink/5 text-white shadow-[inset_0_0_0_1px_oklch(0.72_0.22_340/0.35)]"
+                        : "text-white/65 hover:bg-white/5 hover:text-white",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid h-8 w-8 shrink-0 place-items-center rounded-xl transition",
+                        active
+                          ? "bg-neon-pink text-white shadow-[0_0_18px_-4px_oklch(0.72_0.22_340/0.7)]"
+                          : "bg-white/5 text-white/60 group-hover:text-white",
+                      )}
+                    >
+                      <sec.icon className="h-4 w-4" />
+                    </span>
+                    <span className="flex-1 truncate">{sec.label}</span>
+                    {active && <span className="h-1.5 w-1.5 rounded-full bg-neon-pink" />}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
+
+        {/* Mobile section chips */}
+        <div className="-mx-1 flex gap-1.5 overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {sections.map((sec) => {
+            const active = section === sec.id;
+            return (
+              <button
+                key={sec.id}
+                onClick={() => setSection(sec.id)}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition",
+                  active
+                    ? "bg-neon-pink text-white glow-pink"
+                    : "border border-white/10 bg-white/[0.03] text-white/70",
+                )}
+              >
+                <sec.icon className="h-3.5 w-3.5" />
+                {sec.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content panel */}
+        <section className="min-w-0">
+          <div className="mb-3 flex items-center gap-2 lg:hidden">
+            <activeSection.icon className="h-4 w-4 text-neon-pink" />
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
+              {activeSection.label}
+            </div>
+          </div>
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)] sm:p-6">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            {section === "identity" && <IdentitySection s={s} set={set} onLogo={uploadLogo} logoBusy={logoBusy} />}
+            {section === "hero" && <HeroImagesSection s={s} set={set} />}
+            {section === "contact" && <ContactSection s={s} set={set} />}
+            {section === "hours" && <HoursSection s={s} set={set} />}
+            {section === "delivery" && <DeliverySection s={s} set={set} />}
+            {section === "payment" && <PaymentSection s={s} set={set} />}
+            {section === "social" && <SocialSection s={s} set={set} />}
+            {section === "announcement" && <AnnouncementSection s={s} set={set} />}
+            {section === "popup" && <PopupsSection />}
+            {section === "news" && <NewsSection s={s} set={set} />}
+            {section === "coupons" && <CouponsSection />}
+            {section === "appearance" && (
+              <AppearanceSection s={s} set={set} onTexture={uploadTexture} textureBusy={textureBusy} />
             )}
-          >
-            <sec.icon className="h-3.5 w-3.5" />
-            {sec.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Live preview */}
-      <StorePreview s={s} />
-
-      {/* Body */}
-      <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
-        {section === "identity" && <IdentitySection s={s} set={set} onLogo={uploadLogo} logoBusy={logoBusy} />}
-        {section === "hero" && <HeroImagesSection s={s} set={set} />}
-        {section === "contact" && <ContactSection s={s} set={set} />}
-
-        {section === "hours" && <HoursSection s={s} set={set} />}
-        {section === "delivery" && <DeliverySection s={s} set={set} />}
-        {section === "payment" && <PaymentSection s={s} set={set} />}
-        {section === "social" && <SocialSection s={s} set={set} />}
-        {section === "announcement" && <AnnouncementSection s={s} set={set} />}
-        {section === "popup" && <PopupsSection />}
-        {section === "news" && <NewsSection s={s} set={set} />}
-        {section === "coupons" && <CouponsSection />}
-        {section === "appearance" && (
-          <AppearanceSection s={s} set={set} onTexture={uploadTexture} textureBusy={textureBusy} />
-        )}
+          </div>
+        </section>
       </div>
 
       {/* Sticky save bar */}
       {dirty && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[oklch(0.12_0.09_305)]/95 backdrop-blur">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[oklch(0.12_0.09_305)]/95 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
             <div className="flex items-center gap-2 text-xs">
-              <span className="h-2 w-2 rounded-full bg-neon-yellow" />
-              <span className="text-white/70">Você tem alterações não salvas</span>
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neon-yellow opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-neon-yellow" />
+              </span>
+              <span className="font-semibold text-white/80">Alterações não salvas</span>
             </div>
             <div className="flex gap-2">
               <button
@@ -2759,7 +2832,7 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
                 className="inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-4 py-2 text-xs font-extrabold text-white glow-pink disabled:opacity-60"
               >
                 {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                Salvar
+                Salvar alterações
               </button>
             </div>
           </div>
