@@ -868,9 +868,239 @@ function FieldRow({
   );
 }
 
+/* ---------------- Customer Search ---------------- */
+
+type CustomerSuggestion = {
+  name: string;
+  phone: string;
+  source: "cliente" | "recente";
+};
+
+function CustomerSearch({
+  name,
+  phone,
+  onPick,
+  onNameChange,
+  onPhoneChange,
+}: {
+  name: string;
+  phone: string;
+  onPick: (name: string, phone: string) => void;
+  onNameChange: (v: string) => void;
+  onPhoneChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<CustomerSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [locked, setLocked] = useState(!!name || !!phone);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // sync locked view when parent state resets
+  useEffect(() => {
+    if (!name && !phone) setLocked(false);
+  }, [name, phone]);
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const t = setTimeout(async () => {
+      const isDigits = /^\d+$/.test(q.replace(/\D+/g, "")) && q.replace(/\D+/g, "").length >= 3;
+      const digits = q.replace(/\D+/g, "");
+      const orFilter = isDigits
+        ? `phone.ilike.%${digits}%,full_name.ilike.%${q}%`
+        : `full_name.ilike.%${q}%,phone.ilike.%${q}%`;
+      const [profRes, ordRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .or(orFilter)
+          .limit(8),
+        supabase
+          .from("orders")
+          .select("customer_name, phone")
+          .or(
+            isDigits
+              ? `phone.ilike.%${digits}%,customer_name.ilike.%${q}%`
+              : `customer_name.ilike.%${q}%,phone.ilike.%${q}%`,
+          )
+          .order("created_at", { ascending: false })
+          .limit(12),
+      ]);
+      if (cancelled) return;
+      const seen = new Set<string>();
+      const list: CustomerSuggestion[] = [];
+      (profRes.data ?? []).forEach((p) => {
+        const n = (p.full_name ?? "").trim();
+        const ph = (p.phone ?? "").trim();
+        if (!n && !ph) return;
+        const key = `${n}|${ph}`.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        list.push({ name: n, phone: ph, source: "cliente" });
+      });
+      (ordRes.data ?? []).forEach((o) => {
+        const n = (o.customer_name ?? "").trim();
+        const ph = (o.phone ?? "").trim();
+        if (!n || n === "Balcão") return;
+        const key = `${n}|${ph}`.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        list.push({ name: n, phone: ph === "-" ? "" : ph, source: "recente" });
+      });
+      setResults(list.slice(0, 8));
+      setLoading(false);
+    }, 220);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  if (locked) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-neon-pink/30 bg-neon-pink/5 px-3 py-2">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-neon-pink/20 text-neon-pink">
+          <UserRound className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-bold text-white">{name || "Sem nome"}</div>
+          <div className="truncate text-[11px] text-white/60">{phone || "sem telefone"}</div>
+        </div>
+        <button
+          onClick={() => {
+            setLocked(false);
+            setQuery("");
+            setOpen(true);
+          }}
+          className="grid h-7 w-7 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+          title="Trocar cliente"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  const showAdd =
+    query.trim().length >= 2 &&
+    !loading &&
+    !results.some((r) => r.name.toLowerCase() === query.trim().toLowerCase());
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+        <input
+          value={query}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+            onNameChange(e.target.value);
+          }}
+          placeholder="Buscar cliente por nome ou telefone…"
+          className="w-full rounded-lg border border-white/10 bg-black/20 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-pink/60"
+        />
+      </div>
+
+      {open && (query.trim().length >= 2 || results.length > 0) && (
+        <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-[oklch(0.14_0.07_300)] p-1 shadow-[0_20px_50px_-10px_rgba(0,0,0,.6)]">
+          {loading && (
+            <div className="px-3 py-2 text-xs text-white/50">Buscando…</div>
+          )}
+          {!loading && results.length === 0 && query.trim().length >= 2 && (
+            <div className="px-3 py-2 text-xs text-white/50">Nenhum cliente encontrado.</div>
+          )}
+          {results.map((r, i) => (
+            <button
+              key={`${r.name}-${r.phone}-${i}`}
+              onClick={() => {
+                onPick(r.name, r.phone);
+                setLocked(true);
+                setOpen(false);
+                setQuery("");
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-white/5"
+            >
+              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/10 text-xs font-bold text-white">
+                {(r.name || "?").slice(0, 1).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-white">{r.name || "—"}</div>
+                <div className="truncate text-[11px] text-white/50">{r.phone || "sem telefone"}</div>
+              </div>
+              <span
+                className={cn(
+                  "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+                  r.source === "cliente"
+                    ? "bg-emerald-500/15 text-emerald-300"
+                    : "bg-amber-500/15 text-amber-300",
+                )}
+              >
+                {r.source}
+              </span>
+            </button>
+          ))}
+          {showAdd && (
+            <button
+              onClick={() => {
+                setLocked(true);
+                setOpen(false);
+                onNameChange(query.trim());
+                setQuery("");
+              }}
+              className="mt-1 flex w-full items-center gap-2 rounded-lg border border-dashed border-neon-pink/40 bg-neon-pink/5 px-2 py-2 text-left hover:bg-neon-pink/10"
+            >
+              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-neon-pink/20 text-neon-pink">
+                <Plus className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-bold text-white">
+                  Cadastrar “{query.trim()}”
+                </div>
+                <div className="text-[11px] text-white/50">Novo cliente nesta venda</div>
+              </div>
+            </button>
+          )}
+          {!showAdd && query.trim().length < 2 && (
+            <div className="px-3 py-2 text-[11px] text-white/40">
+              Digite ao menos 2 caracteres.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Optional phone field when adding a new customer inline */}
+      {!locked && query.trim().length >= 2 && (
+        <div className="mt-2">
+          <FieldRow
+            icon={Phone}
+            placeholder="Telefone (opcional)"
+            value={phone}
+            onChange={onPhoneChange}
+            type="tel"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 
-/* ---------------- Receipt HTML ---------------- */
 
 function buildReceiptHtml(o: {
   orderId: string;
