@@ -28,20 +28,35 @@ export function ProductCard({
   const outOfStock = typeof stock === "number" && stock <= 0;
   const lowThreshold = product.lowStockThreshold ?? 5;
   const lowStock = typeof stock === "number" && stock > 0 && stock <= lowThreshold;
+  const paused = isProductPaused(product);
+  const pausedLabel = (() => {
+    if (!paused || !product.pausedUntil) return null;
+    if (isIndefinitePause(product.pausedUntil)) return "Voltamos em breve";
+    const d = new Date(product.pausedUntil);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+    const isTomorrow = d.toDateString() === tomorrow.toDateString();
+    const hhmm = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    if (sameDay) return `Volta hoje às ${hhmm}`;
+    if (isTomorrow) return `Volta amanhã às ${hhmm}`;
+    return `Volta ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
+  })();
+  const blocked = outOfStock || paused;
   return (
 
     <div
       role="button"
-      tabIndex={outOfStock ? -1 : 0}
-      onClick={() => !outOfStock && onOpen(product)}
+      tabIndex={blocked ? -1 : 0}
+      onClick={() => !blocked && onOpen(product)}
       onKeyDown={(e) => {
-        if (outOfStock) return;
+        if (blocked) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onOpen(product);
         }
       }}
-      aria-disabled={outOfStock || undefined}
+      aria-disabled={blocked || undefined}
       className={cn(
         "group relative flex h-full w-full cursor-pointer flex-col overflow-visible rounded-[22px] text-left select-none",
         "touch-manipulation [-webkit-tap-highlight-color:transparent]",
