@@ -748,6 +748,22 @@ function RushPage() {
           })}
         </div>
 
+        {/* History toggle (Feitos only) */}
+        {lane === "feitos" && (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+            <div className="text-[11px] text-white/70">
+              {showAllHistory ? "Mostrando todo o histórico" : "Mostrando apenas hoje"}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAllHistory((v) => !v)}
+              className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white hover:bg-white/15"
+            >
+              {showAllHistory ? "Ver só hoje" : "Ver histórico completo"}
+            </button>
+          </div>
+        )}
+
         {/* Lane list */}
         <section className="mt-3 space-y-2.5">
           {orders === null ? (
