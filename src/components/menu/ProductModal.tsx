@@ -85,10 +85,19 @@ export function ProductModal({
   product,
   onClose,
   editItem,
+  onSubmit,
+  submitLabel,
 }: {
   product: Product | null;
   onClose: () => void;
   editItem?: CartItem | null;
+  /**
+   * When provided, overrides the default customer-cart behavior.
+   * Useful for PDV / admin flows that need to route the item into a
+   * different cart instead of the customer's shopping cart.
+   */
+  onSubmit?: (payload: Omit<CartItem, "uid">, isEdit: boolean) => void;
+  submitLabel?: string;
 }) {
   const { add, update } = useCart();
   useBackDismiss(!!product, onClose);
