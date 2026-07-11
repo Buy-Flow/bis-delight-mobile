@@ -559,7 +559,7 @@ function LucratividadePage() {
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-pink-500 to-fuchsia-600 flex items-center justify-center shadow-[0_0_30px_rgba(236,72,153,0.35)]">
+              <div className="h-11 w-11 shrink-0 aspect-square rounded-full bg-gradient-to-br from-pink-500 to-fuchsia-600 flex items-center justify-center shadow-[0_0_30px_rgba(236,72,153,0.35)]">
                 <PiggyBank className="h-5 w-5" />
               </div>
               <div>
