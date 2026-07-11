@@ -525,7 +525,16 @@ function RushPage() {
           ? await ensurePushSubscriptionSaved({ forceNew: false })
           : await subscribeToPush({ forceNew: isStandaloneApp() });
       if (!registration.ok) {
-        toast.error("Não consegui registrar este aparelho para push.");
+        if (registration.reason === "ios-install-required")
+          toast.info("Abra pelo ícone instalado do Quero Bis e ative os alertas por lá.");
+        else if (registration.reason === "denied")
+          toast.error("Permissão bloqueada. Ative as notificações nas configurações do app.");
+        else if (registration.reason === "unsupported")
+          toast.error("Este aparelho não suporta notificações do app.");
+        else if (registration.reason === "no-registration")
+          toast.error("Push só funciona no app publicado. Abra querobis.lovable.app (ou o ícone instalado) e tente novamente.");
+        else
+          toast.error(`Não consegui registrar este aparelho: ${registration.reason}`);
         return;
       }
       setNotifyOn(true);
