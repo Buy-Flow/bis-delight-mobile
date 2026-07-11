@@ -17,7 +17,8 @@ import {
   haversineKm,
   isWithinRadius,
 } from "@/lib/delivery-zone";
-import { MoonStar, Clock as ClockIcon } from "lucide-react";
+import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
+import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star } from "lucide-react";
 
 type Mode = "entrega" | "retirada";
 
@@ -55,6 +56,10 @@ export function CheckoutSheet() {
   const storeStatus = useStoreStatus();
 
   const { data: settings } = useSiteSettings();
+  const savedAddresses = useUserAddresses(user?.id);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [preGeocoded, setPreGeocoded] = useState<{ lat: number; lng: number; address: string } | null>(null);
+  const [savingAddress, setSavingAddress] = useState(false);
 
   const [mode, setMode] = useState<Mode>("entrega");
   const [name, setName] = useState("");
@@ -122,6 +127,14 @@ export function CheckoutSheet() {
       setQuoteError(null);
       return;
     }
+    // Skip geocode if this address came pre-geocoded from a saved address
+    if (preGeocoded && preGeocoded.address === trimmed && originLat != null && originLng != null) {
+      const km = haversineKm({ lat: originLat, lng: originLng }, { lat: preGeocoded.lat, lng: preGeocoded.lng });
+      setQuote({ lat: preGeocoded.lat, lng: preGeocoded.lng, km, label: trimmed });
+      setQuoteError(null);
+      setQuoting(false);
+      return;
+    }
     const reqId = ++geocodeReq.current;
     setQuoting(true);
     setQuoteError(null);
@@ -149,7 +162,66 @@ export function CheckoutSheet() {
       window.clearTimeout(t);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, mode, zoneActive, originLat, originLng, isCheckoutOpen]);
+  }, [address, mode, zoneActive, originLat, originLng, isCheckoutOpen, preGeocoded]);
+
+  // Auto-select default saved address on open (only if user hasn't typed anything)
+  useEffect(() => {
+    if (!isCheckoutOpen) return;
+    if (savedAddresses.loading) return;
+    if (selectedAddressId) return;
+    if (address.trim()) return;
+    const def = savedAddresses.items.find((a) => a.is_default) ?? savedAddresses.items[0];
+    if (def) {
+      setSelectedAddressId(def.id);
+      setAddress(def.address);
+      setReference(def.reference ?? "");
+      if (def.lat != null && def.lng != null) {
+        setPreGeocoded({ lat: def.lat, lng: def.lng, address: def.address });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCheckoutOpen, savedAddresses.loading, savedAddresses.items]);
+
+  const pickSavedAddress = (a: UserAddress) => {
+    setSelectedAddressId(a.id);
+    setAddress(a.address);
+    setReference(a.reference ?? "");
+    if (a.lat != null && a.lng != null) {
+      setPreGeocoded({ lat: a.lat, lng: a.lng, address: a.address });
+    } else {
+      setPreGeocoded(null);
+    }
+  };
+
+  const currentAddressIsSaved =
+    !!savedAddresses.items.find(
+      (a) => a.address.trim().toLowerCase() === address.trim().toLowerCase(),
+    );
+
+  const saveCurrentAddress = async () => {
+    if (!user) return;
+    if (!address.trim()) {
+      toast.error("Digite o endereço antes de salvar");
+      return;
+    }
+    setSavingAddress(true);
+    try {
+      const created = await savedAddresses.create({
+        label: savedAddresses.items.length === 0 ? "Casa" : "Outro",
+        address: address.trim(),
+        reference: reference.trim() || null,
+        lat: quote?.lat ?? null,
+        lng: quote?.lng ?? null,
+      });
+      setSelectedAddressId(created.id);
+      toast.success("Endereço salvo no seu perfil!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Falha ao salvar: ${msg}`);
+    } finally {
+      setSavingAddress(false);
+    }
+  };
 
   if (!isCheckoutOpen) return null;
 
@@ -469,11 +541,64 @@ export function CheckoutSheet() {
             />
             {mode === "entrega" && (
               <>
+                {isAuthenticated && savedAddresses.items.length > 0 && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-2.5">
+                    <div className="mb-1.5 flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-white/50">
+                      <Star className="h-3 w-3 text-neon-cyan" /> Endereços salvos
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {savedAddresses.items.map((a) => {
+                        const active = selectedAddressId === a.id;
+                        const Icon =
+                          a.label.toLowerCase() === "trabalho"
+                            ? Briefcase
+                            : a.label.toLowerCase() === "casa"
+                              ? Home
+                              : MapPin;
+                        return (
+                          <button
+                            key={a.id}
+                            type="button"
+                            onClick={() => pickSavedAddress(a)}
+                            className={cn(
+                              "flex min-w-[140px] max-w-[200px] shrink-0 items-start gap-2 rounded-xl border p-2 text-left transition",
+                              active
+                                ? "border-neon-cyan/50 bg-neon-cyan/10"
+                                : "border-white/10 bg-white/5 hover:bg-white/10",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "grid h-7 w-7 shrink-0 place-items-center rounded-lg",
+                                active ? "bg-neon-cyan/20 text-neon-cyan" : "bg-white/10 text-white/80",
+                              )}
+                            >
+                              <Icon className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1">
+                                <span className="truncate text-[11px] font-bold text-white">{a.label}</span>
+                                {a.is_default && (
+                                  <Star className="h-2.5 w-2.5 shrink-0 fill-neon-cyan text-neon-cyan" />
+                                )}
+                              </div>
+                              <div className="truncate text-[10px] text-white/60">{a.address}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <IconField
                   icon={MapPin}
                   label="Endereço"
                   value={address}
-                  onChange={setAddress}
+                  onChange={(v) => {
+                    setAddress(v);
+                    setSelectedAddressId(null);
+                    setPreGeocoded(null);
+                  }}
                   placeholder="Rua, número, bairro"
                   autoComplete="street-address"
                   name="street-address"
@@ -488,6 +613,21 @@ export function CheckoutSheet() {
                   autoComplete="address-line2"
                   name="address-line2"
                 />
+                {isAuthenticated && address.trim().length >= 6 && !currentAddressIsSaved && (
+                  <button
+                    type="button"
+                    onClick={saveCurrentAddress}
+                    disabled={savingAddress}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2 text-[12px] font-bold text-neon-cyan transition hover:bg-neon-cyan/15 active:scale-[.99] disabled:opacity-60"
+                  >
+                    {savingAddress ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Plus className="h-3.5 w-3.5" />
+                    )}
+                    Salvar este endereço no meu perfil
+                  </button>
+                )}
               </>
             )}
             <IconField

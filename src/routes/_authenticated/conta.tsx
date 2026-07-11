@@ -39,6 +39,7 @@ import {
   ProfilePanelSkeleton,
   LoyaltyPanelSkeleton,
 } from "@/components/ui/skeletons";
+import { AddressManager } from "@/components/account/AddressManager";
 
 
 
@@ -718,8 +719,6 @@ function ProfilePanel() {
       <DadosPessoaisCard>
         <Input label="Nome completo" value={fullName} onChange={setFullName} autoComplete="name" />
         <Input label="Telefone (WhatsApp)" value={phone} onChange={setPhone} autoComplete="tel" type="tel" />
-        <Input label="Endereço padrão" value={address} onChange={setAddress} autoComplete="street-address" />
-        <Input label="Ponto de referência" value={reference} onChange={setReference} />
         <div>
           <label className="mb-1 block text-[12px] font-semibold text-white/80">
             Data de aniversário <span className="text-white/40">(ganha 1 selo bônus no mês 🎂)</span>
@@ -740,6 +739,8 @@ function ProfilePanel() {
           Salvar perfil
         </button>
       </DadosPessoaisCard>
+
+      <AddressManager />
     </div>
   );
 }
