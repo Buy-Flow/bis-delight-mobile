@@ -696,8 +696,16 @@ function CartPanel(p: CartPanelProps) {
 
       {/* Customer */}
       <div className="space-y-2 border-t border-white/10 pt-3">
-        <FieldRow icon={UserRound} placeholder="Nome do cliente (opcional)" value={p.customerName} onChange={p.setCustomerName} />
-        <FieldRow icon={Phone} placeholder="Telefone (opcional)" value={p.customerPhone} onChange={p.setCustomerPhone} />
+        <CustomerSearch
+          name={p.customerName}
+          phone={p.customerPhone}
+          onPick={(n, ph) => {
+            p.setCustomerName(n);
+            p.setCustomerPhone(ph);
+          }}
+          onNameChange={p.setCustomerName}
+          onPhoneChange={p.setCustomerPhone}
+        />
         {p.mode === "entrega" && (
           <>
             <FieldRow icon={MapPin} placeholder="Endereço da entrega" value={p.address} onChange={p.setAddress} />
