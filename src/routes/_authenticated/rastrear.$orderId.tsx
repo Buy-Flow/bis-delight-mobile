@@ -555,6 +555,34 @@ function RastrearPage() {
           </div>
         </section>
 
+        {/* Review CTA */}
+        {order.status === "entregue" && !isCanceled && (
+          <section className="mt-5 overflow-hidden rounded-3xl border border-neon-yellow/40 bg-gradient-to-br from-neon-yellow/15 via-neon-pink/10 to-transparent p-5">
+            <div className="flex items-start gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-neon-yellow/25 text-neon-yellow">
+                <Star className="h-5 w-5 fill-current" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-black text-white">
+                  {existingReview ? "Sua avaliação está registrada" : "Como foi seu pedido?"}
+                </h3>
+                <p className="mt-0.5 text-xs text-white/70">
+                  {existingReview
+                    ? "Você pode editar sua nota e comentário a qualquer momento."
+                    : "Sua opinião ajuda a gente a melhorar sempre. Leva menos de 30s."}
+                </p>
+                <button
+                  onClick={() => setReviewOpen(true)}
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-yellow to-amber-400 px-4 py-2 text-xs font-black text-[#1a0b2e] shadow-lg shadow-neon-yellow/30 transition hover:brightness-110"
+                >
+                  <Star className="h-3.5 w-3.5 fill-current" />
+                  {existingReview ? "Editar avaliação" : "Avaliar agora"}
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Actions */}
         <section className="mt-5 grid grid-cols-2 gap-3">
           <a
@@ -578,6 +606,22 @@ function RastrearPage() {
           </button>
         </section>
       </div>
+
+      <ReviewSubmitDialog
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        orderId={orderId}
+        existing={existingReview}
+        onSaved={async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data } = await (supabase as any)
+            .from("reviews")
+            .select("id, rating, title, comment, product_id")
+            .eq("order_id", orderId)
+            .maybeSingle();
+          setExistingReview(data ?? null);
+        }}
+      />
     </main>
   );
 }
