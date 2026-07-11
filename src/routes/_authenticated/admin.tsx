@@ -580,6 +580,8 @@ function ProductEditor({
       upsell_price: p.upsellPrice ?? null,
       stock: p.stock ?? null,
       low_stock_threshold: p.lowStockThreshold ?? 5,
+      paused_until: p.pausedUntil ?? null,
+      pause_reason: p.pausedUntil ? (p.pauseReason ?? null) : null,
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
