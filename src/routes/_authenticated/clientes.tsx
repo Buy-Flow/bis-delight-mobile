@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 import { Toaster, toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Loader2,
   Users,
@@ -31,6 +31,8 @@ import {
   ChevronDown,
   ChevronUp,
   BarChart3,
+  Pencil,
+  Save,
 } from "lucide-react";
 import {
   Dialog,
@@ -39,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
