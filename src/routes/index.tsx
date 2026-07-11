@@ -278,7 +278,7 @@ function Content() {
 
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
       <WelcomePopup />
-      <Hero onScrollMenu={scrollToMenu} />
+      <Hero onScrollMenu={scrollToFeitoComAmor} />
       <StoreClosedBanner />
       <UrgencyBanner />
       <ActiveOrderCard />
