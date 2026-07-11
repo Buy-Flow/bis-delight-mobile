@@ -697,6 +697,7 @@ export function CheckoutSheet() {
             </div>
           )}
 
+          <CheckoutUpsellStrip />
 
           {/* Resumo */}
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
@@ -820,9 +821,6 @@ export function CheckoutSheet() {
             )}
           </div>
 
-          <div className="mt-4">
-            <CheckoutUpsellStrip />
-          </div>
 
           <div className="h-20" />
 
