@@ -45,6 +45,7 @@ import {
   Link as LinkIcon,
   BellRing,
   Flame,
+  Pause,
 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
