@@ -699,6 +699,7 @@ export type Database = {
           badge: string | null
           base_price: number
           category: string
+          cost_price: number | null
           created_at: string
           description: string
           extras: Json | null
@@ -719,12 +720,14 @@ export type Database = {
           low_stock_threshold: number
           name: string
           option_groups: Json | null
+          packaging_cost: number | null
           pause_reason: string | null
           paused_until: string | null
           removable: Json | null
           sizes: Json
           sort_order: number
           stock: number | null
+          target_margin_pct: number | null
           updated_at: string
           upsell_price: number | null
         }
@@ -733,6 +736,7 @@ export type Database = {
           badge?: string | null
           base_price?: number
           category: string
+          cost_price?: number | null
           created_at?: string
           description?: string
           extras?: Json | null
@@ -753,12 +757,14 @@ export type Database = {
           low_stock_threshold?: number
           name: string
           option_groups?: Json | null
+          packaging_cost?: number | null
           pause_reason?: string | null
           paused_until?: string | null
           removable?: Json | null
           sizes?: Json
           sort_order?: number
           stock?: number | null
+          target_margin_pct?: number | null
           updated_at?: string
           upsell_price?: number | null
         }
@@ -767,6 +773,7 @@ export type Database = {
           badge?: string | null
           base_price?: number
           category?: string
+          cost_price?: number | null
           created_at?: string
           description?: string
           extras?: Json | null
@@ -787,12 +794,14 @@ export type Database = {
           low_stock_threshold?: number
           name?: string
           option_groups?: Json | null
+          packaging_cost?: number | null
           pause_reason?: string | null
           paused_until?: string | null
           removable?: Json | null
           sizes?: Json
           sort_order?: number
           stock?: number | null
+          target_margin_pct?: number | null
           updated_at?: string
           upsell_price?: number | null
         }
@@ -1310,6 +1319,11 @@ export type Database = {
           popup_image_url: string
           popup_link: string
           popup_title: string
+          pricing_card_fee_pct: number | null
+          pricing_expected_sales_monthly: number | null
+          pricing_fixed_cost_monthly: number | null
+          pricing_platform_fee_pct: number | null
+          pricing_tax_pct: number | null
           store_lat: number | null
           store_lng: number | null
           tagline: string
@@ -1371,6 +1385,11 @@ export type Database = {
           popup_image_url?: string
           popup_link?: string
           popup_title?: string
+          pricing_card_fee_pct?: number | null
+          pricing_expected_sales_monthly?: number | null
+          pricing_fixed_cost_monthly?: number | null
+          pricing_platform_fee_pct?: number | null
+          pricing_tax_pct?: number | null
           store_lat?: number | null
           store_lng?: number | null
           tagline?: string
@@ -1432,6 +1451,11 @@ export type Database = {
           popup_image_url?: string
           popup_link?: string
           popup_title?: string
+          pricing_card_fee_pct?: number | null
+          pricing_expected_sales_monthly?: number | null
+          pricing_fixed_cost_monthly?: number | null
+          pricing_platform_fee_pct?: number | null
+          pricing_tax_pct?: number | null
           store_lat?: number | null
           store_lng?: number | null
           tagline?: string

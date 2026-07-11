@@ -134,7 +134,7 @@ const groups: NavGroup[] = [
       { to: "/avaliacoes", label: "Avaliações", icon: Star },
       { label: "Estoque", icon: Archive, soon: true },
       { label: "Ficha técnica", icon: ClipboardCheck, soon: true },
-      { label: "Precificação", icon: Calculator, soon: true },
+      { to: "/precificacao", label: "Precificação", icon: Calculator },
       { label: "Lucratividade", icon: PiggyBank, soon: true },
       { label: "Usuários e permissões", icon: ShieldCheck, soon: true },
     ],
