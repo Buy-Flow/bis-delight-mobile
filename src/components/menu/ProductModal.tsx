@@ -87,7 +87,9 @@ export function ProductModal({
   editItem,
   onSubmit,
   submitLabel,
+  compact = false,
 }: {
+
   product: Product | null;
   onClose: () => void;
   editItem?: CartItem | null;
