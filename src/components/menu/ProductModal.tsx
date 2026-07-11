@@ -338,7 +338,19 @@ export function ProductModal({
     ? !flavorList || !!flavor
     : optionGroups.every((g) => (!g.required ? true : (groupSel[g.id] ?? []).length > 0));
 
+  const paused = product ? isProductPaused(product) : false;
+  const pausedMsg = (() => {
+    if (!paused || !product?.pausedUntil) return "Produto pausado no momento.";
+    if (isIndefinitePause(product.pausedUntil)) return "Produto pausado — voltamos em breve.";
+    const d = new Date(product.pausedUntil);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const hhmm = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return sameDay ? `Pausado — volta hoje às ${hhmm}` : `Pausado — volta ${d.toLocaleDateString("pt-BR")} às ${hhmm}`;
+  })();
   const submit = () => {
+    if (paused) { toast.error(pausedMsg); return; }
+
     if (isCustom) {
       if (!canSubmit) {
         toast.error("Escolha as opções obrigatórias.");
