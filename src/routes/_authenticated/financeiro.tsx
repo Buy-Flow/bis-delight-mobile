@@ -79,7 +79,10 @@ const PERIODS: { id: PeriodKey; label: string }[] = [
 
 /* ---------------- Helpers ---------------- */
 
-function periodRange(p: PeriodKey): { from: Date; to: Date; prevFrom: Date; prevTo: Date } {
+function periodRange(
+  p: PeriodKey,
+  firstOrderDate?: Date | null,
+): { from: Date; to: Date; prevFrom: Date; prevTo: Date } {
   const now = new Date();
   const to = new Date(now);
   let from = new Date(now);
@@ -96,7 +99,8 @@ function periodRange(p: PeriodKey): { from: Date; to: Date; prevFrom: Date; prev
   } else if (p === "ano") {
     from = new Date(now.getFullYear(), 0, 1);
   } else {
-    from = new Date(2000, 0, 1);
+    from = firstOrderDate ? new Date(firstOrderDate) : new Date(now.getFullYear(), 0, 1);
+    from.setHours(0, 0, 0, 0);
   }
   const spanMs = to.getTime() - from.getTime();
   const prevTo = new Date(from.getTime() - 1);
@@ -135,7 +139,25 @@ function FinanceiroPage() {
   const [items, setItems] = useState<OrderItemRow[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
 
-  const range = useMemo(() => periodRange(period), [period]);
+  const [firstOrderDate, setFirstOrderDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from("orders")
+        .select("created_at")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (!cancel && data?.created_at) setFirstOrderDate(new Date(data.created_at));
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, []);
+
+  const range = useMemo(() => periodRange(period, firstOrderDate), [period, firstOrderDate]);
 
   useEffect(() => {
     let cancel = false;
