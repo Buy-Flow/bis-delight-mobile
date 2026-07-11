@@ -309,6 +309,19 @@ function AuthPage() {
                       className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
                     />
                   </Field>
+                  <Field icon={IdCard}>
+                    <input
+                      type="text"
+                      required
+                      inputMode="numeric"
+                      autoComplete="off"
+                      value={cpf}
+                      onChange={(e) => setCpf(maskCpf(e.target.value))}
+                      placeholder="CPF (000.000.000-00)"
+                      maxLength={14}
+                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+                    />
+                  </Field>
                   <Field icon={Cake}>
                     <input
                       type="date"
