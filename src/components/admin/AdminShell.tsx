@@ -311,6 +311,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     };
   }, [mobileOpen]);
 
+  // Signal to global BottomNav to hide while any AdminShell is mounted.
+  useEffect(() => {
+    return markAdminShellMounted();
+  }, []);
+
   const toggleGroup = (id: string) =>
     setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
 
