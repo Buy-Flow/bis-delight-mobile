@@ -65,9 +65,11 @@ export function BottomNav() {
   const { count } = useCart();
   const search = new URLSearchParams(searchStr ?? "");
 
+  const insideAdmin = useIsInsideAdminShell();
+
   // Hide on admin / auth-only routes
   const hiddenPrefixes = ["/rush", "/carrinhos", "/clientes", "/financeiro", "/notificacoes", "/admin", "/auth", "/previsao", "/copiloto", "/ai-growth", "/rastrear"];
-  if (hiddenPrefixes.some((p) => pathname.startsWith(p))) return null;
+  if (insideAdmin || hiddenPrefixes.some((p) => pathname.startsWith(p))) return null;
 
   const isHome = pathname === "/";
   const isCart = pathname === "/carrinho";
