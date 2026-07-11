@@ -82,13 +82,12 @@ export const getCopilotThreadMessages = createServerFn({ method: "POST" })
       .order("created_at", { ascending: true })
       .limit(500);
     if (error) throw new Error(error.message);
-    const messages: UIMessage[] = ((rows ?? []) as Array<{ id: string; role: string; parts: unknown }>).map(r => ({
+    const messages = ((rows ?? []) as Array<{ id: string; role: string; parts: unknown }>).map(r => ({
       id: r.id,
-      role: r.role as UIMessage["role"],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      parts: (r.parts ?? []) as any,
+      role: r.role,
+      parts: (r.parts ?? []) as unknown,
     }));
-    return messages;
+    return messages as unknown as Array<{ id: string; role: string; parts: unknown }>;
   });
 
 export const listCopilotActions = createServerFn({ method: "POST" })
