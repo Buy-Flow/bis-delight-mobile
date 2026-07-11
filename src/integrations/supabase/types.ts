@@ -764,6 +764,113 @@ export type Database = {
           },
         ]
       }
+      print_jobs: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          note: string | null
+          order_id: string | null
+          printed_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          note?: string | null
+          order_id?: string | null
+          printed_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          order_id?: string | null
+          printed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_jobs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_settings: {
+        Row: {
+          auto_print_new_orders: boolean
+          beep_on_new: boolean
+          cnpj: string
+          copies: number
+          cut_after: boolean
+          font_size: number
+          footer_text: string
+          header_text: string
+          id: number
+          kitchen_group_by_category: boolean
+          paper_width: number
+          print_customer_copy: boolean
+          print_delivery_label: boolean
+          print_kitchen_copy: boolean
+          show_cnpj: boolean
+          show_logo: boolean
+          show_pix: boolean
+          show_qr: boolean
+          tax_note: string
+          updated_at: string
+        }
+        Insert: {
+          auto_print_new_orders?: boolean
+          beep_on_new?: boolean
+          cnpj?: string
+          copies?: number
+          cut_after?: boolean
+          font_size?: number
+          footer_text?: string
+          header_text?: string
+          id?: number
+          kitchen_group_by_category?: boolean
+          paper_width?: number
+          print_customer_copy?: boolean
+          print_delivery_label?: boolean
+          print_kitchen_copy?: boolean
+          show_cnpj?: boolean
+          show_logo?: boolean
+          show_pix?: boolean
+          show_qr?: boolean
+          tax_note?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_print_new_orders?: boolean
+          beep_on_new?: boolean
+          cnpj?: string
+          copies?: number
+          cut_after?: boolean
+          font_size?: number
+          footer_text?: string
+          header_text?: string
+          id?: number
+          kitchen_group_by_category?: boolean
+          paper_width?: number
+          print_customer_copy?: boolean
+          print_delivery_label?: boolean
+          print_kitchen_copy?: boolean
+          show_cnpj?: boolean
+          show_logo?: boolean
+          show_pix?: boolean
+          show_qr?: boolean
+          tax_note?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_templates: {
         Row: {
           base_price: number
