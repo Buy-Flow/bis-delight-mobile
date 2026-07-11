@@ -1656,12 +1656,12 @@ function ClientDetailDialog({
                       Gastos nos últimos 6 meses
                     </p>
                   </div>
-                  <div className="flex items-end gap-2">
+                  <div className="flex items-end gap-1 sm:gap-2">
                     {stats.monthly.map((m) => {
                       const h = m.total > 0 ? Math.max(6, (m.total / stats.maxMonthly) * 100) : 3;
                       return (
-                        <div key={m.key} className="flex flex-1 flex-col items-center gap-1">
-                          <div className="relative flex h-32 w-full items-end">
+                        <div key={m.key} className="flex min-w-0 flex-1 flex-col items-center gap-1">
+                          <div className="relative flex h-24 w-full items-end sm:h-32">
                             <div
                               className="w-full rounded-t-md bg-gradient-to-t from-neon-pink to-neon-yellow transition-all"
                               style={{ height: `${h}%` }}
@@ -1671,7 +1671,7 @@ function ClientDetailDialog({
                           <p className="text-[10px] font-bold text-white/70">
                             {m.label}
                           </p>
-                          <p className="text-[9px] text-white/40">
+                          <p className="hidden text-[9px] text-white/40 sm:block">
                             {m.total > 0 ? BRL(m.total) : "—"}
                           </p>
                         </div>
