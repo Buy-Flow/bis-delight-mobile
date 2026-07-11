@@ -926,7 +926,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
                       type="button"
                       title={paused ? "Gerenciar pausa" : "Pausar temporariamente"}
                       className={cn(
-                        "grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white",
+                        "grid h-9 w-9 md:h-10 md:w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white",
                         paused && "border-amber-400/50 bg-amber-500/15 text-amber-200",
                       )}
                     >
@@ -947,21 +947,21 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
                 <button
                   title="Editar"
                   onClick={() => setEditing(p)}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+                  className="grid h-9 w-9 md:h-10 md:w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   title="Duplicar"
                   onClick={() => duplicate(p)}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+                  className="grid h-9 w-9 md:h-10 md:w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   <Copy className="h-4 w-4" />
                 </button>
                 <button
                   title="Remover"
                   onClick={() => removeProduct(p)}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-red-500/30 bg-red-500/15 text-red-300 transition hover:bg-red-500/25 hover:text-red-200"
+                  className="hidden md:grid h-10 w-10 place-items-center rounded-full border border-red-500/30 bg-red-500/15 text-red-300 transition hover:bg-red-500/25 hover:text-red-200"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
