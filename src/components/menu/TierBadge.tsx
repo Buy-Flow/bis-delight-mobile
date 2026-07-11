@@ -40,7 +40,7 @@ export const TIER_META: Record<LoyaltyTier, {
       "Ganhe 1 selo a cada pedido pago",
       "Pedido mínimo de R$ 20 para pontuar",
       "Cupom de R$ 10 ao completar 10 selos",
-      "Bônus especial no seu aniversário 🎂",
+      
     ],
   },
   prata: {
@@ -61,7 +61,7 @@ export const TIER_META: Record<LoyaltyTier, {
       "2 selos por pedido — pontue no dobro da velocidade",
       "Pedido mínimo cai para R$ 10",
       "Cupom de R$ 15 ao completar 10 selos",
-      "Mantém todos os benefícios do Bronze",
+      
     ],
   },
   ouro: {
@@ -82,7 +82,7 @@ export const TIER_META: Record<LoyaltyTier, {
       "3 selos por pedido — velocidade máxima 🚀",
       "Pedido mínimo de apenas R$ 10",
       "Cupom premium de R$ 20 a cada cartela",
-      "Prioridade e todos os benefícios anteriores",
+      
     ],
   },
 };
