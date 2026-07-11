@@ -494,14 +494,16 @@ function PDVPage() {
         </div>
       )}
 
-      {/* Size / flavor picker */}
+      {/* Full-featured product customization (sizes, flavors, extras, notes, quantities) */}
       {selecting && (
-        <VariantPicker
+        <ProductModal
           product={selecting}
-          onClose={() => setSelecting(null)}
-          onConfirm={(size, flavor) => {
-            addProduct(selecting, size, flavor);
+          editItem={editingLine as CartItem | null}
+          submitLabel={editingLine ? "Salvar" : "Adicionar"}
+          onSubmit={addFromModal}
+          onClose={() => {
             setSelecting(null);
+            setEditingLine(null);
           }}
         />
       )}
