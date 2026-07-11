@@ -105,7 +105,17 @@ import { LoyaltyTiersTab } from "@/components/admin/LoyaltyTiersTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
 import { CombosSection } from "@/components/admin/CombosSection";
 import { UrgencySection } from "@/components/admin/UrgencySection";
-import { ClipboardList } from "lucide-react";
+import {
+  ClipboardList,
+  Wallet,
+  ShoppingBag,
+  Receipt,
+  Users,
+  Calendar,
+  TrendingUp,
+  ArrowUpRight,
+  Zap,
+} from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 import { DeliveryZoneEditor } from "@/components/admin/DeliveryZoneEditor";
@@ -202,6 +212,7 @@ function DashboardTab() {
     pendingCount: number;
     preparingCount: number;
     avgTicket: number;
+    uniqueCustomers: number;
     topProducts: { name: string; qty: number }[];
     recent: { id: string; customer_name: string | null; total: number; status: string; created_at: string }[];
   } | null>(null);
@@ -217,7 +228,7 @@ function DashboardTab() {
 
       const { data: monthOrders } = await supabase
         .from("orders")
-        .select("id,customer_name,total,status,created_at,order_items(name,quantity)")
+        .select("id,user_id,customer_name,total,status,created_at,order_items(name,quantity)")
         .gte("created_at", monthAgo)
         .order("created_at", { ascending: false });
 
@@ -245,6 +256,7 @@ function DashboardTab() {
       const todayRevenue = sum(today);
       const weekRevenue = sum(week);
       const monthRevenue = sum(paid);
+      const uniqueCustomers = new Set(week.map((o) => o.user_id).filter(Boolean)).size;
 
       setStats({
         todayCount: today.length,
@@ -255,6 +267,7 @@ function DashboardTab() {
         pendingCount: pending.length,
         preparingCount: preparing.length,
         avgTicket: week.length ? weekRevenue / week.length : 0,
+        uniqueCustomers,
         topProducts,
         recent: list.slice(0, 6).map((o) => ({
           id: o.id,
@@ -276,61 +289,117 @@ function DashboardTab() {
 
   const fmt = (n: number) =>
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const now = new Date();
+  const barlow = { fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" } as const;
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="font-display text-2xl font-black">Dashboard</h2>
-        <p className="text-xs text-white/50">Visão geral da sua loja em tempo real</p>
-      </div>
+    <div className="space-y-8">
+      {/* Hero header */}
+      <section>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1
+              className="text-4xl font-black uppercase leading-none text-white"
+              style={barlow}
+            >
+              Painel em <span className="text-neon-pink">tempo real</span>
+            </h1>
+            <p className="mt-2 text-sm text-white/60">
+              <Calendar className="inline h-4 w-4 -mt-0.5 text-neon-cyan" />{" "}
+              {now.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
+            </p>
+          </div>
+          <Link
+            to="/financeiro"
+            className="inline-flex items-center gap-2 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-neon-cyan transition hover:bg-neon-cyan/20"
+          >
+            Central financeira <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
 
       {loading ? (
-        <div className="grid place-items-center py-16">
+        <div className="grid place-items-center py-24">
           <Loader2 className="h-6 w-6 animate-spin text-white/40" />
         </div>
       ) : (
         <>
-          {/* KPIs */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <KpiCard label="Faturamento hoje" value={fmt(stats?.todayRevenue ?? 0)} sub={`${stats?.todayCount ?? 0} pedidos`} tone="pink" />
-            <KpiCard label="Últimos 7 dias" value={fmt(stats?.weekRevenue ?? 0)} sub={`${stats?.weekCount ?? 0} pedidos`} tone="cyan" />
-            <KpiCard label="Ticket médio (7d)" value={fmt(stats?.avgTicket ?? 0)} sub="por pedido" tone="yellow" />
-            <KpiCard label="Últimos 30 dias" value={fmt(stats?.monthRevenue ?? 0)} sub="receita" tone="violet" />
-          </div>
+          {/* Big KPIs */}
+          <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <BigKpi
+              label="Faturamento hoje"
+              value={fmt(stats?.todayRevenue ?? 0)}
+              sub={`${stats?.todayCount ?? 0} pedidos`}
+              icon={Wallet}
+              accent="text-neon-cyan"
+              glow="shadow-[0_0_30px_-8px_var(--neon-cyan)]"
+            />
+            <BigKpi
+              label="Últimos 7 dias"
+              value={fmt(stats?.weekRevenue ?? 0)}
+              sub={`${stats?.weekCount ?? 0} pedidos`}
+              icon={ShoppingBag}
+              accent="text-neon-yellow"
+            />
+            <BigKpi
+              label="Ticket médio 7d"
+              value={fmt(stats?.avgTicket ?? 0)}
+              sub="por pedido"
+              icon={Receipt}
+              accent="text-neon-pink"
+            />
+            <BigKpi
+              label="Clientes 7d"
+              value={String(stats?.uniqueCustomers ?? 0)}
+              sub={fmt(stats?.monthRevenue ?? 0) + " · 30d"}
+              icon={Users}
+              accent="text-white"
+            />
+          </section>
 
-          {/* Status operacional */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <MiniStat icon={Flame} label="Aguardando" value={stats?.pendingCount ?? 0} tone="text-orange-300" href="/rush" />
-            <MiniStat icon={ClipboardList} label="Em preparo" value={stats?.preparingCount ?? 0} tone="text-cyan-300" href="/rush" />
-            <MiniStat icon={Package} label="Produtos ativos" value={`${activeProducts}/${products.length}`} tone="text-emerald-300" href="/admin" tab="products" />
-            <MiniStat icon={Pause} label="Pausados" value={pausedProducts} tone="text-amber-300" href="/admin" tab="products" />
-          </div>
+          {/* Operational mini KPIs */}
+          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <MiniStat icon={Flame} label="Aguardando" value={stats?.pendingCount ?? 0} accent="text-orange-300" to="/rush" />
+            <MiniStat icon={ClipboardList} label="Em preparo" value={stats?.preparingCount ?? 0} accent="text-cyan-300" to="/rush" />
+            <MiniStat icon={Package} label="Produtos ativos" value={`${activeProducts}/${products.length}`} accent="text-emerald-300" to="/admin" tab="products" />
+            <MiniStat icon={Pause} label="Pausados" value={pausedProducts} accent="text-amber-300" to="/admin" tab="products" />
+          </section>
 
-          <div className="grid gap-3 md:grid-cols-2">
-            {/* Top produtos */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-black uppercase tracking-wider text-white/80">Top produtos (7d)</h3>
-                <Star className="h-4 w-4 text-neon-yellow" />
+          {/* Two columns: top products + recent orders */}
+          <section className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Award className="h-4 w-4 text-neon-yellow" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">
+                  Produtos que mais vendem · 7 dias
+                </h2>
               </div>
               {(stats?.topProducts?.length ?? 0) === 0 ? (
-                <p className="py-4 text-center text-xs text-white/40">Sem vendas na semana.</p>
+                <p className="py-8 text-center text-xs text-white/40">Sem vendas na semana ainda.</p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {stats!.topProducts.map((p, i) => {
                     const max = stats!.topProducts[0].qty;
                     const pct = Math.max(6, (p.qty / max) * 100);
+                    const medal = i === 0 ? "text-neon-yellow" : i === 1 ? "text-white/70" : i === 2 ? "text-amber-500" : "text-white/40";
                     return (
-                      <li key={p.name} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="truncate font-semibold">
-                            <span className="mr-2 text-white/40">#{i + 1}</span>
+                      <li key={p.name} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="min-w-0 truncate font-semibold">
+                            <span className={cn("mr-2 font-black tabular-nums", medal)} style={barlow}>
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
                             {p.name}
                           </span>
-                          <span className="shrink-0 tabular-nums text-white/60">{p.qty}x</span>
+                          <span className="shrink-0 tabular-nums font-black text-white/80" style={barlow}>
+                            {p.qty}
+                          </span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-black/40">
-                          <div className="h-full rounded-full bg-gradient-to-r from-neon-pink to-neon-yellow" style={{ width: `${pct}%` }} />
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan"
+                            style={{ width: `${pct}%` }}
+                          />
                         </div>
                       </li>
                     );
@@ -339,67 +408,108 @@ function DashboardTab() {
               )}
             </div>
 
-            {/* Pedidos recentes */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-black uppercase tracking-wider text-white/80">Pedidos recentes</h3>
-                <Link to="/rush" className="text-[11px] font-bold text-neon-cyan hover:underline">Ver todos →</Link>
+            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-neon-cyan" />
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">
+                    Pedidos recentes
+                  </h2>
+                </div>
+                <Link to="/rush" className="text-[10px] font-bold uppercase tracking-wider text-neon-cyan hover:underline">
+                  Ver todos
+                </Link>
               </div>
               {(stats?.recent?.length ?? 0) === 0 ? (
-                <p className="py-4 text-center text-xs text-white/40">Sem pedidos recentes.</p>
+                <p className="py-8 text-center text-xs text-white/40">Sem pedidos recentes.</p>
               ) : (
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {stats!.recent.map((o) => (
-                    <li key={o.id} className="flex items-center justify-between rounded-lg bg-black/20 px-2.5 py-2 text-xs">
+                    <li
+                      key={o.id}
+                      className="flex items-center justify-between rounded-2xl border border-white/5 bg-black/20 px-3 py-2.5"
+                    >
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-semibold">{o.customer_name ?? "Cliente"}</div>
-                        <div className="text-[10px] text-white/40">
-                          {new Date(o.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} · {o.status}
+                        <div className="truncate text-xs font-bold text-white">{o.customer_name ?? "Cliente"}</div>
+                        <div className="mt-0.5 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-white/40">
+                          <span>
+                            {new Date(o.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span className="h-1 w-1 rounded-full bg-white/30" />
+                          <StatusPill status={o.status} />
                         </div>
                       </div>
-                      <div className="shrink-0 font-black text-neon-yellow tabular-nums">{fmt(o.total)}</div>
+                      <div className="shrink-0 text-lg font-black tabular-nums text-neon-yellow" style={barlow}>
+                        {fmt(o.total)}
+                      </div>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
-          </div>
+          </section>
 
-          {/* Ações rápidas */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <h3 className="mb-3 text-sm font-black uppercase tracking-wider text-white/80">Ações rápidas</h3>
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-              <QuickAction icon={Plus} label="Novo produto" to="/admin" search={{ tab: "products" }} />
-              <QuickAction icon={Tag} label="Categorias" to="/admin" search={{ tab: "categories" }} />
-              <QuickAction icon={BellRing} label="Enviar push" to="/admin" search={{ tab: "notifications" }} />
-              <QuickAction icon={Award} label="Fidelidade" to="/admin" search={{ tab: "loyalty" }} />
-              <QuickAction icon={Sparkles} label="Novidades" to="/admin" search={{ tab: "news" }} />
-              <QuickAction icon={Star} label="Destaques" to="/admin" search={{ tab: "highlights" }} />
-              <QuickAction icon={Megaphone} label="Promos & Combos" to="/admin" search={{ tab: "promos" }} />
-              <QuickAction icon={Settings} label="Configurar loja" to="/admin" search={{ tab: "settings" }} />
+          {/* Quick actions */}
+          <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-neon-pink" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">Ações rápidas</h2>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-white/40">
+                {products.length} produtos · {categories.filter((c) => c.id !== "all").length} categorias
+              </span>
             </div>
-            <p className="mt-3 text-[10px] text-white/40">
-              Total: {products.length} produtos · {categories.filter((c) => c.id !== "all").length} categorias
-            </p>
-          </div>
+            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+              <QuickAction icon={Plus} label="Novo produto" to="/admin" search={{ tab: "products" }} accent="neon-pink" />
+              <QuickAction icon={Tag} label="Categorias" to="/admin" search={{ tab: "categories" }} accent="neon-cyan" />
+              <QuickAction icon={BellRing} label="Enviar push" to="/admin" search={{ tab: "notifications" }} accent="neon-yellow" />
+              <QuickAction icon={Award} label="Fidelidade" to="/admin" search={{ tab: "loyalty" }} accent="neon-pink" />
+              <QuickAction icon={Sparkles} label="Novidades" to="/admin" search={{ tab: "news" }} accent="neon-cyan" />
+              <QuickAction icon={Star} label="Destaques" to="/admin" search={{ tab: "highlights" }} accent="neon-yellow" />
+              <QuickAction icon={Megaphone} label="Promos & Combos" to="/admin" search={{ tab: "promos" }} accent="neon-pink" />
+              <QuickAction icon={Settings} label="Configurar loja" to="/admin" search={{ tab: "settings" }} accent="neon-cyan" />
+            </div>
+          </section>
         </>
       )}
     </div>
   );
 }
 
-function KpiCard({ label, value, sub, tone }: { label: string; value: string; sub: string; tone: "pink" | "cyan" | "yellow" | "violet" }) {
-  const toneCls = {
-    pink: "from-neon-pink/20 to-transparent border-neon-pink/30",
-    cyan: "from-neon-cyan/20 to-transparent border-neon-cyan/30",
-    yellow: "from-neon-yellow/20 to-transparent border-neon-yellow/30",
-    violet: "from-fuchsia-500/20 to-transparent border-fuchsia-400/30",
-  }[tone];
+function BigKpi({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  accent,
+  glow,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: string;
+  glow?: string;
+}) {
   return (
-    <div className={cn("rounded-2xl border bg-gradient-to-br p-3", toneCls)}>
-      <div className="text-[10px] font-bold uppercase tracking-widest text-white/60">{label}</div>
-      <div className="mt-1 font-display text-xl font-black tabular-nums">{value}</div>
-      <div className="text-[10px] text-white/50">{sub}</div>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-5",
+        glow,
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">{label}</div>
+        <Icon className={cn("h-4 w-4", accent)} />
+      </div>
+      <div
+        className={cn("mt-3 text-3xl font-black leading-none", accent)}
+        style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+      >
+        {value}
+      </div>
+      {sub && <div className="mt-2 text-[10px] uppercase tracking-widest text-white/50">{sub}</div>}
     </div>
   );
 }
@@ -408,28 +518,36 @@ function MiniStat({
   icon: Icon,
   label,
   value,
-  tone,
-  href,
+  accent,
+  to,
   tab,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number | string;
-  tone: string;
-  href: string;
+  accent: string;
+  to: string;
   tab?: string;
 }) {
   return (
     <Link
-      to={href}
+      to={to}
       search={tab ? ({ tab } as never) : undefined}
-      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition hover:bg-white/10"
+      className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-white/25 hover:bg-white/[0.06]"
     >
-      <Icon className={cn("h-5 w-5", tone)} />
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/30">
+        <Icon className={cn("h-5 w-5", accent)} />
+      </span>
       <div className="min-w-0">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">{label}</div>
-        <div className="font-display text-lg font-black tabular-nums">{value}</div>
+        <div className="text-[9px] font-bold uppercase tracking-widest text-white/40">{label}</div>
+        <div
+          className="mt-0.5 text-xl font-black tabular-nums text-white"
+          style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+        >
+          {value}
+        </div>
       </div>
+      <ArrowUpRight className="ml-auto h-3.5 w-3.5 text-white/20 transition group-hover:text-white/60" />
     </Link>
   );
 }
@@ -439,23 +557,48 @@ function QuickAction({
   label,
   to,
   search,
+  accent = "neon-pink",
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   to: string;
   search?: Record<string, string>;
+  accent?: "neon-pink" | "neon-cyan" | "neon-yellow";
 }) {
+  const tone = {
+    "neon-pink": "text-neon-pink border-neon-pink/30 hover:border-neon-pink/60 hover:bg-neon-pink/[0.08]",
+    "neon-cyan": "text-neon-cyan border-neon-cyan/30 hover:border-neon-cyan/60 hover:bg-neon-cyan/[0.08]",
+    "neon-yellow": "text-neon-yellow border-neon-yellow/30 hover:border-neon-yellow/60 hover:bg-neon-yellow/[0.08]",
+  }[accent];
   return (
     <Link
       to={to}
       search={search as never}
-      className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-xs font-bold transition hover:border-neon-pink/40 hover:bg-neon-pink/[0.08]"
+      className={cn(
+        "group flex items-center gap-2.5 rounded-2xl border bg-black/20 px-3 py-3 text-xs font-bold text-white transition",
+        tone,
+      )}
     >
-      <Icon className="h-4 w-4 text-neon-pink" />
-      <span className="truncate">{label}</span>
+      <Icon className="h-4 w-4" />
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
     </Link>
   );
 }
+
+function StatusPill({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    pendente: { label: "Pendente", cls: "text-amber-300" },
+    pago: { label: "Pago", cls: "text-emerald-300" },
+    preparando: { label: "Preparando", cls: "text-cyan-300" },
+    saiu_para_entrega: { label: "A caminho", cls: "text-neon-pink" },
+    entregue: { label: "Entregue", cls: "text-white/50" },
+    cancelado: { label: "Cancelado", cls: "text-red-400" },
+  };
+  const s = map[status] ?? { label: status, cls: "text-white/60" };
+  return <span className={cn("font-bold", s.cls)}>{s.label}</span>;
+}
+
 
 
 
