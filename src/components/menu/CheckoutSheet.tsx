@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag, Ticket, Check } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag, Ticket, Check, Route, AlertTriangle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
@@ -10,6 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
 import { useStoreStatus } from "@/lib/store-status";
+import { useSiteSettings } from "@/lib/menu-data";
+import {
+  calcDeliveryFee,
+  geocodeAddress,
+  haversineKm,
+  isWithinRadius,
+} from "@/lib/delivery-zone";
 import { MoonStar, Clock as ClockIcon } from "lucide-react";
 
 type Mode = "entrega" | "retirada";
