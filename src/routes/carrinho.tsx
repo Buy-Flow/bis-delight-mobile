@@ -110,6 +110,7 @@ function CartPage() {
         ) : (
           <div className="space-y-3">
             <FreeDeliveryBar />
+            <CheckoutUpsellStrip />
             {items.map((it) => (
               <div
                 key={it.uid}
@@ -237,7 +238,8 @@ function CartPage() {
               </div>
             )}
 
-            <CheckoutUpsellStrip />
+
+
 
 
             <Link
