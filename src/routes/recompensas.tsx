@@ -420,9 +420,9 @@ function RecompensasPage() {
           <ol className="grid gap-3 sm:grid-cols-2">
             {[
               { icon: ShoppingBag, title: "Faça pedidos", desc: "Compre logado na sua conta.", color: "from-neon-pink to-neon-pink/60" },
-              { icon: CreditCard, title: "Ganhe selos", desc: "1–3 selos por pedido conforme o nível.", color: "from-neon-yellow to-orange-400" },
-              { icon: Award, title: "Suba de nível", desc: "Bronze → Prata (10) → Ouro (30).", color: "from-neon-cyan to-cyan-400" },
-              { icon: Tag, title: "Ganhe cupons", desc: "R$ 20, R$ 25 ou R$ 30 conforme o nível.", color: "from-fuchsia-400 to-neon-pink" },
+              { icon: CreditCard, title: "Ganhe selos", desc: "1× Bronze · 2× Prata · 3× Ouro por pedido.", color: "from-neon-yellow to-orange-400" },
+              { icon: Award, title: "Suba de nível", desc: "Bronze → Prata (2 cartelas) → Ouro (10 cartelas).", color: "from-neon-cyan to-cyan-400" },
+              { icon: Tag, title: "Ganhe cupons", desc: "R$ 10, R$ 15 ou R$ 20 a cada cartela cheia.", color: "from-fuchsia-400 to-neon-pink" },
             ].map((step, idx) => {
               const Icon = step.icon;
               return (
