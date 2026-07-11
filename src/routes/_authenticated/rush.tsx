@@ -39,6 +39,7 @@ import {
   subscribeToPush,
 } from "@/lib/push";
 import { sendAdminTestPush } from "@/lib/push.functions";
+import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 
 export const Route = createFileRoute("/_authenticated/rush")({
   head: () => ({
@@ -645,6 +646,7 @@ function RushPage() {
             >
               <Radio className={cn("h-4 w-4", soundOn ? "text-neon-yellow" : "text-white/40")} />
             </button>
+            <AdminNavMenu />
           </div>
         </div>
       </header>
