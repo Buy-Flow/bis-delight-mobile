@@ -68,7 +68,7 @@ export function BottomNav() {
   const insideAdmin = useIsInsideAdminShell();
 
   // Hide on admin / auth-only routes
-  const hiddenPrefixes = ["/rush", "/carrinhos", "/clientes", "/financeiro", "/notificacoes", "/admin", "/auth", "/previsao", "/copiloto", "/ai-growth", "/rastrear"];
+  const hiddenPrefixes = ["/rush", "/carrinhos", "/clientes", "/financeiro", "/notificacoes", "/admin", "/auth", "/previsao", "/copiloto", "/ai-growth", "/rastrear", "/avaliacoes"];
   if (insideAdmin || hiddenPrefixes.some((p) => pathname.startsWith(p))) return null;
 
   const isHome = pathname === "/";
