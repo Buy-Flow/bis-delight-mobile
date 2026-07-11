@@ -486,6 +486,7 @@ function PDVPage() {
               setNote={setNote}
               changeQty={changeQty}
               removeLine={removeLine}
+              onEditLine={onEditLine}
               clearAll={clearAll}
               finalize={finalize}
               sending={sending}
