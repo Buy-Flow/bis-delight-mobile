@@ -809,11 +809,11 @@ function RushPage() {
             )}
             Teste push
           </button>
-          <div className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-neon-pink/15 to-neon-yellow/15 py-3 text-[11px] font-bold ring-1 ring-white/10">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
-            <span className="text-emerald-200">{kpis.delivered} entregues</span>
+          <div className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl bg-gradient-to-r from-neon-pink/15 to-neon-yellow/15 px-2 py-3 text-[10px] font-bold ring-1 ring-white/10 sm:text-[11px]">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+            <span className="text-emerald-200">{kpis.delivered} <span className="hidden sm:inline">entregues</span><span className="sm:hidden">entr.</span></span>
             <span className="text-white/30">·</span>
-            <XCircle className="h-3.5 w-3.5 text-red-300" />
+            <XCircle className="h-3.5 w-3.5 shrink-0 text-red-300" />
             <span className="text-red-200">{kpis.cancelled} cancel.</span>
           </div>
         </div>
