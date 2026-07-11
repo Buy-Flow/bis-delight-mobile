@@ -579,7 +579,7 @@ function QuickAction({
         tone,
       )}
     >
-      <Icon className={cn("h-4 w-4", `text-${accent}`)} />
+      <Icon className="h-4 w-4" />
       <span className="min-w-0 flex-1 truncate">{label}</span>
       <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
     </Link>
