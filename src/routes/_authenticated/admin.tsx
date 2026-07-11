@@ -652,12 +652,20 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
   const source = localOrder ?? products;
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return source.filter((p) => {
+    const filtered = source.filter((p) => {
       if (filter !== "all" && p.category !== filter) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [source, filter, search]);
+    if (sortKey === "manual") return filtered;
+    const mult = sortDir === "asc" ? 1 : -1;
+    const catName = (id: string) => catMap.get(id)?.name?.toLowerCase() ?? "";
+    return [...filtered].sort((a, b) => {
+      if (sortKey === "price") return (a.basePrice - b.basePrice) * mult;
+      if (sortKey === "category") return catName(a.category).localeCompare(catName(b.category), "pt") * mult;
+      return a.name.localeCompare(b.name, "pt") * mult;
+    });
+  }, [source, filter, search, sortKey, sortDir, catMap]);
 
   const onDragStart = (id: string) => setDragId(id);
   const onDragOver = (e: React.DragEvent, overId: string) => {
