@@ -2688,34 +2688,6 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
 
   return (
     <div className="pb-28">
-      {/* Hero header */}
-      <div className="relative mb-6 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[oklch(0.22_0.16_305)] via-[oklch(0.14_0.10_300)] to-[oklch(0.10_0.08_300)] p-5 sm:p-6">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-pink/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-neon-cyan/15 blur-3xl" />
-        <div className="relative flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
-              <Settings className="h-3 w-3 text-neon-pink" />
-              Painel
-            </div>
-            <h2 className="font-display text-2xl font-black leading-tight sm:text-3xl">
-              Configurações da Loja
-            </h2>
-            <p className="mt-1 max-w-xl text-[13px] text-white/60">
-              Tudo o que os clientes veem e como o pedido chega até você — organizado em um só lugar.
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <StoreStatusBadge s={s} />
-            <div className="text-[10px] uppercase tracking-widest text-white/40">
-              {sections.length} seções
-            </div>
-          </div>
-        </div>
-        <div className="relative mt-5">
-          <StorePreview s={s} />
-        </div>
-      </div>
 
       {/* Two-column layout */}
       <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
