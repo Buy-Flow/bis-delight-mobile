@@ -20,7 +20,7 @@ export function WelcomePopup() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdminRoute =
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/pedidos") ||
+    pathname.startsWith("/rush") ||
     pathname.startsWith("/clientes") ||
     pathname.startsWith("/financeiro") ||
     pathname.startsWith("/conta");
