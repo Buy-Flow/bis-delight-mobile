@@ -294,7 +294,10 @@ function PrecificacaoPage() {
 
   const updateProduct = async (id: string, patch: Partial<ProductRow>) => {
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    const { error } = await supabase.from("products").update(patch).eq("id", id);
+    const { error } = await supabase
+      .from("products")
+      .update(patch as Record<string, unknown>)
+      .eq("id", id);
     if (error) {
       toast.error("Erro ao atualizar: " + error.message);
       load();
