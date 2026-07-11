@@ -134,51 +134,44 @@ function PDVPage() {
   const change = payment === "dinheiro" ? Math.max(0, cashNum - total) : 0;
   const missing = payment === "dinheiro" && cashNum > 0 && cashNum < total ? total - cashNum : 0;
 
-  const addProduct = (p: Product, size?: SizeOption, flavor?: string) => {
-    const chosenSize = size ?? (p.sizes && p.sizes.length > 0 ? p.sizes[0] : null);
-    const unit = p.basePrice + (chosenSize?.priceDelta ?? 0);
-    const key = `${p.id}|${chosenSize?.id ?? ""}|${flavor ?? ""}`;
-    setCart((prev) => {
-      const existing = prev.find((l) => l.key === key);
-      if (existing) {
-        return prev.map((l) => (l.key === key ? { ...l, quantity: l.quantity + 1 } : l));
-      }
-      return [
-        ...prev,
-        {
-          key,
-          productId: p.id,
-          name: p.name,
-          size: chosenSize?.label ?? null,
-          flavor: flavor ?? null,
-          unitPrice: unit,
-          quantity: 1,
-          note: "",
-        },
-      ];
-    });
-    setShowMobileCart(true);
+  const addFromModal = (payload: Omit<CartItem, "uid">, isEdit: boolean) => {
+    if (isEdit && editingLine) {
+      setCart((prev) =>
+        prev.map((l) => (l.uid === editingLine.uid ? { ...payload, uid: editingLine.uid } : l)),
+      );
+    } else {
+      const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setCart((prev) => [...prev, { ...payload, uid }]);
+      setShowMobileCart(true);
+    }
+    setSelecting(null);
+    setEditingLine(null);
   };
 
   const onProductClick = (p: Product) => {
-    const needsSize = p.sizes && p.sizes.length > 1;
-    const needsFlavor = p.flavors && p.flavors.length > 0;
-    if (needsSize || needsFlavor) {
-      setSelecting(p);
-      return;
-    }
-    addProduct(p);
+    setEditingLine(null);
+    setSelecting(p);
   };
 
-  const changeQty = (key: string, delta: number) => {
+  const onEditLine = (line: CartLine) => {
+    const p = products.find((pp) => pp.id === line.productId);
+    if (!p) {
+      toast.error("Produto não encontrado no catálogo.");
+      return;
+    }
+    setEditingLine(line);
+    setSelecting(p);
+  };
+
+  const changeQty = (uid: string, delta: number) => {
     setCart((prev) =>
       prev
-        .map((l) => (l.key === key ? { ...l, quantity: l.quantity + delta } : l))
+        .map((l) => (l.uid === uid ? { ...l, quantity: l.quantity + delta } : l))
         .filter((l) => l.quantity > 0),
     );
   };
 
-  const removeLine = (key: string) => setCart((prev) => prev.filter((l) => l.key !== key));
+  const removeLine = (uid: string) => setCart((prev) => prev.filter((l) => l.uid !== uid));
 
   const clearAll = () => {
     if (cart.length === 0) return;
