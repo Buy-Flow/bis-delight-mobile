@@ -332,6 +332,9 @@ const DEFAULT_EXTRA: Pick<
   | "heroImages"
   | "popup"
   | "urgency"
+  | "storeLat"
+  | "storeLng"
+  | "deliveryZone"
 
 > = {
   instagram: "",
