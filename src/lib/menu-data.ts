@@ -879,6 +879,9 @@ export function useUpdateSettings() {
         urgency_text: s.urgency.text,
         urgency_ends_at: s.urgency.endsAt,
         urgency_coupon_code: s.urgency.couponCode,
+        store_lat: s.storeLat,
+        store_lng: s.storeLng,
+        delivery_zone_json: s.deliveryZone,
       }, { onConflict: "id" });
       if (error) throw error;
     },
