@@ -310,7 +310,7 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
             ltv: Math.round((agg?.ltv ?? 0) * 100) / 100,
             orders: agg?.orders ?? 0,
             favorite_category: agg ? pickTopCategory(agg.categories) : null,
-            reason: `Aniversário em ${p.birthday.slice(8, 10)}/${p.birthday.slice(5, 7)}`,
+            reason: `Aniversário em ${(p.birthday ?? "").slice(8, 10)}/${(p.birthday ?? "").slice(5, 7)}`,
           };
         }),
         impact: birthdayClients.length * Math.max(avgTicket, 25),
