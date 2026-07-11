@@ -176,7 +176,7 @@ export function buildCopilotTools(ctx: Ctx) {
         "Cria um cupom de desconto na loja. Códigos em MAIÚSCULAS e sem espaços/acentos. Aprovação automática se discount_value ≤ 20 (fixed ou percentage) e max_uses ≤ 100; caso contrário, você deve confirmar com o admin no chat antes de chamar.",
       inputSchema: z.object({
         code: z.string().min(3).max(20).describe("Código curto MAIÚSCULO sem espaços (ex: 'SHAKE20')"),
-        discount_type: z.enum(["fixed", "percentage"]).describe("'fixed' = R$ fixo; 'percentage' = % do total"),
+        discount_type: z.enum(["fixed", "percent"]).describe("'fixed' = R$ fixo; 'percent' = % do total"),
         discount_value: z.number().positive().describe("Valor do desconto (em R$ ou %)"),
         min_order: z.number().min(0).default(0).describe("Pedido mínimo em R$"),
         max_uses: z.number().int().positive().nullable().describe("Total de usos permitidos (null = ilimitado)"),
