@@ -17,7 +17,8 @@ import {
   haversineKm,
   isWithinRadius,
 } from "@/lib/delivery-zone";
-import { MoonStar, Clock as ClockIcon } from "lucide-react";
+import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
+import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star } from "lucide-react";
 
 type Mode = "entrega" | "retirada";
 
