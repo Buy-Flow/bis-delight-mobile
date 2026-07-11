@@ -85,10 +85,19 @@ export function ProductModal({
   product,
   onClose,
   editItem,
+  onSubmit,
+  submitLabel,
 }: {
   product: Product | null;
   onClose: () => void;
   editItem?: CartItem | null;
+  /**
+   * When provided, overrides the default customer-cart behavior.
+   * Useful for PDV / admin flows that need to route the item into a
+   * different cart instead of the customer's shopping cart.
+   */
+  onSubmit?: (payload: Omit<CartItem, "uid">, isEdit: boolean) => void;
+  submitLabel?: string;
 }) {
   const { add, update } = useCart();
   useBackDismiss(!!product, onClose);
@@ -390,7 +399,10 @@ export function ProductModal({
         quantity: qty,
         unitPrice: unit,
       };
-      if (editItem) {
+      if (onSubmit) {
+        onSubmit(payload, !!editItem);
+        toast.success(`${product.name} ${editItem ? "atualizado" : "adicionado"}!`);
+      } else if (editItem) {
         update(editItem.uid, payload);
         toast.success(`${product.name} atualizado!`);
       } else {
@@ -416,7 +428,10 @@ export function ProductModal({
       quantity: qty,
       unitPrice: unit,
     };
-    if (editItem) {
+    if (onSubmit) {
+      onSubmit(payload, !!editItem);
+      toast.success(`${product.name} ${editItem ? "atualizado" : "adicionado"}!`);
+    } else if (editItem) {
       update(editItem.uid, payload);
       toast.success(`${product.name} atualizado!`);
     } else {
@@ -1094,7 +1109,7 @@ export function ProductModal({
                       className="font-display text-lg font-bold uppercase tracking-wider text-white"
                       style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                     >
-                      {paused ? "Pausado" : "Adicionar"}
+                      {paused ? "Pausado" : (submitLabel ?? (editItem ? "Salvar" : "Adicionar"))}
                     </span>
                     <span className="text-base font-extrabold text-white">{brl(total)}</span>
                   </button>

@@ -14,7 +14,6 @@ import {
   Printer,
   Store,
   Truck,
-  Percent,
   X,
   StickyNote,
   UserRound,
@@ -22,11 +21,14 @@ import {
   MapPin,
   Check,
   Sparkles,
+  Pencil,
 } from "lucide-react";
 import { useProducts, useCategories } from "@/lib/menu-data";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import type { Product, SizeOption } from "@/data/menu";
+import type { Product } from "@/data/menu";
+import type { CartItem } from "@/lib/cart-context";
+import { ProductModal } from "@/components/menu/ProductModal";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/pdv")({
@@ -41,15 +43,23 @@ export const Route = createFileRoute("/_authenticated/pdv")({
 
 type PaymentMethod = "dinheiro" | "pix" | "debito" | "credito";
 
+/**
+ * PDV cart line — mirrors the customer CartItem shape so the same
+ * ProductModal can push into it. Includes extras, removed items,
+ * per-line notes and image for a fully-customized order.
+ */
 type CartLine = {
-  key: string;
+  uid: string;
   productId: string;
   name: string;
-  size: string | null;
-  flavor: string | null;
-  unitPrice: number;
+  image: string;
+  size?: string;
+  flavor?: string;
+  extras: { label: string; price: number }[];
+  removed: string[];
+  note?: string;
   quantity: number;
-  note: string;
+  unitPrice: number;
 };
 
 const BRL = (v: number) =>
@@ -81,6 +91,7 @@ function PDVPage() {
   const [cashReceived, setCashReceived] = useState("");
   const [note, setNote] = useState("");
   const [selecting, setSelecting] = useState<Product | null>(null);
+  const [editingLine, setEditingLine] = useState<CartLine | null>(null);
   const [sending, setSending] = useState(false);
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [showMobileCart, setShowMobileCart] = useState(false);
@@ -123,51 +134,44 @@ function PDVPage() {
   const change = payment === "dinheiro" ? Math.max(0, cashNum - total) : 0;
   const missing = payment === "dinheiro" && cashNum > 0 && cashNum < total ? total - cashNum : 0;
 
-  const addProduct = (p: Product, size?: SizeOption, flavor?: string) => {
-    const chosenSize = size ?? (p.sizes && p.sizes.length > 0 ? p.sizes[0] : null);
-    const unit = p.basePrice + (chosenSize?.priceDelta ?? 0);
-    const key = `${p.id}|${chosenSize?.id ?? ""}|${flavor ?? ""}`;
-    setCart((prev) => {
-      const existing = prev.find((l) => l.key === key);
-      if (existing) {
-        return prev.map((l) => (l.key === key ? { ...l, quantity: l.quantity + 1 } : l));
-      }
-      return [
-        ...prev,
-        {
-          key,
-          productId: p.id,
-          name: p.name,
-          size: chosenSize?.label ?? null,
-          flavor: flavor ?? null,
-          unitPrice: unit,
-          quantity: 1,
-          note: "",
-        },
-      ];
-    });
-    setShowMobileCart(true);
+  const addFromModal = (payload: Omit<CartItem, "uid">, isEdit: boolean) => {
+    if (isEdit && editingLine) {
+      setCart((prev) =>
+        prev.map((l) => (l.uid === editingLine.uid ? { ...payload, uid: editingLine.uid } : l)),
+      );
+    } else {
+      const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setCart((prev) => [...prev, { ...payload, uid }]);
+      setShowMobileCart(true);
+    }
+    setSelecting(null);
+    setEditingLine(null);
   };
 
   const onProductClick = (p: Product) => {
-    const needsSize = p.sizes && p.sizes.length > 1;
-    const needsFlavor = p.flavors && p.flavors.length > 0;
-    if (needsSize || needsFlavor) {
-      setSelecting(p);
-      return;
-    }
-    addProduct(p);
+    setEditingLine(null);
+    setSelecting(p);
   };
 
-  const changeQty = (key: string, delta: number) => {
+  const onEditLine = (line: CartLine) => {
+    const p = products.find((pp) => pp.id === line.productId);
+    if (!p) {
+      toast.error("Produto não encontrado no catálogo.");
+      return;
+    }
+    setEditingLine(line);
+    setSelecting(p);
+  };
+
+  const changeQty = (uid: string, delta: number) => {
     setCart((prev) =>
       prev
-        .map((l) => (l.key === key ? { ...l, quantity: l.quantity + delta } : l))
+        .map((l) => (l.uid === uid ? { ...l, quantity: l.quantity + delta } : l))
         .filter((l) => l.quantity > 0),
     );
   };
 
-  const removeLine = (key: string) => setCart((prev) => prev.filter((l) => l.key !== key));
+  const removeLine = (uid: string) => setCart((prev) => prev.filter((l) => l.uid !== uid));
 
   const clearAll = () => {
     if (cart.length === 0) return;
@@ -247,8 +251,8 @@ function PDVPage() {
         name: l.name,
         size: l.size,
         flavor: l.flavor,
-        extras: [],
-        removed: [],
+        extras: l.extras,
+        removed: l.removed,
         note: l.note || null,
         quantity: l.quantity,
         unit_price: l.unitPrice,
@@ -415,6 +419,7 @@ function PDVPage() {
             setNote={setNote}
             changeQty={changeQty}
             removeLine={removeLine}
+            onEditLine={onEditLine}
             clearAll={clearAll}
             finalize={finalize}
             sending={sending}
@@ -481,6 +486,7 @@ function PDVPage() {
               setNote={setNote}
               changeQty={changeQty}
               removeLine={removeLine}
+              onEditLine={onEditLine}
               clearAll={clearAll}
               finalize={finalize}
               sending={sending}
@@ -490,14 +496,16 @@ function PDVPage() {
         </div>
       )}
 
-      {/* Size / flavor picker */}
+      {/* Full-featured product customization (sizes, flavors, extras, notes, quantities) */}
       {selecting && (
-        <VariantPicker
+        <ProductModal
           product={selecting}
-          onClose={() => setSelecting(null)}
-          onConfirm={(size, flavor) => {
-            addProduct(selecting, size, flavor);
+          editItem={editingLine as CartItem | null}
+          submitLabel={editingLine ? "Salvar" : "Adicionar"}
+          onSubmit={addFromModal}
+          onClose={() => {
             setSelecting(null);
+            setEditingLine(null);
           }}
         />
       )}
@@ -564,8 +572,9 @@ type CartPanelProps = {
   missing: number;
   note: string;
   setNote: (v: string) => void;
-  changeQty: (key: string, delta: number) => void;
-  removeLine: (key: string) => void;
+  changeQty: (uid: string, delta: number) => void;
+  removeLine: (uid: string) => void;
+  onEditLine: (line: CartLine) => void;
   clearAll: () => void;
   finalize: () => void;
   sending: boolean;
@@ -610,40 +619,76 @@ function CartPanel(p: CartPanelProps) {
             Toque em um produto para começar
           </div>
         ) : (
-          p.cart.map((l) => (
-            <div
-              key={l.key}
-              className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.04] p-2"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-bold text-white">{l.name}</div>
-                <div className="truncate text-[11px] text-white/50">
-                  {[l.size, l.flavor].filter(Boolean).join(" · ") || "—"} · {BRL(l.unitPrice)}
+          p.cart.map((l) => {
+            const meta = [l.size, l.flavor].filter(Boolean).join(" · ");
+            return (
+              <div
+                key={l.uid}
+                className="rounded-xl border border-white/5 bg-white/[0.04] p-2"
+              >
+                <div className="flex items-center gap-2">
+                  {l.image && (
+                    <img
+                      src={l.image}
+                      alt=""
+                      className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-white">{l.name}</div>
+                    <div className="truncate text-[11px] text-white/50">
+                      {meta || "—"} · {BRL(l.unitPrice)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-0.5">
+                    <button
+                      onClick={() => p.changeQty(l.uid, -1)}
+                      className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="w-5 text-center text-xs font-bold text-white">{l.quantity}</span>
+                    <button
+                      onClick={() => p.changeQty(l.uid, 1)}
+                      className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+
+                {(l.extras.length > 0 || l.removed.length > 0 || l.note) && (
+                  <div className="mt-1.5 space-y-0.5 pl-12 text-[10px] leading-tight">
+                    {l.extras.map((e, i) => (
+                      <div key={`e-${i}`} className="text-emerald-300/80">+ {e.label}</div>
+                    ))}
+                    {l.removed.map((r, i) => (
+                      <div key={`r-${i}`} className="text-rose-300/80">− sem {r}</div>
+                    ))}
+                    {l.note && <div className="text-amber-300/80">obs: {l.note}</div>}
+                  </div>
+                )}
+
+                <div className="mt-1.5 flex items-center justify-end gap-1 pl-12">
+                  <button
+                    onClick={() => p.onEditLine(l)}
+                    className="grid h-6 w-6 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+                    title="Editar"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={() => p.removeLine(l.uid)}
+                    className="grid h-6 w-6 place-items-center rounded-full text-red-300 hover:bg-red-500/10"
+                    title="Remover"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-0.5">
-                <button
-                  onClick={() => p.changeQty(l.key, -1)}
-                  className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
-                >
-                  <Minus className="h-3 w-3" />
-                </button>
-                <span className="w-5 text-center text-xs font-bold text-white">{l.quantity}</span>
-                <button
-                  onClick={() => p.changeQty(l.key, 1)}
-                  className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
-                >
-                  <Plus className="h-3 w-3" />
-                </button>
-              </div>
-              <button
-                onClick={() => p.removeLine(l.key)}
-                className="grid h-7 w-7 place-items-center rounded-full text-red-300 hover:bg-red-500/10"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -813,107 +858,7 @@ function FieldRow({
   );
 }
 
-/* ---------------- Variant picker ---------------- */
 
-function VariantPicker({
-  product,
-  onClose,
-  onConfirm,
-}: {
-  product: Product;
-  onClose: () => void;
-  onConfirm: (size?: SizeOption, flavor?: string) => void;
-}) {
-  const [size, setSize] = useState<SizeOption | undefined>(
-    product.sizes && product.sizes.length > 0 ? product.sizes[0] : undefined,
-  );
-  const [flavor, setFlavor] = useState<string | undefined>(
-    product.flavors && product.flavors.length > 0 ? undefined : undefined,
-  );
-  const unit = product.basePrice + (size?.priceDelta ?? 0);
-  const canConfirm = !(product.flavors && product.flavors.length > 0 && !flavor);
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[oklch(0.13_0.05_300)] p-5">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div>
-            <div className="text-base font-black text-white">{product.name}</div>
-            <div className="text-xs text-white/60">A partir de {BRL(product.basePrice)}</div>
-          </div>
-          <button
-            onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-full text-white/60 hover:bg-white/10"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {product.sizes && product.sizes.length > 1 && (
-          <div className="mb-3">
-            <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-white/50">
-              Tamanho
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {product.sizes.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setSize(s)}
-                  className={cn(
-                    "rounded-lg border px-3 py-2 text-xs font-bold",
-                    size?.id === s.id
-                      ? "border-neon-pink bg-neon-pink/20 text-white"
-                      : "border-white/10 bg-white/5 text-white/70 hover:text-white",
-                  )}
-                >
-                  {s.label}
-                  {s.priceDelta !== 0 && (
-                    <span className="ml-1 text-[10px] text-white/50">
-                      {s.priceDelta > 0 ? "+" : ""}
-                      {BRL(s.priceDelta)}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {product.flavors && product.flavors.length > 0 && (
-          <div className="mb-3">
-            <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-white/50">
-              Sabor
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {product.flavors.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFlavor(f)}
-                  className={cn(
-                    "rounded-lg border px-3 py-2 text-xs font-bold",
-                    flavor === f
-                      ? "border-neon-pink bg-neon-pink/20 text-white"
-                      : "border-white/10 bg-white/5 text-white/70 hover:text-white",
-                  )}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <button
-          disabled={!canConfirm}
-          onClick={() => onConfirm(size, flavor)}
-          className="mt-2 w-full rounded-xl bg-gradient-to-r from-neon-pink to-fuchsia-500 py-3 text-sm font-black uppercase tracking-wider text-white disabled:opacity-40"
-        >
-          Adicionar · {BRL(unit)}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 /* ---------------- Receipt HTML ---------------- */
 
@@ -932,13 +877,20 @@ function buildReceiptHtml(o: {
   address: string;
 }) {
   const items = o.cart
-    .map(
-      (l) => `
+    .map((l) => {
+      const modLines: string[] = [];
+      l.extras.forEach((e) => modLines.push(`+ ${escapeHtml(e.label)}`));
+      l.removed.forEach((r) => modLines.push(`- sem ${escapeHtml(r)}`));
+      if (l.note) modLines.push(`obs: ${escapeHtml(l.note)}`);
+      const mods = modLines.length
+        ? `<div style="font-size:10px;color:#333;padding-left:8px">${modLines.join("<br/>")}</div>`
+        : "";
+      return `
     <tr>
-      <td>${l.quantity}x ${escapeHtml(l.name)}${l.size ? ` (${escapeHtml(l.size)})` : ""}${l.flavor ? ` — ${escapeHtml(l.flavor)}` : ""}</td>
+      <td>${l.quantity}x ${escapeHtml(l.name)}${l.size ? ` (${escapeHtml(l.size)})` : ""}${l.flavor ? ` — ${escapeHtml(l.flavor)}` : ""}${mods}</td>
       <td style="text-align:right">${BRL(l.unitPrice * l.quantity)}</td>
-    </tr>`,
-    )
+    </tr>`;
+    })
     .join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>Recibo</title>
   <style>
