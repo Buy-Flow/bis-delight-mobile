@@ -3094,6 +3094,22 @@ function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
         </div>
       </div>
 
+      {/* Raio de entrega no mapa */}
+      {s.acceptsDelivery && (
+        <DeliveryZoneEditor
+          storeLat={s.storeLat}
+          storeLng={s.storeLng}
+          onOriginChange={(lat, lng) => {
+            set("storeLat", lat);
+            set("storeLng", lng);
+          }}
+          zone={s.deliveryZone}
+          onZoneChange={(patch) => set("deliveryZone", { ...s.deliveryZone, ...patch })}
+          city={s.city}
+          flatFallbackFee={s.deliveryFee}
+        />
+      )}
+
       {/* Resumo ao vivo */}
       {summary.length > 0 && (
         <div className="rounded-2xl border border-neon-yellow/25 bg-gradient-to-br from-neon-yellow/10 to-transparent p-4">
