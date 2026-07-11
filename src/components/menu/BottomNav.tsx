@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Award, Home, Heart, User as UserIcon, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
+import { useIsInsideAdminShell } from "@/lib/admin-shell-flag";
 
 type LinkItem = {
   kind: "link";
