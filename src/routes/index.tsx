@@ -610,10 +610,6 @@ function HighlightsCarousel({
   accentColor?: "yellow" | "cyan" | "pink";
   hideHeader?: boolean;
 }) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
-  const pausedRef = useRef(false);
-
   // Duplica a lista para simular loop infinito (só se >1 item)
   const loopItems = useMemo(
     () => (highlights.length > 1 ? [...highlights, ...highlights] : highlights),
@@ -621,81 +617,8 @@ function HighlightsCarousel({
   );
   const canLoop = highlights.length > 1;
 
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-
-    let scrollIdleTimer: number | undefined;
-    const onScroll = () => {
-      const step = el.clientWidth * 0.88;
-      const rawIdx = Math.round(el.scrollLeft / step);
-      const len = highlights.length || 1;
-      setActiveIdx(((rawIdx % len) + len) % len);
-
-      // Wrap invisível SÓ quando a rolagem parou (evita o "piscar" no meio da transição)
-      if (canLoop) {
-        window.clearTimeout(scrollIdleTimer);
-        scrollIdleTimer = window.setTimeout(() => {
-          const half = el.scrollWidth / 2;
-          if (half > 0 && el.scrollLeft >= half) {
-            el.scrollLeft = el.scrollLeft - half;
-          }
-        }, 180);
-      }
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-
-
-    const isFinePointer =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(pointer: fine)").matches;
-    const onWheel = (e: WheelEvent) => {
-      if (!isFinePointer) return;
-      if (e.deltaY === 0) return;
-      const delta =
-        Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      e.preventDefault();
-      el.scrollBy({ left: delta, behavior: "auto" });
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-
-    const pause = () => { pausedRef.current = true; };
-    const resumeSoon = () => {
-      window.setTimeout(() => { pausedRef.current = false; }, 4000);
-    };
-    el.addEventListener("pointerdown", pause);
-    el.addEventListener("pointerup", resumeSoon);
-    el.addEventListener("pointercancel", resumeSoon);
-    el.addEventListener("touchend", resumeSoon);
-
-    // Autoplay: sempre para a direita; o wrap é invisível via onScroll
-    const interval = window.setInterval(() => {
-      if (pausedRef.current) return;
-      const step = el.clientWidth * 0.88;
-      el.scrollBy({ left: step, behavior: "smooth" });
-    }, 3000);
-
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      el.removeEventListener("wheel", onWheel);
-      el.removeEventListener("pointerdown", pause);
-      el.removeEventListener("pointerup", resumeSoon);
-      el.removeEventListener("pointercancel", resumeSoon);
-      el.removeEventListener("touchend", resumeSoon);
-      window.clearInterval(interval);
-      window.clearTimeout(scrollIdleTimer);
-
-    };
-  }, [highlights.length, canLoop]);
-
-
-
-
-  const scrollTo = (i: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth * 0.88, behavior: "smooth" });
-  };
+  // Velocidade proporcional à quantidade de itens: ~7s por item, mínimo 20s
+  const durationSec = Math.max(20, highlights.length * 7);
 
   const accent = {
     yellow: {
@@ -751,12 +674,8 @@ function HighlightsCarousel({
         </div>
       )}
 
-
-
-
       <div
-        ref={scrollerRef}
-        className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-8 px-8 py-8"
+        className="group relative overflow-hidden py-8"
         style={{
           WebkitMaskImage:
             "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
@@ -764,30 +683,37 @@ function HighlightsCarousel({
             "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
         }}
       >
-        {loopItems.map((p, i) => (
-          <div key={`${p.id}-${i}`} className="w-[88%] shrink-0 snap-start">
-            <HighlightCard product={p} onOpen={onOpen} />
-          </div>
-        ))}
-
-      </div>
-
-      <div className="mt-1 flex items-center justify-center gap-1.5">
-        {highlights.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => scrollTo(i)}
-            aria-label={`Ir para destaque ${i + 1}`}
-            className={cn(
-              "h-1.5 rounded-full transition-all",
-              i === activeIdx
-                ? cn("w-5", accent.dot)
-                : "w-1.5 bg-white/30",
-            )}
-          />
-        ))}
+        <div
+          data-marquee
+          className="flex w-max gap-3 px-4"
+          style={
+            canLoop
+              ? { animation: `hl-marquee ${durationSec}s linear infinite` }
+              : undefined
+          }
+        >
+          {loopItems.map((p, i) => (
+            <div key={`${p.id}-${i}`} className="w-[min(88vw,420px)] shrink-0">
+              <HighlightCard product={p} onOpen={onOpen} />
+            </div>
+          ))}
+        </div>
+        <style>{`
+          @keyframes hl-marquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+          }
+          .group:hover [data-marquee],
+          [data-marquee]:hover {
+            animation-play-state: paused;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            [data-marquee] { animation: none !important; }
+          }
+        `}</style>
       </div>
     </section>
   );
 }
+
 
