@@ -85,9 +85,10 @@ export const getCopilotThreadMessages = createServerFn({ method: "POST" })
     const messages = ((rows ?? []) as Array<{ id: string; role: string; parts: unknown }>).map(r => ({
       id: r.id,
       role: r.role,
-      parts: (r.parts ?? []) as unknown,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      parts: JSON.parse(JSON.stringify(r.parts ?? [])) as any,
     }));
-    return messages as unknown as Array<{ id: string; role: string; parts: unknown }>;
+    return messages;
   });
 
 export const listCopilotActions = createServerFn({ method: "POST" })
