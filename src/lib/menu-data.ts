@@ -175,6 +175,8 @@ function rowToProduct(row: Record<string, unknown>): Product {
     upsellPrice: row.upsell_price !== undefined && row.upsell_price !== null ? Number(row.upsell_price) : null,
     stock: row.stock !== undefined && row.stock !== null ? Number(row.stock) : null,
     lowStockThreshold: row.low_stock_threshold !== undefined && row.low_stock_threshold !== null ? Number(row.low_stock_threshold) : 5,
+    pausedUntil: (row.paused_until as string | null) ?? null,
+    pauseReason: (row.pause_reason as string | null) ?? null,
   };
 }
 
