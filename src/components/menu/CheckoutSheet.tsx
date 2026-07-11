@@ -54,6 +54,8 @@ export function CheckoutSheet() {
   const navigate = useNavigate();
   const storeStatus = useStoreStatus();
 
+  const { data: settings } = useSiteSettings();
+
   const [mode, setMode] = useState<Mode>("entrega");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -64,6 +66,17 @@ export function CheckoutSheet() {
   const [couponInput, setCouponInput] = useState("");
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
+
+  // Distance-based delivery quote
+  const [quote, setQuote] = useState<{
+    lat: number;
+    lng: number;
+    km: number;
+    label: string;
+  } | null>(null);
+  const [quoting, setQuoting] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const geocodeReq = useRef(0);
 
   useEffect(() => {
     if (!isCheckoutOpen) return;
@@ -90,9 +103,72 @@ export function CheckoutSheet() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCheckoutOpen, user?.id]);
 
+  const zone = settings?.deliveryZone;
+  const originLat = settings?.storeLat ?? null;
+  const originLng = settings?.storeLng ?? null;
+  const zoneActive = !!(zone?.enabled && originLat != null && originLng != null);
+
+  // Debounced geocode when address changes (delivery mode + zone active)
+  useEffect(() => {
+    if (!isCheckoutOpen) return;
+    if (mode !== "entrega" || !zoneActive) {
+      setQuote(null);
+      setQuoteError(null);
+      return;
+    }
+    const trimmed = address.trim();
+    if (trimmed.length < 6) {
+      setQuote(null);
+      setQuoteError(null);
+      return;
+    }
+    const reqId = ++geocodeReq.current;
+    setQuoting(true);
+    setQuoteError(null);
+    const ctrl = new AbortController();
+    const t = window.setTimeout(async () => {
+      try {
+        const g = await geocodeAddress(trimmed, {
+          city: settings?.city,
+          signal: ctrl.signal,
+        });
+        if (reqId !== geocodeReq.current) return;
+        if (!g) {
+          setQuote(null);
+          setQuoteError("Não consegui localizar esse endereço. Tente incluir bairro e número.");
+        } else {
+          const km = haversineKm({ lat: originLat!, lng: originLng! }, { lat: g.lat, lng: g.lng });
+          setQuote({ lat: g.lat, lng: g.lng, km, label: g.label });
+        }
+      } finally {
+        if (reqId === geocodeReq.current) setQuoting(false);
+      }
+    }, 900);
+    return () => {
+      ctrl.abort();
+      window.clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, mode, zoneActive, originLat, originLng, isCheckoutOpen]);
+
   if (!isCheckoutOpen) return null;
 
-  const fee = mode === "entrega" ? BRAND.deliveryFee : 0;
+  const flatFee = settings?.deliveryFee ?? BRAND.deliveryFee;
+  const freeThreshold = settings?.freeDeliveryThreshold ?? 0;
+  const outsideRadius =
+    zoneActive && zone && quote ? !isWithinRadius(quote.km, zone) : false;
+
+  const rawFee =
+    mode === "entrega"
+      ? zoneActive && zone && quote
+        ? outsideRadius
+          ? 0
+          : calcDeliveryFee(quote.km, zone, flatFee)
+        : flatFee
+      : 0;
+  const freeDelivery =
+    mode === "entrega" && freeThreshold > 0 && subtotal >= freeThreshold;
+  const fee = freeDelivery ? 0 : rawFee;
   const discount = couponApplied?.discount ?? 0;
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
