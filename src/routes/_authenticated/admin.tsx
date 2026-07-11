@@ -847,7 +847,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               {/* Ativo */}
               <div className="hidden md:flex justify-start">
                 <SwitchPill
-                  checked={p.active}
+                  checked={!!p.active}
                   onChange={() => toggleActive.mutate({ id: p.id, active: !p.active })}
                   title={p.active ? "Ocultar do cardápio" : "Mostrar no cardápio"}
                 />
