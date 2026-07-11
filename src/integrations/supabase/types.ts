@@ -1486,6 +1486,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      loyalty_min_order: { Args: { _tier: string }; Returns: number }
       loyalty_reward_value: { Args: { _tier: string }; Returns: number }
       loyalty_stamp_bonus: { Args: { _tier: string }; Returns: number }
       loyalty_tier: { Args: { _lifetime: number }; Returns: string }
