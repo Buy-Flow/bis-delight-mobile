@@ -67,14 +67,13 @@ type SiteSettings = {
 type OrderRow = {
   id: string;
   customer_name: string | null;
-  customer_phone: string | null;
+  phone: string | null;
   mode: string | null;
   status: string;
   total: number | null;
   subtotal: number | null;
   delivery_fee: number | null;
   address: string | null;
-  payment_method: string | null;
   created_at: string;
   coupon_code: string | null;
 };
@@ -139,7 +138,7 @@ function PrintCenterPage() {
       supabase
         .from("orders")
         .select(
-          "id,customer_name,customer_phone,mode,status,total,subtotal,delivery_fee,address,payment_method,created_at,coupon_code",
+          "id,customer_name,phone,mode,status,total,subtotal,delivery_fee,address,created_at,coupon_code",
         )
         .neq("status", "cancelado")
         .order("created_at", { ascending: false })
@@ -914,14 +913,14 @@ function bodyHtml(
       <div style="text-align:center;font-weight:900;font-size:1.35em;">ENTREGA</div>
       <div style="text-align:center;">${line}</div>
       <div style="font-size:1.15em;"><b>${escapeHtml(order.customer_name || "Cliente")}</b></div>
-      <div>${escapeHtml(order.customer_phone || "")}</div>
+      <div>${escapeHtml(order.phone || "")}</div>
       <div style="margin-top:6px;font-size:1.05em;line-height:1.4;"><b>${escapeHtml(order.address || "—")}</b></div>
       <div style="text-align:center;margin-top:8px;">${line}</div>
       <div>Pedido: <b>#${order.id.slice(0, 6).toUpperCase()}</b></div>
       <div>Data: ${escapeHtml(dateStr)}</div>
       <div>Itens: ${its.reduce((a, b) => a + b.quantity, 0)}</div>
       <div>Total: <b>${BRL(Number(order.total ?? 0))}</b></div>
-      <div>Pgto: ${escapeHtml(order.payment_method || "—")}</div>
+      <div>Pgto: ${escapeHtml(order.status || "—")}</div>
       <div style="text-align:center;margin-top:6px;">${line}</div>
       <div style="text-align:center;">${escapeHtml(storeName)}</div>
       <div style="text-align:center;">${escapeHtml(site?.whatsapp_display || site?.whatsapp || "")}</div>
@@ -979,7 +978,7 @@ function bodyHtml(
     <div>Pedido: <b>#${order.id.slice(0, 6).toUpperCase()}</b></div>
     <div>Data: ${escapeHtml(dateStr)}</div>
     <div>Cliente: ${escapeHtml(order.customer_name || "—")}</div>
-    ${order.customer_phone ? `<div>Tel: ${escapeHtml(order.customer_phone)}</div>` : ""}
+    ${order.phone ? `<div>Tel: ${escapeHtml(order.phone)}</div>` : ""}
     <div>Modo: ${escapeHtml(order.mode || "—")}</div>
     ${order.address ? `<div>End: ${escapeHtml(order.address)}</div>` : ""}
     <div style="text-align:center;">${line}</div>
@@ -989,7 +988,7 @@ function bodyHtml(
     ${Number(order.delivery_fee ?? 0) > 0 ? `<div style="display:flex;justify-content:space-between;"><span>Entrega</span><span>${BRL(Number(order.delivery_fee))}</span></div>` : ""}
     ${order.coupon_code ? `<div style="display:flex;justify-content:space-between;"><span>Cupom ${escapeHtml(order.coupon_code)}</span><span></span></div>` : ""}
     <div style="display:flex;justify-content:space-between;font-size:1.2em;font-weight:900;"><span>TOTAL</span><span>${BRL(Number(order.total ?? 0))}</span></div>
-    <div>Pagamento: <b>${escapeHtml(order.payment_method || "—")}</b></div>
+    <div>Pagamento: <b>${escapeHtml(order.status || "—")}</b></div>
     ${S.show_pix && site?.pix_key ? `<div style="text-align:center;margin-top:4px;">PIX: ${escapeHtml(site.pix_key)}</div>` : ""}
     ${S.show_qr ? `<div style="text-align:center;margin-top:6px;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://querobis.lovable.app/pedido/${order.id}`)}" style="width:110px;height:110px;"/></div>` : ""}
     <div style="text-align:center;margin-top:6px;">${line}</div>
@@ -1060,7 +1059,7 @@ function mockOrder(): OrderRow {
   return {
     id: "0000000000ab1234cd",
     customer_name: "Cliente Exemplo",
-    customer_phone: "+55 11 90000-0000",
+    phone: "+55 11 90000-0000",
     mode: "entrega",
     status: "pago",
     total: 47.9,
