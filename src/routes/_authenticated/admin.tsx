@@ -603,6 +603,27 @@ function StatusPill({ status }: { status: string }) {
 
 
 /* =============================== Products =============================== */
+function SortHeader({ label, active, dir, onClick, align = "left" }: { label: string; active: boolean; dir: "asc" | "desc"; onClick: () => void; align?: "left" | "right" }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider transition hover:text-white",
+        active ? "text-neon-pink" : "text-white/45",
+        align === "right" && "justify-end",
+      )}
+    >
+      {label}
+      {active ? (
+        dir === "asc" ? <ArrowUp className="h-3 w-3" strokeWidth={3} /> : <ArrowDown className="h-3 w-3" strokeWidth={3} />
+      ) : (
+        <ArrowDown className="h-3 w-3 opacity-30" strokeWidth={3} />
+      )}
+    </button>
+  );
+}
+
 function ProductsTab({ initialEditId }: { initialEditId?: string }) {
   const navigate = useNavigate();
   const { data: products = [] } = useAllProducts();
