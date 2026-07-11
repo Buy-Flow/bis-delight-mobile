@@ -62,19 +62,20 @@ export const Route = createFileRoute("/api/copilot-chat")({
           return result.toUIMessageStreamResponse({
             originalMessages: body.messages,
             onFinish: async ({ messages }) => {
-              // Persist last assistant message + user message to thread if provided
               const threadId = body.threadId;
               if (!threadId) return;
               try {
-                const lastUser = [...body.messages].reverse().find(m => m.role === "user");
+                const originals = body.messages ?? [];
+                const lastUser = [...originals].reverse().find(m => m.role === "user");
                 const finalAssistant = messages[messages.length - 1];
-                const rows: Array<Record<string, unknown>> = [];
+                const rows: Array<{ thread_id: string; role: string; parts: unknown }> = [];
                 if (lastUser) rows.push({ thread_id: threadId, role: "user", parts: lastUser.parts });
                 if (finalAssistant && finalAssistant.role === "assistant") {
                   rows.push({ thread_id: threadId, role: "assistant", parts: finalAssistant.parts });
                 }
                 if (rows.length) {
-                  await supabaseAdmin.from("copilot_messages").insert(rows);
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  await supabaseAdmin.from("copilot_messages").insert(rows as any);
                   await supabaseAdmin
                     .from("copilot_threads")
                     .update({ updated_at: new Date().toISOString() })

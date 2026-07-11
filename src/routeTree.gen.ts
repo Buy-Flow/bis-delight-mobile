@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
@@ -65,6 +66,11 @@ const IndexRoute = IndexRouteImport.update({
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCopilotChatRoute = ApiCopilotChatRouteImport.update({
+  id: '/api/copilot-chat',
+  path: '/api/copilot-chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
+  '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/previsao'
     | '/rush'
+    | '/api/copilot-chat'
     | '/produto/$id'
     | '/rastrear/$orderId'
   fileRoutesByTo: FileRoutesByTo
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/previsao'
     | '/rush'
+    | '/api/copilot-chat'
     | '/produto/$id'
     | '/rastrear/$orderId'
   id:
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/previsao'
     | '/_authenticated/rush'
+    | '/api/copilot-chat'
     | '/produto/$id'
     | '/_authenticated/rastrear/$orderId'
   fileRoutesById: FileRoutesById
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
 }
 
@@ -307,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/produto/$id'
       fullPath: '/produto/$id'
       preLoaderRoute: typeof ProdutoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/copilot-chat': {
+      id: '/api/copilot-chat'
+      path: '/api/copilot-chat'
+      fullPath: '/api/copilot-chat'
+      preLoaderRoute: typeof ApiCopilotChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/rush': {
@@ -419,6 +439,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiCopilotChatRoute: ApiCopilotChatRoute,
   ProdutoIdRoute: ProdutoIdRoute,
 }
 export const routeTree = rootRouteImport
