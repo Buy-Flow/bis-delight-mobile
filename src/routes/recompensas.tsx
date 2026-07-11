@@ -275,7 +275,23 @@ function RecompensasPage() {
 
           <div className="space-y-4">
             {TIER_ORDER.map((t, idx) => {
-              const info = TIER_META[t];
+              const base = TIER_META[t];
+              const row = tiers?.[t];
+              const info = {
+                ...base,
+                minLifetime: row?.min_lifetime ?? base.minLifetime,
+                reward: row ? Number(row.coupon_value) : base.reward,
+                minOrder: row ? Number(row.min_order_value) : base.minOrder,
+                stampsPerOrder: row?.stamps_per_order ?? base.stampsPerOrder,
+                multiplier: row ? `${row.stamps_per_order}×` : base.multiplier,
+                benefits: row
+                  ? [
+                      `${row.stamps_per_order} selo${row.stamps_per_order > 1 ? "s" : ""} por pedido`,
+                      `Pedido mínimo de R$ ${Number(row.min_order_value).toFixed(0)}`,
+                      `Cupom de R$ ${Number(row.coupon_value).toFixed(0)} a cada ${row.redeem_cost} selos`,
+                    ]
+                  : base.benefits,
+              };
               const lifetime = status?.lifetime ?? 0;
               const reached = lifetime >= info.minLifetime;
               const isCurrent = status?.tier === t;
