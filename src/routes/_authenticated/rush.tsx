@@ -589,62 +589,66 @@ function RushPage() {
           <div className="flex items-center gap-2">
             <Flame className="h-4 w-4 text-neon-yellow" />
             <span className="text-sm font-semibold">Rush</span>
-            <span className="hidden items-center gap-1 text-[10px] text-white/50 sm:inline-flex">
-              {connected ? (
-                <>
-                  <Wifi className="h-3 w-3 text-emerald-400" /> ao vivo
-                </>
-              ) : (
-                <>
-                  <WifiOff className="h-3 w-3 text-white/40" /> reconectando
-                </>
-              )}
-            </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={toggleStore}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-bold transition",
-                isPaused
-                  ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40"
-                  : "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40",
-              )}
-              aria-label={isPaused ? "Retomar pedidos" : "Pausar pedidos"}
-            >
-              {isPaused ? (
-                <PauseCircle className="h-3.5 w-3.5" />
-              ) : (
-                <PlayCircle className="h-3.5 w-3.5" />
-              )}
-              <span className="hidden sm:inline">{isPaused ? "Pausado" : "Aberto"}</span>
-            </button>
-            <button
-              type="button"
-              onClick={toggleNotify}
-              className={cn(
-                "grid h-8 w-8 place-items-center rounded-xl text-white/80 hover:bg-white/10",
-                notifyOn ? "bg-emerald-500/20 text-emerald-300" : "bg-white/5",
-              )}
-              aria-label={notifyOn ? "Desativar push" : "Ativar push"}
-              title={notifyOn ? "Alertas push ligados" : "Ativar alertas push"}
-            >
-              {notifyOn ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4 text-white/40" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setSoundOn((v) => !v)}
-              className="grid h-8 w-8 place-items-center rounded-xl bg-white/5 text-white/80 hover:bg-white/10"
-              aria-label={soundOn ? "Silenciar" : "Ativar som"}
-              title={soundOn ? "Som ligado" : "Som mudo"}
-            >
-              <Radio className={cn("h-4 w-4", soundOn ? "text-neon-yellow" : "text-white/40")} />
-            </button>
-            <AdminNavMenu />
-          </div>
+          <AdminNavMenu />
         </div>
       </header>
+
+      {/* Sub-bar: live status + actions */}
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2">
+        <span className="inline-flex items-center gap-1 text-[10px] text-white/60">
+          {connected ? (
+            <>
+              <Wifi className="h-3 w-3 text-emerald-400" /> ao vivo
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-3 w-3 text-white/40" /> reconectando
+            </>
+          )}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={toggleStore}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-bold transition",
+              isPaused
+                ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40"
+                : "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40",
+            )}
+            aria-label={isPaused ? "Retomar pedidos" : "Pausar pedidos"}
+          >
+            {isPaused ? (
+              <PauseCircle className="h-3.5 w-3.5" />
+            ) : (
+              <PlayCircle className="h-3.5 w-3.5" />
+            )}
+            <span>{isPaused ? "Pausado" : "Aberto"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={toggleNotify}
+            className={cn(
+              "grid h-8 w-8 place-items-center rounded-xl text-white/80 hover:bg-white/10",
+              notifyOn ? "bg-emerald-500/20 text-emerald-300" : "bg-white/5",
+            )}
+            aria-label={notifyOn ? "Desativar push" : "Ativar push"}
+            title={notifyOn ? "Alertas push ligados" : "Ativar alertas push"}
+          >
+            {notifyOn ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4 text-white/40" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSoundOn((v) => !v)}
+            className="grid h-8 w-8 place-items-center rounded-xl bg-white/5 text-white/80 hover:bg-white/10"
+            aria-label={soundOn ? "Silenciar" : "Ativar som"}
+            title={soundOn ? "Som ligado" : "Som mudo"}
+          >
+            <Radio className={cn("h-4 w-4", soundOn ? "text-neon-yellow" : "text-white/40")} />
+          </button>
+        </div>
+      </div>
 
 
       <main className="mx-auto max-w-2xl px-3 pt-3">
