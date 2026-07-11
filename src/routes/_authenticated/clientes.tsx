@@ -212,7 +212,7 @@ function ClientesPage() {
       <Toaster position="bottom-center" theme="dark" closeButton />
 
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-3 py-5 sm:px-4 sm:py-8">
         <ClientesDashboard />
       </main>
     </div>
@@ -535,14 +535,14 @@ function ClientesDashboard() {
       {/* Title */}
       <section>
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <h1
-              className="text-4xl font-black uppercase leading-none text-white"
+              className="text-3xl font-black uppercase leading-none text-white sm:text-4xl"
               style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
             >
               Central de <span className="text-neon-pink">clientes</span>
             </h1>
-            <p className="mt-2 text-sm text-white/60">
+            <p className="mt-2 text-xs text-white/60 sm:text-sm">
               <Users className="-mt-0.5 inline h-4 w-4 text-neon-cyan" /> {kpis.total}{" "}
               cadastros · {kpis.buyers} compradores · LTV médio {BRL(kpis.ltvAvg)}
             </p>
@@ -954,19 +954,19 @@ function PodiumCard({
     <div className={styles.height}>
       <button
         onClick={onOpen}
-        className={`group relative w-full overflow-hidden rounded-2xl border ${styles.border} bg-gradient-to-b ${styles.bg} p-3 text-left transition hover:brightness-110`}
+        className={`group relative w-full overflow-hidden rounded-2xl border ${styles.border} bg-gradient-to-b ${styles.bg} p-2.5 text-left transition hover:brightness-110 sm:p-3`}
       >
-        <div className="flex items-center justify-between">
-          {styles.icon}
-          <span className={`text-3xl font-black ${styles.text}`}>#{rank}</span>
+        <div className="flex items-center justify-between gap-1">
+          <span className="shrink-0">{styles.icon}</span>
+          <span className={`text-xl font-black sm:text-3xl ${styles.text}`}>#{rank}</span>
         </div>
-        <p className="mt-2 truncate text-sm font-bold text-white">
+        <p className="mt-2 truncate text-xs font-bold text-white sm:text-sm">
           {client.full_name?.trim() || "Sem nome"}
         </p>
-        <p className={`mt-1 text-lg font-black ${styles.text}`}>
+        <p className={`mt-1 truncate text-sm font-black sm:text-lg ${styles.text}`}>
           {BRL(client.paid_spent)}
         </p>
-        <p className="text-[10px] text-white/50">
+        <p className="truncate text-[9px] text-white/50 sm:text-[10px]">
           {client.paid_count} pedido(s) · Ticket {BRL(client.avg_ticket)}
         </p>
       </button>
@@ -1001,105 +1001,134 @@ function ClientRowItem({
     <li
       onClick={onOpen}
       className={
-        "grid cursor-pointer grid-cols-[auto_1fr] gap-3 px-4 py-4 transition hover:bg-white/[0.02] md:grid-cols-[auto_1.4fr_1fr_1fr_auto] md:items-center " +
+        "cursor-pointer px-3 py-3 transition hover:bg-white/[0.02] sm:px-4 sm:py-4 " +
         (selected ? "bg-neon-pink/5" : "")
       }
     >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle();
-        }}
-        className="flex h-6 w-6 items-center justify-center rounded text-white/50 transition hover:text-white"
-      >
-        {selected ? (
-          <CheckSquare className="h-4 w-4 text-neon-pink" />
-        ) : (
-          <Square className="h-4 w-4" />
-        )}
-      </button>
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 md:grid-cols-[auto_1.4fr_1fr_1fr_auto] md:items-center">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle();
+          }}
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-white/50 transition hover:text-white"
+        >
+          {selected ? (
+            <CheckSquare className="h-4 w-4 text-neon-pink" />
+          ) : (
+            <Square className="h-4 w-4" />
+          )}
+        </button>
 
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="truncate font-semibold text-white">
-            {row.full_name?.trim() || <span className="italic text-white/40">Sem nome</span>}
-          </p>
-          <span
-            className={
-              "flex-shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider " +
-              seg.tint
-            }
-          >
-            {row.segment === "campeao" && <Crown className="mr-0.5 inline h-2.5 w-2.5" />}
-            {seg.short}
-          </span>
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/60">
-          <span className="inline-flex items-center gap-1">
-            <Phone className="h-3 w-3" /> {formatPhone(row.phone)}
-          </span>
-          {bday && (
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p className="min-w-0 truncate font-semibold text-white">
+              {row.full_name?.trim() || <span className="italic text-white/40">Sem nome</span>}
+            </p>
             <span
               className={
-                "inline-flex items-center gap-1 " +
-                (isBdayMonth ? "text-neon-pink" : "")
+                "shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider " +
+                seg.tint
               }
             >
-              <Cake className="h-3 w-3" /> {bday}
-              {isBdayMonth && (
-                <span className="ml-1 rounded-full bg-neon-pink/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-pink">
-                  este mês
-                </span>
-              )}
+              {row.segment === "campeao" && <Crown className="mr-0.5 inline h-2.5 w-2.5" />}
+              {seg.short}
             </span>
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/60">
+            <span className="inline-flex items-center gap-1">
+              <Phone className="h-3 w-3" /> {formatPhone(row.phone)}
+            </span>
+            {bday && (
+              <span
+                className={
+                  "inline-flex items-center gap-1 " +
+                  (isBdayMonth ? "text-neon-pink" : "")
+                }
+              >
+                <Cake className="h-3 w-3" /> {bday}
+                {isBdayMonth && (
+                  <span className="ml-1 rounded-full bg-neon-pink/20 px-1.5 py-0.5 text-[10px] font-bold text-neon-pink">
+                    este mês
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+          {row.address && (
+            <p className="mt-1 flex items-start gap-1 text-xs text-white/50">
+              <MapPin className="mt-0.5 h-3 w-3 flex-shrink-0" />
+              <span className="truncate">
+                {row.address}
+                {row.reference ? ` — ${row.reference}` : ""}
+              </span>
+            </p>
+          )}
+
+          {/* Mobile-only inline stats + WhatsApp */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] md:hidden">
+            <span className="inline-flex items-center gap-1 text-white/70">
+              <ShoppingBag className="h-3 w-3 text-neon-yellow" />
+              <span className="font-bold text-white">{row.orders_count}</span> pedido(s)
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="text-white/50">LTV</span>
+              <span className="font-bold text-emerald-300">{BRL(row.paid_spent)}</span>
+            </span>
+            {row.last_order_at && (
+              <span className="text-white/40">Últ. {relative(row.last_order_at)}</span>
+            )}
+            {waHref && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-1 text-[11px] font-bold text-white shadow shadow-emerald-500/20 transition hover:brightness-110"
+              >
+                <MessageCircle className="h-3 w-3" /> WhatsApp
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop columns */}
+        <div className="hidden text-xs text-white/70 md:block">
+          <div className="flex items-center gap-1">
+            <ShoppingBag className="h-3 w-3 text-neon-yellow" />
+            <span className="font-bold text-white">{row.orders_count}</span>
+            <span className="text-white/50">pedido(s)</span>
+          </div>
+          {row.last_order_at && (
+            <p className="mt-0.5 text-[11px] text-white/40">
+              Últ. pedido {relative(row.last_order_at)}
+            </p>
           )}
         </div>
-        {row.address && (
-          <p className="mt-1 flex items-start gap-1 text-xs text-white/50">
-            <MapPin className="mt-0.5 h-3 w-3 flex-shrink-0" />
-            <span className="truncate">
-              {row.address}
-              {row.reference ? ` — ${row.reference}` : ""}
-            </span>
-          </p>
-        )}
-      </div>
 
-      <div className="text-xs text-white/70">
-        <div className="flex items-center gap-1">
-          <ShoppingBag className="h-3 w-3 text-neon-yellow" />
-          <span className="font-bold text-white">{row.orders_count}</span>
-          <span className="text-white/50">pedido(s)</span>
+        <div className="hidden text-xs md:block">
+          <p className="text-white/50">LTV</p>
+          <p className="font-bold text-emerald-300">{BRL(row.paid_spent)}</p>
+          {row.avg_ticket > 0 && (
+            <p className="text-[11px] text-white/40">
+              Ticket {BRL(row.avg_ticket)}
+            </p>
+          )}
         </div>
-        {row.last_order_at && (
-          <p className="mt-0.5 text-[11px] text-white/40">
-            Últ. pedido {relative(row.last_order_at)}
-          </p>
-        )}
-      </div>
 
-      <div className="text-xs">
-        <p className="text-white/50">LTV</p>
-        <p className="font-bold text-emerald-300">{BRL(row.paid_spent)}</p>
-        {row.avg_ticket > 0 && (
-          <p className="text-[11px] text-white/40">
-            Ticket {BRL(row.avg_ticket)}
-          </p>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2 md:justify-end">
-        {waHref && (
-          <a
-            href={waHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110"
-          >
-            <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-          </a>
-        )}
+        <div className="hidden items-center gap-2 md:flex md:justify-end">
+          {waHref && (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+            </a>
+          )}
+        </div>
       </div>
     </li>
   );
@@ -1150,15 +1179,15 @@ function KpiCard({
   tint: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-5">
-      <div className="flex items-center justify-between">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-3 sm:rounded-3xl sm:p-5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[9px] font-bold uppercase tracking-widest text-white/50 sm:text-[10px]">
           {label}
         </div>
-        <Icon className={cn("h-4 w-4", tint)} />
+        <Icon className={cn("h-4 w-4 shrink-0", tint)} />
       </div>
       <div
-        className={cn("mt-3 text-3xl font-black leading-none", tint)}
+        className={cn("mt-2 truncate text-2xl font-black leading-none sm:mt-3 sm:text-3xl", tint)}
         style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
       >
         {value}
@@ -1627,12 +1656,12 @@ function ClientDetailDialog({
                       Gastos nos últimos 6 meses
                     </p>
                   </div>
-                  <div className="flex items-end gap-2">
+                  <div className="flex items-end gap-1 sm:gap-2">
                     {stats.monthly.map((m) => {
                       const h = m.total > 0 ? Math.max(6, (m.total / stats.maxMonthly) * 100) : 3;
                       return (
-                        <div key={m.key} className="flex flex-1 flex-col items-center gap-1">
-                          <div className="relative flex h-32 w-full items-end">
+                        <div key={m.key} className="flex min-w-0 flex-1 flex-col items-center gap-1">
+                          <div className="relative flex h-24 w-full items-end sm:h-32">
                             <div
                               className="w-full rounded-t-md bg-gradient-to-t from-neon-pink to-neon-yellow transition-all"
                               style={{ height: `${h}%` }}
@@ -1642,7 +1671,7 @@ function ClientDetailDialog({
                           <p className="text-[10px] font-bold text-white/70">
                             {m.label}
                           </p>
-                          <p className="text-[9px] text-white/40">
+                          <p className="hidden text-[9px] text-white/40 sm:block">
                             {m.total > 0 ? BRL(m.total) : "—"}
                           </p>
                         </div>
