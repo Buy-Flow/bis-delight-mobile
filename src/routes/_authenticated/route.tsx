@@ -6,6 +6,7 @@ const ADMIN_PREFIXES = [
   "/admin",
   "/rush",
   "/ai-growth",
+  "/avaliacoes",
   "/carrinhos",
   "/clientes",
   "/copiloto",
