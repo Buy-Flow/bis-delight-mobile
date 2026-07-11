@@ -259,10 +259,15 @@ function RecompensasPage() {
 
         {/* Trilha de níveis */}
         <section className="mt-6">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/70">
-            <Sparkles className="h-4 w-4 text-neon-yellow" />
-            Trilha de níveis
-          </h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/70">
+              <Sparkles className="h-4 w-4 text-neon-yellow" />
+              Trilha de níveis
+            </h3>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+              Bronze → Prata → Ouro
+            </span>
+          </div>
           <div className="space-y-3">
             {TIER_ORDER.map((t) => {
               const info = TIER_META[t];
@@ -274,42 +279,58 @@ function RecompensasPage() {
                   className={cn(
                     "relative overflow-hidden rounded-2xl border p-4 transition-all",
                     isCurrent
-                      ? "border-neon-yellow/60 bg-gradient-to-br from-white/[0.08] to-white/[0.02] shadow-[0_0_28px_-8px_rgba(255,215,60,0.45)]"
+                      ? "border-neon-yellow/60 bg-gradient-to-br from-white/[0.09] to-white/[0.02] shadow-[0_0_30px_-8px_rgba(255,215,60,0.5)]"
                       : reached
-                        ? "border-white/15 bg-white/[0.04]"
-                        : "border-white/10 bg-black/25 opacity-70",
+                        ? "border-white/15 bg-white/[0.05]"
+                        : "border-white/10 bg-black/25 opacity-75",
                   )}
                 >
-                  <div aria-hidden className={cn("pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br opacity-20 blur-2xl", info.gradient)} />
+                  <div aria-hidden className={cn("pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-gradient-to-br opacity-25 blur-2xl", info.gradient)} />
                   <div className="relative flex items-start gap-3">
-                    <div className="relative h-14 w-14 shrink-0">
+                    <div className="relative h-16 w-16 shrink-0">
+                      <div aria-hidden className={cn("absolute inset-0 rounded-full bg-gradient-to-br opacity-40 blur-lg", info.gradient)} />
                       <img
                         src={info.image}
                         alt={info.label}
                         loading="lazy"
                         width={128}
                         height={128}
-                        className={cn("h-full w-full object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.4)]", !reached && "grayscale")}
+                        className={cn("relative h-full w-full object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)]", !reached && "grayscale opacity-60")}
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className={cn("text-base font-black", info.text)}>{info.label}</h4>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className={cn("text-lg font-black leading-tight", info.text)}>{info.label}</h4>
                         {isCurrent && (
                           <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#1a0b2e]">
-                            Você
+                            Você está aqui
                           </span>
                         )}
                         {!reached && <Lock className="h-3.5 w-3.5 text-white/40" />}
                       </div>
-                      <div className="text-[11px] text-white/60">
-                        {info.minLifetime === 0
-                          ? "Nível inicial"
-                          : `A partir de ${info.minLifetime} selos totais`}
+                      <div className="mt-0.5 text-[11px] font-semibold text-white/55">
+                        {info.tagline}
                       </div>
-                      <ul className="mt-2 space-y-1">
+
+                      {/* Chips de destaque */}
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <span className={cn("inline-flex items-center gap-1 rounded-full border border-current/25 px-2 py-0.5 text-[10px] font-black", info.text)}>
+                          <Sparkles className="h-2.5 w-2.5" strokeWidth={3} />
+                          {info.multiplier} selos/pedido
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-white/80">
+                          <ShoppingBag className="h-2.5 w-2.5" strokeWidth={3} />
+                          Mín. R$ {info.minOrder}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-neon-yellow/40 bg-neon-yellow/10 px-2 py-0.5 text-[10px] font-black text-neon-yellow">
+                          <Ticket className="h-2.5 w-2.5" strokeWidth={3} />
+                          Cupom R$ {info.reward}
+                        </span>
+                      </div>
+
+                      <ul className="mt-2.5 space-y-1">
                         {info.benefits.map((b, i) => (
-                          <li key={i} className="flex items-start gap-1.5 text-[12px] text-white/85">
+                          <li key={i} className="flex items-start gap-1.5 text-[12px] leading-snug text-white/85">
                             <Check className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", info.text)} strokeWidth={3} />
                             <span>{b}</span>
                           </li>
