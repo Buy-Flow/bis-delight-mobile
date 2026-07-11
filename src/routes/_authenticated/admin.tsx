@@ -46,6 +46,8 @@ import {
   BellRing,
   Flame,
   Pause,
+  Award,
+
 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,6 +101,7 @@ import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
 import { ProductPicker } from "@/components/admin/ProductPicker";
 
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
+import { LoyaltyTiersTab } from "@/components/admin/LoyaltyTiersTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
 import { CombosSection } from "@/components/admin/CombosSection";
 import { UrgencySection } from "@/components/admin/UrgencySection";
@@ -176,6 +179,7 @@ function AdminPage() {
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "notifications", label: "Notificações", icon: BellRing },
     { id: "promos", label: "Promos & Combos", icon: Flame },
+    { id: "loyalty", label: "Fidelidade", icon: Award },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
@@ -224,6 +228,7 @@ function AdminPage() {
         {tab === "news" && <NewsTab />}
         {tab === "notifications" && <NotificationsTab />}
         {tab === "promos" && <PromosTab />}
+        {tab === "loyalty" && <LoyaltyTiersTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
