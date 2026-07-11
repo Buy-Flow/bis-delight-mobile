@@ -13,6 +13,7 @@ const ADMIN_PREFIXES = [
   "/financeiro",
   "/notificacoes",
   "/precificacao",
+  "/lucratividade",
   "/previsao",
 ];
 
