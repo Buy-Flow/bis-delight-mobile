@@ -290,6 +290,37 @@ export function CheckoutSheet() {
             <div className="mt-3 h-px w-full bg-gradient-to-r from-neon-cyan/50 via-neon-pink/30 to-transparent" />
           </div>
 
+          {storeStatus.isClosed && (
+            <div className="rounded-2xl border border-red-400/40 bg-gradient-to-br from-red-500/15 to-rose-500/10 p-4" role="alert">
+              <div className="flex items-start gap-3">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-500/25 ring-1 ring-red-400/40 text-red-100">
+                  <MoonStar className="h-5 w-5" strokeWidth={2.4} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-black text-white">
+                    {storeStatus.reason === "override-closed"
+                      ? "Estamos temporariamente fechados"
+                      : "Loja fechada no momento"}
+                  </div>
+                  <div className="mt-1 text-[12px] leading-snug text-white/80">
+                    {storeStatus.nextOpenLabel
+                      ? `Você pode montar seu pedido, mas o envio só é liberado quando reabrirmos ${storeStatus.nextOpenLabel}.`
+                      : "Você pode montar seu pedido, mas o envio só é liberado quando reabrirmos."}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {storeStatus.closingSoon && storeStatus.minutesUntilClose !== null && (
+            <div className="rounded-2xl border border-amber-400/40 bg-amber-500/10 p-3" role="status">
+              <div className="flex items-center gap-2 text-[12px] font-semibold text-amber-100">
+                <ClockIcon className="h-4 w-4 text-amber-300" />
+                Fechamos em {storeStatus.minutesUntilClose} min · finalize o pedido para garantir.
+              </div>
+            </div>
+          )}
+
           {!authLoading && !isAuthenticated && (
             <div className="rounded-2xl border border-neon-yellow/40 bg-neon-yellow/10 p-4">
               <div className="flex items-start gap-3">
