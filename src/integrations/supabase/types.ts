@@ -343,6 +343,109 @@ export type Database = {
         }
         Relationships: []
       }
+      copilot_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          params: Json
+          result: Json | null
+          status: string
+          target_id: string | null
+          target_table: string | null
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          params?: Json
+          result?: Json | null
+          status?: string
+          target_id?: string | null
+          target_table?: string | null
+          thread_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          params?: Json
+          result?: Json | null
+          status?: string
+          target_id?: string | null
+          target_table?: string | null
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_actions_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_messages: {
+        Row: {
+          created_at: string
+          id: string
+          parts: Json
+          role: string
+          thread_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role: string
+          thread_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
