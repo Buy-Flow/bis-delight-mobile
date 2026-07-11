@@ -603,6 +603,27 @@ function StatusPill({ status }: { status: string }) {
 
 
 /* =============================== Products =============================== */
+function SortHeader({ label, active, dir, onClick, align = "left" }: { label: string; active: boolean; dir: "asc" | "desc"; onClick: () => void; align?: "left" | "right" }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider transition hover:text-white",
+        active ? "text-neon-pink" : "text-white/45",
+        align === "right" && "justify-end",
+      )}
+    >
+      {label}
+      {active ? (
+        dir === "asc" ? <ArrowUp className="h-3 w-3" strokeWidth={3} /> : <ArrowDown className="h-3 w-3" strokeWidth={3} />
+      ) : (
+        <ArrowDown className="h-3 w-3 opacity-30" strokeWidth={3} />
+      )}
+    </button>
+  );
+}
+
 function ProductsTab({ initialEditId }: { initialEditId?: string }) {
   const navigate = useNavigate();
   const { data: products = [] } = useAllProducts();
@@ -626,6 +647,19 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
 
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<"manual" | "name" | "category" | "price">("manual");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const toggleSort = (key: "name" | "category" | "price") => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir(key === "price" ? "desc" : "asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey("manual");
+      setSortDir("asc");
+    }
+  };
   const [dragId, setDragId] = useState<string | null>(null);
   const [localOrder, setLocalOrder] = useState<Product[] | null>(null);
 
@@ -639,12 +673,20 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
   const source = localOrder ?? products;
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return source.filter((p) => {
+    const filtered = source.filter((p) => {
       if (filter !== "all" && p.category !== filter) return false;
       if (q && !p.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [source, filter, search]);
+    if (sortKey === "manual") return filtered;
+    const mult = sortDir === "asc" ? 1 : -1;
+    const catName = (id: string) => catMap.get(id)?.name?.toLowerCase() ?? "";
+    return [...filtered].sort((a, b) => {
+      if (sortKey === "price") return (a.basePrice - b.basePrice) * mult;
+      if (sortKey === "category") return catName(a.category).localeCompare(catName(b.category), "pt") * mult;
+      return a.name.localeCompare(b.name, "pt") * mult;
+    });
+  }, [source, filter, search, sortKey, sortDir, catMap]);
 
   const onDragStart = (id: string) => setDragId(id);
   const onDragOver = (e: React.DragEvent, overId: string) => {
@@ -767,9 +809,9 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
         {/* Header row */}
         <div className="hidden md:grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,1fr)_120px_80px_100px_100px_100px] gap-3 border-b border-white/5 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-white/45">
           <div />
-          <div>Produto</div>
-          <div>Categoria</div>
-          <div>Preço</div>
+          <SortHeader label="Produto" active={sortKey === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
+          <SortHeader label="Categoria" active={sortKey === "category"} dir={sortDir} onClick={() => toggleSort("category")} />
+          <SortHeader label="Preço" active={sortKey === "price"} dir={sortDir} onClick={() => toggleSort("price")} />
           <div>Ativo</div>
           <div>Destaque</div>
           <div>Sugestão</div>
