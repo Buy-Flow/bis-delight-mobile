@@ -1,0 +1,12 @@
+
+ALTER TABLE public.products
+  ADD COLUMN IF NOT EXISTS cost_price NUMERIC DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS packaging_cost NUMERIC DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS target_margin_pct NUMERIC DEFAULT 60;
+
+ALTER TABLE public.site_settings
+  ADD COLUMN IF NOT EXISTS pricing_card_fee_pct NUMERIC DEFAULT 3.5,
+  ADD COLUMN IF NOT EXISTS pricing_tax_pct NUMERIC DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS pricing_platform_fee_pct NUMERIC DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS pricing_fixed_cost_monthly NUMERIC DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS pricing_expected_sales_monthly INTEGER DEFAULT 300;
