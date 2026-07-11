@@ -1077,17 +1077,19 @@ export function ProductModal({
                 {isLast ? (
                   <button
                     onClick={submit}
-                    className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97]"
+                    disabled={paused}
+                    className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:from-white/20 disabled:to-white/10 disabled:shadow-none"
                   >
                     <span
                       className="font-display text-lg font-bold uppercase tracking-wider text-white"
                       style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                     >
-                      Adicionar
+                      {paused ? "Pausado" : "Adicionar"}
                     </span>
                     <span className="text-base font-extrabold text-white">{brl(total)}</span>
                   </button>
                 ) : (
+
                   <button
                     onClick={() => {
                       if (!canAdvance) {
