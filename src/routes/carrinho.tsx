@@ -6,7 +6,7 @@ import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
-import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
+
 import { useComboDiscounts } from "@/lib/use-combo-discounts";
 
 const ProductModal = lazy(() =>
@@ -110,7 +110,6 @@ function CartPage() {
         ) : (
           <div className="space-y-3">
             <FreeDeliveryBar />
-            <CheckoutUpsellStrip />
             {items.map((it) => (
               <div
                 key={it.uid}
