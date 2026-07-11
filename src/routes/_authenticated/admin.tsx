@@ -3101,12 +3101,14 @@ function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
         <DeliveryZoneEditor
           storeLat={s.storeLat}
           storeLng={s.storeLng}
-          onOriginChange={(lat, lng) => {
+          onOriginChange={(lat: number, lng: number) => {
             set("storeLat", lat);
             set("storeLng", lng);
           }}
           zone={s.deliveryZone}
-          onZoneChange={(patch) => set("deliveryZone", { ...s.deliveryZone, ...patch })}
+          onZoneChange={(patch: Partial<DeliveryZoneConfig>) =>
+            set("deliveryZone", { ...s.deliveryZone, ...patch })
+          }
           city={s.city}
           flatFallbackFee={s.deliveryFee}
         />
