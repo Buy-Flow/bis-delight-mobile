@@ -65,7 +65,7 @@ export function BottomNav() {
   const search = new URLSearchParams(searchStr ?? "");
 
   // Hide on admin / auth-only routes
-  const hiddenPrefixes = ["/pedidos", "/carrinhos", "/clientes", "/financeiro", "/notificacoes", "/admin", "/auth"];
+  const hiddenPrefixes = ["/rush", "/carrinhos", "/clientes", "/financeiro", "/notificacoes", "/admin", "/auth", "/previsao"];
   if (hiddenPrefixes.some((p) => pathname.startsWith(p))) return null;
 
   const isHome = pathname === "/";
