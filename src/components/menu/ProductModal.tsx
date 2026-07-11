@@ -1109,7 +1109,7 @@ export function ProductModal({
                       className="font-display text-lg font-bold uppercase tracking-wider text-white"
                       style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                     >
-                      {paused ? "Pausado" : "Adicionar"}
+                      {paused ? "Pausado" : (submitLabel ?? (editItem ? "Salvar" : "Adicionar"))}
                     </span>
                     <span className="text-base font-extrabold text-white">{brl(total)}</span>
                   </button>
