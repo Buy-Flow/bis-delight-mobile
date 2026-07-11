@@ -19,6 +19,7 @@ const ADMIN_PREFIXES = [
   "/biblioteca",
   "/pdv",
   "/garcons",
+  "/impressao",
 ];
 
 function isAdminRoute(pathname: string) {
