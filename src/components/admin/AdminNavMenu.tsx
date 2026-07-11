@@ -17,9 +17,8 @@ import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/admin", label: "Painel administrador", icon: LayoutDashboard },
-  { to: "/rush", label: "Rush (tempo real)", icon: Flame },
+  { to: "/rush", label: "Rush (pedidos ao vivo)", icon: Flame },
   { to: "/previsao", label: "Previsão de demanda", icon: Sparkles },
-  { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/financeiro", label: "Financeiro", icon: LineChart },
   { to: "/clientes", label: "Clientes", icon: Users },
 ] as const;
