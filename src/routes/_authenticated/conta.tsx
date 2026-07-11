@@ -603,7 +603,7 @@ function FavoritesPanel() {
 
 function ProfilePanel() {
   const { user } = useAuth();
-  const isAdmin = useIsAdmin();
+  const { data: isAdmin } = useIsAdmin();
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
