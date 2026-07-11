@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
+import { useStoreStatus } from "@/lib/store-status";
+import { MoonStar, Clock as ClockIcon } from "lucide-react";
 
 type Mode = "entrega" | "retirada";
 
