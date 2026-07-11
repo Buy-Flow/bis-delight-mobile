@@ -692,10 +692,15 @@ export function CheckoutSheet() {
         <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             onClick={send}
-            disabled={sending || authLoading || storeStatus.isClosed}
+            disabled={
+              sending ||
+              authLoading ||
+              storeStatus.isClosed ||
+              (mode === "entrega" && outsideRadius)
+            }
             className={cn(
               "flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white active:scale-[.98] disabled:opacity-60",
-              storeStatus.isClosed
+              storeStatus.isClosed || (mode === "entrega" && outsideRadius)
                 ? "bg-white/10 ring-1 ring-white/15"
                 : "bg-neon-pink glow-pink",
             )}
@@ -707,6 +712,11 @@ export function CheckoutSheet() {
                 {storeStatus.nextOpenLabel
                   ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
                   : "Loja fechada no momento"}
+              </>
+            ) : mode === "entrega" && outsideRadius ? (
+              <>
+                <AlertTriangle className="h-4 w-4 text-red-300" />
+                Endereço fora do raio de entrega
               </>
             ) : isAuthenticated ? (
               `Enviar pedido no WhatsApp · ${brl(total)}`
