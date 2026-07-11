@@ -399,7 +399,10 @@ export function ProductModal({
         quantity: qty,
         unitPrice: unit,
       };
-      if (editItem) {
+      if (onSubmit) {
+        onSubmit(payload, !!editItem);
+        toast.success(`${product.name} ${editItem ? "atualizado" : "adicionado"}!`);
+      } else if (editItem) {
         update(editItem.uid, payload);
         toast.success(`${product.name} atualizado!`);
       } else {
