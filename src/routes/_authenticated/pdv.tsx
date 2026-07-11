@@ -619,40 +619,76 @@ function CartPanel(p: CartPanelProps) {
             Toque em um produto para começar
           </div>
         ) : (
-          p.cart.map((l) => (
-            <div
-              key={l.key}
-              className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.04] p-2"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-bold text-white">{l.name}</div>
-                <div className="truncate text-[11px] text-white/50">
-                  {[l.size, l.flavor].filter(Boolean).join(" · ") || "—"} · {BRL(l.unitPrice)}
+          p.cart.map((l) => {
+            const meta = [l.size, l.flavor].filter(Boolean).join(" · ");
+            return (
+              <div
+                key={l.uid}
+                className="rounded-xl border border-white/5 bg-white/[0.04] p-2"
+              >
+                <div className="flex items-center gap-2">
+                  {l.image && (
+                    <img
+                      src={l.image}
+                      alt=""
+                      className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold text-white">{l.name}</div>
+                    <div className="truncate text-[11px] text-white/50">
+                      {meta || "—"} · {BRL(l.unitPrice)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-0.5">
+                    <button
+                      onClick={() => p.changeQty(l.uid, -1)}
+                      className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="w-5 text-center text-xs font-bold text-white">{l.quantity}</span>
+                    <button
+                      onClick={() => p.changeQty(l.uid, 1)}
+                      className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+
+                {(l.extras.length > 0 || l.removed.length > 0 || l.note) && (
+                  <div className="mt-1.5 space-y-0.5 pl-12 text-[10px] leading-tight">
+                    {l.extras.map((e, i) => (
+                      <div key={`e-${i}`} className="text-emerald-300/80">+ {e.label}</div>
+                    ))}
+                    {l.removed.map((r, i) => (
+                      <div key={`r-${i}`} className="text-rose-300/80">− sem {r}</div>
+                    ))}
+                    {l.note && <div className="text-amber-300/80">obs: {l.note}</div>}
+                  </div>
+                )}
+
+                <div className="mt-1.5 flex items-center justify-end gap-1 pl-12">
+                  <button
+                    onClick={() => p.onEditLine(l)}
+                    className="grid h-6 w-6 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+                    title="Editar"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={() => p.removeLine(l.uid)}
+                    className="grid h-6 w-6 place-items-center rounded-full text-red-300 hover:bg-red-500/10"
+                    title="Remover"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/30 p-0.5">
-                <button
-                  onClick={() => p.changeQty(l.key, -1)}
-                  className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
-                >
-                  <Minus className="h-3 w-3" />
-                </button>
-                <span className="w-5 text-center text-xs font-bold text-white">{l.quantity}</span>
-                <button
-                  onClick={() => p.changeQty(l.key, 1)}
-                  className="grid h-6 w-6 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
-                >
-                  <Plus className="h-3 w-3" />
-                </button>
-              </div>
-              <button
-                onClick={() => p.removeLine(l.key)}
-                className="grid h-7 w-7 place-items-center rounded-full text-red-300 hover:bg-red-500/10"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
