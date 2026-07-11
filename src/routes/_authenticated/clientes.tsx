@@ -535,14 +535,14 @@ function ClientesDashboard() {
       {/* Title */}
       <section>
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <h1
-              className="text-4xl font-black uppercase leading-none text-white"
+              className="text-3xl font-black uppercase leading-none text-white sm:text-4xl"
               style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
             >
               Central de <span className="text-neon-pink">clientes</span>
             </h1>
-            <p className="mt-2 text-sm text-white/60">
+            <p className="mt-2 text-xs text-white/60 sm:text-sm">
               <Users className="-mt-0.5 inline h-4 w-4 text-neon-cyan" /> {kpis.total}{" "}
               cadastros · {kpis.buyers} compradores · LTV médio {BRL(kpis.ltvAvg)}
             </p>
