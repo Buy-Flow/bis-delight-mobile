@@ -578,35 +578,30 @@ function RushPage() {
       <Toaster theme="dark" richColors position="top-center" />
 
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[oklch(0.09_0.08_305)]/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-2xl items-center gap-2 px-3 py-2.5">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-[oklch(0.11_0.08_300)]/85 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5">
           <Link
             to="/admin"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5 text-white/80 hover:bg-white/10"
-            aria-label="Voltar"
+            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/80 hover:bg-white/10"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" /> Admin
           </Link>
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-neon-pink to-neon-yellow shadow-[0_0_20px_-4px_var(--neon-pink)]">
-              <Flame className="h-4 w-4 text-[oklch(0.13_0.08_305)]" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate font-display text-lg font-black leading-none">Rush</h1>
-              <p className="mt-0.5 flex items-center gap-1 text-[10px] text-white/50">
-                {connected ? (
-                  <>
-                    <Wifi className="h-3 w-3 text-emerald-400" /> ao vivo
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="h-3 w-3 text-white/40" /> reconectando
-                  </>
-                )}
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Flame className="h-4 w-4 text-neon-yellow" />
+            <span className="text-sm font-semibold">Rush</span>
+            <span className="hidden items-center gap-1 text-[10px] text-white/50 sm:inline-flex">
+              {connected ? (
+                <>
+                  <Wifi className="h-3 w-3 text-emerald-400" /> ao vivo
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3 text-white/40" /> reconectando
+                </>
+              )}
+            </span>
           </div>
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={toggleStore}
@@ -629,7 +624,7 @@ function RushPage() {
               type="button"
               onClick={toggleNotify}
               className={cn(
-                "grid h-9 w-9 place-items-center rounded-xl text-white/80 hover:bg-white/10",
+                "grid h-8 w-8 place-items-center rounded-xl text-white/80 hover:bg-white/10",
                 notifyOn ? "bg-emerald-500/20 text-emerald-300" : "bg-white/5",
               )}
               aria-label={notifyOn ? "Desativar push" : "Ativar push"}
@@ -640,7 +635,7 @@ function RushPage() {
             <button
               type="button"
               onClick={() => setSoundOn((v) => !v)}
-              className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 text-white/80 hover:bg-white/10"
+              className="grid h-8 w-8 place-items-center rounded-xl bg-white/5 text-white/80 hover:bg-white/10"
               aria-label={soundOn ? "Silenciar" : "Ativar som"}
               title={soundOn ? "Som ligado" : "Som mudo"}
             >
@@ -650,6 +645,7 @@ function RushPage() {
           </div>
         </div>
       </header>
+
 
       <main className="mx-auto max-w-2xl px-3 pt-3">
         {/* KPIs */}
