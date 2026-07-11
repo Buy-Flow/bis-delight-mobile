@@ -44,12 +44,33 @@ import {
   Zap,
   LifeBuoy,
   ShoppingCart,
+  BellRing,
+  Award,
+  Plus,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-type NavItem = { to?: string; label: string; icon: LucideIcon; soon?: boolean };
+type AdminTab =
+  | "products"
+  | "categories"
+  | "highlights"
+  | "extras"
+  | "news"
+  | "notifications"
+  | "promos"
+  | "loyalty"
+  | "settings";
+
+type NavItem = {
+  to?: string;
+  tab?: AdminTab;
+  label: string;
+  icon: LucideIcon;
+  soon?: boolean;
+};
+
 type NavGroup = { id: string; label: string; items: NavItem[]; defaultOpen?: boolean };
 
 const groups: NavGroup[] = [
@@ -72,9 +93,13 @@ const groups: NavGroup[] = [
   {
     id: "cardapio",
     label: "Cardápio",
+    defaultOpen: true,
     items: [
-      { to: "/admin", label: "Categorias", icon: Tag },
-      { to: "/admin", label: "Produtos", icon: Package },
+      { to: "/admin", tab: "products", label: "Produtos", icon: Package },
+      { to: "/admin", tab: "categories", label: "Categorias", icon: Tag },
+      { to: "/admin", tab: "highlights", label: "Destaques", icon: Star },
+      { to: "/admin", tab: "news", label: "Novidades", icon: Sparkles },
+      { to: "/admin", tab: "extras", label: "Complementos", icon: Plus },
       { label: "Modelos", icon: Layers, soon: true },
       { label: "Biblioteca", icon: BookMarked, soon: true },
       { label: "Importar cardápio", icon: FileDown, soon: true },
@@ -84,7 +109,9 @@ const groups: NavGroup[] = [
     id: "crescimento",
     label: "Crescimento",
     items: [
-      { to: "/admin", label: "Promoções", icon: Ticket },
+      { to: "/admin", tab: "promos", label: "Promos & Combos", icon: Ticket },
+      { to: "/admin", tab: "notifications", label: "Notificações", icon: BellRing },
+      { to: "/admin", tab: "loyalty", label: "Fidelidade", icon: Award },
       { to: "/clientes", label: "Clientes", icon: Users },
       { to: "/notificacoes", label: "Marketing / Push", icon: Megaphone },
       { to: "/ai-growth", label: "AI Growth Engine", icon: TrendingUp },
@@ -102,6 +129,7 @@ const groups: NavGroup[] = [
     label: "Gestão",
     items: [
       { to: "/financeiro", label: "Financeiro", icon: LineChart },
+      { to: "/admin", tab: "settings", label: "Loja", icon: Store },
       { label: "Avaliações", icon: Star, soon: true },
       { label: "Estoque", icon: Archive, soon: true },
       { label: "Ficha técnica", icon: ClipboardCheck, soon: true },
@@ -115,22 +143,37 @@ const groups: NavGroup[] = [
     label: "Conta",
     items: [
       { label: "Meu plano", icon: CreditCard, soon: true },
-      { to: "/admin", label: "Configurações", icon: Settings },
+      { to: "/admin", tab: "settings", label: "Configurações", icon: Settings },
       { label: "Automações", icon: Zap, soon: true },
       { label: "Suporte", icon: LifeBuoy, soon: true },
     ],
   },
 ];
 
+function isItemActive(
+  it: NavItem,
+  pathname: string,
+  currentTab: string | undefined,
+) {
+  if (!it.to) return false;
+  if (it.to !== pathname) return false;
+  if (it.tab) return currentTab === it.tab;
+  // Items on /admin without a tab match only when no tab is set
+  if (it.to === "/admin") return !currentTab;
+  return true;
+}
+
 function SidebarBody({
   collapsed,
   pathname,
+  currentTab,
   onNavigate,
   openGroups,
   toggleGroup,
 }: {
   collapsed: boolean;
   pathname: string;
+  currentTab: string | undefined;
   onNavigate?: () => void;
   openGroups: Record<string, boolean>;
   toggleGroup: (id: string) => void;
@@ -157,7 +200,7 @@ function SidebarBody({
             {(collapsed || isOpen) && (
               <ul className="space-y-0.5">
                 {g.items.map((it, idx) => {
-                  const active = it.to === pathname;
+                  const active = isItemActive(it, pathname, currentTab);
                   const Icon = it.icon;
                   const label = (
                     <>
@@ -200,6 +243,7 @@ function SidebarBody({
                     <li key={`${g.id}-${idx}`}>
                       <Link
                         to={it.to}
+                        search={it.tab ? ({ tab: it.tab } as never) : undefined}
                         onClick={onNavigate}
                         title={collapsed ? it.label : undefined}
                         className={base}
@@ -221,6 +265,13 @@ function SidebarBody({
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const searchTab = useRouterState({
+    select: (r) => {
+      const s = r.location.search as Record<string, unknown> | undefined;
+      const v = s?.tab;
+      return typeof v === "string" ? v : undefined;
+    },
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -239,16 +290,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     }
   }, [collapsed]);
 
-  // Auto-open groups containing the active route
+  // Auto-open groups containing the active route/tab
   useEffect(() => {
     setOpenGroups((prev) => {
       const next = { ...prev };
       for (const g of groups) {
-        if (g.items.some((it) => it.to === pathname)) next[g.id] = true;
+        if (g.items.some((it) => isItemActive(it, pathname, searchTab))) {
+          next[g.id] = true;
+        }
       }
       return next;
     });
-  }, [pathname]);
+  }, [pathname, searchTab]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -299,6 +352,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <SidebarBody
           collapsed={collapsed}
           pathname={pathname}
+          currentTab={searchTab}
           openGroups={openGroups}
           toggleGroup={toggleGroup}
         />
@@ -379,6 +433,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <SidebarBody
               collapsed={false}
               pathname={pathname}
+              currentTab={searchTab}
               onNavigate={() => setMobileOpen(false)}
               openGroups={openGroups}
               toggleGroup={toggleGroup}
