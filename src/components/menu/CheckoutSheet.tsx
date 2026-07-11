@@ -127,6 +127,14 @@ export function CheckoutSheet() {
       setQuoteError(null);
       return;
     }
+    // Skip geocode if this address came pre-geocoded from a saved address
+    if (preGeocoded && preGeocoded.address === trimmed && originLat != null && originLng != null) {
+      const km = haversineKm({ lat: originLat, lng: originLng }, { lat: preGeocoded.lat, lng: preGeocoded.lng });
+      setQuote({ lat: preGeocoded.lat, lng: preGeocoded.lng, km, label: trimmed });
+      setQuoteError(null);
+      setQuoting(false);
+      return;
+    }
     const reqId = ++geocodeReq.current;
     setQuoting(true);
     setQuoteError(null);
