@@ -877,13 +877,20 @@ function buildReceiptHtml(o: {
   address: string;
 }) {
   const items = o.cart
-    .map(
-      (l) => `
+    .map((l) => {
+      const modLines: string[] = [];
+      l.extras.forEach((e) => modLines.push(`+ ${escapeHtml(e.label)}`));
+      l.removed.forEach((r) => modLines.push(`- sem ${escapeHtml(r)}`));
+      if (l.note) modLines.push(`obs: ${escapeHtml(l.note)}`);
+      const mods = modLines.length
+        ? `<div style="font-size:10px;color:#333;padding-left:8px">${modLines.join("<br/>")}</div>`
+        : "";
+      return `
     <tr>
-      <td>${l.quantity}x ${escapeHtml(l.name)}${l.size ? ` (${escapeHtml(l.size)})` : ""}${l.flavor ? ` — ${escapeHtml(l.flavor)}` : ""}</td>
+      <td>${l.quantity}x ${escapeHtml(l.name)}${l.size ? ` (${escapeHtml(l.size)})` : ""}${l.flavor ? ` — ${escapeHtml(l.flavor)}` : ""}${mods}</td>
       <td style="text-align:right">${BRL(l.unitPrice * l.quantity)}</td>
-    </tr>`,
-    )
+    </tr>`;
+    })
     .join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>Recibo</title>
   <style>
