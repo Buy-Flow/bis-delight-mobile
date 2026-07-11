@@ -36,7 +36,7 @@ export function NewsCarousel({
     if (items.length < 2 || paused) return;
     const id = window.setInterval(() => {
       setCurrent((c) => (c + 1) % items.length);
-    }, 3000);
+    }, 2000);
     return () => window.clearInterval(id);
   }, [items.length, paused]);
 
