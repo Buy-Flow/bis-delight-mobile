@@ -97,7 +97,7 @@ import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { PopupsSection } from "@/components/admin/PopupsSection";
 import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
 import { ProductPicker } from "@/components/admin/ProductPicker";
-import { OrdersTab } from "@/components/admin/OrdersTab";
+
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
 import { CombosSection } from "@/components/admin/CombosSection";
