@@ -1,11 +1,12 @@
-import { Plus, Flame, Pencil } from "lucide-react";
+import { Plus, Flame, Pencil, Pause } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { productImageSources } from "@/lib/image-optimize";
 import { FavoriteButton } from "./FavoriteButton";
-import { useIsAdmin } from "@/lib/menu-data";
+import { useIsAdmin, isProductPaused, isIndefinitePause } from "@/lib/menu-data";
+
 
 
 const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
