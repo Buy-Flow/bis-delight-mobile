@@ -92,6 +92,22 @@ function RastrearPage() {
 
   useEffect(() => {
     let cancel = false;
+    (async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from("reviews")
+        .select("id, rating, title, comment, product_id")
+        .eq("order_id", orderId)
+        .maybeSingle();
+      if (!cancel) setExistingReview(data ?? null);
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [orderId]);
+
+  useEffect(() => {
+    let cancel = false;
     const load = async () => {
       const { data, error } = await supabase
         .from("orders")
