@@ -31,7 +31,7 @@ export function NewsCarousel({
   const [paused, setPaused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Autoplay: troca 1 card a cada 3s. Sem duplicação — mostra exatamente os itens configurados.
+  // Autoplay: troca 1 card a cada 2s. Sem duplicação — mostra exatamente os itens configurados.
   useEffect(() => {
     if (items.length < 2 || paused) return;
     const id = window.setInterval(() => {
