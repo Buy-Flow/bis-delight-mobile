@@ -646,6 +646,7 @@ function RushPage() {
             >
               <Radio className={cn("h-4 w-4", soundOn ? "text-neon-yellow" : "text-white/40")} />
             </button>
+            <AdminNavMenu />
           </div>
         </div>
       </header>
