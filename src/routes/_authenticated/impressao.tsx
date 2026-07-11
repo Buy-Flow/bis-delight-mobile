@@ -1066,7 +1066,6 @@ function mockOrder(): OrderRow {
     subtotal: 42.9,
     delivery_fee: 5,
     address: "Rua Exemplo, 123 — Apto 45",
-    payment_method: "PIX",
     created_at: new Date().toISOString(),
     coupon_code: null,
   };
