@@ -231,6 +231,73 @@ const ACTION_ICONS: Record<string, typeof ImageIcon> = {
   banner_urgencia: Timer,
 };
 
+const ACTION_LABELS: Record<string, string> = {
+  gerar_imagem_banner: "Banner gerado",
+  criar_popup: "Popup criado",
+  criar_cupom: "Cupom criado",
+  disparar_push: "Push disparado",
+  pausar_produto: "Produto pausado",
+  despausar_produto: "Produto despausado",
+  banner_urgencia: "Banner de urgência",
+  buscar_produtos: "Produtos consultados",
+  resumo_status: "Status da loja",
+};
+
+function formatActionSummary(type: string, params: Record<string, unknown> | null): string[] {
+  const p = params ?? {};
+  const val = (k: string) => (p[k] === undefined || p[k] === null ? "" : String(p[k]));
+  const fmtDate = (s: string) => {
+    if (!s) return "";
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return s;
+    return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  };
+  switch (type) {
+    case "criar_cupom": {
+      const code = val("code");
+      const type_ = val("discount_type");
+      const value = val("discount_value");
+      const desc = type_ === "percent" ? `${value}% off` : type_ === "fixed" ? `R$ ${value} off` : value;
+      return [
+        code && `Código: ${code}`,
+        desc && `Desconto: ${desc}`,
+        val("max_uses") && `Limite: ${val("max_uses")} usos`,
+        val("min_order") && Number(val("min_order")) > 0 && `Mínimo: R$ ${val("min_order")}`,
+        val("expires_at") && `Expira: ${fmtDate(val("expires_at"))}`,
+      ].filter(Boolean) as string[];
+    }
+    case "criar_popup":
+      return [
+        val("title") && `Título: ${val("title")}`,
+        val("cta_label") && `Botão: ${val("cta_label")}`,
+        val("starts_at") && `Início: ${fmtDate(val("starts_at"))}`,
+        val("ends_at") && `Fim: ${fmtDate(val("ends_at"))}`,
+      ].filter(Boolean) as string[];
+    case "banner_urgencia":
+      return [
+        val("message") && `Msg: ${val("message")}`,
+        val("ends_at") && `Até: ${fmtDate(val("ends_at"))}`,
+      ].filter(Boolean) as string[];
+    case "disparar_push":
+      return [
+        val("title") && `Título: ${val("title")}`,
+        val("body") && `Msg: ${val("body")}`,
+        val("audience_category") && `Categoria: ${val("audience_category")}`,
+      ].filter(Boolean) as string[];
+    case "gerar_imagem_banner":
+      return [val("prompt") && `Prompt: ${val("prompt").slice(0, 120)}`].filter(Boolean) as string[];
+    case "pausar_produto":
+    case "despausar_produto":
+      return [
+        val("product_name") && `Produto: ${val("product_name")}`,
+        val("pause_reason") && `Motivo: ${val("pause_reason")}`,
+        val("paused_until") && `Até: ${fmtDate(val("paused_until"))}`,
+      ].filter(Boolean) as string[];
+    default:
+      return [];
+  }
+}
+
 function ActionCard({ action }: { action: ActionRow }) {
   const Icon = ACTION_ICONS[action.action_type] ?? Sparkles;
   const time = new Date(action.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -239,24 +306,31 @@ function ActionCard({ action }: { action: ActionRow }) {
     action.action_type === "gerar_imagem_banner" && result && typeof result.image_url === "string"
       ? (result.image_url as string)
       : null;
+  const label = ACTION_LABELS[action.action_type] ?? action.action_type;
+  const lines = formatActionSummary(action.action_type, action.params as Record<string, unknown> | null);
   return (
     <div
       className={`rounded-xl border p-2 text-xs ${action.status === "failed" ? "border-red-500/40 bg-red-500/10" : "border-purple-500/25 bg-black/20"}`}
     >
       <div className="mb-1 flex items-center gap-1.5">
         <Icon className="h-3.5 w-3.5 text-neon-yellow" />
-        <span className="font-semibold text-white/90">{action.action_type}</span>
+        <span className="font-semibold text-white/90">{label}</span>
         <span className="ml-auto text-[10px] text-white/40">{time}</span>
       </div>
       {imgUrl && (
         <img src={imgUrl} alt="banner" className="mb-1 h-24 w-full rounded-md object-cover" loading="lazy" />
       )}
-      <pre className="max-h-24 overflow-hidden whitespace-pre-wrap break-words text-[10px] leading-tight text-white/60">
-        {JSON.stringify(action.params, null, 2).slice(0, 240)}
-      </pre>
+      {lines.length > 0 && (
+        <ul className="space-y-0.5 text-[11px] leading-tight text-white/70">
+          {lines.map((l, i) => (
+            <li key={i}>• {l}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
+
 
 function EmptyState({ onSuggestion, onNew }: { onSuggestion: (t: string) => void; onNew: () => void }) {
   return (
