@@ -131,7 +131,7 @@ const groups: NavGroup[] = [
     items: [
       { to: "/financeiro", label: "Financeiro", icon: LineChart },
       { to: "/admin", tab: "settings", label: "Loja", icon: Store },
-      { label: "Avaliações", icon: Star, soon: true },
+      { to: "/avaliacoes", label: "Avaliações", icon: Star },
       { label: "Estoque", icon: Archive, soon: true },
       { label: "Ficha técnica", icon: ClipboardCheck, soon: true },
       { label: "Precificação", icon: Calculator, soon: true },
