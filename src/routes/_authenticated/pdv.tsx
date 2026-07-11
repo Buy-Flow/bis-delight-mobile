@@ -570,8 +570,9 @@ type CartPanelProps = {
   missing: number;
   note: string;
   setNote: (v: string) => void;
-  changeQty: (key: string, delta: number) => void;
-  removeLine: (key: string) => void;
+  changeQty: (uid: string, delta: number) => void;
+  removeLine: (uid: string) => void;
+  onEditLine: (line: CartLine) => void;
   clearAll: () => void;
   finalize: () => void;
   sending: boolean;
