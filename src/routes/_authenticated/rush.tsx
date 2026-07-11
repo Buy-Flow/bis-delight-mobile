@@ -247,6 +247,7 @@ function RushPage() {
   const [tick, setTick] = useState(0);
   const [testBusy, setTestBusy] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   // sound preference
   const [soundOn, setSoundOn] = useState(() => {
@@ -414,9 +415,9 @@ function RushPage() {
     const allowed = STATUSES_IN_LANE[lane];
     const list = (orders ?? []).filter((o) => allowed.includes(o.status));
     if (lane === "feitos") {
-      // only today, most recent first
+      // most recent first; limit to today unless showAllHistory
       return list
-        .filter((o) => isToday(new Date(o.created_at)))
+        .filter((o) => showAllHistory || isToday(new Date(o.created_at)))
         .sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
@@ -424,7 +425,7 @@ function RushPage() {
     return list.sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
-  }, [orders, lane]);
+  }, [orders, lane, showAllHistory]);
 
   const laneCounts = useMemo(() => {
     const c: Record<LaneId, number> = { novos: 0, cozinha: 0, rota: 0, feitos: 0 };
@@ -746,6 +747,22 @@ function RushPage() {
             );
           })}
         </div>
+
+        {/* History toggle (Feitos only) */}
+        {lane === "feitos" && (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+            <div className="text-[11px] text-white/70">
+              {showAllHistory ? "Mostrando todo o histórico" : "Mostrando apenas hoje"}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAllHistory((v) => !v)}
+              className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white hover:bg-white/15"
+            >
+              {showAllHistory ? "Ver só hoje" : "Ver histórico completo"}
+            </button>
+          </div>
+        )}
 
         {/* Lane list */}
         <section className="mt-3 space-y-2.5">
