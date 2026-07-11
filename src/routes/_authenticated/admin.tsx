@@ -113,7 +113,7 @@ import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings"] as const;
+    const validTabs = ["dashboard", "products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
@@ -129,13 +129,13 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings";
+type Tab = "dashboard" | "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
   const { edit: editProductId, tab: tabParam } = Route.useSearch();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const tab: Tab = tabParam ?? "products";
+  const tab: Tab = tabParam ?? "dashboard";
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -172,7 +172,8 @@ function AdminPage() {
   return (
     <div className="text-white">
       <Toaster position="bottom-center" theme="dark" closeButton />
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6">
+        {tab === "dashboard" && <DashboardTab />}
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}
         {tab === "categories" && <CategoriesTab initialEditId={editProductId} />}
         {tab === "highlights" && <HighlightsTab />}
