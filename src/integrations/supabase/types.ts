@@ -1117,6 +1117,78 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          featured: boolean
+          helpful_count: number
+          id: string
+          order_id: string | null
+          photos: string[]
+          product_id: string | null
+          rating: number
+          replied_at: string | null
+          replied_by: string | null
+          reply: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          featured?: boolean
+          helpful_count?: number
+          id?: string
+          order_id?: string | null
+          photos?: string[]
+          product_id?: string | null
+          rating: number
+          replied_at?: string | null
+          replied_by?: string | null
+          reply?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          featured?: boolean
+          helpful_count?: number
+          id?: string
+          order_id?: string | null
+          photos?: string[]
+          product_id?: string | null
+          rating?: number
+          replied_at?: string | null
+          replied_by?: string | null
+          reply?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_popups: {
         Row: {
           active: boolean
@@ -1776,6 +1848,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      review_status: "published" | "hidden" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1904,6 +1977,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      review_status: ["published", "hidden", "pending"],
     },
   },
 } as const
