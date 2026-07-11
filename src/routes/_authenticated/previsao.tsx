@@ -485,53 +485,52 @@ function Heatmap({
         <TrendingDown className="h-4 w-4 rotate-180 text-neon-pink" />
         <h3 className="text-sm font-semibold">Mapa de calor histórico</h3>
       </div>
-      <div className="overflow-x-auto">
-        <div className="min-w-[560px]">
-          <div className="mb-1 grid grid-cols-[36px_repeat(24,minmax(0,1fr))] gap-[2px] text-[9px] text-white/40">
-            <div />
-            {Array.from({ length: 24 }, (_, h) => (
-              <div key={h} className="text-center">
-                {h % 3 === 0 ? h : ""}
-              </div>
-            ))}
+      {/* Dias em cima, horas na lateral — cabe inteiro na tela, sem rolar */}
+      <div className="grid grid-cols-[28px_repeat(7,minmax(0,1fr))] gap-[2px] text-[10px] text-white/50">
+        <div />
+        {DOW.map((d, i) => (
+          <div key={i} className="text-center font-semibold text-white/60">
+            {d}
           </div>
-          {heatmap.map((row, dow) => (
-            <div
-              key={dow}
-              className="grid grid-cols-[36px_repeat(24,minmax(0,1fr))] gap-[2px]"
-            >
-              <div className="pr-1 text-right text-[10px] text-white/50">
-                {DOW[dow]}
-              </div>
-              {row.map((cell, h) => {
-                const intensity = cell.orders / max;
-                const alpha = Math.max(0.05, Math.min(1, intensity));
-                return (
-                  <div
-                    key={h}
-                    title={`${DOW[dow]} ${h}h · ${cell.orders.toFixed(1)} ped/ocor.`}
-                    className="aspect-square rounded-[3px]"
-                    style={{
-                      background: `rgba(236, 72, 153, ${alpha.toFixed(2)})`,
-                      boxShadow:
-                        intensity > 0.7
-                          ? "0 0 0 1px rgba(250, 204, 21, 0.5)"
-                          : "inset 0 0 0 1px rgba(255,255,255,0.04)",
-                    }}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
+      {Array.from({ length: 24 }, (_, h) => (
+        <div
+          key={h}
+          className="mt-[2px] grid grid-cols-[28px_repeat(7,minmax(0,1fr))] items-center gap-[2px]"
+        >
+          <div className="pr-1 text-right text-[9px] tabular-nums text-white/40">
+            {h % 3 === 0 ? `${h.toString().padStart(2, "0")}h` : ""}
+          </div>
+          {heatmap.map((row, dow) => {
+            const cell = row[h];
+            const intensity = cell.orders / max;
+            const alpha = Math.max(0.05, Math.min(1, intensity));
+            return (
+              <div
+                key={dow}
+                title={`${DOW[dow]} ${h}h · ${cell.orders.toFixed(1)} ped/ocor.`}
+                className="h-3 rounded-[3px]"
+                style={{
+                  background: `rgba(236, 72, 153, ${alpha.toFixed(2)})`,
+                  boxShadow:
+                    intensity > 0.7
+                      ? "0 0 0 1px rgba(250, 204, 21, 0.5)"
+                      : "inset 0 0 0 1px rgba(255,255,255,0.04)",
+                }}
+              />
+            );
+          })}
+        </div>
+      ))}
       <p className="mt-2 px-1 text-[10px] text-white/40">
-        Pedidos médios por hora, por dia da semana. Tons mais fortes = mais
-        movimento. Contorno amarelo destaca picos.
+        Pedidos médios por hora do dia (linhas) × dia da semana (colunas). Tons
+        mais fortes = mais movimento. Contorno amarelo destaca picos.
       </p>
     </section>
   );
 }
+
 
 function ForecastSkeleton() {
   return (
