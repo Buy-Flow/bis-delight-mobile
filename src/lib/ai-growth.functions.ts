@@ -528,14 +528,14 @@ Devolva JSON:
       if (insErr) throw new Error(insErr.message);
       saved = (ins ?? []).map((r) => ({
         id: r.id,
-        priority: r.priority,
+        priority: r.priority as GrowthInsight["priority"],
         category: r.category,
         title: r.title,
         count: r.count,
         impacto: Number(r.impacto),
         clientes: (r.clientes as GrowthClient[]) ?? [],
         mensagem: r.mensagem,
-        status: r.status,
+        status: r.status as GrowthInsight["status"],
         created_at: r.created_at,
         expires_at: r.expires_at,
       }));
