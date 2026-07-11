@@ -111,14 +111,16 @@ function RecompensasPage() {
     };
   }, [userId]);
 
-  const current = status?.current ?? 0;
-  const pct = Math.min(100, (current / GOAL) * 100);
-  const remaining = GOAL - current;
-  const available = coupons.filter((c) => !c.used_at);
-  const used = coupons.filter((c) => c.used_at);
-  const rewardValue = status?.reward ?? 10;
+  const tiers = useLoyaltyTiers();
   const currentTier = status?.tier ?? "bronze";
   const meta = TIER_META[currentTier];
+  const current = status?.current ?? 0;
+  const GOAL = tiers?.[currentTier]?.redeem_cost ?? 10;
+  const pct = Math.min(100, (current / GOAL) * 100);
+  const remaining = Math.max(0, GOAL - current);
+  const available = coupons.filter((c) => !c.used_at);
+  const used = coupons.filter((c) => c.used_at);
+  const rewardValue = status?.reward ?? tiers?.[currentTier]?.coupon_value ?? 10;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
