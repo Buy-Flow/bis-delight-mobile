@@ -541,11 +541,27 @@ export function CheckoutSheet() {
         <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             onClick={send}
-            disabled={sending || authLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-60"
+            disabled={sending || authLoading || storeStatus.isClosed}
+            className={cn(
+              "flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white active:scale-[.98] disabled:opacity-60",
+              storeStatus.isClosed
+                ? "bg-white/10 ring-1 ring-white/15"
+                : "bg-neon-pink glow-pink",
+            )}
           >
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isAuthenticated ? `Enviar pedido no WhatsApp · ${brl(total)}` : `Entrar para finalizar · ${brl(total)}`}
+            {storeStatus.isClosed ? (
+              <>
+                <MoonStar className="h-4 w-4 text-red-300" />
+                {storeStatus.nextOpenLabel
+                  ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
+                  : "Loja fechada no momento"}
+              </>
+            ) : isAuthenticated ? (
+              `Enviar pedido no WhatsApp · ${brl(total)}`
+            ) : (
+              `Entrar para finalizar · ${brl(total)}`
+            )}
           </button>
         </div>
       </div>
