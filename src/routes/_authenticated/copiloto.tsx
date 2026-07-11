@@ -106,23 +106,6 @@ function CopilotoPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0b0518] via-[#120826] to-[#0b0518] text-white">
-      <header className="sticky top-0 z-30 border-b border-purple-500/20 bg-[#0b0518]/85 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
-          <Link to="/admin" className="inline-flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-900/40 px-3 py-1.5 text-xs font-semibold text-white/90 hover:bg-purple-800/60">
-            <ArrowLeft className="h-3.5 w-3.5" /> Admin
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-neon-yellow to-orange-400 text-black">
-              <Bot className="h-4 w-4" />
-            </div>
-            <div>
-              <h1 className="font-caveat text-2xl leading-none text-neon-yellow">Copiloto IA</h1>
-              <p className="text-[10px] uppercase tracking-widest text-white/50">agente executor</p>
-            </div>
-          </div>
-          <AdminNavMenu />
-        </div>
-      </header>
 
       <div className="mx-auto grid max-w-7xl gap-4 px-3 py-4 md:grid-cols-[240px_1fr_280px]">
         {/* Threads sidebar */}

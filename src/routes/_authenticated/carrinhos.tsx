@@ -54,20 +54,6 @@ function CarrinhosPage() {
     <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
       <Toaster position="bottom-center" theme="dark" closeButton />
 
-      <header className="sticky top-0 z-30 border-b border-purple-900/50 bg-[oklch(0.10_0.08_300)]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <ShoppingCart className="h-5 w-5 text-neon-yellow" />
-            <span
-              className="text-xl font-black uppercase text-neon-yellow"
-              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-            >
-              Carrinhos
-            </span>
-          </Link>
-          <AdminNavMenu />
-        </div>
-      </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
         <AbandonedCartsTab />
