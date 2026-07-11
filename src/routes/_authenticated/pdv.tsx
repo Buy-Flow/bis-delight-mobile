@@ -91,6 +91,7 @@ function PDVPage() {
   const [cashReceived, setCashReceived] = useState("");
   const [note, setNote] = useState("");
   const [selecting, setSelecting] = useState<Product | null>(null);
+  const [editingLine, setEditingLine] = useState<CartLine | null>(null);
   const [sending, setSending] = useState(false);
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [showMobileCart, setShowMobileCart] = useState(false);
