@@ -263,7 +263,7 @@ export function buildCopilotTools(ctx: Ctx) {
         if (!list.length) throw new Error("site_settings vazio");
         const id = list[0].id;
         const patch: Record<string, unknown> = { urgency_active: !input.disable };
-        if (input.title) patch.urgency_title = input.title;
+        if (input.title) patch.urgency_text = input.title;
         if (input.ends_at) patch.urgency_ends_at = input.ends_at;
         const { error } = await ctx.supabaseAdmin.from("site_settings").update(patch).eq("id", id);
         if (error) throw new Error("Erro: " + error.message);
