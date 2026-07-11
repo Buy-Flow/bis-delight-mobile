@@ -12,7 +12,7 @@ import {
   User as UserIcon,
   Phone,
   Cake,
-
+  IdCard,
   Eye,
   EyeOff,
   Award,
