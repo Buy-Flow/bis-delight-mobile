@@ -609,7 +609,9 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
   const { data: categories = [] } = useCategories();
   const reorder = useReorderProducts();
   const toggleActive = useToggleProductActive();
+  const toggleHero = useToggleHero();
   const upsert = useUpsertProduct();
+  const del = useDeleteProduct();
   const [editing, setEditing] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -621,15 +623,19 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
     }
   }, [initialEditId, products, navigate]);
 
-  
+
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
   const [localOrder, setLocalOrder] = useState<Product[] | null>(null);
 
   const catList = categories.filter((c) => c.id !== "all");
+  const catMap = useMemo(() => {
+    const m = new Map<string, Category>();
+    catList.forEach((c) => m.set(c.id, c));
+    return m;
+  }, [catList]);
 
-  // Live list (local drag state wins until saved)
   const source = localOrder ?? products;
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -688,156 +694,244 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
     toast.success("Produto duplicado");
   };
 
+  const toggleUpsell = async (p: Product) => {
+    const next = !p.isUpsell;
+    const { error } = await supabase.from("products").update({ is_upsell: next }).eq("id", p.id);
+    if (error) return toast.error("Falha ao atualizar sugestão");
+    toast.success(next ? "Marcado como sugestão" : "Removido das sugestões");
+  };
+
+  const removeProduct = async (p: Product) => {
+    if (!(await confirmDialog({ title: "Remover produto", message: `Remover "${p.name}"? Essa ação não pode ser desfeita.`, confirmLabel: "Remover" }))) return;
+    await del.mutateAsync(p.id);
+    toast.success("Produto removido");
+  };
+
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="font-display text-2xl font-black">Produtos</h2>
-          <p className="text-xs text-white/50">
-            {visible.length} de {products.length} · arraste para reordenar
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          
-          <button
-            onClick={() =>
-              setEditing({
-                id: "",
-                name: "",
-                category: catList[0]?.id ?? "acai",
-                image: "",
-                description: "",
-                ingredients: [],
-                basePrice: 0,
-                sizes: [{ id: "u", label: "Único", priceDelta: 0 }],
-              })
-            }
-            className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-3 py-1.5 text-xs font-bold text-white glow-pink"
-          >
-            <Plus className="h-3.5 w-3.5" /> Novo produto
-          </button>
-        </div>
+      {/* Header */}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-3xl font-black tracking-tight">Produtos</h2>
+        <button
+          onClick={() =>
+            setEditing({
+              id: "",
+              name: "",
+              category: catList[0]?.id ?? "acai",
+              image: "",
+              description: "",
+              ingredients: [],
+              basePrice: 0,
+              sizes: [{ id: "u", label: "Único", priceDelta: 0 }],
+            })
+          }
+          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[oklch(0.72_0.22_35)] to-neon-pink px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-neon-pink/30 transition hover:brightness-110"
+        >
+          <Plus className="h-4 w-4" strokeWidth={3} /> Novo Produto
+        </button>
       </div>
 
-
-
-
-
-      <div className="mb-3 space-y-2">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+      {/* Toolbar: search + category select */}
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
           <input
-            className={cn(inputCls, "pl-9")}
-            placeholder="Buscar produto por nome..."
+            className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white placeholder:text-white/40 outline-none transition focus:border-white/25 focus:bg-white/[0.06]"
+            placeholder="Buscar produto..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
-            Tudo <span className="opacity-60">({products.length})</span>
-          </FilterChip>
-          {catList.map((c) => {
-            const count = products.filter((p) => p.category === c.id).length;
-            return (
-              <FilterChip key={c.id} active={filter === c.id} onClick={() => setFilter(c.id)}>
-                <span>{c.emoji}</span> {c.name} <span className="opacity-60">({count})</span>
-              </FilterChip>
-            );
-          })}
+        <div className="relative sm:w-56">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="h-12 w-full appearance-none rounded-2xl border border-white/10 bg-white/[0.04] px-4 pr-10 text-sm text-white outline-none transition focus:border-white/25"
+          >
+            <option value="all" className="bg-[oklch(0.14_0.09_305)]">Todas ({products.length})</option>
+            {catList.map((c) => {
+              const count = products.filter((p) => p.category === c.id).length;
+              return (
+                <option key={c.id} value={c.id} className="bg-[oklch(0.14_0.09_305)]">
+                  {c.emoji} {c.name} ({count})
+                </option>
+              );
+            })}
+          </select>
+          <ArrowDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        {visible.map((p) => (
-          <div
-            key={p.id}
-            draggable
-            onDragStart={() => onDragStart(p.id)}
-            onDragOver={(e) => onDragOver(e, p.id)}
-            onDragEnd={onDragEnd}
-            className={cn(
-              "group flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 transition",
-              dragId === p.id && "opacity-40",
-              !p.active && "opacity-60",
-              isProductPaused(p) && "ring-1 ring-amber-400/40",
-            )}
-          >
-            <div className="grid h-8 w-6 shrink-0 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
-              <GripVertical className="h-4 w-4" />
-            </div>
-            <button
-              onClick={() => setEditing(p)}
-              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+      {/* Table */}
+      <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.02]">
+        {/* Header row */}
+        <div className="hidden md:grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,1fr)_120px_80px_100px_100px_100px] gap-3 border-b border-white/5 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-white/45">
+          <div />
+          <div>Produto</div>
+          <div>Categoria</div>
+          <div>Preço</div>
+          <div>Ativo</div>
+          <div>Destaque</div>
+          <div>Sugestão</div>
+          <div className="text-right">Ações</div>
+        </div>
+
+        {visible.map((p) => {
+          const cat = catMap.get(p.category);
+          const paused = isProductPaused(p);
+          return (
+            <div
+              key={p.id}
+              draggable
+              onDragStart={() => onDragStart(p.id)}
+              onDragOver={(e) => onDragOver(e, p.id)}
+              onDragEnd={onDragEnd}
+              className={cn(
+                "group grid grid-cols-[32px_minmax(0,1fr)] md:grid-cols-[32px_minmax(0,2.4fr)_minmax(0,1fr)_120px_80px_100px_100px_100px] items-center gap-3 border-b border-white/5 px-4 py-3 transition hover:bg-white/[0.03]",
+                dragId === p.id && "opacity-40",
+                !p.active && "opacity-60",
+                paused && "ring-1 ring-inset ring-amber-400/30",
+              )}
             >
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
-                {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
-                {isProductPaused(p) && (
-                  <div className="absolute inset-0 grid place-items-center bg-black/60 backdrop-blur-[1px]">
-                    <Pause className="h-4 w-4 text-amber-300" strokeWidth={3} />
+              <div className="grid h-8 w-8 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
+                <GripVertical className="h-4 w-4" />
+              </div>
+
+              {/* Produto */}
+              <button onClick={() => setEditing(p)} className="flex min-w-0 items-center gap-3 text-left">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/40 ring-1 ring-white/5">
+                  {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
+                  {paused && (
+                    <div className="absolute inset-0 grid place-items-center bg-black/60">
+                      <Pause className="h-4 w-4 text-amber-300" strokeWidth={3} />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="truncate text-sm font-black text-white">{p.name}</span>
+                    {paused && (
+                      <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-200 ring-1 ring-amber-400/40">
+                        Pausado
+                      </span>
+                    )}
                   </div>
+                  <div className="mt-0.5 truncate text-[11px] text-white/45">
+                    {p.description || "Sem descrição"}
+                  </div>
+                </div>
+              </button>
+
+              {/* Categoria */}
+              <div className="hidden md:flex min-w-0 items-center">
+                {cat ? (
+                  <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/80 ring-1 ring-white/10">
+                    <span>{cat.emoji}</span>
+                    <span className="truncate">{cat.name}</span>
+                  </span>
+                ) : (
+                  <span className="text-xs text-white/40">—</span>
                 )}
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="truncate text-sm font-bold">{p.name}</span>
-                  {p.hero && <Star className="h-3.5 w-3.5 shrink-0 fill-neon-yellow text-neon-yellow" />}
-                  {isProductPaused(p) && (
-                    <span className="shrink-0 rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-200 ring-1 ring-amber-400/40">
-                      Pausado
-                    </span>
-                  )}
-                </div>
-                <div className="text-[11px] text-white/50">
-                  {p.category} · R$ {p.basePrice.toFixed(2)}
-                  {isProductPaused(p) && p.pauseReason && (
-                    <span className="ml-1 text-amber-200/80">· {p.pauseReason}</span>
-                  )}
-                </div>
-              </div>
-            </button>
-            <div className="flex shrink-0 items-center gap-1">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    title={isProductPaused(p) ? "Gerenciar pausa" : "Pausar temporariamente"}
-                    className={cn(
-                      "grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
-                      isProductPaused(p) && "border-amber-400/50 bg-amber-500/15 text-amber-200",
-                    )}
-                  >
-                    <Pause className="h-4 w-4" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="end"
-                  className="w-[320px] border-white/10 bg-[oklch(0.14_0.09_305)]/95 p-3 text-white backdrop-blur-xl"
-                >
-                  <div className="mb-2 text-[13px] font-black">Pausa temporária</div>
-                  <div className="mb-2 text-[11px] text-white/50">
-                    Some do cardápio até a data escolhida. Reativa automaticamente.
+
+              {/* Preço */}
+              <div className="hidden md:block">
+                <div className="text-sm font-black text-neon-pink">R$ {p.basePrice.toFixed(2)}</div>
+                {p.isUpsell && p.upsellPrice ? (
+                  <div className="mt-0.5 text-[10px] text-amber-300/80">
+                    💡 Sug.: R$ {p.upsellPrice.toFixed(2)}
                   </div>
-                  <PauseProductControls product={p} />
-                </PopoverContent>
-              </Popover>
-              <IconBtn
-                title={p.active ? "Ocultar do cardápio" : "Mostrar no cardápio"}
-                onClick={() => toggleActive.mutate({ id: p.id, active: !p.active })}
-              >
-                {p.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-white/40" />}
-              </IconBtn>
-              <IconBtn title="Duplicar" onClick={() => duplicate(p)}>
-                <Copy className="h-4 w-4" />
-              </IconBtn>
+                ) : null}
+              </div>
+
+              {/* Ativo */}
+              <div className="hidden md:flex justify-start">
+                <SwitchPill
+                  checked={p.active}
+                  onChange={() => toggleActive.mutate({ id: p.id, active: !p.active })}
+                  title={p.active ? "Ocultar do cardápio" : "Mostrar no cardápio"}
+                />
+              </div>
+
+              {/* Destaque */}
+              <div className="hidden md:flex justify-start">
+                <RadioDot
+                  checked={!!p.hero}
+                  onChange={() => toggleHero.mutate({ id: p.id, hero: !p.hero })}
+                  title={p.hero ? "Remover destaque" : "Marcar como destaque"}
+                />
+              </div>
+
+              {/* Sugestão */}
+              <div className="hidden md:flex justify-start">
+                <RadioDot
+                  checked={!!p.isUpsell}
+                  onChange={() => toggleUpsell(p)}
+                  title={p.isUpsell ? "Remover sugestão" : "Marcar como sugestão"}
+                />
+              </div>
+
+              {/* Ações */}
+              <div className="col-start-2 md:col-auto flex shrink-0 items-center justify-end gap-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      title={paused ? "Gerenciar pausa" : "Pausar temporariamente"}
+                      className={cn(
+                        "grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white",
+                        paused && "border-amber-400/50 bg-amber-500/15 text-amber-200",
+                      )}
+                    >
+                      <Pause className="h-4 w-4" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    className="w-[320px] border-white/10 bg-[oklch(0.14_0.09_305)]/95 p-3 text-white backdrop-blur-xl"
+                  >
+                    <div className="mb-2 text-[13px] font-black">Pausa temporária</div>
+                    <div className="mb-2 text-[11px] text-white/50">
+                      Some do cardápio até a data escolhida. Reativa automaticamente.
+                    </div>
+                    <PauseProductControls product={p} />
+                  </PopoverContent>
+                </Popover>
+                <button
+                  title="Editar"
+                  onClick={() => setEditing(p)}
+                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  title="Duplicar"
+                  onClick={() => duplicate(p)}
+                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Copy className="h-4 w-4" />
+                </button>
+                <button
+                  title="Remover"
+                  onClick={() => removeProduct(p)}
+                  className="grid h-9 w-9 place-items-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 transition hover:bg-red-500/20 hover:text-red-200"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
         {visible.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
+          <div className="p-10 text-center text-sm text-white/50">
             Nenhum produto encontrado.
           </div>
         )}
+      </div>
+
+      <div className="mt-3 text-[11px] text-white/40">
+        {visible.length} de {products.length} produtos · arraste pela alça para reordenar
       </div>
 
       {editing && (
@@ -847,8 +941,48 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
           onClose={() => setEditing(null)}
         />
       )}
-      
     </div>
+  );
+}
+
+function SwitchPill({ checked, onChange, title }: { checked: boolean; onChange: () => void; title?: string }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onChange}
+      className={cn(
+        "relative h-6 w-11 shrink-0 rounded-full transition",
+        checked
+          ? "bg-gradient-to-r from-[oklch(0.72_0.22_35)] to-neon-pink shadow-[0_0_12px_-2px_oklch(0.72_0.24_10/0.6)]"
+          : "bg-white/10 ring-1 ring-inset ring-white/10",
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+          checked ? "left-[22px]" : "left-0.5",
+        )}
+      />
+    </button>
+  );
+}
+
+function RadioDot({ checked, onChange, title }: { checked: boolean; onChange: () => void; title?: string }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onChange}
+      className={cn(
+        "grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition",
+        checked
+          ? "border-neon-pink bg-neon-pink text-white shadow-[0_0_10px_-2px_oklch(0.72_0.24_10/0.7)]"
+          : "border-white/20 bg-transparent hover:border-white/40",
+      )}
+    >
+      {checked && <Check className="h-3.5 w-3.5" strokeWidth={4} />}
+    </button>
   );
 }
 
