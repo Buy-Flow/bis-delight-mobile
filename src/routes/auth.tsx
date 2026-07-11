@@ -90,6 +90,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [cpf, setCpf] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -105,12 +106,41 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        // 1) Validação algorítmica do CPF (dígitos verificadores)
+        const cpfDigits = cpf.replace(/\D/g, "");
+        if (!isValidCpf(cpfDigits)) {
+          toast.error("CPF inválido. Confira os números digitados.");
+          setLoading(false);
+          return;
+        }
+
+        // 2) Unicidade: 1 conta por CPF
+        const { data: existing, error: checkErr } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("cpf", cpfDigits)
+          .maybeSingle();
+        if (checkErr && checkErr.code !== "PGRST116") {
+          throw checkErr;
+        }
+        if (existing) {
+          toast.error("Este CPF já está cadastrado. Faça login para continuar.");
+          setMode("signin");
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: window.location.origin + next,
-            data: { full_name: fullName, phone, birthday: birthday || null },
+            data: {
+              full_name: fullName,
+              phone,
+              birthday: birthday || null,
+              cpf: cpfDigits,
+            },
           },
         });
         if (error) throw error;
@@ -130,7 +160,13 @@ function AuthPage() {
         navigate({ to: next });
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
+      const msg = err instanceof Error ? err.message : "Erro ao autenticar";
+      // Se o índice único disparar no servidor (corrida), traduz para PT-BR
+      if (/profiles_cpf_unique/i.test(msg) || /duplicate key/i.test(msg)) {
+        toast.error("Este CPF já está cadastrado.");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
