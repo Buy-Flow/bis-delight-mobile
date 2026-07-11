@@ -46,6 +46,8 @@ import {
   BellRing,
   Flame,
   Pause,
+  Award,
+
 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,6 +101,7 @@ import { ImageAdjustPanel } from "@/components/admin/ImageAdjustPanel";
 import { ProductPicker } from "@/components/admin/ProductPicker";
 
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
+import { LoyaltyTiersTab } from "@/components/admin/LoyaltyTiersTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
 import { CombosSection } from "@/components/admin/CombosSection";
 import { UrgencySection } from "@/components/admin/UrgencySection";
@@ -110,7 +113,7 @@ import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "settings"] as const;
+    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
@@ -126,7 +129,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "settings";
+type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -176,6 +179,7 @@ function AdminPage() {
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "notifications", label: "Notificações", icon: BellRing },
     { id: "promos", label: "Promos & Combos", icon: Flame },
+    { id: "loyalty", label: "Fidelidade", icon: Award },
     { id: "settings", label: "Loja", icon: Settings },
   ];
 
@@ -224,6 +228,7 @@ function AdminPage() {
         {tab === "news" && <NewsTab />}
         {tab === "notifications" && <NotificationsTab />}
         {tab === "promos" && <PromosTab />}
+        {tab === "loyalty" && <LoyaltyTiersTab />}
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>

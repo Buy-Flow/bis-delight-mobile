@@ -426,6 +426,42 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_tiers: {
+        Row: {
+          coupon_value: number
+          label: string
+          min_lifetime: number
+          min_order_value: number
+          redeem_cost: number
+          sort_order: number
+          stamps_per_order: number
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          coupon_value?: number
+          label: string
+          min_lifetime?: number
+          min_order_value?: number
+          redeem_cost?: number
+          sort_order: number
+          stamps_per_order?: number
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          coupon_value?: number
+          label?: string
+          min_lifetime?: number
+          min_order_value?: number
+          redeem_cost?: number
+          sort_order?: number
+          stamps_per_order?: number
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
