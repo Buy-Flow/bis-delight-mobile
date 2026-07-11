@@ -8,61 +8,80 @@ export type LoyaltyTier = "bronze" | "prata" | "ouro";
 
 export const TIER_META: Record<LoyaltyTier, {
   label: string;
+  tagline: string;
   image: string;
   icon: typeof Trophy;
   gradient: string;
   ring: string;
   text: string;
   minLifetime: number;
+  minCards: number;
   reward: number;
   stampsPerOrder: number;
+  minOrder: number;
+  multiplier: string;
   benefits: string[];
 }> = {
   bronze: {
     label: "Bronze",
+    tagline: "Nível inicial",
     image: tierBronze,
     icon: Medal,
     gradient: "from-[#a55a2a] via-[#d67c3c] to-[#8a4520]",
     ring: "ring-[#d67c3c]/60",
     text: "text-[#f0b07a]",
     minLifetime: 0,
-    reward: 20,
+    minCards: 0,
+    reward: 10,
     stampsPerOrder: 1,
+    minOrder: 20,
+    multiplier: "1×",
     benefits: [
       "1 selo por pedido pago",
-      "Cupom de R$ 20 a cada 10 selos",
+      "Pedido mínimo de R$ 20",
+      "Cupom de R$ 10 a cada cartela cheia",
       "Bônus de aniversário",
     ],
   },
   prata: {
     label: "Prata",
+    tagline: "A partir de 2 cartelas cheias",
     image: tierPrata,
     icon: Trophy,
     gradient: "from-[#b7c1d0] via-[#e7edf5] to-[#8a94a6]",
     ring: "ring-[#c9d4e5]/70",
     text: "text-[#e7edf5]",
-    minLifetime: 10,
-    reward: 25,
+    minLifetime: 20,
+    minCards: 2,
+    reward: 15,
     stampsPerOrder: 2,
+    minOrder: 10,
+    multiplier: "2×",
     benefits: [
       "2 selos por pedido (o dobro!)",
-      "Cupom de R$ 25 a cada 10 selos",
+      "Pedido mínimo cai para R$ 10",
+      "Cupom de R$ 15 a cada cartela cheia",
       "Todos os benefícios do Bronze",
     ],
   },
   ouro: {
     label: "Ouro",
+    tagline: "A partir de 10 cartelas cheias",
     image: tierOuro,
     icon: Crown,
     gradient: "from-[#f7c73a] via-[#ffe680] to-[#c8931a]",
     ring: "ring-neon-yellow/80",
     text: "text-neon-yellow",
-    minLifetime: 30,
-    reward: 30,
+    minLifetime: 100,
+    minCards: 10,
+    reward: 20,
     stampsPerOrder: 3,
+    minOrder: 10,
+    multiplier: "3×",
     benefits: [
       "3 selos por pedido (o triplo!)",
-      "Cupom de R$ 30 a cada 10 selos",
+      "Pedido mínimo de apenas R$ 10",
+      "Cupom de R$ 20 a cada cartela cheia",
       "Todos os benefícios anteriores",
     ],
   },
