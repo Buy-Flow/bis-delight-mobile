@@ -101,7 +101,7 @@ const groups: NavGroup[] = [
       { to: "/admin", tab: "highlights", label: "Destaques", icon: Star },
       { to: "/admin", tab: "news", label: "Novidades", icon: Sparkles },
       { to: "/admin", tab: "extras", label: "Complementos", icon: Plus },
-      { label: "Modelos", icon: Layers, soon: true },
+      { to: "/modelos", label: "Modelos", icon: Layers },
       { label: "Biblioteca", icon: BookMarked, soon: true },
       { label: "Importar cardápio", icon: FileDown, soon: true },
     ],
