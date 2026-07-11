@@ -37,7 +37,7 @@ export function CheckoutUpsellStrip() {
           Que tal adicionar por menos?
         </div>
       </div>
-      <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex flex-col gap-2">
         {upsells.map((p) => {
           const price = p.upsellPrice ?? p.basePrice;
           const savings = p.basePrice - price;
@@ -45,37 +45,34 @@ export function CheckoutUpsellStrip() {
             <button
               key={p.id}
               onClick={() => addUpsell(p)}
-              className="group relative flex w-[240px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] text-left transition active:scale-[0.97] hover:border-neon-yellow/60"
+              className="group relative flex w-full items-center gap-3 rounded-2xl border border-dashed border-neon-yellow/50 bg-white/[0.04] p-2 pr-3 text-left transition active:scale-[0.98] hover:border-neon-yellow hover:bg-white/[0.07]"
             >
-              <div className="flex items-stretch gap-2 p-2">
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[oklch(0.24_0.14_305)]">
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    loading="lazy"
-                    className="h-full w-full object-contain p-1"
-                  />
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[oklch(0.24_0.14_305)]">
+                <img
+                  src={p.image}
+                  alt={p.name}
+                  loading="lazy"
+                  className="h-full w-full object-contain p-1"
+                />
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="truncate text-[14px] font-extrabold leading-tight text-white">
+                  + {p.name}
+                </div>
+                <div className="mt-0.5 flex items-baseline gap-1.5">
+                  <span className="text-[13px] font-black text-neon-yellow">
+                    por apenas {brl(price)}
+                  </span>
                   {savings > 0 && (
-                    <span className="absolute left-1 top-1 rounded-full bg-neon-pink px-1.5 py-0.5 text-[9px] font-black uppercase text-white glow-pink">
-                      -{brl(savings)}
+                    <span className="text-[10px] text-white/50 line-through">
+                      {brl(p.basePrice)}
                     </span>
                   )}
                 </div>
-                <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1 pt-0.5 text-[12px] font-extrabold leading-tight text-white line-clamp-3">
-                    {p.name}
-                  </div>
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-neon-yellow text-black">
-                    <Plus className="h-3.5 w-3.5" />
-                  </span>
-                </div>
               </div>
-              <div className="flex items-baseline gap-1.5 border-t border-white/10 bg-black/20 px-3 py-1.5">
-                <div className="text-[14px] font-black text-neon-yellow">{brl(price)}</div>
-                {savings > 0 && (
-                  <div className="text-[10px] text-white/50 line-through">{brl(p.basePrice)}</div>
-                )}
-              </div>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-neon-yellow text-black shadow-lg shadow-neon-yellow/30">
+                <Plus className="h-4 w-4" strokeWidth={3} />
+              </span>
             </button>
           );
         })}
