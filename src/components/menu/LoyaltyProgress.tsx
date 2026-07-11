@@ -79,10 +79,12 @@ export function LoyaltyProgress() {
     };
   }, [userId]);
 
+  const tiers = useLoyaltyTiers();
   if (!userId || !status) return null;
 
+  const GOAL = tiers?.[status.tier]?.redeem_cost ?? 10;
   const pct = Math.min(100, (status.current / GOAL) * 100);
-  const remaining = GOAL - status.current;
+  const remaining = Math.max(0, GOAL - status.current);
   const complete = status.activeCoupons > 0;
   const meta = TIER_META[status.tier];
 
