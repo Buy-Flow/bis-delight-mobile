@@ -673,7 +673,7 @@ function HighlightsCarousel({
       if (pausedRef.current) return;
       const step = el.clientWidth * 0.88;
       el.scrollBy({ left: step, behavior: "smooth" });
-    }, 3500);
+    }, 3000);
 
     return () => {
       el.removeEventListener("scroll", onScroll);
