@@ -503,11 +503,13 @@ function PDVPage() {
           editItem={editingLine as CartItem | null}
           submitLabel={editingLine ? "Salvar" : "Adicionar"}
           onSubmit={addFromModal}
+          compact
           onClose={() => {
             setSelecting(null);
             setEditingLine(null);
           }}
         />
+
       )}
 
       {/* Success dialog */}
