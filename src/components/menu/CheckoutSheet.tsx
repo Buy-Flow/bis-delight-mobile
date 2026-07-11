@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag, Ticket, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { X, Truck, Store, Sparkles, LogIn, Loader2, User, Phone, MapPin, Settings, MessageCircle, Heart, Plus, Minus, ShoppingBag, Ticket, Check, Route, AlertTriangle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
@@ -10,6 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
 import { useStoreStatus } from "@/lib/store-status";
+import { useSiteSettings } from "@/lib/menu-data";
+import {
+  calcDeliveryFee,
+  geocodeAddress,
+  haversineKm,
+  isWithinRadius,
+} from "@/lib/delivery-zone";
 import { MoonStar, Clock as ClockIcon } from "lucide-react";
 
 type Mode = "entrega" | "retirada";
@@ -47,6 +54,8 @@ export function CheckoutSheet() {
   const navigate = useNavigate();
   const storeStatus = useStoreStatus();
 
+  const { data: settings } = useSiteSettings();
+
   const [mode, setMode] = useState<Mode>("entrega");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -57,6 +66,17 @@ export function CheckoutSheet() {
   const [couponInput, setCouponInput] = useState("");
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
+
+  // Distance-based delivery quote
+  const [quote, setQuote] = useState<{
+    lat: number;
+    lng: number;
+    km: number;
+    label: string;
+  } | null>(null);
+  const [quoting, setQuoting] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const geocodeReq = useRef(0);
 
   useEffect(() => {
     if (!isCheckoutOpen) return;
@@ -83,9 +103,72 @@ export function CheckoutSheet() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCheckoutOpen, user?.id]);
 
+  const zone = settings?.deliveryZone;
+  const originLat = settings?.storeLat ?? null;
+  const originLng = settings?.storeLng ?? null;
+  const zoneActive = !!(zone?.enabled && originLat != null && originLng != null);
+
+  // Debounced geocode when address changes (delivery mode + zone active)
+  useEffect(() => {
+    if (!isCheckoutOpen) return;
+    if (mode !== "entrega" || !zoneActive) {
+      setQuote(null);
+      setQuoteError(null);
+      return;
+    }
+    const trimmed = address.trim();
+    if (trimmed.length < 6) {
+      setQuote(null);
+      setQuoteError(null);
+      return;
+    }
+    const reqId = ++geocodeReq.current;
+    setQuoting(true);
+    setQuoteError(null);
+    const ctrl = new AbortController();
+    const t = window.setTimeout(async () => {
+      try {
+        const g = await geocodeAddress(trimmed, {
+          city: settings?.city,
+          signal: ctrl.signal,
+        });
+        if (reqId !== geocodeReq.current) return;
+        if (!g) {
+          setQuote(null);
+          setQuoteError("Não consegui localizar esse endereço. Tente incluir bairro e número.");
+        } else {
+          const km = haversineKm({ lat: originLat!, lng: originLng! }, { lat: g.lat, lng: g.lng });
+          setQuote({ lat: g.lat, lng: g.lng, km, label: g.label });
+        }
+      } finally {
+        if (reqId === geocodeReq.current) setQuoting(false);
+      }
+    }, 900);
+    return () => {
+      ctrl.abort();
+      window.clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, mode, zoneActive, originLat, originLng, isCheckoutOpen]);
+
   if (!isCheckoutOpen) return null;
 
-  const fee = mode === "entrega" ? BRAND.deliveryFee : 0;
+  const flatFee = settings?.deliveryFee ?? BRAND.deliveryFee;
+  const freeThreshold = settings?.freeDeliveryThreshold ?? 0;
+  const outsideRadius =
+    zoneActive && zone && quote ? !isWithinRadius(quote.km, zone) : false;
+
+  const rawFee =
+    mode === "entrega"
+      ? zoneActive && zone && quote
+        ? outsideRadius
+          ? 0
+          : calcDeliveryFee(quote.km, zone, flatFee)
+        : flatFee
+      : 0;
+  const freeDelivery =
+    mode === "entrega" && freeThreshold > 0 && subtotal >= freeThreshold;
+  const fee = freeDelivery ? 0 : rawFee;
   const discount = couponApplied?.discount ?? 0;
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
@@ -171,6 +254,13 @@ export function CheckoutSheet() {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
+    if (mode === "entrega" && outsideRadius) {
+      toast.error(
+        zone?.outsideMessage ||
+          "Endereço fora do nosso raio de entrega. Tente retirada na loja.",
+      );
+      return;
+    }
     setSending(true);
     try {
       const { data: order, error: orderErr } = await supabase
@@ -187,6 +277,9 @@ export function CheckoutSheet() {
           delivery_fee: fee,
           total,
           coupon_code: couponApplied?.code ?? null,
+          distance_km: mode === "entrega" && quote ? Number(quote.km.toFixed(3)) : null,
+          delivery_lat: mode === "entrega" && quote ? quote.lat : null,
+          delivery_lng: mode === "entrega" && quote ? quote.lng : null,
         })
         .select("id")
         .single();
@@ -407,6 +500,64 @@ export function CheckoutSheet() {
             />
           </div>
 
+          {/* Cotação de frete por distância */}
+          {mode === "entrega" && zoneActive && address.trim().length >= 6 && (
+            <div
+              className={cn(
+                "rounded-3xl border p-4 transition",
+                outsideRadius
+                  ? "border-red-400/40 bg-red-500/10"
+                  : quote
+                    ? "border-neon-cyan/30 bg-neon-cyan/5"
+                    : "border-white/10 bg-white/[0.04]",
+              )}
+              role="status"
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className={cn(
+                    "grid h-8 w-8 place-items-center rounded-xl",
+                    outsideRadius
+                      ? "bg-red-500/25 text-red-200"
+                      : "bg-neon-cyan/20 text-neon-cyan",
+                  )}
+                >
+                  {outsideRadius ? (
+                    <AlertTriangle className="h-4 w-4" />
+                  ) : (
+                    <Route className="h-4 w-4" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-extrabold text-white">
+                    {quoting
+                      ? "Calculando frete pela distância…"
+                      : outsideRadius
+                        ? "Endereço fora do raio de entrega"
+                        : quote
+                          ? `Distância: ${quote.km.toFixed(2)} km`
+                          : quoteError
+                            ? "Não consegui localizar o endereço"
+                            : "Aguardando endereço…"}
+                  </div>
+                  <div className="text-[11px] text-white/60 truncate">
+                    {quoteError && !quoting
+                      ? quoteError
+                      : quote
+                        ? outsideRadius
+                          ? zone?.outsideMessage
+                          : freeDelivery
+                            ? `Frete grátis a partir de ${brl(freeThreshold)} ✓`
+                            : `Frete calculado: ${brl(rawFee)}${zone?.maxKm ? ` · raio ${zone.maxKm} km` : ""}`
+                        : `Digite o endereço completo para calcular${zone?.maxKm ? ` (raio ${zone.maxKm} km)` : ""}.`}
+                  </div>
+                </div>
+                {quoting && <Loader2 className="h-4 w-4 animate-spin text-white/60" />}
+              </div>
+            </div>
+          )}
+
+
           {/* Resumo */}
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
             <div className="mb-3 flex items-center justify-between">
@@ -541,10 +692,15 @@ export function CheckoutSheet() {
         <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             onClick={send}
-            disabled={sending || authLoading || storeStatus.isClosed}
+            disabled={
+              sending ||
+              authLoading ||
+              storeStatus.isClosed ||
+              (mode === "entrega" && outsideRadius)
+            }
             className={cn(
               "flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white active:scale-[.98] disabled:opacity-60",
-              storeStatus.isClosed
+              storeStatus.isClosed || (mode === "entrega" && outsideRadius)
                 ? "bg-white/10 ring-1 ring-white/15"
                 : "bg-neon-pink glow-pink",
             )}
@@ -556,6 +712,11 @@ export function CheckoutSheet() {
                 {storeStatus.nextOpenLabel
                   ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
                   : "Loja fechada no momento"}
+              </>
+            ) : mode === "entrega" && outsideRadius ? (
+              <>
+                <AlertTriangle className="h-4 w-4 text-red-300" />
+                Endereço fora do raio de entrega
               </>
             ) : isAuthenticated ? (
               `Enviar pedido no WhatsApp · ${brl(total)}`

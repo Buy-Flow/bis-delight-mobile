@@ -11,6 +11,11 @@ import {
   type OptionGroup,
   type OptionItem,
 } from "@/data/menu";
+import {
+  DEFAULT_DELIVERY_ZONE,
+  parseDeliveryZone,
+  type DeliveryZoneConfig,
+} from "@/lib/delivery-zone";
 
 export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type DayHours = { day: WeekDay; closed: boolean; open: string; close: string };
@@ -75,6 +80,9 @@ export type SiteSettings = {
   heroImages: HeroImagesConfig;
   popup: PopupConfig;
   urgency: UrgencyConfig;
+  storeLat: number | null;
+  storeLng: number | null;
+  deliveryZone: DeliveryZoneConfig;
 };
 
 export type UrgencyConfig = {
@@ -324,6 +332,9 @@ const DEFAULT_EXTRA: Pick<
   | "heroImages"
   | "popup"
   | "urgency"
+  | "storeLat"
+  | "storeLng"
+  | "deliveryZone"
 
 > = {
   instagram: "",
@@ -356,6 +367,9 @@ const DEFAULT_EXTRA: Pick<
   heroImages: DEFAULT_HERO_IMAGES,
   popup: DEFAULT_POPUP,
   urgency: DEFAULT_URGENCY,
+  storeLat: null,
+  storeLng: null,
+  deliveryZone: DEFAULT_DELIVERY_ZONE,
 };
 
 function parseHeroImages(raw: unknown): HeroImagesConfig {
@@ -461,6 +475,15 @@ export const siteSettingsQueryOptions = queryOptions({
         endsAt: ((data as Record<string, unknown>).urgency_ends_at as string | null) ?? null,
         couponCode: String((data as Record<string, unknown>).urgency_coupon_code ?? ""),
       },
+      storeLat:
+        (data as Record<string, unknown>).store_lat != null
+          ? Number((data as Record<string, unknown>).store_lat)
+          : null,
+      storeLng:
+        (data as Record<string, unknown>).store_lng != null
+          ? Number((data as Record<string, unknown>).store_lng)
+          : null,
+      deliveryZone: parseDeliveryZone((data as Record<string, unknown>).delivery_zone_json),
     };
   },
   staleTime: 60_000,
@@ -856,6 +879,9 @@ export function useUpdateSettings() {
         urgency_text: s.urgency.text,
         urgency_ends_at: s.urgency.endsAt,
         urgency_coupon_code: s.urgency.couponCode,
+        store_lat: s.storeLat,
+        store_lng: s.storeLng,
+        delivery_zone_json: s.deliveryZone,
       }, { onConflict: "id" });
       if (error) throw error;
     },

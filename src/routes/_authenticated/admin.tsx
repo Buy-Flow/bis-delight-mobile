@@ -105,6 +105,8 @@ import { UrgencySection } from "@/components/admin/UrgencySection";
 import { ClipboardList } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
+import { DeliveryZoneEditor } from "@/components/admin/DeliveryZoneEditor";
+import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -3093,6 +3095,24 @@ function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
           </Field>
         </div>
       </div>
+
+      {/* Raio de entrega no mapa */}
+      {s.acceptsDelivery && (
+        <DeliveryZoneEditor
+          storeLat={s.storeLat}
+          storeLng={s.storeLng}
+          onOriginChange={(lat: number, lng: number) => {
+            set("storeLat", lat);
+            set("storeLng", lng);
+          }}
+          zone={s.deliveryZone}
+          onZoneChange={(patch: Partial<DeliveryZoneConfig>) =>
+            set("deliveryZone", { ...s.deliveryZone, ...patch })
+          }
+          city={s.city}
+          flatFallbackFee={s.deliveryFee}
+        />
+      )}
 
       {/* Resumo ao vivo */}
       {summary.length > 0 && (

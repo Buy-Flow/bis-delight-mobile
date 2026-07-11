@@ -378,7 +378,10 @@ export type Database = {
           customer_name: string
           delivered_at: string | null
           delivery_fee: number
+          delivery_lat: number | null
+          delivery_lng: number | null
           dispatched_at: string | null
+          distance_km: number | null
           id: string
           mode: string
           note: string | null
@@ -399,7 +402,10 @@ export type Database = {
           customer_name: string
           delivered_at?: string | null
           delivery_fee?: number
+          delivery_lat?: number | null
+          delivery_lng?: number | null
           dispatched_at?: string | null
+          distance_km?: number | null
           id?: string
           mode: string
           note?: string | null
@@ -420,7 +426,10 @@ export type Database = {
           customer_name?: string
           delivered_at?: string | null
           delivery_fee?: number
+          delivery_lat?: number | null
+          delivery_lng?: number | null
           dispatched_at?: string | null
+          distance_km?: number | null
           id?: string
           mode?: string
           note?: string | null
@@ -948,6 +957,7 @@ export type Database = {
           card_radius: number
           city: string
           delivery_fee: number
+          delivery_zone_json: Json | null
           facebook: string
           free_delivery_threshold: number
           global_extras: Json
@@ -979,6 +989,8 @@ export type Database = {
           popup_image_url: string
           popup_link: string
           popup_title: string
+          store_lat: number | null
+          store_lng: number | null
           tagline: string
           texture_opacity: number
           texture_size: string
@@ -1006,6 +1018,7 @@ export type Database = {
           card_radius?: number
           city?: string
           delivery_fee?: number
+          delivery_zone_json?: Json | null
           facebook?: string
           free_delivery_threshold?: number
           global_extras?: Json
@@ -1037,6 +1050,8 @@ export type Database = {
           popup_image_url?: string
           popup_link?: string
           popup_title?: string
+          store_lat?: number | null
+          store_lng?: number | null
           tagline?: string
           texture_opacity?: number
           texture_size?: string
@@ -1064,6 +1079,7 @@ export type Database = {
           card_radius?: number
           city?: string
           delivery_fee?: number
+          delivery_zone_json?: Json | null
           facebook?: string
           free_delivery_threshold?: number
           global_extras?: Json
@@ -1095,6 +1111,8 @@ export type Database = {
           popup_image_url?: string
           popup_link?: string
           popup_title?: string
+          store_lat?: number | null
+          store_lng?: number | null
           tagline?: string
           texture_opacity?: number
           texture_size?: string
