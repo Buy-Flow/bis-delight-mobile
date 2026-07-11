@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Gift, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TierBadge, TIER_META, type LoyaltyTier } from "./TierBadge";
-
-const GOAL = 10;
+import { useLoyaltyTiers } from "@/lib/use-loyalty-tiers";
 
 type Status = {
   tier: LoyaltyTier;
