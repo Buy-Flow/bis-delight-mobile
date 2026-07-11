@@ -451,7 +451,12 @@ export function ProductModal({
         className="absolute inset-0 bg-black/70 animate-in fade-in duration-150"
         onClick={onClose}
       />
-      <div className="absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[40px] bg-[oklch(0.18_0.11_305)] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation">
+      <div className={cn(
+        compact
+          ? "absolute left-1/2 top-1/2 flex max-h-[88vh] w-[min(92vw,640px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[32px] bg-[oklch(0.18_0.11_305)] border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-200 ease-out will-change-transform touch-manipulation"
+          : "absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[40px] bg-[oklch(0.18_0.11_305)] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom duration-200 ease-out will-change-transform touch-manipulation"
+      )}>
+
         {/* Textura papel amassado como camada de fundo (não interfere no layout) */}
         <div className="paper-crumpled pointer-events-none absolute inset-0 z-0" aria-hidden="true" />
 
