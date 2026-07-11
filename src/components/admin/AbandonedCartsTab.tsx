@@ -217,8 +217,10 @@ export function AbandonedCartsTab() {
                   <div className="flex shrink-0 items-center gap-2">
                     <button
                       onClick={() => openWhatsApp(r)}
-                      disabled={!phone}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3.5 py-2 text-xs font-bold text-white shadow-md transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                      title={phone ? `Abrir conversa com ${phone}` : "Cliente sem telefone cadastrado"}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold text-white shadow-md transition hover:brightness-110 ${
+                        phone ? "bg-[#25D366]" : "bg-[#25D366]/60"
+                      }`}
                     >
                       <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
                     </button>
