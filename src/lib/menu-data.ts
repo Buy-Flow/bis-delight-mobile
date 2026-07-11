@@ -475,6 +475,15 @@ export const siteSettingsQueryOptions = queryOptions({
         endsAt: ((data as Record<string, unknown>).urgency_ends_at as string | null) ?? null,
         couponCode: String((data as Record<string, unknown>).urgency_coupon_code ?? ""),
       },
+      storeLat:
+        (data as Record<string, unknown>).store_lat != null
+          ? Number((data as Record<string, unknown>).store_lat)
+          : null,
+      storeLng:
+        (data as Record<string, unknown>).store_lng != null
+          ? Number((data as Record<string, unknown>).store_lng)
+          : null,
+      deliveryZone: parseDeliveryZone((data as Record<string, unknown>).delivery_zone_json),
     };
   },
   staleTime: 60_000,
