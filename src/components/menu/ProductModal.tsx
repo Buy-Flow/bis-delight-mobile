@@ -98,7 +98,9 @@ export function ProductModal({
    */
   onSubmit?: (payload: Omit<CartItem, "uid">, isEdit: boolean) => void;
   submitLabel?: string;
+  compact?: boolean;
 }) {
+
   const { add, update } = useCart();
   useBackDismiss(!!product, onClose);
   const { data: settings } = useSiteSettings();
