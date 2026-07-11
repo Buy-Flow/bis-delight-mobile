@@ -1430,46 +1430,127 @@ function ClientDetailDialog({
 
         {!client ? null : (
           <div className="space-y-5">
-            {/* Contato */}
+            {/* Contato / edição */}
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="grid grid-cols-1 gap-2 text-sm text-white/80 sm:grid-cols-2">
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-neon-cyan" />
-                  <span>{formatPhone(client.phone)}</span>
-                </div>
-                {client.birthday && (
-                  <div className="flex items-center gap-2">
-                    <Cake className="h-4 w-4 text-neon-pink" />
-                    <span>{formatBirthday(client.birthday)}</span>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                  Informações do cliente
+                </p>
+                {!editMode ? (
+                  <button
+                    onClick={() => setEditMode(true)}
+                    className="inline-flex items-center gap-1 rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-neon-cyan transition hover:bg-neon-cyan/20"
+                  >
+                    <Pencil className="h-3 w-3" /> Editar
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditMode(false);
+                        if (client) {
+                          setForm({
+                            full_name: client.full_name ?? "",
+                            phone: client.phone ?? "",
+                            birthday: client.birthday ?? "",
+                            address: client.address ?? "",
+                            reference: client.reference ?? "",
+                          });
+                        }
+                      }}
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white/70 transition hover:bg-white/10"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={saveProfile}
+                      disabled={saving}
+                      className="inline-flex items-center gap-1 rounded-full bg-neon-pink px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg shadow-neon-pink/30 transition hover:brightness-110 disabled:opacity-60"
+                    >
+                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                      Salvar
+                    </button>
                   </div>
                 )}
-                {client.address && (
-                  <div className="flex items-start gap-2 sm:col-span-2">
-                    <MapPin className="mt-0.5 h-4 w-4 text-white/60" />
-                    <span>
-                      {client.address}
-                      {client.reference ? ` — ${client.reference}` : ""}
-                    </span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-xs text-white/50 sm:col-span-2">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Cadastrado{" "}
-                  {relative(client.created_at)} ·{" "}
-                  {new Date(client.created_at).toLocaleDateString("pt-BR")}
-                </div>
               </div>
-              {waHref && (
-                <a
-                  href={waHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" /> Falar no WhatsApp
-                </a>
+
+              {!editMode ? (
+                <>
+                  <div className="grid grid-cols-1 gap-2 text-sm text-white/80 sm:grid-cols-2">
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-neon-cyan" />
+                      <span>{formatPhone(client.phone)}</span>
+                    </div>
+                    {client.birthday && (
+                      <div className="flex items-center gap-2">
+                        <Cake className="h-4 w-4 text-neon-pink" />
+                        <span>{formatBirthday(client.birthday)}</span>
+                      </div>
+                    )}
+                    {client.address && (
+                      <div className="flex items-start gap-2 sm:col-span-2">
+                        <MapPin className="mt-0.5 h-4 w-4 text-white/60" />
+                        <span>
+                          {client.address}
+                          {client.reference ? ` — ${client.reference}` : ""}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-white/50 sm:col-span-2">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Cadastrado{" "}
+                      {relative(client.created_at)} ·{" "}
+                      {new Date(client.created_at).toLocaleDateString("pt-BR")}
+                    </div>
+                  </div>
+                  {waHref && (
+                    <a
+                      href={waHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:brightness-110"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" /> Falar no WhatsApp
+                    </a>
+                  )}
+                </>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <EditField
+                    label="Nome"
+                    value={form.full_name}
+                    onChange={(v) => setForm((f) => ({ ...f, full_name: v }))}
+                  />
+                  <EditField
+                    label="Telefone"
+                    value={form.phone}
+                    onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
+                    placeholder="(00) 00000-0000"
+                  />
+                  <EditField
+                    label="Aniversário"
+                    type="date"
+                    value={form.birthday}
+                    onChange={(v) => setForm((f) => ({ ...f, birthday: v }))}
+                  />
+                  <EditField
+                    label="Referência"
+                    value={form.reference}
+                    onChange={(v) => setForm((f) => ({ ...f, reference: v }))}
+                    placeholder="Ex.: perto do mercado"
+                  />
+                  <div className="sm:col-span-2">
+                    <EditField
+                      label="Endereço"
+                      value={form.address}
+                      onChange={(v) => setForm((f) => ({ ...f, address: v }))}
+                      placeholder="Rua, número, bairro, cidade"
+                    />
+                  </div>
+                </div>
               )}
             </div>
+
 
             {isLoading ? (
               <ClientDetailSkeleton />
