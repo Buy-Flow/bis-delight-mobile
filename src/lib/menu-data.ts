@@ -75,6 +75,9 @@ export type SiteSettings = {
   heroImages: HeroImagesConfig;
   popup: PopupConfig;
   urgency: UrgencyConfig;
+  storeLat: number | null;
+  storeLng: number | null;
+  deliveryZone: DeliveryZoneConfig;
 };
 
 export type UrgencyConfig = {
