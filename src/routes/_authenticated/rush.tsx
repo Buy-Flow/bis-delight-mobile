@@ -39,6 +39,7 @@ import {
   subscribeToPush,
 } from "@/lib/push";
 import { sendAdminTestPush } from "@/lib/push.functions";
+import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 
 export const Route = createFileRoute("/_authenticated/rush")({
   head: () => ({
