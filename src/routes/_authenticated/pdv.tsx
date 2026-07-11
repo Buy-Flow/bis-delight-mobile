@@ -72,16 +72,6 @@ const PAYMENTS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ 
   { id: "credito", label: "Crédito", icon: Wallet },
 ];
 
-const BRL = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-const PAYMENTS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: "dinheiro", label: "Dinheiro", icon: Banknote },
-  { id: "pix", label: "PIX", icon: QrCode },
-  { id: "debito", label: "Débito", icon: CreditCard },
-  { id: "credito", label: "Crédito", icon: Wallet },
-];
-
 function PDVPage() {
   const { user } = useAuth();
   const { data: products = [] } = useProducts();
