@@ -162,7 +162,66 @@ export function CheckoutSheet() {
       window.clearTimeout(t);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, mode, zoneActive, originLat, originLng, isCheckoutOpen]);
+  }, [address, mode, zoneActive, originLat, originLng, isCheckoutOpen, preGeocoded]);
+
+  // Auto-select default saved address on open (only if user hasn't typed anything)
+  useEffect(() => {
+    if (!isCheckoutOpen) return;
+    if (savedAddresses.loading) return;
+    if (selectedAddressId) return;
+    if (address.trim()) return;
+    const def = savedAddresses.items.find((a) => a.is_default) ?? savedAddresses.items[0];
+    if (def) {
+      setSelectedAddressId(def.id);
+      setAddress(def.address);
+      setReference(def.reference ?? "");
+      if (def.lat != null && def.lng != null) {
+        setPreGeocoded({ lat: def.lat, lng: def.lng, address: def.address });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCheckoutOpen, savedAddresses.loading, savedAddresses.items]);
+
+  const pickSavedAddress = (a: UserAddress) => {
+    setSelectedAddressId(a.id);
+    setAddress(a.address);
+    setReference(a.reference ?? "");
+    if (a.lat != null && a.lng != null) {
+      setPreGeocoded({ lat: a.lat, lng: a.lng, address: a.address });
+    } else {
+      setPreGeocoded(null);
+    }
+  };
+
+  const currentAddressIsSaved =
+    !!savedAddresses.items.find(
+      (a) => a.address.trim().toLowerCase() === address.trim().toLowerCase(),
+    );
+
+  const saveCurrentAddress = async () => {
+    if (!user) return;
+    if (!address.trim()) {
+      toast.error("Digite o endereço antes de salvar");
+      return;
+    }
+    setSavingAddress(true);
+    try {
+      const created = await savedAddresses.create({
+        label: savedAddresses.items.length === 0 ? "Casa" : "Outro",
+        address: address.trim(),
+        reference: reference.trim() || null,
+        lat: quote?.lat ?? null,
+        lng: quote?.lng ?? null,
+      });
+      setSelectedAddressId(created.id);
+      toast.success("Endereço salvo no seu perfil!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Falha ao salvar: ${msg}`);
+    } finally {
+      setSavingAddress(false);
+    }
+  };
 
   if (!isCheckoutOpen) return null;
 
