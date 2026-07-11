@@ -282,8 +282,8 @@ function Content() {
       <StoreClosedBanner />
       <UrgencyBanner />
       <ActiveOrderCard />
-      <BirthdayBanner />
       <Reveal><Benefits /></Reveal>
+      <BirthdayBanner />
       <Reveal><LoyaltyProgress /></Reveal>
       <PushOptInCard />
       
