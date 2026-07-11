@@ -258,89 +258,162 @@ function RecompensasPage() {
         </section>
 
         {/* Trilha de níveis */}
-        <section className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/70">
-              <Sparkles className="h-4 w-4 text-neon-yellow" />
-              Trilha de níveis
-            </h3>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
-              Bronze → Prata → Ouro
-            </span>
+        <section className="mt-8">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-neon-yellow" />
+                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-neon-yellow/90">Trilha de recompensas</span>
+              </div>
+              <h3 className="mt-1 text-xl font-black leading-tight text-white">
+                Quanto mais pedidos, <span className="bg-gradient-to-r from-neon-pink to-neon-yellow bg-clip-text text-transparent">maiores as recompensas</span>
+              </h3>
+            </div>
           </div>
-          <div className="space-y-3">
-            {TIER_ORDER.map((t) => {
+
+          <div className="space-y-4">
+            {TIER_ORDER.map((t, idx) => {
               const info = TIER_META[t];
-              const reached = (status?.lifetime ?? 0) >= info.minLifetime;
+              const lifetime = status?.lifetime ?? 0;
+              const reached = lifetime >= info.minLifetime;
               const isCurrent = status?.tier === t;
+              const progressToTier = info.minLifetime > 0
+                ? Math.min(100, (lifetime / info.minLifetime) * 100)
+                : 100;
+              const stampsMissing = Math.max(0, info.minLifetime - lifetime);
+
               return (
                 <div
                   key={t}
                   className={cn(
-                    "relative overflow-hidden rounded-2xl border p-4 transition-all",
+                    "group relative overflow-hidden rounded-3xl border p-5 transition-all",
                     isCurrent
-                      ? "border-neon-yellow/60 bg-gradient-to-br from-white/[0.09] to-white/[0.02] shadow-[0_0_30px_-8px_rgba(255,215,60,0.5)]"
+                      ? "border-neon-yellow/70 bg-gradient-to-br from-white/[0.1] to-white/[0.02] shadow-[0_20px_60px_-25px_rgba(255,215,60,0.6)]"
                       : reached
                         ? "border-white/15 bg-white/[0.05]"
-                        : "border-white/10 bg-black/25 opacity-75",
+                        : "border-white/10 bg-black/25",
                   )}
                 >
-                  <div aria-hidden className={cn("pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-gradient-to-br opacity-25 blur-2xl", info.gradient)} />
-                  <div className="relative flex items-start gap-3">
-                    <div className="relative h-16 w-16 shrink-0">
-                      <div aria-hidden className={cn("absolute inset-0 rounded-full bg-gradient-to-br opacity-40 blur-lg", info.gradient)} />
-                      <img
-                        src={info.image}
-                        alt={info.label}
-                        loading="lazy"
-                        width={128}
-                        height={128}
-                        className={cn("relative h-full w-full object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)]", !reached && "grayscale opacity-60")}
-                      />
+                  {/* glow decorativo */}
+                  <div aria-hidden className={cn("pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br opacity-30 blur-3xl", info.gradient)} />
+                  <div aria-hidden className={cn("pointer-events-none absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-gradient-to-br opacity-20 blur-2xl", info.gradient)} />
+
+                  {/* número lateral */}
+                  <div
+                    aria-hidden
+                    className={cn(
+                      "pointer-events-none absolute -bottom-6 right-3 select-none text-[110px] font-black leading-none opacity-[0.06]",
+                      info.text,
+                    )}
+                  >
+                    0{idx + 1}
+                  </div>
+
+                  <div className="relative">
+                    {/* Header */}
+                    <div className="flex items-start gap-4">
+                      <div className="relative h-20 w-20 shrink-0">
+                        <div aria-hidden className={cn("absolute inset-0 rounded-full bg-gradient-to-br opacity-50 blur-lg", info.gradient)} />
+                        <img
+                          src={info.image}
+                          alt={info.label}
+                          loading="lazy"
+                          width={160}
+                          height={160}
+                          className={cn(
+                            "relative h-full w-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.55)] transition-transform group-hover:scale-105",
+                            !reached && "grayscale opacity-55",
+                          )}
+                        />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className={cn("text-2xl font-black leading-none", info.text)}>{info.label}</h4>
+                          {isCurrent && (
+                            <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.15em] text-[#1a0b2e] shadow-[0_0_16px_rgba(255,220,120,0.6)]">
+                              ★ Você está aqui
+                            </span>
+                          )}
+                          {reached && !isCurrent && (
+                            <span className="rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white/70">
+                              Conquistado
+                            </span>
+                          )}
+                          {!reached && (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white/50">
+                              <Lock className="h-2.5 w-2.5" strokeWidth={3} />
+                              Bloqueado
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-[12px] font-semibold text-white/60">{info.tagline}</p>
+
+                        {/* Métricas destaque */}
+                        <div className="mt-3 grid grid-cols-3 gap-1.5">
+                          <div className={cn("rounded-xl border p-2 text-center", isCurrent ? "border-neon-yellow/40 bg-neon-yellow/5" : "border-white/10 bg-white/[0.03]")}>
+                            <div className="text-[9px] font-bold uppercase tracking-wider text-white/50">Selos</div>
+                            <div className={cn("text-lg font-black leading-tight", info.text)}>{info.multiplier}</div>
+                            <div className="text-[9px] text-white/40">por pedido</div>
+                          </div>
+                          <div className={cn("rounded-xl border p-2 text-center", isCurrent ? "border-neon-yellow/40 bg-neon-yellow/5" : "border-white/10 bg-white/[0.03]")}>
+                            <div className="text-[9px] font-bold uppercase tracking-wider text-white/50">Mínimo</div>
+                            <div className="text-lg font-black leading-tight text-white">R${info.minOrder}</div>
+                            <div className="text-[9px] text-white/40">por pedido</div>
+                          </div>
+                          <div className="rounded-xl border border-neon-yellow/40 bg-gradient-to-br from-neon-yellow/20 to-neon-pink/10 p-2 text-center">
+                            <div className="text-[9px] font-bold uppercase tracking-wider text-neon-yellow/90">Cupom</div>
+                            <div className="text-lg font-black leading-tight text-neon-yellow">R${info.reward}</div>
+                            <div className="text-[9px] text-white/60">a cada cartela</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h4 className={cn("text-lg font-black leading-tight", info.text)}>{info.label}</h4>
-                        {isCurrent && (
-                          <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#1a0b2e]">
-                            Você está aqui
+
+                    {/* Benefícios */}
+                    <ul className="relative mt-4 grid gap-1.5 rounded-2xl border border-white/10 bg-black/20 p-3">
+                      {info.benefits.map((b, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[12.5px] leading-snug text-white/85">
+                          <span className={cn("mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-gradient-to-br", info.gradient)}>
+                            <Check className="h-2.5 w-2.5 text-[#1a0b2e]" strokeWidth={4} />
                           </span>
-                        )}
-                        {!reached && <Lock className="h-3.5 w-3.5 text-white/40" />}
-                      </div>
-                      <div className="mt-0.5 text-[11px] font-semibold text-white/55">
-                        {info.tagline}
-                      </div>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                      {/* Chips de destaque */}
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <span className={cn("inline-flex items-center gap-1 rounded-full border border-current/25 px-2 py-0.5 text-[10px] font-black", info.text)}>
-                          <Sparkles className="h-2.5 w-2.5" strokeWidth={3} />
-                          {info.multiplier} selos/pedido
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-white/80">
-                          <ShoppingBag className="h-2.5 w-2.5" strokeWidth={3} />
-                          Mín. R$ {info.minOrder}
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full border border-neon-yellow/40 bg-neon-yellow/10 px-2 py-0.5 text-[10px] font-black text-neon-yellow">
-                          <Ticket className="h-2.5 w-2.5" strokeWidth={3} />
-                          Cupom R$ {info.reward}
-                        </span>
+                    {/* Progresso para desbloquear */}
+                    {!reached && info.minLifetime > 0 && (
+                      <div className="relative mt-3 rounded-2xl border border-white/10 bg-black/30 p-3">
+                        <div className="mb-1.5 flex items-center justify-between text-[10px] font-black uppercase tracking-wider">
+                          <span className="text-white/60">Progresso para desbloquear</span>
+                          <span className={info.text}>
+                            {lifetime}/{info.minLifetime} selos
+                          </span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className={cn("h-full rounded-full bg-gradient-to-r transition-[width] duration-700", info.gradient)}
+                            style={{ width: `${progressToTier}%` }}
+                          />
+                        </div>
+                        <div className="mt-2 text-[11px] text-white/60">
+                          Faltam <span className={cn("font-black", info.text)}>{stampsMissing} selos</span> para chegar em {info.label}.
+                        </div>
                       </div>
-
-                      <ul className="mt-2.5 space-y-1">
-                        {info.benefits.map((b, i) => (
-                          <li key={i} className="flex items-start gap-1.5 text-[12px] leading-snug text-white/85">
-                            <Check className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", info.text)} strokeWidth={3} />
-                            <span>{b}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    )}
                   </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* Rodapé explicativo */}
+          <div className="mt-4 flex items-start gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-[11px] leading-snug text-white/60">
+            <TrendingUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-neon-cyan" />
+            <p>
+              Seu nível <b className="text-white/85">sobe automaticamente</b> conforme você acumula selos ao longo do tempo — e permanece com você. Cada cartela cheia gera um cupom com o valor do seu nível atual.
+            </p>
           </div>
         </section>
 
