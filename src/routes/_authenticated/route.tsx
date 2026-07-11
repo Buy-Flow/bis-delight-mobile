@@ -16,6 +16,7 @@ const ADMIN_PREFIXES = [
   "/lucratividade",
   "/previsao",
   "/modelos",
+  "/biblioteca",
 ];
 
 function isAdminRoute(pathname: string) {

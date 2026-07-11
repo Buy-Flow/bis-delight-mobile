@@ -565,6 +565,66 @@ export type Database = {
         }
         Relationships: []
       }
+      media_library: {
+        Row: {
+          alt_text: string | null
+          bucket: string
+          category: string | null
+          created_at: string
+          height: number | null
+          id: string
+          is_favorite: boolean
+          mime_type: string | null
+          name: string
+          size_bytes: number | null
+          storage_path: string
+          tags: string[]
+          updated_at: string
+          uploaded_by: string | null
+          url: string
+          usage_count: number
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          bucket?: string
+          category?: string | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          is_favorite?: boolean
+          mime_type?: string | null
+          name: string
+          size_bytes?: number | null
+          storage_path: string
+          tags?: string[]
+          updated_at?: string
+          uploaded_by?: string | null
+          url: string
+          usage_count?: number
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          bucket?: string
+          category?: string | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          is_favorite?: boolean
+          mime_type?: string | null
+          name?: string
+          size_bytes?: number | null
+          storage_path?: string
+          tags?: string[]
+          updated_at?: string
+          uploaded_by?: string | null
+          url?: string
+          usage_count?: number
+          width?: number | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
