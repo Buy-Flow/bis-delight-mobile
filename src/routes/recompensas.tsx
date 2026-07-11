@@ -361,7 +361,7 @@ function RecompensasPage() {
               ) : (
                 <div className="space-y-2">
                   {available.map((c) => {
-                    const v = Number(c.discount_value) > 0 ? Number(c.discount_value) : 20;
+                    const v = Number(c.discount_value) > 0 ? Number(c.discount_value) : 10;
                     return (
                       <div
                         key={c.id}
@@ -390,7 +390,7 @@ function RecompensasPage() {
                 <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-white/50">Histórico</h3>
                 <div className="space-y-2">
                   {used.map((c) => {
-                    const v = Number(c.discount_value) > 0 ? Number(c.discount_value) : 20;
+                    const v = Number(c.discount_value) > 0 ? Number(c.discount_value) : 10;
                     return (
                       <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 opacity-70">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/50">
