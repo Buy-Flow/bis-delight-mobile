@@ -531,7 +531,25 @@ function ClientesDashboard() {
   const clearSelection = () => setSelection(new Set());
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Title */}
+      <section>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1
+              className="text-4xl font-black uppercase leading-none text-white"
+              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+            >
+              Central de <span className="text-neon-pink">clientes</span>
+            </h1>
+            <p className="mt-2 text-sm text-white/60">
+              <Users className="-mt-0.5 inline h-4 w-4 text-neon-cyan" /> {kpis.total}{" "}
+              cadastros · {kpis.buyers} compradores · LTV médio {BRL(kpis.ltvAvg)}
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* KPIs — 8 métricas em grid denso */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <KpiCard icon={Users} label="Total de clientes" value={String(kpis.total)} tint="text-neon-cyan" />
