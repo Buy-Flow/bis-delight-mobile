@@ -93,86 +93,60 @@ export function LoyaltyProgress() {
         to="/recompensas"
         aria-label="Abrir Programa Bis Recompensa"
         className={cn(
-          "relative block overflow-hidden rounded-[28px] border p-4 shadow-lg transition-transform active:scale-[0.98] hover:brightness-110",
+          "relative block overflow-hidden rounded-2xl border px-3 py-2.5 shadow-lg transition-transform active:scale-[0.98] hover:brightness-110",
           "border-white/10",
         )}
         style={{ backgroundColor: "#3a1f5c" }}
       >
         <div
           aria-hidden
-          className={cn("pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br opacity-40 blur-2xl", meta.gradient)}
+          className={cn("pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br opacity-40 blur-2xl", meta.gradient)}
         />
 
-        {/* Top row: tier badge + reward chip */}
-        <div className="relative flex items-center justify-between gap-3">
-          <TierBadge tier={status.tier} size="md" />
-          <div className={cn("rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider", meta.text, `border-current/30`)}>
-            Cupom R$ {status.reward.toFixed(0)}
-          </div>
-        </div>
-
-        {/* Title + counter */}
-        <div className="relative mt-2.5 flex items-baseline justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="text-[15px] font-extrabold leading-tight text-white">Programa Bis Recompensa</h3>
-            <p className="mt-0.5 text-[11.5px] leading-snug text-white/70">
+        {/* Header: badge + title + counter */}
+        <div className="relative flex items-center gap-2">
+          <TierBadge tier={status.tier} size="sm" />
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-[13px] font-extrabold leading-tight text-white">Bis Recompensa</h3>
+            <p className="truncate text-[10.5px] leading-tight text-white/60">
               {complete
-                ? `Você tem ${status.activeCoupons} cupom${status.activeCoupons > 1 ? "s" : ""} pra usar!`
+                ? `${status.activeCoupons} cupom${status.activeCoupons > 1 ? "ns" : ""} disponível${status.activeCoupons > 1 ? "is" : ""}`
                 : remaining === 1
-                  ? `Falta 1 pedido pra ganhar R$ ${status.reward.toFixed(0)}!`
-                  : `${status.stampsPerOrder}× por pedido — faltam ${remaining} selos pra R$ ${status.reward.toFixed(0)}.`}
+                  ? `Falta 1 selo pra R$ ${status.reward.toFixed(0)}`
+                  : `Faltam ${remaining} selos pra R$ ${status.reward.toFixed(0)}`}
             </p>
           </div>
-          <span className="shrink-0 text-[13px] font-bold text-neon-yellow tabular-nums">
+          <span className="shrink-0 text-[12px] font-bold text-neon-yellow tabular-nums">
             {status.current}/{GOAL}
           </span>
         </div>
 
-        {/* Progress bar to coupon */}
-        <div className="relative mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+        {/* Progress bar */}
+        <div className="relative mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-[width] duration-700"
             style={{ width: `${pct}%` }}
           />
         </div>
 
-        {/* Stamps row */}
-        <div className="relative mt-2 flex items-center justify-between gap-1.5">
-          {Array.from({ length: GOAL }).map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "h-1.5 flex-1 rounded-full transition-colors",
-                i < status.current ? "bg-neon-yellow" : "bg-white/15",
-              )}
-            />
-          ))}
-        </div>
-
-        {/* Next tier progress */}
-        {status.nextTier && status.stampsToNext > 0 && (
-          <div className="relative mt-3 flex items-center gap-2 rounded-xl bg-white/5 px-2.5 py-1.5 ring-1 ring-white/10">
-            <TrendingUp className="h-3.5 w-3.5 shrink-0 text-neon-cyan" />
-            <span className="min-w-0 flex-1 truncate text-[11px] text-white/80">
-              Faltam <b className="text-white">{status.stampsToNext}</b> selos totais para subir para{" "}
+        {/* Footer hint */}
+        {complete ? (
+          <div className="relative mt-1.5 flex items-center gap-1 text-[10px] font-bold text-neon-yellow">
+            <Sparkles className="h-3 w-3" /> Toque pra resgatar
+          </div>
+        ) : status.nextTier && status.stampsToNext > 0 ? (
+          <div className="relative mt-1.5 flex items-center gap-1 text-[10px] text-white/60">
+            <TrendingUp className="h-3 w-3 shrink-0 text-neon-cyan" />
+            <span className="truncate">
+              <b className="text-white">{status.stampsToNext}</b> selos para{" "}
               <b className={TIER_META[status.nextTier].text}>{TIER_META[status.nextTier].label}</b>
             </span>
           </div>
-        )}
-        {!status.nextTier && (
-          <div className="relative mt-3 flex items-center gap-2 rounded-xl bg-neon-yellow/10 px-2.5 py-1.5 ring-1 ring-neon-yellow/30">
-            <Gift className="h-3.5 w-3.5 shrink-0 text-neon-yellow" />
-            <span className="text-[11px] font-bold text-neon-yellow">Você atingiu o nível máximo — Ouro!</span>
+        ) : !status.nextTier ? (
+          <div className="relative mt-1.5 flex items-center gap-1 text-[10px] font-bold text-neon-yellow">
+            <Gift className="h-3 w-3" /> Nível máximo — Ouro
           </div>
-        )}
-
-        {complete && (
-          <div className="relative mt-2 inline-flex items-center gap-1.5 rounded-full bg-neon-yellow px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[oklch(0.18_0.11_305)]">
-            <Sparkles className="h-3 w-3" />
-            {status.activeCoupons} cupom{status.activeCoupons > 1 ? "s" : ""} disponível
-            {status.activeCoupons > 1 ? "is" : ""}
-          </div>
-        )}
+        ) : null}
       </Link>
     </section>
   );
