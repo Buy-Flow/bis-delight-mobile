@@ -21,6 +21,7 @@ import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authenticated/precificacao'
+import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated/modelos'
 import { Route as AuthenticatedLucratividadeRouteImport } from './routes/_authenticated/lucratividade'
@@ -95,6 +96,11 @@ const AuthenticatedPrecificacaoRoute =
     path: '/precificacao',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
+  id: '/pdv',
+  path: '/pdv',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotificacoesRoute =
   AuthenticatedNotificacoesRouteImport.update({
     id: '/notificacoes',
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/pdv': typeof AuthenticatedPdvRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/pdv': typeof AuthenticatedPdvRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/_authenticated/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
+  '/_authenticated/pdv': typeof AuthenticatedPdvRoute
   '/_authenticated/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
@@ -265,6 +274,7 @@ export interface FileRouteTypes {
     | '/lucratividade'
     | '/modelos'
     | '/notificacoes'
+    | '/pdv'
     | '/precificacao'
     | '/previsao'
     | '/rush'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/lucratividade'
     | '/modelos'
     | '/notificacoes'
+    | '/pdv'
     | '/precificacao'
     | '/previsao'
     | '/rush'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/_authenticated/lucratividade'
     | '/_authenticated/modelos'
     | '/_authenticated/notificacoes'
+    | '/_authenticated/pdv'
     | '/_authenticated/precificacao'
     | '/_authenticated/previsao'
     | '/_authenticated/rush'
@@ -422,6 +434,13 @@ declare module '@tanstack/react-router' {
       path: '/precificacao'
       fullPath: '/precificacao'
       preLoaderRoute: typeof AuthenticatedPrecificacaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pdv': {
+      id: '/_authenticated/pdv'
+      path: '/pdv'
+      fullPath: '/pdv'
+      preLoaderRoute: typeof AuthenticatedPdvRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notificacoes': {
@@ -531,6 +550,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLucratividadeRoute: typeof AuthenticatedLucratividadeRoute
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
+  AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
   AuthenticatedPrecificacaoRoute: typeof AuthenticatedPrecificacaoRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
@@ -550,6 +570,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLucratividadeRoute: AuthenticatedLucratividadeRoute,
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
+  AuthenticatedPdvRoute: AuthenticatedPdvRoute,
   AuthenticatedPrecificacaoRoute: AuthenticatedPrecificacaoRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
