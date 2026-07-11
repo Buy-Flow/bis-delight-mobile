@@ -113,7 +113,7 @@ import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings"] as const;
+    const validTabs = ["dashboard", "products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
@@ -129,13 +129,13 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings";
+type Tab = "dashboard" | "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
   const { edit: editProductId, tab: tabParam } = Route.useSearch();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const tab: Tab = tabParam ?? "products";
+  const tab: Tab = tabParam ?? "dashboard";
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -172,7 +172,8 @@ function AdminPage() {
   return (
     <div className="text-white">
       <Toaster position="bottom-center" theme="dark" closeButton />
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6">
+        {tab === "dashboard" && <DashboardTab />}
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}
         {tab === "categories" && <CategoriesTab initialEditId={editProductId} />}
         {tab === "highlights" && <HighlightsTab />}
@@ -184,6 +185,275 @@ function AdminPage() {
         {tab === "settings" && <SettingsTab />}
       </main>
     </div>
+  );
+}
+
+
+/* =============================== Dashboard =============================== */
+function DashboardTab() {
+  const { data: products = [] } = useAllProducts();
+  const { data: categories = [] } = useCategories();
+  const [stats, setStats] = useState<{
+    todayCount: number;
+    todayRevenue: number;
+    weekCount: number;
+    weekRevenue: number;
+    monthRevenue: number;
+    pendingCount: number;
+    preparingCount: number;
+    avgTicket: number;
+    topProducts: { name: string; qty: number }[];
+    recent: { id: string; customer_name: string | null; total: number; status: string; created_at: string }[];
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: monthOrders } = await supabase
+        .from("orders")
+        .select("id,customer_name,total,status,created_at,order_items(name,quantity)")
+        .gte("created_at", monthAgo)
+        .order("created_at", { ascending: false });
+
+      if (cancelled) return;
+      const list = (monthOrders ?? []) as any[];
+      const paid = list.filter((o) => o.status !== "cancelado");
+
+      const today = paid.filter((o) => o.created_at >= startOfDay);
+      const week = paid.filter((o) => o.created_at >= weekAgo);
+      const pending = list.filter((o) => o.status === "pendente" || o.status === "pago");
+      const preparing = list.filter((o) => o.status === "preparando" || o.status === "saiu_para_entrega");
+
+      const productCounts = new Map<string, number>();
+      for (const o of week) {
+        for (const it of (o.order_items ?? []) as any[]) {
+          productCounts.set(it.name, (productCounts.get(it.name) ?? 0) + (it.quantity ?? 1));
+        }
+      }
+      const topProducts = [...productCounts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, qty]) => ({ name, qty }));
+
+      const sum = (arr: any[]) => arr.reduce((s, o) => s + Number(o.total ?? 0), 0);
+      const todayRevenue = sum(today);
+      const weekRevenue = sum(week);
+      const monthRevenue = sum(paid);
+
+      setStats({
+        todayCount: today.length,
+        todayRevenue,
+        weekCount: week.length,
+        weekRevenue,
+        monthRevenue,
+        pendingCount: pending.length,
+        preparingCount: preparing.length,
+        avgTicket: week.length ? weekRevenue / week.length : 0,
+        topProducts,
+        recent: list.slice(0, 6).map((o) => ({
+          id: o.id,
+          customer_name: o.customer_name,
+          total: Number(o.total ?? 0),
+          status: o.status,
+          created_at: o.created_at,
+        })),
+      });
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const activeProducts = products.filter((p) => p.active).length;
+  const pausedProducts = products.filter((p) => isProductPaused(p)).length;
+
+  const fmt = (n: number) =>
+    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="font-display text-2xl font-black">Dashboard</h2>
+        <p className="text-xs text-white/50">Visão geral da sua loja em tempo real</p>
+      </div>
+
+      {loading ? (
+        <div className="grid place-items-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+        </div>
+      ) : (
+        <>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <KpiCard label="Faturamento hoje" value={fmt(stats?.todayRevenue ?? 0)} sub={`${stats?.todayCount ?? 0} pedidos`} tone="pink" />
+            <KpiCard label="Últimos 7 dias" value={fmt(stats?.weekRevenue ?? 0)} sub={`${stats?.weekCount ?? 0} pedidos`} tone="cyan" />
+            <KpiCard label="Ticket médio (7d)" value={fmt(stats?.avgTicket ?? 0)} sub="por pedido" tone="yellow" />
+            <KpiCard label="Últimos 30 dias" value={fmt(stats?.monthRevenue ?? 0)} sub="receita" tone="violet" />
+          </div>
+
+          {/* Status operacional */}
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <MiniStat icon={Flame} label="Aguardando" value={stats?.pendingCount ?? 0} tone="text-orange-300" href="/rush" />
+            <MiniStat icon={ClipboardList} label="Em preparo" value={stats?.preparingCount ?? 0} tone="text-cyan-300" href="/rush" />
+            <MiniStat icon={Package} label="Produtos ativos" value={`${activeProducts}/${products.length}`} tone="text-emerald-300" href="/admin" tab="products" />
+            <MiniStat icon={Pause} label="Pausados" value={pausedProducts} tone="text-amber-300" href="/admin" tab="products" />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {/* Top produtos */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-black uppercase tracking-wider text-white/80">Top produtos (7d)</h3>
+                <Star className="h-4 w-4 text-neon-yellow" />
+              </div>
+              {(stats?.topProducts?.length ?? 0) === 0 ? (
+                <p className="py-4 text-center text-xs text-white/40">Sem vendas na semana.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {stats!.topProducts.map((p, i) => {
+                    const max = stats!.topProducts[0].qty;
+                    const pct = Math.max(6, (p.qty / max) * 100);
+                    return (
+                      <li key={p.name} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="truncate font-semibold">
+                            <span className="mr-2 text-white/40">#{i + 1}</span>
+                            {p.name}
+                          </span>
+                          <span className="shrink-0 tabular-nums text-white/60">{p.qty}x</span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-black/40">
+                          <div className="h-full rounded-full bg-gradient-to-r from-neon-pink to-neon-yellow" style={{ width: `${pct}%` }} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {/* Pedidos recentes */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-black uppercase tracking-wider text-white/80">Pedidos recentes</h3>
+                <Link to="/rush" className="text-[11px] font-bold text-neon-cyan hover:underline">Ver todos →</Link>
+              </div>
+              {(stats?.recent?.length ?? 0) === 0 ? (
+                <p className="py-4 text-center text-xs text-white/40">Sem pedidos recentes.</p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {stats!.recent.map((o) => (
+                    <li key={o.id} className="flex items-center justify-between rounded-lg bg-black/20 px-2.5 py-2 text-xs">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-semibold">{o.customer_name ?? "Cliente"}</div>
+                        <div className="text-[10px] text-white/40">
+                          {new Date(o.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} · {o.status}
+                        </div>
+                      </div>
+                      <div className="shrink-0 font-black text-neon-yellow tabular-nums">{fmt(o.total)}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Ações rápidas */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <h3 className="mb-3 text-sm font-black uppercase tracking-wider text-white/80">Ações rápidas</h3>
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+              <QuickAction icon={Plus} label="Novo produto" to="/admin" search={{ tab: "products" }} />
+              <QuickAction icon={Tag} label="Categorias" to="/admin" search={{ tab: "categories" }} />
+              <QuickAction icon={BellRing} label="Enviar push" to="/admin" search={{ tab: "notifications" }} />
+              <QuickAction icon={Award} label="Fidelidade" to="/admin" search={{ tab: "loyalty" }} />
+              <QuickAction icon={Sparkles} label="Novidades" to="/admin" search={{ tab: "news" }} />
+              <QuickAction icon={Star} label="Destaques" to="/admin" search={{ tab: "highlights" }} />
+              <QuickAction icon={Megaphone} label="Promos & Combos" to="/admin" search={{ tab: "promos" }} />
+              <QuickAction icon={Settings} label="Configurar loja" to="/admin" search={{ tab: "settings" }} />
+            </div>
+            <p className="mt-3 text-[10px] text-white/40">
+              Total: {products.length} produtos · {categories.filter((c) => c.id !== "all").length} categorias
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function KpiCard({ label, value, sub, tone }: { label: string; value: string; sub: string; tone: "pink" | "cyan" | "yellow" | "violet" }) {
+  const toneCls = {
+    pink: "from-neon-pink/20 to-transparent border-neon-pink/30",
+    cyan: "from-neon-cyan/20 to-transparent border-neon-cyan/30",
+    yellow: "from-neon-yellow/20 to-transparent border-neon-yellow/30",
+    violet: "from-fuchsia-500/20 to-transparent border-fuchsia-400/30",
+  }[tone];
+  return (
+    <div className={cn("rounded-2xl border bg-gradient-to-br p-3", toneCls)}>
+      <div className="text-[10px] font-bold uppercase tracking-widest text-white/60">{label}</div>
+      <div className="mt-1 font-display text-xl font-black tabular-nums">{value}</div>
+      <div className="text-[10px] text-white/50">{sub}</div>
+    </div>
+  );
+}
+
+function MiniStat({
+  icon: Icon,
+  label,
+  value,
+  tone,
+  href,
+  tab,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number | string;
+  tone: string;
+  href: string;
+  tab?: string;
+}) {
+  return (
+    <Link
+      to={href}
+      search={tab ? ({ tab } as never) : undefined}
+      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition hover:bg-white/10"
+    >
+      <Icon className={cn("h-5 w-5", tone)} />
+      <div className="min-w-0">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">{label}</div>
+        <div className="font-display text-lg font-black tabular-nums">{value}</div>
+      </div>
+    </Link>
+  );
+}
+
+function QuickAction({
+  icon: Icon,
+  label,
+  to,
+  search,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  to: string;
+  search?: Record<string, string>;
+}) {
+  return (
+    <Link
+      to={to}
+      search={search as never}
+      className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-xs font-bold transition hover:border-neon-pink/40 hover:bg-neon-pink/[0.08]"
+    >
+      <Icon className="h-4 w-4 text-neon-pink" />
+      <span className="truncate">{label}</span>
+    </Link>
   );
 }
 
