@@ -50,11 +50,14 @@ export type GrowthReport = {
 
 const DAY = 86400000;
 
-async function assertAdmin(context: {
-  supabase: { rpc: (n: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
-  userId: string;
-}) {
-  const { data, error } = await context.supabase.rpc("has_role", {
+async function assertAdmin(context: { supabase: unknown; userId: string }) {
+  const sb = context.supabase as {
+    rpc: (
+      n: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  };
+  const { data, error } = await sb.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
   });
