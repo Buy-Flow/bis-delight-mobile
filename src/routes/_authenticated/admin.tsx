@@ -919,7 +919,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               </div>
 
               {/* Ações */}
-              <div className="col-start-2 md:col-auto flex shrink-0 items-center justify-end gap-1">
+              <div className="flex shrink-0 items-center justify-end gap-1 md:gap-1">
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
