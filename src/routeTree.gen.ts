@@ -22,6 +22,7 @@ import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/r
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedCopilotoRouteImport } from './routes/_authenticated/copiloto'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
@@ -94,6 +95,11 @@ const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCopilotoRoute = AuthenticatedCopilotoRouteImport.update({
+  id: '/copiloto',
+  path: '/copiloto',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
   id: '/conta',
   path: '/conta',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/copiloto': typeof AuthenticatedCopilotoRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/copiloto': typeof AuthenticatedCopilotoRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
+  '/_authenticated/copiloto': typeof AuthenticatedCopilotoRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/carrinhos'
     | '/clientes'
     | '/conta'
+    | '/copiloto'
     | '/financeiro'
     | '/notificacoes'
     | '/previsao'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/carrinhos'
     | '/clientes'
     | '/conta'
+    | '/copiloto'
     | '/financeiro'
     | '/notificacoes'
     | '/previsao'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
     | '/_authenticated/conta'
+    | '/_authenticated/copiloto'
     | '/_authenticated/financeiro'
     | '/_authenticated/notificacoes'
     | '/_authenticated/previsao'
@@ -357,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/copiloto': {
+      id: '/_authenticated/copiloto'
+      path: '/copiloto'
+      fullPath: '/copiloto'
+      preLoaderRoute: typeof AuthenticatedCopilotoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conta': {
       id: '/_authenticated/conta'
       path: '/conta'
@@ -408,6 +427,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCarrinhosRoute: typeof AuthenticatedCarrinhosRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
+  AuthenticatedCopilotoRoute: typeof AuthenticatedCopilotoRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
@@ -421,6 +441,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCarrinhosRoute: AuthenticatedCarrinhosRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
+  AuthenticatedCopilotoRoute: AuthenticatedCopilotoRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
