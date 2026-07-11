@@ -693,6 +693,78 @@ export type Database = {
         }
         Relationships: []
       }
+      product_templates: {
+        Row: {
+          base_price: number
+          category: string | null
+          cost_price: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          extras: Json | null
+          flavors: Json | null
+          id: string
+          image_url: string | null
+          ingredients: Json | null
+          is_official: boolean
+          name: string
+          option_groups: Json | null
+          packaging_cost: number | null
+          removable: Json | null
+          sizes: Json | null
+          tags: string[] | null
+          target_margin_pct: number | null
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          base_price?: number
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          extras?: Json | null
+          flavors?: Json | null
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          is_official?: boolean
+          name: string
+          option_groups?: Json | null
+          packaging_cost?: number | null
+          removable?: Json | null
+          sizes?: Json | null
+          tags?: string[] | null
+          target_margin_pct?: number | null
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          base_price?: number
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          extras?: Json | null
+          flavors?: Json | null
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          is_official?: boolean
+          name?: string
+          option_groups?: Json | null
+          packaging_cost?: number | null
+          removable?: Json | null
+          sizes?: Json | null
+          tags?: string[] | null
+          target_margin_pct?: number | null
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean
