@@ -74,7 +74,14 @@ export function useUserAddresses(userId: string | undefined) {
 
   const update = useCallback(
     async (id: string, input: Partial<UserAddressInput>) => {
-      const patch: Record<string, unknown> = {};
+      const patch: {
+        label?: string;
+        address?: string;
+        reference?: string | null;
+        lat?: number | null;
+        lng?: number | null;
+        is_default?: boolean;
+      } = {};
       if (input.label !== undefined) patch.label = input.label.trim() || "Casa";
       if (input.address !== undefined) patch.address = input.address.trim();
       if (input.reference !== undefined) patch.reference = input.reference?.trim() || null;
