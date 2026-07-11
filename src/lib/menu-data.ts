@@ -11,6 +11,11 @@ import {
   type OptionGroup,
   type OptionItem,
 } from "@/data/menu";
+import {
+  DEFAULT_DELIVERY_ZONE,
+  parseDeliveryZone,
+  type DeliveryZoneConfig,
+} from "@/lib/delivery-zone";
 
 export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type DayHours = { day: WeekDay; closed: boolean; open: string; close: string };
