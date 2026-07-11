@@ -511,9 +511,30 @@ function RecompensasPage() {
           <ol className="grid gap-3 sm:grid-cols-2">
             {[
               { icon: ShoppingBag, title: "Faça pedidos", desc: "Compre logado na sua conta.", color: "from-neon-pink to-neon-pink/60" },
-              { icon: CreditCard, title: "Ganhe selos", desc: "1× Bronze · 1× Prata · 3× Ouro por pedido.", color: "from-neon-yellow to-orange-400" },
-              { icon: Award, title: "Suba de nível", desc: "Bronze → Prata (2 cartelas) → Ouro (10 cartelas).", color: "from-neon-cyan to-cyan-400" },
-              { icon: Tag, title: "Ganhe cupons", desc: "R$ 10, R$ 10 ou R$ 20 a cada cartela cheia.", color: "from-fuchsia-400 to-neon-pink" },
+              {
+                icon: CreditCard,
+                title: "Ganhe selos",
+                desc: tiers
+                  ? TIER_ORDER.map((t) => `${tiers[t]?.stamps_per_order ?? 1}× ${tiers[t]?.label ?? t}`).join(" · ") + " por pedido."
+                  : "Selos a cada pedido pago.",
+                color: "from-neon-yellow to-orange-400",
+              },
+              {
+                icon: Award,
+                title: "Suba de nível",
+                desc: tiers
+                  ? `Bronze → Prata (${tiers.prata?.min_lifetime ?? 20} selos) → Ouro (${tiers.ouro?.min_lifetime ?? 100} selos).`
+                  : "Suba de nível conforme acumula selos.",
+                color: "from-neon-cyan to-cyan-400",
+              },
+              {
+                icon: Tag,
+                title: "Ganhe cupons",
+                desc: tiers
+                  ? TIER_ORDER.map((t) => `R$ ${Number(tiers[t]?.coupon_value ?? 0).toFixed(0)}`).join(", ") + " a cada cartela cheia."
+                  : "Cupons a cada cartela cheia.",
+                color: "from-fuchsia-400 to-neon-pink",
+              },
             ].map((step, idx) => {
               const Icon = step.icon;
               return (
