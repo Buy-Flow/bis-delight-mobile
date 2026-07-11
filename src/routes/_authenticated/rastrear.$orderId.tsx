@@ -76,6 +76,14 @@ function RastrearPage() {
   const [order, setOrder] = useState<OrderRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [existingReview, setExistingReview] = useState<{
+    id: string;
+    rating: number;
+    title: string | null;
+    comment: string | null;
+    product_id: string | null;
+  } | null>(null);
 
   useEffect(() => {
     const t = setInterval(() => setTick((v) => v + 1), 30_000);
