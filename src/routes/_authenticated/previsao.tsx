@@ -130,10 +130,8 @@ function PrevisaoPage() {
           >
             <ChevronLeft className="h-3.5 w-3.5" /> Admin
           </Link>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-neon-yellow" />
-            <span className="text-sm font-semibold">Previsão de Demanda</span>
-          </div>
+          <div />
+
           <AdminNavMenu />
         </div>
       </header>
