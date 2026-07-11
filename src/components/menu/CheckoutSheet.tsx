@@ -541,11 +541,64 @@ export function CheckoutSheet() {
             />
             {mode === "entrega" && (
               <>
+                {isAuthenticated && savedAddresses.items.length > 0 && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-2.5">
+                    <div className="mb-1.5 flex items-center gap-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-white/50">
+                      <Star className="h-3 w-3 text-neon-cyan" /> Endereços salvos
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {savedAddresses.items.map((a) => {
+                        const active = selectedAddressId === a.id;
+                        const Icon =
+                          a.label.toLowerCase() === "trabalho"
+                            ? Briefcase
+                            : a.label.toLowerCase() === "casa"
+                              ? Home
+                              : MapPin;
+                        return (
+                          <button
+                            key={a.id}
+                            type="button"
+                            onClick={() => pickSavedAddress(a)}
+                            className={cn(
+                              "flex min-w-[140px] max-w-[200px] shrink-0 items-start gap-2 rounded-xl border p-2 text-left transition",
+                              active
+                                ? "border-neon-cyan/50 bg-neon-cyan/10"
+                                : "border-white/10 bg-white/5 hover:bg-white/10",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "grid h-7 w-7 shrink-0 place-items-center rounded-lg",
+                                active ? "bg-neon-cyan/20 text-neon-cyan" : "bg-white/10 text-white/80",
+                              )}
+                            >
+                              <Icon className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1">
+                                <span className="truncate text-[11px] font-bold text-white">{a.label}</span>
+                                {a.is_default && (
+                                  <Star className="h-2.5 w-2.5 shrink-0 fill-neon-cyan text-neon-cyan" />
+                                )}
+                              </div>
+                              <div className="truncate text-[10px] text-white/60">{a.address}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <IconField
                   icon={MapPin}
                   label="Endereço"
                   value={address}
-                  onChange={setAddress}
+                  onChange={(v) => {
+                    setAddress(v);
+                    setSelectedAddressId(null);
+                    setPreGeocoded(null);
+                  }}
                   placeholder="Rua, número, bairro"
                   autoComplete="street-address"
                   name="street-address"
@@ -560,6 +613,21 @@ export function CheckoutSheet() {
                   autoComplete="address-line2"
                   name="address-line2"
                 />
+                {isAuthenticated && address.trim().length >= 6 && !currentAddressIsSaved && (
+                  <button
+                    type="button"
+                    onClick={saveCurrentAddress}
+                    disabled={savingAddress}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2 text-[12px] font-bold text-neon-cyan transition hover:bg-neon-cyan/15 active:scale-[.99] disabled:opacity-60"
+                  >
+                    {savingAddress ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Plus className="h-3.5 w-3.5" />
+                    )}
+                    Salvar este endereço no meu perfil
+                  </button>
+                )}
               </>
             )}
             <IconField
