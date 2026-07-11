@@ -17,10 +17,12 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedCopilotoRouteImport } from './routes/_authenticated/copiloto'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
@@ -67,6 +69,11 @@ const ProdutoIdRoute = ProdutoIdRouteImport.update({
   path: '/produto/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCopilotChatRoute = ApiCopilotChatRouteImport.update({
+  id: '/api/copilot-chat',
+  path: '/api/copilot-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
   id: '/rush',
   path: '/rush',
@@ -86,6 +93,11 @@ const AuthenticatedNotificacoesRoute =
 const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCopilotoRoute = AuthenticatedCopilotoRouteImport.update({
+  id: '/copiloto',
+  path: '/copiloto',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
@@ -132,10 +144,12 @@ export interface FileRoutesByFullPath {
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/copiloto': typeof AuthenticatedCopilotoRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
@@ -151,10 +165,12 @@ export interface FileRoutesByTo {
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/copiloto': typeof AuthenticatedCopilotoRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
@@ -172,10 +188,12 @@ export interface FileRoutesById {
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
+  '/_authenticated/copiloto': typeof AuthenticatedCopilotoRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
+  '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
@@ -193,10 +211,12 @@ export interface FileRouteTypes {
     | '/carrinhos'
     | '/clientes'
     | '/conta'
+    | '/copiloto'
     | '/financeiro'
     | '/notificacoes'
     | '/previsao'
     | '/rush'
+    | '/api/copilot-chat'
     | '/produto/$id'
     | '/rastrear/$orderId'
   fileRoutesByTo: FileRoutesByTo
@@ -212,10 +232,12 @@ export interface FileRouteTypes {
     | '/carrinhos'
     | '/clientes'
     | '/conta'
+    | '/copiloto'
     | '/financeiro'
     | '/notificacoes'
     | '/previsao'
     | '/rush'
+    | '/api/copilot-chat'
     | '/produto/$id'
     | '/rastrear/$orderId'
   id:
@@ -232,10 +254,12 @@ export interface FileRouteTypes {
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
     | '/_authenticated/conta'
+    | '/_authenticated/copiloto'
     | '/_authenticated/financeiro'
     | '/_authenticated/notificacoes'
     | '/_authenticated/previsao'
     | '/_authenticated/rush'
+    | '/api/copilot-chat'
     | '/produto/$id'
     | '/_authenticated/rastrear/$orderId'
   fileRoutesById: FileRoutesById
@@ -248,6 +272,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
 }
 
@@ -309,6 +334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/copilot-chat': {
+      id: '/api/copilot-chat'
+      path: '/api/copilot-chat'
+      fullPath: '/api/copilot-chat'
+      preLoaderRoute: typeof ApiCopilotChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/rush': {
       id: '/_authenticated/rush'
       path: '/rush'
@@ -335,6 +367,13 @@ declare module '@tanstack/react-router' {
       path: '/financeiro'
       fullPath: '/financeiro'
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/copiloto': {
+      id: '/_authenticated/copiloto'
+      path: '/copiloto'
+      fullPath: '/copiloto'
+      preLoaderRoute: typeof AuthenticatedCopilotoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/conta': {
@@ -388,6 +427,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCarrinhosRoute: typeof AuthenticatedCarrinhosRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
+  AuthenticatedCopilotoRoute: typeof AuthenticatedCopilotoRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
@@ -401,6 +441,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCarrinhosRoute: AuthenticatedCarrinhosRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
+  AuthenticatedCopilotoRoute: AuthenticatedCopilotoRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
@@ -419,18 +460,9 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiCopilotChatRoute: ApiCopilotChatRoute,
   ProdutoIdRoute: ProdutoIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

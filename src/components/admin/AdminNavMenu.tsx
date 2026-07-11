@@ -11,6 +11,7 @@ import {
   Flame,
   Sparkles,
   TrendingUp,
+  Bot,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 const items = [
   { to: "/admin", label: "Painel administrador", icon: LayoutDashboard },
   { to: "/rush", label: "Rush (pedidos ao vivo)", icon: Flame },
+  { to: "/copiloto", label: "Copiloto (IA executora)", icon: Bot },
   { to: "/ai-growth", label: "AI Growth Engine", icon: TrendingUp },
   { to: "/previsao", label: "Previsão de demanda", icon: Sparkles },
   { to: "/financeiro", label: "Financeiro", icon: LineChart },
