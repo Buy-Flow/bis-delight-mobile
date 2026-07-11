@@ -39,6 +39,7 @@ import {
   ProfilePanelSkeleton,
   LoyaltyPanelSkeleton,
 } from "@/components/ui/skeletons";
+import { AddressManager } from "@/components/account/AddressManager";
 
 
 
