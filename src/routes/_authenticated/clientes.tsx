@@ -212,7 +212,7 @@ function ClientesPage() {
       <Toaster position="bottom-center" theme="dark" closeButton />
 
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-3 py-5 sm:px-4 sm:py-8">
         <ClientesDashboard />
       </main>
     </div>
