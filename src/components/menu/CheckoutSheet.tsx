@@ -254,6 +254,13 @@ export function CheckoutSheet() {
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
+    if (mode === "entrega" && outsideRadius) {
+      toast.error(
+        zone?.outsideMessage ||
+          "Endereço fora do nosso raio de entrega. Tente retirada na loja.",
+      );
+      return;
+    }
     setSending(true);
     try {
       const { data: order, error: orderErr } = await supabase
@@ -270,6 +277,9 @@ export function CheckoutSheet() {
           delivery_fee: fee,
           total,
           coupon_code: couponApplied?.code ?? null,
+          distance_km: mode === "entrega" && quote ? Number(quote.km.toFixed(3)) : null,
+          delivery_lat: mode === "entrega" && quote ? quote.lat : null,
+          delivery_lng: mode === "entrega" && quote ? quote.lng : null,
         })
         .select("id")
         .single();
