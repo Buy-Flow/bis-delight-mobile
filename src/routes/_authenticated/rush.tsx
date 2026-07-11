@@ -586,22 +586,6 @@ function RushPage() {
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_oklch(0.18_0.15_305)_0%,_oklch(0.08_0.08_305)_60%)] pb-32 text-white">
       <Toaster theme="dark" richColors position="top-center" />
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[oklch(0.11_0.08_300)]/85 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5">
-          <Link
-            to="/admin"
-            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/80 hover:bg-white/10"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> Admin
-          </Link>
-          <div className="flex items-center gap-2">
-            <Flame className="h-4 w-4 text-neon-yellow" />
-            <span className="text-sm font-semibold">Rush</span>
-          </div>
-          <AdminNavMenu />
-        </div>
-      </header>
 
       {/* Sub-bar: live status + actions */}
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2">
