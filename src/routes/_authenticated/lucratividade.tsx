@@ -226,8 +226,8 @@ function LucratividadePage() {
             : Promise.resolve({ data: [], error: null } as { data: OrderItemRow[]; error: null }),
         ]);
         if (!cancel) {
-          setItems(((itRes.data ?? []) as OrderItemRow[]) ?? []);
-          setPrevItems(((prevItRes.data ?? []) as OrderItemRow[]) ?? []);
+          setItems((itRes.data ?? []) as OrderItemRow[]);
+          setPrevItems((prevItRes.data ?? []) as OrderItemRow[]);
         }
       } catch (e: unknown) {
         toast.error(e instanceof Error ? e.message : "Erro ao carregar lucratividade");
