@@ -500,6 +500,64 @@ export function CheckoutSheet() {
             />
           </div>
 
+          {/* Cotação de frete por distância */}
+          {mode === "entrega" && zoneActive && address.trim().length >= 6 && (
+            <div
+              className={cn(
+                "rounded-3xl border p-4 transition",
+                outsideRadius
+                  ? "border-red-400/40 bg-red-500/10"
+                  : quote
+                    ? "border-neon-cyan/30 bg-neon-cyan/5"
+                    : "border-white/10 bg-white/[0.04]",
+              )}
+              role="status"
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className={cn(
+                    "grid h-8 w-8 place-items-center rounded-xl",
+                    outsideRadius
+                      ? "bg-red-500/25 text-red-200"
+                      : "bg-neon-cyan/20 text-neon-cyan",
+                  )}
+                >
+                  {outsideRadius ? (
+                    <AlertTriangle className="h-4 w-4" />
+                  ) : (
+                    <Route className="h-4 w-4" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-extrabold text-white">
+                    {quoting
+                      ? "Calculando frete pela distância…"
+                      : outsideRadius
+                        ? "Endereço fora do raio de entrega"
+                        : quote
+                          ? `Distância: ${quote.km.toFixed(2)} km`
+                          : quoteError
+                            ? "Não consegui localizar o endereço"
+                            : "Aguardando endereço…"}
+                  </div>
+                  <div className="text-[11px] text-white/60 truncate">
+                    {quoteError && !quoting
+                      ? quoteError
+                      : quote
+                        ? outsideRadius
+                          ? zone?.outsideMessage
+                          : freeDelivery
+                            ? `Frete grátis a partir de ${brl(freeThreshold)} ✓`
+                            : `Frete calculado: ${brl(rawFee)}${zone?.maxKm ? ` · raio ${zone.maxKm} km` : ""}`
+                        : `Digite o endereço completo para calcular${zone?.maxKm ? ` (raio ${zone.maxKm} km)` : ""}.`}
+                  </div>
+                </div>
+                {quoting && <Loader2 className="h-4 w-4 animate-spin text-white/60" />}
+              </div>
+            </div>
+          )}
+
+
           {/* Resumo */}
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
             <div className="mb-3 flex items-center justify-between">
