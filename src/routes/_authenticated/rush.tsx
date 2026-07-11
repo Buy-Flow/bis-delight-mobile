@@ -415,9 +415,9 @@ function RushPage() {
     const allowed = STATUSES_IN_LANE[lane];
     const list = (orders ?? []).filter((o) => allowed.includes(o.status));
     if (lane === "feitos") {
-      // only today, most recent first
+      // most recent first; limit to today unless showAllHistory
       return list
-        .filter((o) => isToday(new Date(o.created_at)))
+        .filter((o) => showAllHistory || isToday(new Date(o.created_at)))
         .sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
@@ -425,7 +425,7 @@ function RushPage() {
     return list.sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
-  }, [orders, lane]);
+  }, [orders, lane, showAllHistory]);
 
   const laneCounts = useMemo(() => {
     const c: Record<LaneId, number> = { novos: 0, cozinha: 0, rota: 0, feitos: 0 };
