@@ -1150,15 +1150,15 @@ function KpiCard({
   tint: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-5">
-      <div className="flex items-center justify-between">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-3 sm:rounded-3xl sm:p-5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[9px] font-bold uppercase tracking-widest text-white/50 sm:text-[10px]">
           {label}
         </div>
-        <Icon className={cn("h-4 w-4", tint)} />
+        <Icon className={cn("h-4 w-4 shrink-0", tint)} />
       </div>
       <div
-        className={cn("mt-3 text-3xl font-black leading-none", tint)}
+        className={cn("mt-2 truncate text-2xl font-black leading-none sm:mt-3 sm:text-3xl", tint)}
         style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
       >
         {value}
