@@ -116,7 +116,7 @@ function RecompensasPage() {
   const remaining = GOAL - current;
   const available = coupons.filter((c) => !c.used_at);
   const used = coupons.filter((c) => c.used_at);
-  const rewardValue = status?.reward ?? 20;
+  const rewardValue = status?.reward ?? 10;
   const currentTier = status?.tier ?? "bronze";
   const meta = TIER_META[currentTier];
 
