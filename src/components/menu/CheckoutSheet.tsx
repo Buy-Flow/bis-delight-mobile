@@ -155,6 +155,14 @@ export function CheckoutSheet() {
   };
 
   const send = async () => {
+    if (storeStatus.isClosed) {
+      toast.error(
+        storeStatus.nextOpenLabel
+          ? `Loja fechada. Reabrimos ${storeStatus.nextOpenLabel}.`
+          : "A loja está fechada no momento.",
+      );
+      return;
+    }
     if (!isAuthenticated || !user) {
       goLogin();
       return;
