@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import rewardTrophyAsset from "@/assets/reward-trophy.png.asset.json";
 import { TierBadge, TIER_META, type LoyaltyTier } from "@/components/menu/TierBadge";
 import { RecompensasSkeleton } from "@/components/ui/skeletons";
+import { useLoyaltyTiers } from "@/lib/use-loyalty-tiers";
 
 const rewardTrophy = rewardTrophyAsset.url;
-const GOAL = 10;
 const TIER_ORDER: LoyaltyTier[] = ["bronze", "prata", "ouro"];
 
 export const Route = createFileRoute("/recompensas")({
