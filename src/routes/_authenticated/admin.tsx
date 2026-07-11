@@ -45,6 +45,7 @@ import {
   Link as LinkIcon,
   BellRing,
   Flame,
+  Pause,
 
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,6 +89,9 @@ import { ProductCard } from "@/components/menu/ProductCard";
 import { Hero } from "@/components/menu/Hero";
 import { getDefaultExtras } from "@/components/menu/ProductModal";
 import { HighlightCard } from "@/components/menu/HighlightCard";
+import { PauseProductControls } from "@/components/admin/PauseProductControls";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { isProductPaused } from "@/lib/menu-data";
 import { NewsPosterCard, BADGE_STYLES as NEWS_BADGES, EYEBROWS as NEWS_EYEBROWS } from "@/components/menu/NewsCarousel";
 import { CategoryChip } from "@/components/menu/CategoryStrip";
 import { PopupsSection } from "@/components/admin/PopupsSection";
@@ -383,6 +387,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               "group flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 transition",
               dragId === p.id && "opacity-40",
               !p.active && "opacity-60",
+              isProductPaused(p) && "ring-1 ring-amber-400/40",
             )}
           >
             <div className="grid h-8 w-6 shrink-0 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
@@ -392,20 +397,57 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               onClick={() => setEditing(p)}
               className="flex min-w-0 flex-1 items-center gap-3 text-left"
             >
-              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/30">
                 {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
+                {isProductPaused(p) && (
+                  <div className="absolute inset-0 grid place-items-center bg-black/60 backdrop-blur-[1px]">
+                    <Pause className="h-4 w-4 text-amber-300" strokeWidth={3} />
+                  </div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate text-sm font-bold">{p.name}</span>
                   {p.hero && <Star className="h-3.5 w-3.5 shrink-0 fill-neon-yellow text-neon-yellow" />}
+                  {isProductPaused(p) && (
+                    <span className="shrink-0 rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-200 ring-1 ring-amber-400/40">
+                      Pausado
+                    </span>
+                  )}
                 </div>
                 <div className="text-[11px] text-white/50">
                   {p.category} · R$ {p.basePrice.toFixed(2)}
+                  {isProductPaused(p) && p.pauseReason && (
+                    <span className="ml-1 text-amber-200/80">· {p.pauseReason}</span>
+                  )}
                 </div>
               </div>
             </button>
             <div className="flex shrink-0 items-center gap-1">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    title={isProductPaused(p) ? "Gerenciar pausa" : "Pausar temporariamente"}
+                    className={cn(
+                      "grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+                      isProductPaused(p) && "border-amber-400/50 bg-amber-500/15 text-amber-200",
+                    )}
+                  >
+                    <Pause className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  className="w-[320px] border-white/10 bg-[oklch(0.14_0.09_305)]/95 p-3 text-white backdrop-blur-xl"
+                >
+                  <div className="mb-2 text-[13px] font-black">Pausa temporária</div>
+                  <div className="mb-2 text-[11px] text-white/50">
+                    Some do cardápio até a data escolhida. Reativa automaticamente.
+                  </div>
+                  <PauseProductControls product={p} />
+                </PopoverContent>
+              </Popover>
               <IconBtn
                 title={p.active ? "Ocultar do cardápio" : "Mostrar no cardápio"}
                 onClick={() => toggleActive.mutate({ id: p.id, active: !p.active })}
@@ -538,6 +580,8 @@ function ProductEditor({
       upsell_price: p.upsellPrice ?? null,
       stock: p.stock ?? null,
       low_stock_threshold: p.lowStockThreshold ?? 5,
+      paused_until: p.pausedUntil ?? null,
+      pause_reason: p.pausedUntil ? (p.pauseReason ?? null) : null,
       ...(isNew ? { active: true, sort_order: 999999 } : {}),
     };
     await upsert.mutateAsync(payload);
@@ -903,6 +947,18 @@ function ProductEditor({
                   onChange={(e) => setField("lowStockThreshold", Number(e.target.value) || 0)}
                 />
               </Field>
+
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-3">
+                <div className="mb-1 flex items-center gap-2 text-sm font-black text-amber-100">
+                  <Pause className="h-4 w-4" />
+                  Pausa temporária
+                </div>
+                <div className="mb-3 text-[11px] text-white/60">
+                  Some do cardápio até a data escolhida (ex.: acabou o morango). Reativa sozinho no horário definido.
+                </div>
+                <PauseProductControls product={p} onDone={() => setDirty(true)} />
+              </div>
+
 
               <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
                 <input

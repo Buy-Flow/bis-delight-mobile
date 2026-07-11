@@ -175,6 +175,8 @@ function rowToProduct(row: Record<string, unknown>): Product {
     upsellPrice: row.upsell_price !== undefined && row.upsell_price !== null ? Number(row.upsell_price) : null,
     stock: row.stock !== undefined && row.stock !== null ? Number(row.stock) : null,
     lowStockThreshold: row.low_stock_threshold !== undefined && row.low_stock_threshold !== null ? Number(row.low_stock_threshold) : 5,
+    pausedUntil: (row.paused_until as string | null) ?? null,
+    pauseReason: (row.pause_reason as string | null) ?? null,
   };
 }
 
@@ -682,6 +684,8 @@ export type ProductInput = {
   upsell_price?: number | null;
   stock?: number | null;
   low_stock_threshold?: number;
+  paused_until?: string | null;
+  pause_reason?: string | null;
 };
 
 export function useUpsertProduct() {
@@ -896,6 +900,46 @@ export function useToggleProductActive() {
     },
     onSuccess: invalidate,
   });
+}
+
+export function usePauseProduct() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      pausedUntil,
+      reason,
+    }: {
+      id: string;
+      pausedUntil: string | null; // ISO string; null = resume
+      reason?: string | null;
+    }) => {
+      const { error } = await supabase
+        .from("products")
+        .update({
+          paused_until: pausedUntil,
+          pause_reason: pausedUntil ? (reason ?? null) : null,
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/** Returns whether a product is currently paused (paused_until in the future). */
+export function isProductPaused(p: { pausedUntil?: string | null }): boolean {
+  if (!p.pausedUntil) return false;
+  const t = Date.parse(p.pausedUntil);
+  if (Number.isNaN(t)) return false;
+  return t > Date.now();
+}
+
+/** Sentinel far-future date used for "indefinite" pauses. */
+export const PAUSE_INDEFINITE_ISO = "2999-12-31T23:59:59.000Z";
+export function isIndefinitePause(iso?: string | null): boolean {
+  if (!iso) return false;
+  return Date.parse(iso) > Date.parse("2999-01-01T00:00:00.000Z");
 }
 
 export async function uploadProductImage(file: File): Promise<string> {

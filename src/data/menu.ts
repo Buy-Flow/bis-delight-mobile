@@ -202,6 +202,8 @@ export type Product = {
   upsellPrice?: number | null;
   stock?: number | null;
   lowStockThreshold?: number;
+  pausedUntil?: string | null;
+  pauseReason?: string | null;
 };
 
 /* Reusable size presets */

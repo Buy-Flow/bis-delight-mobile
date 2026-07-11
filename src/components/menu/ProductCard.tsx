@@ -1,11 +1,12 @@
-import { Plus, Flame, Pencil } from "lucide-react";
+import { Plus, Flame, Pencil, Pause } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/data/menu";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { productImageSources } from "@/lib/image-optimize";
 import { FavoriteButton } from "./FavoriteButton";
-import { useIsAdmin } from "@/lib/menu-data";
+import { useIsAdmin, isProductPaused, isIndefinitePause } from "@/lib/menu-data";
+
 
 
 const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
@@ -27,20 +28,35 @@ export function ProductCard({
   const outOfStock = typeof stock === "number" && stock <= 0;
   const lowThreshold = product.lowStockThreshold ?? 5;
   const lowStock = typeof stock === "number" && stock > 0 && stock <= lowThreshold;
+  const paused = isProductPaused(product);
+  const pausedLabel = (() => {
+    if (!paused || !product.pausedUntil) return null;
+    if (isIndefinitePause(product.pausedUntil)) return "Voltamos em breve";
+    const d = new Date(product.pausedUntil);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+    const isTomorrow = d.toDateString() === tomorrow.toDateString();
+    const hhmm = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    if (sameDay) return `Volta hoje às ${hhmm}`;
+    if (isTomorrow) return `Volta amanhã às ${hhmm}`;
+    return `Volta ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
+  })();
+  const blocked = outOfStock || paused;
   return (
 
     <div
       role="button"
-      tabIndex={outOfStock ? -1 : 0}
-      onClick={() => !outOfStock && onOpen(product)}
+      tabIndex={blocked ? -1 : 0}
+      onClick={() => !blocked && onOpen(product)}
       onKeyDown={(e) => {
-        if (outOfStock) return;
+        if (blocked) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onOpen(product);
         }
       }}
-      aria-disabled={outOfStock || undefined}
+      aria-disabled={blocked || undefined}
       className={cn(
         "group relative flex h-full w-full cursor-pointer flex-col overflow-visible rounded-[22px] text-left select-none",
         "touch-manipulation [-webkit-tap-highlight-color:transparent]",
@@ -130,11 +146,31 @@ export function ProductCard({
             Últimas {stock}!
           </div>
         )}
-        {outOfStock && (
+        {outOfStock && !paused && (
           <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/70 backdrop-blur-sm">
             <span className="rounded-full border border-white/30 bg-black/60 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white">
               Esgotado
             </span>
+          </div>
+        )}
+        {paused && (
+          <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/72 backdrop-blur-sm">
+            <div className="flex max-w-[85%] flex-col items-center gap-1.5 text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-500/20 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-100">
+                <Pause className="h-3 w-3" strokeWidth={3} />
+                Pausado
+              </span>
+              {product.pauseReason && (
+                <span className="line-clamp-2 rounded-md bg-black/50 px-2 py-0.5 text-[10.5px] font-semibold leading-tight text-white/90">
+                  {product.pauseReason}
+                </span>
+              )}
+              {pausedLabel && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-200/90">
+                  {pausedLabel}
+                </span>
+              )}
+            </div>
           </div>
         )}
         {/* Favorite heart top-right */}

@@ -6,7 +6,7 @@ import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
-import { useSiteSettings, useCategories } from "@/lib/menu-data";
+import { useSiteSettings, useCategories, isProductPaused, isIndefinitePause } from "@/lib/menu-data";
 
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -338,7 +338,19 @@ export function ProductModal({
     ? !flavorList || !!flavor
     : optionGroups.every((g) => (!g.required ? true : (groupSel[g.id] ?? []).length > 0));
 
+  const paused = product ? isProductPaused(product) : false;
+  const pausedMsg = (() => {
+    if (!paused || !product?.pausedUntil) return "Produto pausado no momento.";
+    if (isIndefinitePause(product.pausedUntil)) return "Produto pausado — voltamos em breve.";
+    const d = new Date(product.pausedUntil);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const hhmm = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return sameDay ? `Pausado — volta hoje às ${hhmm}` : `Pausado — volta ${d.toLocaleDateString("pt-BR")} às ${hhmm}`;
+  })();
   const submit = () => {
+    if (paused) { toast.error(pausedMsg); return; }
+
     if (isCustom) {
       if (!canSubmit) {
         toast.error("Escolha as opções obrigatórias.");
@@ -1029,7 +1041,17 @@ export function ProductModal({
 
 
         {/* Footer — quantidade + CTA gradiente pink */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
+        <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[oklch(0.18_0.11_305)]/95 px-6 py-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
+          {paused && (
+            <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-400/40 bg-amber-500/15 px-3 py-2 text-[12px] leading-tight text-amber-100">
+              <span className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-amber-300" />
+              <div className="flex-1">
+                <div className="font-black uppercase tracking-wider">{pausedMsg}</div>
+                {product?.pauseReason && <div className="mt-0.5 font-semibold text-amber-100/85">{product.pauseReason}</div>}
+              </div>
+            </div>
+          )}
+
           {(() => {
             const { totalSteps, clampedStep, isLast, canAdvance } = wizardCtxRef.current;
             const isWizard = totalSteps > 1;
@@ -1065,17 +1087,19 @@ export function ProductModal({
                 {isLast ? (
                   <button
                     onClick={submit}
-                    className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97]"
+                    disabled={paused}
+                    className="flex h-12 flex-1 items-center justify-between rounded-2xl bg-gradient-to-r from-neon-pink to-[oklch(0.76_0.2_350)] px-5 shadow-[0_4px_20px_rgba(255,46,147,0.4)] transition-transform active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:from-white/20 disabled:to-white/10 disabled:shadow-none"
                   >
                     <span
                       className="font-display text-lg font-bold uppercase tracking-wider text-white"
                       style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
                     >
-                      Adicionar
+                      {paused ? "Pausado" : "Adicionar"}
                     </span>
                     <span className="text-base font-extrabold text-white">{brl(total)}</span>
                   </button>
                 ) : (
+
                   <button
                     onClick={() => {
                       if (!canAdvance) {
