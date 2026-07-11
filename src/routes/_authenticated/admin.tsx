@@ -788,9 +788,9 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
         {/* Header row */}
         <div className="hidden md:grid grid-cols-[32px_minmax(0,2.4fr)_minmax(0,1fr)_120px_80px_100px_100px_100px] gap-3 border-b border-white/5 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-white/45">
           <div />
-          <div>Produto</div>
-          <div>Categoria</div>
-          <div>Preço</div>
+          <SortHeader label="Produto" active={sortKey === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
+          <SortHeader label="Categoria" active={sortKey === "category"} dir={sortDir} onClick={() => toggleSort("category")} />
+          <SortHeader label="Preço" active={sortKey === "price"} dir={sortDir} onClick={() => toggleSort("price")} />
           <div>Ativo</div>
           <div>Destaque</div>
           <div>Sugestão</div>
