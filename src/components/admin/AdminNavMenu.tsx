@@ -4,7 +4,6 @@ import {
   Menu,
   X,
   LayoutDashboard,
-  ClipboardList,
   LineChart,
   Users,
   Home,
