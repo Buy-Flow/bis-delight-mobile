@@ -367,6 +367,9 @@ const DEFAULT_EXTRA: Pick<
   heroImages: DEFAULT_HERO_IMAGES,
   popup: DEFAULT_POPUP,
   urgency: DEFAULT_URGENCY,
+  storeLat: null,
+  storeLng: null,
+  deliveryZone: DEFAULT_DELIVERY_ZONE,
 };
 
 function parseHeroImages(raw: unknown): HeroImagesConfig {
