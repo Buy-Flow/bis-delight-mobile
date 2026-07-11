@@ -954,19 +954,19 @@ function PodiumCard({
     <div className={styles.height}>
       <button
         onClick={onOpen}
-        className={`group relative w-full overflow-hidden rounded-2xl border ${styles.border} bg-gradient-to-b ${styles.bg} p-3 text-left transition hover:brightness-110`}
+        className={`group relative w-full overflow-hidden rounded-2xl border ${styles.border} bg-gradient-to-b ${styles.bg} p-2.5 text-left transition hover:brightness-110 sm:p-3`}
       >
-        <div className="flex items-center justify-between">
-          {styles.icon}
-          <span className={`text-3xl font-black ${styles.text}`}>#{rank}</span>
+        <div className="flex items-center justify-between gap-1">
+          <span className="shrink-0">{styles.icon}</span>
+          <span className={`text-xl font-black sm:text-3xl ${styles.text}`}>#{rank}</span>
         </div>
-        <p className="mt-2 truncate text-sm font-bold text-white">
+        <p className="mt-2 truncate text-xs font-bold text-white sm:text-sm">
           {client.full_name?.trim() || "Sem nome"}
         </p>
-        <p className={`mt-1 text-lg font-black ${styles.text}`}>
+        <p className={`mt-1 truncate text-sm font-black sm:text-lg ${styles.text}`}>
           {BRL(client.paid_spent)}
         </p>
-        <p className="text-[10px] text-white/50">
+        <p className="truncate text-[9px] text-white/50 sm:text-[10px]">
           {client.paid_count} pedido(s) · Ticket {BRL(client.avg_ticket)}
         </p>
       </button>
