@@ -113,7 +113,7 @@ import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "settings"] as const;
+    const validTabs = ["products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
@@ -129,7 +129,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "settings";
+type Tab = "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings";
 
 function AdminPage() {
   const navigate = useNavigate();
