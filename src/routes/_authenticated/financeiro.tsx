@@ -79,7 +79,10 @@ const PERIODS: { id: PeriodKey; label: string }[] = [
 
 /* ---------------- Helpers ---------------- */
 
-function periodRange(p: PeriodKey): { from: Date; to: Date; prevFrom: Date; prevTo: Date } {
+function periodRange(
+  p: PeriodKey,
+  firstOrderDate?: Date | null,
+): { from: Date; to: Date; prevFrom: Date; prevTo: Date } {
   const now = new Date();
   const to = new Date(now);
   let from = new Date(now);
@@ -96,7 +99,8 @@ function periodRange(p: PeriodKey): { from: Date; to: Date; prevFrom: Date; prev
   } else if (p === "ano") {
     from = new Date(now.getFullYear(), 0, 1);
   } else {
-    from = new Date(2000, 0, 1);
+    from = firstOrderDate ? new Date(firstOrderDate) : new Date(now.getFullYear(), 0, 1);
+    from.setHours(0, 0, 0, 0);
   }
   const spanMs = to.getTime() - from.getTime();
   const prevTo = new Date(from.getTime() - 1);
