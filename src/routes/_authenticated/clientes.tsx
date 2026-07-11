@@ -1232,6 +1232,52 @@ function ClientDetailDialog({
 }) {
   const open = !!client;
   const userId = client?.id ?? null;
+  const queryClient = useQueryClient();
+
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    full_name: "",
+    phone: "",
+    birthday: "",
+    address: "",
+    reference: "",
+  });
+
+  useEffect(() => {
+    if (client) {
+      setForm({
+        full_name: client.full_name ?? "",
+        phone: client.phone ?? "",
+        birthday: client.birthday ?? "",
+        address: client.address ?? "",
+        reference: client.reference ?? "",
+      });
+      setEditMode(false);
+    }
+  }, [client?.id]);
+
+  const saveProfile = async () => {
+    if (!userId) return;
+    setSaving(true);
+    const payload = {
+      full_name: form.full_name.trim() || null,
+      phone: form.phone.trim() || null,
+      birthday: form.birthday || null,
+      address: form.address.trim() || null,
+      reference: form.reference.trim() || null,
+    };
+    const { error } = await supabase.from("profiles").update(payload).eq("id", userId);
+    setSaving(false);
+    if (error) {
+      toast.error("Não foi possível salvar: " + error.message);
+      return;
+    }
+    toast.success("Dados do cliente atualizados");
+    setEditMode(false);
+    queryClient.invalidateQueries({ queryKey: ["clientes-admin"] });
+  };
+
 
   const { data, isLoading } = useQuery({
     enabled: !!userId,
