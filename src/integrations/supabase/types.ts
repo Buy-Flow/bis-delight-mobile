@@ -702,6 +702,7 @@ export type Database = {
           subtotal: number
           total: number
           user_id: string
+          waiter_id: string | null
         }
         Insert: {
           address?: string | null
@@ -726,6 +727,7 @@ export type Database = {
           subtotal: number
           total: number
           user_id: string
+          waiter_id?: string | null
         }
         Update: {
           address?: string | null
@@ -750,8 +752,17 @@ export type Database = {
           subtotal?: number
           total?: number
           user_id?: string
+          waiter_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_waiter_id_fkey"
+            columns: ["waiter_id"]
+            isOneToOne: false
+            referencedRelation: "waiters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_templates: {
         Row: {
@@ -1663,6 +1674,48 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      waiters: {
+        Row: {
+          active: boolean
+          avatar_url: string | null
+          code: string
+          commission_pct: number
+          created_at: string
+          hired_at: string
+          id: string
+          name: string
+          note: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          avatar_url?: string | null
+          code: string
+          commission_pct?: number
+          created_at?: string
+          hired_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          avatar_url?: string | null
+          code?: string
+          commission_pct?: number
+          created_at?: string
+          hired_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          phone?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
