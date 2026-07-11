@@ -25,6 +25,7 @@ import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pd
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated/modelos'
 import { Route as AuthenticatedLucratividadeRouteImport } from './routes/_authenticated/lucratividade'
+import { Route as AuthenticatedGarconsRouteImport } from './routes/_authenticated/garcons'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedCopilotoRouteImport } from './routes/_authenticated/copiloto'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
@@ -118,6 +119,11 @@ const AuthenticatedLucratividadeRoute =
     path: '/lucratividade',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGarconsRoute = AuthenticatedGarconsRouteImport.update({
+  id: '/garcons',
+  path: '/garcons',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/conta': typeof AuthenticatedContaRoute
   '/copiloto': typeof AuthenticatedCopilotoRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/garcons': typeof AuthenticatedGarconsRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/conta': typeof AuthenticatedContaRoute
   '/copiloto': typeof AuthenticatedCopilotoRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/garcons': typeof AuthenticatedGarconsRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/_authenticated/conta': typeof AuthenticatedContaRoute
   '/_authenticated/copiloto': typeof AuthenticatedCopilotoRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/_authenticated/garcons': typeof AuthenticatedGarconsRoute
   '/_authenticated/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/copiloto'
     | '/financeiro'
+    | '/garcons'
     | '/lucratividade'
     | '/modelos'
     | '/notificacoes'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/copiloto'
     | '/financeiro'
+    | '/garcons'
     | '/lucratividade'
     | '/modelos'
     | '/notificacoes'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conta'
     | '/_authenticated/copiloto'
     | '/_authenticated/financeiro'
+    | '/_authenticated/garcons'
     | '/_authenticated/lucratividade'
     | '/_authenticated/modelos'
     | '/_authenticated/notificacoes'
@@ -464,6 +476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLucratividadeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/garcons': {
+      id: '/_authenticated/garcons'
+      path: '/garcons'
+      fullPath: '/garcons'
+      preLoaderRoute: typeof AuthenticatedGarconsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/financeiro': {
       id: '/_authenticated/financeiro'
       path: '/financeiro'
@@ -547,6 +566,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
   AuthenticatedCopilotoRoute: typeof AuthenticatedCopilotoRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedGarconsRoute: typeof AuthenticatedGarconsRoute
   AuthenticatedLucratividadeRoute: typeof AuthenticatedLucratividadeRoute
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
@@ -567,6 +587,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContaRoute: AuthenticatedContaRoute,
   AuthenticatedCopilotoRoute: AuthenticatedCopilotoRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedGarconsRoute: AuthenticatedGarconsRoute,
   AuthenticatedLucratividadeRoute: AuthenticatedLucratividadeRoute,
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
