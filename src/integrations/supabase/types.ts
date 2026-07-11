@@ -47,6 +47,50 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_campaigns: {
+        Row: {
+          channel: string
+          dispatched_at: string
+          dispatched_by: string | null
+          id: string
+          insight_id: string | null
+          message: string
+          recipients: Json
+          recipients_count: number
+          status: string
+        }
+        Insert: {
+          channel?: string
+          dispatched_at?: string
+          dispatched_by?: string | null
+          id?: string
+          insight_id?: string | null
+          message: string
+          recipients?: Json
+          recipients_count?: number
+          status?: string
+        }
+        Update: {
+          channel?: string
+          dispatched_at?: string
+          dispatched_by?: string | null
+          id?: string
+          insight_id?: string | null
+          message?: string
+          recipients?: Json
+          recipients_count?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_campaigns_insight_id_fkey"
+            columns: ["insight_id"]
+            isOneToOne: false
+            referencedRelation: "ai_insights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_conversation_memory: {
         Row: {
           conversation_id: string
@@ -75,6 +119,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ai_growth_chat: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_insights: {
+        Row: {
+          category: string
+          clientes: Json
+          count: number
+          created_at: string
+          expires_at: string
+          id: string
+          impacto: number
+          mensagem: string
+          priority: string
+          status: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          clientes?: Json
+          count?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          impacto?: number
+          mensagem: string
+          priority: string
+          status?: string
+          title: string
+        }
+        Update: {
+          category?: string
+          clientes?: Json
+          count?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          impacto?: number
+          mensagem?: string
+          priority?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
       }
       automation_runs: {
         Row: {

@@ -24,6 +24,7 @@ import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authentic
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
+import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 
@@ -102,6 +103,11 @@ const AuthenticatedCarrinhosRoute = AuthenticatedCarrinhosRouteImport.update({
   path: '/carrinhos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAiGrowthRoute = AuthenticatedAiGrowthRouteImport.update({
+  id: '/ai-growth',
+  path: '/ai-growth',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/recompensas'
     | '/sitemap.xml'
     | '/admin'
+    | '/ai-growth'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/recompensas'
     | '/sitemap.xml'
     | '/admin'
+    | '/ai-growth'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/recompensas'
     | '/sitemap.xml'
     | '/_authenticated/admin'
+    | '/_authenticated/ai-growth'
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
     | '/_authenticated/conta'
@@ -346,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarrinhosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ai-growth': {
+      id: '/_authenticated/ai-growth'
+      path: '/ai-growth'
+      fullPath: '/ai-growth'
+      preLoaderRoute: typeof AuthenticatedAiGrowthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -365,6 +384,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAiGrowthRoute: typeof AuthenticatedAiGrowthRoute
   AuthenticatedCarrinhosRoute: typeof AuthenticatedCarrinhosRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
@@ -377,6 +397,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAiGrowthRoute: AuthenticatedAiGrowthRoute,
   AuthenticatedCarrinhosRoute: AuthenticatedCarrinhosRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
