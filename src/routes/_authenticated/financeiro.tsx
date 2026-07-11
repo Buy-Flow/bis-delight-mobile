@@ -139,7 +139,25 @@ function FinanceiroPage() {
   const [items, setItems] = useState<OrderItemRow[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
 
-  const range = useMemo(() => periodRange(period), [period]);
+  const [firstOrderDate, setFirstOrderDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from("orders")
+        .select("created_at")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (!cancel && data?.created_at) setFirstOrderDate(new Date(data.created_at));
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, []);
+
+  const range = useMemo(() => periodRange(period, firstOrderDate), [period, firstOrderDate]);
 
   useEffect(() => {
     let cancel = false;
