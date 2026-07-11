@@ -146,11 +146,31 @@ export function ProductCard({
             Últimas {stock}!
           </div>
         )}
-        {outOfStock && (
+        {outOfStock && !paused && (
           <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/70 backdrop-blur-sm">
             <span className="rounded-full border border-white/30 bg-black/60 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white">
               Esgotado
             </span>
+          </div>
+        )}
+        {paused && (
+          <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/72 backdrop-blur-sm">
+            <div className="flex max-w-[85%] flex-col items-center gap-1.5 text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-500/20 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-100">
+                <Pause className="h-3 w-3" strokeWidth={3} />
+                Pausado
+              </span>
+              {product.pauseReason && (
+                <span className="line-clamp-2 rounded-md bg-black/50 px-2 py-0.5 text-[10.5px] font-semibold leading-tight text-white/90">
+                  {product.pauseReason}
+                </span>
+              )}
+              {pausedLabel && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-200/90">
+                  {pausedLabel}
+                </span>
+              )}
+            </div>
           </div>
         )}
         {/* Favorite heart top-right */}
