@@ -829,19 +829,19 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               onDragOver={(e) => onDragOver(e, p.id)}
               onDragEnd={onDragEnd}
               className={cn(
-                "group grid grid-cols-[32px_minmax(0,1fr)] md:grid-cols-[32px_minmax(0,2.4fr)_minmax(0,1fr)_120px_80px_100px_100px_100px] items-center gap-3 border-b border-white/5 px-4 py-3 transition hover:bg-white/[0.03]",
+                "group grid grid-cols-[24px_minmax(0,1fr)_auto] md:grid-cols-[32px_minmax(0,2.4fr)_minmax(0,1fr)_120px_80px_100px_100px_100px] items-center gap-2 md:gap-3 rounded-2xl md:rounded-none border border-white/5 md:border-x-0 md:border-t-0 md:border-b bg-white/[0.02] md:bg-transparent px-2.5 md:px-4 py-2.5 md:py-3 mb-2 md:mb-0 transition hover:bg-white/[0.04] md:hover:bg-white/[0.03]",
                 dragId === p.id && "opacity-40",
                 !p.active && "opacity-60",
                 paused && "ring-1 ring-inset ring-amber-400/30",
               )}
             >
-              <div className="grid h-8 w-8 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
+              <div className="grid h-8 w-6 md:w-8 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
                 <GripVertical className="h-4 w-4" />
               </div>
 
               {/* Produto */}
               <button onClick={() => setEditing(p)} className="flex min-w-0 items-center gap-3 text-left">
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-black/40 ring-1 ring-white/5">
+                <div className="relative h-11 w-11 md:h-12 md:w-12 shrink-0 overflow-hidden rounded-xl bg-black/40 ring-1 ring-white/5">
                   {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
                   {paused && (
                     <div className="absolute inset-0 grid place-items-center bg-black/60">
@@ -858,7 +858,12 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
                       </span>
                     )}
                   </div>
-                  <div className="mt-0.5 truncate text-[11px] text-white/45">
+                  {/* Mobile: category · price */}
+                  <div className="mt-0.5 truncate text-[11px] text-white/45 md:hidden">
+                    {cat ? cat.name.toLowerCase() : "—"} · <span className="font-bold text-neon-pink">R$ {p.basePrice.toFixed(2)}</span>
+                  </div>
+                  {/* Desktop: description */}
+                  <div className="mt-0.5 hidden truncate text-[11px] text-white/45 md:block">
                     {p.description || "Sem descrição"}
                   </div>
                 </div>
