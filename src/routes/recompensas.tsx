@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import rewardTrophyAsset from "@/assets/reward-trophy.png.asset.json";
 import { TierBadge, TIER_META, type LoyaltyTier } from "@/components/menu/TierBadge";
 import { RecompensasSkeleton } from "@/components/ui/skeletons";
+import { useLoyaltyTiers } from "@/lib/use-loyalty-tiers";
 
 const rewardTrophy = rewardTrophyAsset.url;
-const GOAL = 10;
 const TIER_ORDER: LoyaltyTier[] = ["bronze", "prata", "ouro"];
 
 export const Route = createFileRoute("/recompensas")({
@@ -111,14 +111,16 @@ function RecompensasPage() {
     };
   }, [userId]);
 
-  const current = status?.current ?? 0;
-  const pct = Math.min(100, (current / GOAL) * 100);
-  const remaining = GOAL - current;
-  const available = coupons.filter((c) => !c.used_at);
-  const used = coupons.filter((c) => c.used_at);
-  const rewardValue = status?.reward ?? 10;
+  const tiers = useLoyaltyTiers();
   const currentTier = status?.tier ?? "bronze";
   const meta = TIER_META[currentTier];
+  const current = status?.current ?? 0;
+  const GOAL = tiers?.[currentTier]?.redeem_cost ?? 10;
+  const pct = Math.min(100, (current / GOAL) * 100);
+  const remaining = Math.max(0, GOAL - current);
+  const available = coupons.filter((c) => !c.used_at);
+  const used = coupons.filter((c) => c.used_at);
+  const rewardValue = status?.reward ?? tiers?.[currentTier]?.coupon_value ?? 10;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
@@ -273,7 +275,23 @@ function RecompensasPage() {
 
           <div className="space-y-4">
             {TIER_ORDER.map((t, idx) => {
-              const info = TIER_META[t];
+              const base = TIER_META[t];
+              const row = tiers?.[t];
+              const info = {
+                ...base,
+                minLifetime: row?.min_lifetime ?? base.minLifetime,
+                reward: row ? Number(row.coupon_value) : base.reward,
+                minOrder: row ? Number(row.min_order_value) : base.minOrder,
+                stampsPerOrder: row?.stamps_per_order ?? base.stampsPerOrder,
+                multiplier: row ? `${row.stamps_per_order}×` : base.multiplier,
+                benefits: row
+                  ? [
+                      `${row.stamps_per_order} selo${row.stamps_per_order > 1 ? "s" : ""} por pedido`,
+                      `Pedido mínimo de R$ ${Number(row.min_order_value).toFixed(0)}`,
+                      `Cupom de R$ ${Number(row.coupon_value).toFixed(0)} a cada ${row.redeem_cost} selos`,
+                    ]
+                  : base.benefits,
+              };
               const lifetime = status?.lifetime ?? 0;
               const reached = lifetime >= info.minLifetime;
               const isCurrent = status?.tier === t;
@@ -493,9 +511,30 @@ function RecompensasPage() {
           <ol className="grid gap-3 sm:grid-cols-2">
             {[
               { icon: ShoppingBag, title: "Faça pedidos", desc: "Compre logado na sua conta.", color: "from-neon-pink to-neon-pink/60" },
-              { icon: CreditCard, title: "Ganhe selos", desc: "1× Bronze · 1× Prata · 3× Ouro por pedido.", color: "from-neon-yellow to-orange-400" },
-              { icon: Award, title: "Suba de nível", desc: "Bronze → Prata (2 cartelas) → Ouro (10 cartelas).", color: "from-neon-cyan to-cyan-400" },
-              { icon: Tag, title: "Ganhe cupons", desc: "R$ 10, R$ 10 ou R$ 20 a cada cartela cheia.", color: "from-fuchsia-400 to-neon-pink" },
+              {
+                icon: CreditCard,
+                title: "Ganhe selos",
+                desc: tiers
+                  ? TIER_ORDER.map((t) => `${tiers[t]?.stamps_per_order ?? 1}× ${tiers[t]?.label ?? t}`).join(" · ") + " por pedido."
+                  : "Selos a cada pedido pago.",
+                color: "from-neon-yellow to-orange-400",
+              },
+              {
+                icon: Award,
+                title: "Suba de nível",
+                desc: tiers
+                  ? `Bronze → Prata (${tiers.prata?.min_lifetime ?? 20} selos) → Ouro (${tiers.ouro?.min_lifetime ?? 100} selos).`
+                  : "Suba de nível conforme acumula selos.",
+                color: "from-neon-cyan to-cyan-400",
+              },
+              {
+                icon: Tag,
+                title: "Ganhe cupons",
+                desc: tiers
+                  ? TIER_ORDER.map((t) => `R$ ${Number(tiers[t]?.coupon_value ?? 0).toFixed(0)}`).join(", ") + " a cada cartela cheia."
+                  : "Cupons a cada cartela cheia.",
+                color: "from-fuchsia-400 to-neon-pink",
+              },
             ].map((step, idx) => {
               const Icon = step.icon;
               return (
