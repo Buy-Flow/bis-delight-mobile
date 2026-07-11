@@ -45,6 +45,7 @@ export function CheckoutSheet() {
   useBackDismiss(isCheckoutOpen, closeCheckout);
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const storeStatus = useStoreStatus();
 
   const [mode, setMode] = useState<Mode>("entrega");
   const [name, setName] = useState("");
