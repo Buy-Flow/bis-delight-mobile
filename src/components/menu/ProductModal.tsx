@@ -6,7 +6,7 @@ import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
-import { useSiteSettings, useCategories } from "@/lib/menu-data";
+import { useSiteSettings, useCategories, isProductPaused, isIndefinitePause } from "@/lib/menu-data";
 
 
 const CATEGORY_LABEL: Record<string, string> = {
