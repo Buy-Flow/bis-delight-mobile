@@ -135,9 +135,7 @@ function AdminPage() {
   const navigate = useNavigate();
   const { edit: editProductId, tab: tabParam } = Route.useSearch();
   const { data: isAdmin, isLoading } = useIsAdmin();
-  const [tab, setTab] = useState<Tab>(tabParam ?? "products");
-
-
+  const tab: Tab = tabParam ?? "products";
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -146,7 +144,7 @@ function AdminPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] text-white">
+      <div className="flex min-h-[60vh] items-center justify-center text-white">
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
@@ -154,7 +152,7 @@ function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] px-4 text-white">
+      <div className="flex min-h-[60vh] items-center justify-center px-4 text-white">
         <div className="max-w-sm text-center">
           <h1 className="font-display text-2xl font-black">Acesso negado</h1>
           <p className="mt-2 text-sm text-white/60">
@@ -171,57 +169,11 @@ function AdminPage() {
     );
   }
 
-  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: "products", label: "Produtos", icon: Package },
-    { id: "highlights", label: "Destaques", icon: Star },
-    { id: "news", label: "Novidades", icon: Sparkles },
-    { id: "extras", label: "Complementos", icon: Plus },
-    { id: "categories", label: "Categorias", icon: Tag },
-    { id: "notifications", label: "Notificações", icon: BellRing },
-    { id: "promos", label: "Promos & Combos", icon: Flame },
-    { id: "loyalty", label: "Fidelidade", icon: Award },
-    { id: "settings", label: "Loja", icon: Settings },
-  ];
-
   return (
-    <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
+    <div className="text-white">
       <Toaster position="bottom-center" theme="dark" closeButton />
-
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[oklch(0.10_0.08_300)]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <Sparkles className="h-5 w-5 text-neon-yellow" />
-            <h1
-              className="font-display text-xl font-black uppercase"
-              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
-            >
-              Painel <span className="text-neon-yellow">Admin</span>
-            </h1>
-          </Link>
-          <AdminNavMenu />
-        </div>
-        <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-                tab === t.id
-                  ? "bg-neon-pink text-white glow-pink"
-                  : "border border-white/10 text-white/70 hover:text-white",
-              )}
-            >
-              <t.icon className="h-3.5 w-3.5" />
-              {t.label}
-            </button>
-          ))}
-        </nav>
-      </header>
-
       <main className="mx-auto max-w-5xl px-4 py-6">
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}
-
         {tab === "categories" && <CategoriesTab initialEditId={editProductId} />}
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
@@ -234,6 +186,7 @@ function AdminPage() {
     </div>
   );
 }
+
 
 
 /* =============================== Products =============================== */
