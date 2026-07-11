@@ -26,6 +26,7 @@ import { Route as AuthenticatedCopilotoRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
+import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
@@ -115,6 +116,11 @@ const AuthenticatedCarrinhosRoute = AuthenticatedCarrinhosRouteImport.update({
   path: '/carrinhos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAvaliacoesRoute = AuthenticatedAvaliacoesRouteImport.update({
+  id: '/avaliacoes',
+  path: '/avaliacoes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAiGrowthRoute = AuthenticatedAiGrowthRouteImport.update({
   id: '/ai-growth',
   path: '/ai-growth',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/avaliacoes'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/avaliacoes'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/ai-growth'
+    | '/_authenticated/avaliacoes'
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
     | '/_authenticated/conta'
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarrinhosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/avaliacoes': {
+      id: '/_authenticated/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/avaliacoes'
+      preLoaderRoute: typeof AuthenticatedAvaliacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ai-growth': {
       id: '/_authenticated/ai-growth'
       path: '/ai-growth'
@@ -424,6 +443,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiGrowthRoute: typeof AuthenticatedAiGrowthRoute
+  AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
   AuthenticatedCarrinhosRoute: typeof AuthenticatedCarrinhosRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
@@ -438,6 +458,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiGrowthRoute: AuthenticatedAiGrowthRoute,
+  AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
   AuthenticatedCarrinhosRoute: AuthenticatedCarrinhosRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,

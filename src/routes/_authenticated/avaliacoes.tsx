@@ -101,8 +101,10 @@ function AvaliacoesPage() {
     setReviews(
       rows.map((r) => ({
         ...r,
-        profile: profMap.get(r.user_id) ?? null,
-        product: r.product_id ? prodMap.get(r.product_id) ?? null : null,
+        profile: (profMap.get(r.user_id) as Review["profile"]) ?? null,
+        product: r.product_id
+          ? ((prodMap.get(r.product_id) as Review["product"]) ?? null)
+          : null,
       })),
     );
     setLoading(false);
