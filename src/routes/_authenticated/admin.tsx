@@ -626,6 +626,19 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
 
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<"manual" | "name" | "category" | "price">("manual");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const toggleSort = (key: "name" | "category" | "price") => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir(key === "price" ? "desc" : "asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey("manual");
+      setSortDir("asc");
+    }
+  };
   const [dragId, setDragId] = useState<string | null>(null);
   const [localOrder, setLocalOrder] = useState<Product[] | null>(null);
 
