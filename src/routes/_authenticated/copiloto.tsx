@@ -575,25 +575,50 @@ function ToolCallChip({ part }: { part: Record<string, unknown> }) {
   const done = state === "output-available";
   const failed = state === "output-error";
 
+  const output = (part.output ?? (part as Record<string, unknown>).result) as
+    | Record<string, unknown>
+    | undefined;
+  const imageUrl =
+    done && toolName === "gerar_imagem_banner" && output && typeof output.image_url === "string"
+      ? (output.image_url as string)
+      : null;
+
   return (
-    <div
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-        failed
-          ? "border-red-500/40 bg-red-500/10 text-red-200"
-          : done
-            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-            : "border-neon-yellow/40 bg-neon-yellow/10 text-neon-yellow"
-      }`}
-    >
-      {done ? (
-        <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-400 text-black">✓</span>
-      ) : failed ? (
-        <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-red-400 text-black">!</span>
-      ) : (
-        <Loader2 className="h-3 w-3 animate-spin" />
+    <div className="flex flex-col gap-1.5">
+      <div
+        className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+          failed
+            ? "border-red-500/40 bg-red-500/10 text-red-200"
+            : done
+              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
+              : "border-neon-yellow/40 bg-neon-yellow/10 text-neon-yellow"
+        }`}
+      >
+        {done ? (
+          <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-400 text-black">✓</span>
+        ) : failed ? (
+          <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-red-400 text-black">!</span>
+        ) : (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        )}
+        <Icon className="h-3 w-3" />
+        <span>{label}</span>
+      </div>
+      {imageUrl && (
+        <a
+          href={imageUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="block overflow-hidden rounded-xl border border-white/10 bg-black/40"
+        >
+          <img
+            src={imageUrl}
+            alt="Banner gerado"
+            className="h-48 w-full max-w-sm object-cover"
+            loading="lazy"
+          />
+        </a>
       )}
-      <Icon className="h-3 w-3" />
-      <span>{label}</span>
     </div>
   );
 }
