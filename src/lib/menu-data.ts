@@ -684,6 +684,8 @@ export type ProductInput = {
   upsell_price?: number | null;
   stock?: number | null;
   low_stock_threshold?: number;
+  paused_until?: string | null;
+  pause_reason?: string | null;
 };
 
 export function useUpsertProduct() {
