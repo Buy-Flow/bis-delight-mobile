@@ -105,7 +105,17 @@ import { LoyaltyTiersTab } from "@/components/admin/LoyaltyTiersTab";
 import { CouponsSection } from "@/components/admin/CouponsSection";
 import { CombosSection } from "@/components/admin/CombosSection";
 import { UrgencySection } from "@/components/admin/UrgencySection";
-import { ClipboardList } from "lucide-react";
+import {
+  ClipboardList,
+  Wallet,
+  ShoppingBag,
+  Receipt,
+  Users,
+  Calendar,
+  TrendingUp,
+  ArrowUpRight,
+  Zap,
+} from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 import { DeliveryZoneEditor } from "@/components/admin/DeliveryZoneEditor";
