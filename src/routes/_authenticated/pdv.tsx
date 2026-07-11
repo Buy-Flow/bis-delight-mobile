@@ -14,7 +14,6 @@ import {
   Printer,
   Store,
   Truck,
-  Percent,
   X,
   StickyNote,
   UserRound,
@@ -22,11 +21,14 @@ import {
   MapPin,
   Check,
   Sparkles,
+  Pencil,
 } from "lucide-react";
 import { useProducts, useCategories } from "@/lib/menu-data";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import type { Product, SizeOption } from "@/data/menu";
+import type { Product } from "@/data/menu";
+import type { CartItem } from "@/lib/cart-context";
+import { ProductModal } from "@/components/menu/ProductModal";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/pdv")({
@@ -41,16 +43,34 @@ export const Route = createFileRoute("/_authenticated/pdv")({
 
 type PaymentMethod = "dinheiro" | "pix" | "debito" | "credito";
 
+/**
+ * PDV cart line — mirrors the customer CartItem shape so the same
+ * ProductModal can push into it. Includes extras, removed items,
+ * per-line notes and image for a fully-customized order.
+ */
 type CartLine = {
-  key: string;
+  uid: string;
   productId: string;
   name: string;
-  size: string | null;
-  flavor: string | null;
-  unitPrice: number;
+  image: string;
+  size?: string;
+  flavor?: string;
+  extras: { label: string; price: number }[];
+  removed: string[];
+  note?: string;
   quantity: number;
-  note: string;
+  unitPrice: number;
 };
+
+const BRL = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const PAYMENTS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: "dinheiro", label: "Dinheiro", icon: Banknote },
+  { id: "pix", label: "PIX", icon: QrCode },
+  { id: "debito", label: "Débito", icon: CreditCard },
+  { id: "credito", label: "Crédito", icon: Wallet },
+];
 
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
