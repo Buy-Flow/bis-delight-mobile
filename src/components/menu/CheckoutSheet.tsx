@@ -99,14 +99,17 @@ export function CheckoutSheet() {
         .maybeSingle()
         .then(({ data }) => {
           if (!data) return;
-          if (data.full_name && !name) setName(data.full_name);
-          if (data.phone && !phone) setPhone(data.phone);
+          // Profile is authoritative when logged in — overwrite cached values
+          // so phone/name edits in "Dados pessoais" propagate everywhere.
+          if (data.full_name) setName(data.full_name);
+          if (data.phone) setPhone(data.phone);
           if (data.address && !address) setAddress(data.address);
           if (data.reference && !reference) setReference(data.reference);
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCheckoutOpen, user?.id]);
+
 
   const zone = settings?.deliveryZone;
   const originLat = settings?.storeLat ?? null;
