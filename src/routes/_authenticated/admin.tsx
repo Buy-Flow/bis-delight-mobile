@@ -3083,6 +3083,9 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
             );
           })}
         </div>
+        </>)}
+
+
 
         {/* Content panel */}
         <section className="min-w-0">
