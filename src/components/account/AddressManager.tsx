@@ -366,6 +366,24 @@ function AddressForm({
           placeholder="Ponto de referência (opcional)"
           className={inputCls}
         />
+        <button
+          type="button"
+          onClick={() => setMapOpen(true)}
+          className={cn(
+            "flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2.5 text-[12px] font-bold transition",
+            pinned
+              ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
+              : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <MapIcon className="h-4 w-4" />
+            {pinned ? "Pin ajustado no mapa" : "Ajustar pin no mapa"}
+          </span>
+          <span className="text-[10px] font-normal opacity-70">
+            {pinned ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : "recomendado"}
+          </span>
+        </button>
         <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/80">
           <input
             type="checkbox"
@@ -395,6 +413,30 @@ function AddressForm({
           Salvar
         </button>
       </div>
+
+      <AddressMapPicker
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        initial={{
+          lat,
+          lng,
+          address: joinAddress({ street, number, neighborhood, city }),
+        }}
+        storeOrigin={{ lat: settings?.storeLat ?? null, lng: settings?.storeLng ?? null }}
+        onConfirm={(loc) => {
+          setLat(loc.lat);
+          setLng(loc.lng);
+          setPinned(true);
+          // Overwrite address parts with the reverse-geocoded text, best-effort
+          const p = parseAddress(loc.address);
+          if (p.street) setStreet(p.street);
+          if (p.number) setNumber(p.number);
+          if (p.neighborhood) setNeighborhood(p.neighborhood);
+          if (p.city) setCity(p.city);
+          setMapOpen(false);
+          toast.success("Pin confirmado");
+        }}
+      />
     </div>
   );
 }
