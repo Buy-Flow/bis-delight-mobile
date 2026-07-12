@@ -209,9 +209,10 @@ function TablesPage() {
   async function openTable(tableId: string, people?: number, waiterId?: string | null) {
     const { error } = await supabase.rpc("open_table", {
       _table_id: tableId,
-      _people: people ?? null,
-      _waiter_id: waiterId ?? null,
+      _people: people ?? undefined,
+      _waiter_id: waiterId ?? undefined,
     });
+
     if (error) {
       toast.error("Erro ao abrir mesa: " + error.message);
       return;
