@@ -314,6 +314,12 @@ function UsersPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
+              onClick={() => setShowInvite(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-400/40 bg-gradient-to-br from-indigo-500 to-violet-600 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 hover:brightness-110"
+            >
+              <UserPlus className="h-3.5 w-3.5" /> Adicionar usuário
+            </button>
+            <button
               onClick={() => setShowAudit(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white hover:bg-white/10"
             >
