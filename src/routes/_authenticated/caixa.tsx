@@ -611,7 +611,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
             return (
               <button key={m} onClick={() => setMethod(m)}
                 className={cn("p-2.5 rounded-lg border text-xs flex flex-col items-center gap-1",
-                  active ? "border-white bg-white text-black" : "border-white/10 hover:bg-white/10 text-white/70")}>
+                  active ? "border-neon-pink/60 bg-neon-pink/15 text-white" : "border-white/10 hover:bg-white/10 text-white/70")}>
                 <Icon className="h-4 w-4" />
                 {M.label}
               </button>
