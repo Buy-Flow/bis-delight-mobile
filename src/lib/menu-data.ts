@@ -392,7 +392,9 @@ function parseHeroImages(raw: unknown): HeroImagesConfig {
 export const siteSettingsQueryOptions = queryOptions({
   queryKey: ["site_settings"],
   queryFn: async (): Promise<SiteSettings> => {
-    const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+    // site_settings_public is a view that excludes the admin-only pix_key column.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from("site_settings_public" as any) as any).select("*").eq("id", 1).maybeSingle();
     if (!data) {
       return {
         name: STATIC_BRAND.name,
