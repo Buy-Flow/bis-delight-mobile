@@ -422,11 +422,21 @@ function TablesPage() {
       {editing && (
         <EditTableDialog
           table={editing === "new" ? null : editing}
+          zones={zones}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
             void load();
           }}
+        />
+      )}
+
+      {managingZones && (
+        <ManageZonesDialog
+          zones={zones}
+          tables={tables}
+          onClose={() => setManagingZones(false)}
+          onChanged={() => void load()}
         />
       )}
     </div>
