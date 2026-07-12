@@ -48,6 +48,7 @@ import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { markAdminShellMounted } from "@/lib/admin-shell-flag";
+import { FloatingAssistant } from "@/components/admin/FloatingAssistant";
 
 type AdminTab =
   | "products"
@@ -506,6 +507,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="flex-1">{children}</main>
       </div>
+      <FloatingAssistant />
     </div>
   );
 }

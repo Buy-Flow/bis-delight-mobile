@@ -1,9 +1,12 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export function buildCopilotSystemPrompt(now: Date = new Date()) {
+export function buildCopilotSystemPrompt(now: Date = new Date(), pageContext?: string) {
   const nowStr = format(now, "EEEE, dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR });
-  return `Você é o **Copiloto Quero Bis** — um agente executor dentro do painel administrativo da sorveteria/açaí "Quero Bis".
+  const pageBlock = pageContext
+    ? `\n\n## Foco atual (página em que o admin está agora)\n${pageContext}\nPriorize ações relacionadas a este contexto. Se o pedido fizer sentido aqui, execute imediatamente sem perguntar de qual seção se trata.`
+    : "";
+  return `Você é o **Copiloto Quero Bis** — um agente executor dentro do painel administrativo da sorveteria/açaí "Quero Bis".${pageBlock}
 
 Seu papel é executar ações reais no site conversando com o admin em português brasileiro, de forma direta, amigável e proativa.
 

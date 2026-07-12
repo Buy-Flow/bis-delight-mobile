@@ -34,6 +34,7 @@ export const Route = createFileRoute("/api/copilot-chat")({
           const body = (await request.json()) as {
             messages?: UIMessage[];
             threadId?: string | null;
+            pageContext?: string | null;
           };
           if (!Array.isArray(body.messages)) {
             return new Response("Messages required", { status: 400 });
@@ -53,7 +54,7 @@ export const Route = createFileRoute("/api/copilot-chat")({
 
           const result = streamText({
             model: gateway("google/gemini-2.5-flash"),
-            system: buildCopilotSystemPrompt(),
+            system: buildCopilotSystemPrompt(new Date(), body.pageContext ?? undefined),
             messages: await convertToModelMessages(body.messages),
             tools,
             stopWhen: stepCountIs(50),
