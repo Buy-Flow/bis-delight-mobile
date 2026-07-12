@@ -21,7 +21,8 @@ import { cn } from "@/lib/utils";
 const DISMISS_KEY = "review_prompt_dismissed";
 const REVIEWED_KEY = "reviewed_orders";
 const APPEAR_DELAY = 8_000;
-const DISMISS_MS = 3 * 24 * 60 * 60 * 1000;
+// Só aparece 6h após o pedido; depois de mostrado/dispensado, não volta mais para o mesmo pedido.
+const MIN_AGE_MS = 6 * 60 * 60 * 1000;
 
 type Candidate = {
   id: string;
