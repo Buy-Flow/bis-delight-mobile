@@ -279,7 +279,7 @@ export function pickPopupToShow(
   now = new Date(),
 ): SitePopup | null {
   const eligible = popups
-    .filter((p) => p.active)
+    .filter((p) => p.active && p.kind !== "template")
     .filter((p) => p.title || p.body || p.image_url)
     .filter((p) => matchesTiming(p, now))
     .filter((p) => matchesAudience(p, ctx, now))
