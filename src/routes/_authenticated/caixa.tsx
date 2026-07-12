@@ -240,7 +240,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={load} className="h-10 px-3 rounded-lg border bg-white hover:bg-white/10 text-sm flex items-center gap-2">
+            <button onClick={load} className="h-10 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-sm flex items-center gap-2">
               <RefreshCcw className="h-4 w-4" /> Atualizar
             </button>
             {session ? (
@@ -283,7 +283,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
         {loading && <div className="text-center py-12 text-white/40">Carregando…</div>}
 
         {!loading && tab === "atual" && !session && (
-          <div className="rounded-2xl border-2 border-dashed p-12 text-center bg-white">
+          <div className="rounded-2xl border-2 border-dashed border-white/15 p-12 text-center bg-white/5">
             <div className="h-16 w-16 rounded-full bg-white/10 grid place-items-center mx-auto mb-4">
               <Lock className="h-7 w-7 text-white/40" />
             </div>
@@ -308,7 +308,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Métodos */}
-              <div className="lg:col-span-1 rounded-2xl border bg-white p-5">
+              <div className="lg:col-span-1 rounded-2xl border border-white/10 bg-white/5 p-5">
                 <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                   <Receipt className="h-4 w-4 text-white/60" /> Vendas por método
                 </h3>
@@ -341,7 +341,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
               </div>
 
               {/* Movimentos */}
-              <div className="lg:col-span-2 rounded-2xl border bg-white">
+              <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5">
                 <div className="p-5 border-b flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                     <Clock className="h-4 w-4 text-white/60" /> Movimentos ({movs.length})
@@ -385,7 +385,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
         )}
 
         {!loading && tab === "historico" && (
-          <div className="rounded-2xl border bg-white overflow-hidden">
+          <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
             <div className="p-5 border-b flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white">Últimas sessões</h3>
               <span className="text-xs text-white/60">{history.length} registros</span>
@@ -457,7 +457,7 @@ function Kpi({ icon: Icon, label, value, tone }: { icon: typeof Wallet; label: s
     indigo: "from-indigo-500 to-indigo-600",
   };
   return (
-    <div className="rounded-2xl border bg-white p-4">
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
       <div className="flex items-center gap-2 text-xs text-white/60 mb-2">
         <div className={cn("h-6 w-6 rounded-md bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
           <Icon className="h-3.5 w-3.5" />
@@ -482,7 +482,7 @@ function DialogShell({ title, icon: Icon, onClose, children, footer, tone = "sla
   };
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-lg bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-9 w-9 rounded-lg bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
@@ -525,7 +525,7 @@ function AbrirDialog({ onClose, onDone }: { onClose: () => void; onDone: () => v
   return (
     <DialogShell title="Abrir caixa" icon={Unlock} tone="emerald" onClose={onClose}
       footer={<>
-        <button onClick={onClose} className="h-10 px-4 rounded-lg border bg-white text-sm">Cancelar</button>
+        <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
           className="h-10 px-5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold disabled:opacity-60">
           {saving ? "Abrindo…" : "Abrir caixa"}
@@ -536,7 +536,7 @@ function AbrirDialog({ onClose, onDone }: { onClose: () => void; onDone: () => v
         <div className="mt-1 relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">R$</span>
           <input autoFocus value={amount} onChange={e => setAmount(e.target.value)} inputMode="decimal" placeholder="0,00"
-            className="w-full h-12 pl-10 pr-3 rounded-lg border bg-white text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            className="w-full h-12 pl-10 pr-3 rounded-lg border border-white/10 bg-white/5 text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500" />
         </div>
       </div>
       <div>
@@ -579,7 +579,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
   return (
     <DialogShell title="Novo lançamento" icon={Plus} onClose={onClose}
       footer={<>
-        <button onClick={onClose} className="h-10 px-4 rounded-lg border bg-white text-sm">Cancelar</button>
+        <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
           className="h-10 px-5 rounded-lg bg-white text-black text-sm font-semibold disabled:opacity-60">
           {saving ? "Salvando…" : "Registrar"}
@@ -624,7 +624,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
         <div className="mt-1 relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">R$</span>
           <input autoFocus value={amount} onChange={e => setAmount(e.target.value)} inputMode="decimal" placeholder="0,00"
-            className="w-full h-12 pl-10 pr-3 rounded-lg border bg-white text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-slate-900" />
+            className="w-full h-12 pl-10 pr-3 rounded-lg border border-white/10 bg-white/5 text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-slate-900" />
         </div>
       </div>
       <div>
@@ -657,7 +657,7 @@ function FecharDialog({ session, expected, onClose, onDone }:
   return (
     <DialogShell title="Fechar caixa" icon={Lock} tone="rose" onClose={onClose}
       footer={<>
-        <button onClick={onClose} className="h-10 px-4 rounded-lg border bg-white text-sm">Cancelar</button>
+        <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
           className="h-10 px-5 rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 text-white text-sm font-semibold disabled:opacity-60">
           {saving ? "Fechando…" : "Confirmar fechamento"}
@@ -672,7 +672,7 @@ function FecharDialog({ session, expected, onClose, onDone }:
         <div className="mt-1 relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">R$</span>
           <input autoFocus value={counted} onChange={e => setCounted(e.target.value)} inputMode="decimal" placeholder="0,00"
-            className="w-full h-12 pl-10 pr-3 rounded-lg border bg-white text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            className="w-full h-12 pl-10 pr-3 rounded-lg border border-white/10 bg-white/5 text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-rose-500" />
         </div>
       </div>
       {counted && (
@@ -699,7 +699,7 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
   { session: SessionRow; movs: MovementRow[]; onClose: () => void; onPrint: () => void; onCsv: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-2xl bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-white">Sessão de {new Date(session.opened_at).toLocaleDateString("pt-BR")}</h3>
@@ -744,7 +744,7 @@ function Mini({ label, value, tone = "slate" }: { label: string; value: string; 
     slate: "text-white", emerald: "text-emerald-700", sky: "text-sky-700", rose: "text-rose-700",
   };
   return (
-    <div className="rounded-lg bg-white border p-2">
+    <div className="rounded-lg bg-white/5 border border-white/10 p-2">
       <div className="text-[10px] uppercase tracking-wide text-white/60">{label}</div>
       <div className={cn("text-sm font-bold tabular-nums", tones[tone])}>{value}</div>
     </div>

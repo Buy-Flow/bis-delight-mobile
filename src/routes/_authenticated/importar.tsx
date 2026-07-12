@@ -373,7 +373,7 @@ function ImportarPage() {
             </div>
           </div>
           <button onClick={downloadTemplate}
-            className="h-10 px-4 rounded-lg border bg-white hover:bg-white/10 text-sm flex items-center gap-2">
+            className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-sm flex items-center gap-2">
             <Download className="h-4 w-4" /> Baixar modelo CSV
           </button>
         </div>
@@ -426,7 +426,7 @@ function ImportarPage() {
 
             {/* Panels */}
             {tab === "upload" && (
-              <div className="rounded-2xl border-2 border-dashed bg-white p-10 text-center"
+              <div className="rounded-2xl border-2 border-dashed border-white/15 bg-white/5 p-10 text-center"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) onFile(f); }}>
                 <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls,.tsv" className="hidden"
@@ -445,7 +445,7 @@ function ImportarPage() {
             )}
 
             {tab === "text" && (
-              <div className="rounded-2xl border bg-white p-5 space-y-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-3">
                 <label className="text-sm font-medium text-white/80">Cole CSV ou JSON</label>
                 <textarea value={textInput} onChange={(e) => setTextInput(e.target.value)} rows={12}
                   placeholder={`name,category,description,price\nAçaí 500ml,Açaí,Cremoso,22.90\n\n— ou JSON —\n[{"name":"Açaí","category":"Açaí","price":22.9}]`}
@@ -460,7 +460,7 @@ function ImportarPage() {
             )}
 
             {tab === "ai" && (
-              <div className="rounded-2xl border bg-white p-5 space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
                 <div className="rounded-lg bg-gradient-to-r from-fuchsia-50 to-violet-50 border border-fuchsia-100 p-3 text-sm text-white/80 flex items-start gap-2">
                   <Sparkles className="h-4 w-4 text-fuchsia-600 mt-0.5" />
                   <div>
@@ -522,7 +522,7 @@ function ImportarPage() {
         )}
 
         {step === 2 && (
-          <div className="rounded-2xl border bg-white p-5 space-y-4">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-semibold text-white">Mapear colunas</h2>
@@ -542,7 +542,7 @@ function ImportarPage() {
                     </div>
                   </div>
                   <select value={mapping[f.key]} onChange={(e) => setMapping({ ...mapping, [f.key]: e.target.value })}
-                    className="flex-1 h-10 rounded-lg border bg-white px-3 text-sm">
+                    className="flex-1 h-10 rounded-lg border border-white/10 bg-white/5 px-3 text-sm">
                     <option value="">— não mapear —</option>
                     {headers.map((h) => <option key={h} value={h}>{h}</option>)}
                   </select>
@@ -550,7 +550,7 @@ function ImportarPage() {
               ))}
             </div>
 
-            <div className="rounded-xl border bg-white/5 overflow-auto">
+            <div className="rounded-xl border border-white/10 bg-white/5/5 overflow-auto">
               <table className="w-full text-xs">
                 <thead className="bg-white/10 text-white/70">
                   <tr>{headers.map((h) => <th key={h} className="p-2 text-left">{h}</th>)}</tr>
@@ -585,7 +585,7 @@ function ImportarPage() {
               <Stat label="Categorias" value={stats.cats} tone="slate" />
             </div>
 
-            <div className="rounded-2xl border bg-white overflow-hidden">
+            <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="p-4 border-b flex flex-wrap items-center justify-between gap-2">
                 <div className="text-sm text-white/70 flex items-center gap-2">
                   <button onClick={() => bulkToggle("all")} className="text-xs px-2 py-1 rounded border hover:bg-white/10">Selecionar todos</button>
@@ -647,7 +647,7 @@ function ImportarPage() {
             </div>
 
             <div className="sticky bottom-4">
-              <div className="rounded-2xl border bg-white shadow-lg p-4 flex flex-wrap items-center gap-3 justify-between">
+              <div className="rounded-2xl border border-white/10 bg-white/5 shadow-lg p-4 flex flex-wrap items-center gap-3 justify-between">
                 <div className="text-sm text-white/70">
                   {progress ? (
                     <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />
@@ -676,7 +676,7 @@ function Stat({ label, value, tone = "slate" }: { label: string; value: number; 
     rose: "text-rose-700", indigo: "text-indigo-700",
   };
   return (
-    <div className="rounded-xl border bg-white p-3">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
       <div className="text-xs text-white/60">{label}</div>
       <div className={cn("text-xl font-bold tabular-nums", tones[tone])}>{value}</div>
     </div>
@@ -686,6 +686,6 @@ function Stat({ label, value, tone = "slate" }: { label: string; value: number; 
 function Cell({ val, onChange, placeholder }: { val: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input value={val} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-      className="w-full h-8 rounded border px-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-slate-900" />
+      className="w-full h-8 rounded border border-white/15 px-2 text-xs bg-black/30 text-white focus:outline-none focus:ring-1 focus:ring-slate-900" />
   );
 }
