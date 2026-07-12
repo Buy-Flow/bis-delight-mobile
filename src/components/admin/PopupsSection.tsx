@@ -454,12 +454,14 @@ function PopupEditor({
   onChange,
   onCancel,
   onSave,
+  onSaveAsTemplate,
   saving,
 }: {
   draft: Draft;
   onChange: (d: Draft) => void;
   onCancel: () => void;
   onSave: () => void;
+  onSaveAsTemplate?: () => void;
   saving: boolean;
 }) {
   const update = (patch: Partial<Draft>) => onChange({ ...draft, ...patch });
