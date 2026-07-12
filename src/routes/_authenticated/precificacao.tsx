@@ -152,7 +152,7 @@ function PrecificacaoPage() {
         )
         .order("category", { ascending: true })
         .order("name", { ascending: true }),
-      supabase.from("site_settings").select("*").eq("id", 1).maybeSingle(),
+      supabase.from("site_settings").select("id,pricing_card_fee_pct,pricing_tax_pct,pricing_platform_fee_pct,pricing_fixed_cost_monthly,pricing_expected_sales_monthly").eq("id", 1).maybeSingle(),
     ]);
     if (prodRes.error) toast.error("Erro ao carregar produtos: " + prodRes.error.message);
     else setProducts((prodRes.data ?? []) as ProductRow[]);
