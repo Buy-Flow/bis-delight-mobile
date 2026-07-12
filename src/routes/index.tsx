@@ -463,6 +463,7 @@ function Content() {
         </div>
 
         {/* Categories under search */}
+        <section id="menu-section">
         <div
           className="-mx-4 mb-2"
           // Captura a posição de rolagem ANTES do click, pois o browser
@@ -503,6 +504,8 @@ function Content() {
                 </div>
               ))}
         </div>
+        </section>
+
 
 
         {/* Paginação — só na aba "Tudo" e sem busca ativa */}
