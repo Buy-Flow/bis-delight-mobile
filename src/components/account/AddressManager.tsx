@@ -219,6 +219,11 @@ function AddressForm({
   const [reference, setReference] = useState(initial?.reference ?? "");
   const [isDefault, setIsDefault] = useState(initial?.is_default ?? false);
   const [saving, setSaving] = useState(false);
+  const [lat, setLat] = useState<number | null>(initial?.lat ?? null);
+  const [lng, setLng] = useState<number | null>(initial?.lng ?? null);
+  const [pinned, setPinned] = useState<boolean>(initial?.lat != null && initial?.lng != null);
+  const [mapOpen, setMapOpen] = useState(false);
+  const { data: settings } = useSiteSettings();
 
   const submit = async () => {
     if (!street.trim()) {
@@ -236,17 +241,18 @@ function AddressForm({
     const fullAddress = joinAddress({ street, number, neighborhood, city });
     setSaving(true);
     try {
-      let lat: number | null = initial?.lat ?? null;
-      let lng: number | null = initial?.lng ?? null;
-      if (!initial || fullAddress !== initial.address) {
+      let finalLat: number | null = lat;
+      let finalLng: number | null = lng;
+      // Only fall back to text-based geocoding if the user never pinned on the map
+      if (!pinned && (!initial || fullAddress !== initial.address)) {
         try {
           const geo = await geocodeAddress(fullAddress);
           if (geo) {
-            lat = geo.lat;
-            lng = geo.lng;
+            finalLat = geo.lat;
+            finalLng = geo.lng;
           } else {
-            lat = null;
-            lng = null;
+            finalLat = null;
+            finalLng = null;
           }
         } catch {
           /* ignore */
@@ -256,8 +262,8 @@ function AddressForm({
         label: label.trim() || "Casa",
         address: fullAddress,
         reference: reference.trim() || null,
-        lat,
-        lng,
+        lat: finalLat,
+        lng: finalLng,
         is_default: isDefault,
       });
     } catch (err) {
