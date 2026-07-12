@@ -455,6 +455,7 @@ export type Database = {
           id: string
           params: Json
           result: Json | null
+          reverted_at: string | null
           status: string
           target_id: string | null
           target_table: string | null
@@ -467,6 +468,7 @@ export type Database = {
           id?: string
           params?: Json
           result?: Json | null
+          reverted_at?: string | null
           status?: string
           target_id?: string | null
           target_table?: string | null
@@ -479,6 +481,7 @@ export type Database = {
           id?: string
           params?: Json
           result?: Json | null
+          reverted_at?: string | null
           status?: string
           target_id?: string | null
           target_table?: string | null

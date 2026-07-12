@@ -1,0 +1,1 @@
+ALTER TABLE public.copilot_actions ADD COLUMN IF NOT EXISTS reverted_at TIMESTAMPTZ;
