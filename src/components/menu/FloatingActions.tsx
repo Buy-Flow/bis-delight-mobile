@@ -34,7 +34,7 @@ export function FloatingActions() {
   return (
     <>
       {/* WhatsApp — agora à esquerda */}
-      <div className="fixed left-4 z-30 md:bottom-4" style={bottomStyle}>
+      <div className="fixed left-4 z-[60] md:bottom-4" style={bottomStyle}>
         <a
           href={wa}
           target="_blank"
@@ -50,7 +50,7 @@ export function FloatingActions() {
 
       {/* Ver Cardápio — à direita, some quando cardápio está em tela */}
       <div
-        className={`fixed right-4 z-30 md:bottom-4 transition-all duration-300 ${
+        className={`fixed right-4 z-[60] md:bottom-4 transition-all duration-300 ${
           showMenuBtn ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         }`}
         style={bottomStyle}
