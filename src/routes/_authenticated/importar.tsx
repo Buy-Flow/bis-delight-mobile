@@ -359,27 +359,27 @@ function ImportarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white pb-24">
+    <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white pb-24">
       {/* Header */}
-      <div className="border-b bg-white/80 backdrop-blur sticky top-0 z-20">
+      <div className="border-b bg-black/40 backdrop-blur-md border-white/10 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-wrap items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-fuchsia-500 to-violet-600 grid place-items-center text-white">
               <FileDown className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-slate-900">Importar cardápio</h1>
-              <p className="text-xs md:text-sm text-slate-500">Planilha, texto ou uma foto do cardápio — a IA extrai tudo pra você.</p>
+              <h1 className="text-xl md:text-2xl font-bold text-white">Importar cardápio</h1>
+              <p className="text-xs md:text-sm text-white/60">Planilha, texto ou uma foto do cardápio — a IA extrai tudo pra você.</p>
             </div>
           </div>
           <button onClick={downloadTemplate}
-            className="h-10 px-4 rounded-lg border bg-white hover:bg-slate-50 text-sm flex items-center gap-2">
+            className="h-10 px-4 rounded-lg border bg-white hover:bg-white/10 text-sm flex items-center gap-2">
             <Download className="h-4 w-4" /> Baixar modelo CSV
           </button>
         </div>
 
         {/* Stepper */}
-        <div className="max-w-7xl mx-auto px-4 md:px-8 pb-3 flex items-center gap-2 text-xs text-slate-600 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pb-3 flex items-center gap-2 text-xs text-white/70 overflow-x-auto">
           {[
             { n: 1, label: "Fonte" },
             { n: 2, label: "Mapear colunas" },
@@ -387,13 +387,13 @@ function ImportarPage() {
           ].map((s, i) => (
             <div key={s.n} className="flex items-center gap-2">
               <div className={cn("h-6 w-6 rounded-full grid place-items-center text-[11px] font-semibold",
-                step === s.n ? "bg-slate-900 text-white"
+                step === s.n ? "bg-white text-black"
                   : step > s.n ? "bg-emerald-500 text-white"
-                  : "bg-slate-200 text-slate-500")}>
+                  : "bg-white/15 text-white/60")}>
                 {step > s.n ? <Check className="h-3.5 w-3.5" /> : s.n}
               </div>
-              <span className={cn(step === s.n ? "font-semibold text-slate-900" : "")}>{s.label}</span>
-              {i < 2 && <ArrowRight className="h-3.5 w-3.5 text-slate-300" />}
+              <span className={cn(step === s.n ? "font-semibold text-white" : "")}>{s.label}</span>
+              {i < 2 && <ArrowRight className="h-3.5 w-3.5 text-white/30" />}
             </div>
           ))}
         </div>
@@ -413,12 +413,12 @@ function ImportarPage() {
                 return (
                   <button key={t.id} onClick={() => setTab(t.id as any)}
                     className={cn("p-5 rounded-2xl border text-left transition group",
-                      active ? "border-slate-900 bg-white shadow-md" : "border-slate-200 bg-white hover:border-slate-400")}>
+                      active ? "border-white bg-white shadow-md" : "border-white/10 bg-white hover:border-white/25")}>
                     <div className={cn("h-10 w-10 rounded-xl bg-gradient-to-br text-white grid place-items-center mb-3", t.color)}>
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div className="font-semibold text-slate-900">{t.label}</div>
-                    <div className="text-xs text-slate-500">{t.desc}</div>
+                    <div className="font-semibold text-white">{t.label}</div>
+                    <div className="text-xs text-white/60">{t.desc}</div>
                   </button>
                 );
               })}
@@ -434,25 +434,25 @@ function ImportarPage() {
                 <div className="h-14 w-14 rounded-full bg-emerald-50 grid place-items-center mx-auto mb-3">
                   <UploadCloud className="h-7 w-7 text-emerald-600" />
                 </div>
-                <div className="font-semibold text-slate-900">Arraste o arquivo aqui</div>
-                <div className="text-sm text-slate-500 mb-4">ou</div>
+                <div className="font-semibold text-white">Arraste o arquivo aqui</div>
+                <div className="text-sm text-white/60 mb-4">ou</div>
                 <button onClick={() => fileRef.current?.click()} disabled={busy}
-                  className="h-11 px-6 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-60">
+                  className="h-11 px-6 rounded-lg bg-white text-black text-sm font-semibold disabled:opacity-60">
                   {busy ? "Lendo…" : "Escolher arquivo"}
                 </button>
-                <div className="text-xs text-slate-400 mt-4">CSV, XLSX, XLS ou TSV — até 20MB</div>
+                <div className="text-xs text-white/40 mt-4">CSV, XLSX, XLS ou TSV — até 20MB</div>
               </div>
             )}
 
             {tab === "text" && (
               <div className="rounded-2xl border bg-white p-5 space-y-3">
-                <label className="text-sm font-medium text-slate-700">Cole CSV ou JSON</label>
+                <label className="text-sm font-medium text-white/80">Cole CSV ou JSON</label>
                 <textarea value={textInput} onChange={(e) => setTextInput(e.target.value)} rows={12}
                   placeholder={`name,category,description,price\nAçaí 500ml,Açaí,Cremoso,22.90\n\n— ou JSON —\n[{"name":"Açaí","category":"Açaí","price":22.9}]`}
                   className="w-full rounded-lg border p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-slate-900" />
                 <div className="flex justify-end">
                   <button onClick={onTextParse}
-                    className="h-10 px-5 rounded-lg bg-slate-900 text-white text-sm font-semibold flex items-center gap-2">
+                    className="h-10 px-5 rounded-lg bg-white text-black text-sm font-semibold flex items-center gap-2">
                     Analisar <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -461,7 +461,7 @@ function ImportarPage() {
 
             {tab === "ai" && (
               <div className="rounded-2xl border bg-white p-5 space-y-4">
-                <div className="rounded-lg bg-gradient-to-r from-fuchsia-50 to-violet-50 border border-fuchsia-100 p-3 text-sm text-slate-700 flex items-start gap-2">
+                <div className="rounded-lg bg-gradient-to-r from-fuchsia-50 to-violet-50 border border-fuchsia-100 p-3 text-sm text-white/80 flex items-start gap-2">
                   <Sparkles className="h-4 w-4 text-fuchsia-600 mt-0.5" />
                   <div>
                     Envie fotos do cardápio (até 6) ou um PDF exportado como imagem. A IA identifica produtos, preços e categorias.
@@ -473,10 +473,10 @@ function ImportarPage() {
                   onChange={(e) => onAiFiles(e.target.files)} />
                 {aiPreviews.length === 0 ? (
                   <button onClick={() => aiFileRef.current?.click()}
-                    className="w-full border-2 border-dashed rounded-xl p-10 text-center hover:bg-slate-50">
-                    <ImageIcon className="h-10 w-10 mx-auto text-slate-400 mb-2" />
-                    <div className="font-semibold text-slate-900">Escolher fotos do cardápio</div>
-                    <div className="text-xs text-slate-500">JPG, PNG — até 6 imagens</div>
+                    className="w-full border-2 border-dashed rounded-xl p-10 text-center hover:bg-white/10">
+                    <ImageIcon className="h-10 w-10 mx-auto text-white/40 mb-2" />
+                    <div className="font-semibold text-white">Escolher fotos do cardápio</div>
+                    <div className="text-xs text-white/60">JPG, PNG — até 6 imagens</div>
                   </button>
                 ) : (
                   <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -490,21 +490,21 @@ function ImportarPage() {
                       </div>
                     ))}
                     <button onClick={() => aiFileRef.current?.click()}
-                      className="aspect-square rounded-lg border-2 border-dashed grid place-items-center text-slate-400 hover:bg-slate-50">
+                      className="aspect-square rounded-lg border-2 border-dashed grid place-items-center text-white/40 hover:bg-white/10">
                       <Plus className="h-6 w-6" />
                     </button>
                   </div>
                 )}
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700">Ou cole o texto do cardápio (opcional)</label>
+                  <label className="text-sm font-medium text-white/80">Ou cole o texto do cardápio (opcional)</label>
                   <textarea value={aiText} onChange={(e) => setAiText(e.target.value)} rows={4}
                     placeholder="Ex: Açaí 500ml - R$ 22,90; Milk Shake Ninho - R$ 18,00…"
                     className="mt-1 w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500" />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700">Dica pra IA (opcional)</label>
+                  <label className="text-sm font-medium text-white/80">Dica pra IA (opcional)</label>
                   <input value={aiHint} onChange={(e) => setAiHint(e.target.value)}
                     placeholder="Ex: só considere lanches, ignore bebidas."
                     className="mt-1 w-full h-10 rounded-lg border px-3 text-sm" />
@@ -525,11 +525,11 @@ function ImportarPage() {
           <div className="rounded-2xl border bg-white p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-semibold text-slate-900">Mapear colunas</h2>
-                <p className="text-xs text-slate-500">{rawRows.length} linhas · associe cada campo à coluna correta.</p>
+                <h2 className="font-semibold text-white">Mapear colunas</h2>
+                <p className="text-xs text-white/60">{rawRows.length} linhas · associe cada campo à coluna correta.</p>
               </div>
               <button onClick={() => { setStep(1); setRawRows([]); setHeaders([]); }}
-                className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                className="text-xs text-white/60 hover:text-white flex items-center gap-1">
                 <RefreshCcw className="h-3.5 w-3.5" /> Trocar arquivo
               </button>
             </div>
@@ -537,7 +537,7 @@ function ImportarPage() {
               {FIELDS.map((f) => (
                 <div key={f.key} className="flex items-center gap-3">
                   <div className="w-32 shrink-0">
-                    <div className="text-sm font-medium text-slate-800">
+                    <div className="text-sm font-medium text-white/90">
                       {f.label}{f.required && <span className="text-rose-500"> *</span>}
                     </div>
                   </div>
@@ -550,25 +550,25 @@ function ImportarPage() {
               ))}
             </div>
 
-            <div className="rounded-xl border bg-slate-50 overflow-auto">
+            <div className="rounded-xl border bg-white/5 overflow-auto">
               <table className="w-full text-xs">
-                <thead className="bg-slate-100 text-slate-600">
+                <thead className="bg-white/10 text-white/70">
                   <tr>{headers.map((h) => <th key={h} className="p-2 text-left">{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {rawRows.slice(0, 3).map((r, i) => (
                     <tr key={i} className="border-t">
-                      {headers.map((h) => <td key={h} className="p-2 text-slate-700 truncate max-w-[200px]">{String(r[h] ?? "")}</td>)}
+                      {headers.map((h) => <td key={h} className="p-2 text-white/80 truncate max-w-[200px]">{String(r[h] ?? "")}</td>)}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div className="text-[10px] text-slate-400 p-2">Prévia das 3 primeiras linhas</div>
+              <div className="text-[10px] text-white/40 p-2">Prévia das 3 primeiras linhas</div>
             </div>
 
             <div className="flex justify-end">
               <button onClick={confirmMapping}
-                className="h-11 px-5 rounded-lg bg-slate-900 text-white text-sm font-semibold flex items-center gap-2">
+                className="h-11 px-5 rounded-lg bg-white text-black text-sm font-semibold flex items-center gap-2">
                 Continuar <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -587,19 +587,19 @@ function ImportarPage() {
 
             <div className="rounded-2xl border bg-white overflow-hidden">
               <div className="p-4 border-b flex flex-wrap items-center justify-between gap-2">
-                <div className="text-sm text-slate-600 flex items-center gap-2">
-                  <button onClick={() => bulkToggle("all")} className="text-xs px-2 py-1 rounded border hover:bg-slate-50">Selecionar todos</button>
-                  <button onClick={() => bulkToggle("valid")} className="text-xs px-2 py-1 rounded border hover:bg-slate-50">Só válidos</button>
-                  <button onClick={() => bulkToggle("none")} className="text-xs px-2 py-1 rounded border hover:bg-slate-50">Nenhum</button>
-                  <button onClick={addBlank} className="text-xs px-2 py-1 rounded border hover:bg-slate-50 flex items-center gap-1"><Plus className="h-3 w-3" />Adicionar linha</button>
+                <div className="text-sm text-white/70 flex items-center gap-2">
+                  <button onClick={() => bulkToggle("all")} className="text-xs px-2 py-1 rounded border hover:bg-white/10">Selecionar todos</button>
+                  <button onClick={() => bulkToggle("valid")} className="text-xs px-2 py-1 rounded border hover:bg-white/10">Só válidos</button>
+                  <button onClick={() => bulkToggle("none")} className="text-xs px-2 py-1 rounded border hover:bg-white/10">Nenhum</button>
+                  <button onClick={addBlank} className="text-xs px-2 py-1 rounded border hover:bg-white/10 flex items-center gap-1"><Plus className="h-3 w-3" />Adicionar linha</button>
                 </div>
-                <button onClick={() => setStep(1)} className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1">
+                <button onClick={() => setStep(1)} className="text-xs text-white/60 hover:text-white flex items-center gap-1">
                   <RefreshCcw className="h-3.5 w-3.5" /> Recomeçar
                 </button>
               </div>
               <div className="overflow-x-auto max-h-[520px]">
                 <table className="w-full text-sm">
-                  <thead className="bg-slate-50 text-slate-600 text-xs sticky top-0">
+                  <thead className="bg-white/5 text-white/70 text-xs sticky top-0">
                     <tr>
                       <th className="p-2 w-10"></th>
                       <th className="p-2 text-left">Nome</th>
@@ -613,7 +613,7 @@ function ImportarPage() {
                   </thead>
                   <tbody>
                     {drafts.map((d) => (
-                      <tr key={d.id} className={cn("border-t hover:bg-slate-50", d._errors.length && "bg-rose-50/40")}>
+                      <tr key={d.id} className={cn("border-t hover:bg-white/10", d._errors.length && "bg-rose-50/40")}>
                         <td className="p-2 text-center">
                           <input type="checkbox" checked={d._include} disabled={d._errors.length > 0}
                             onChange={(e) => updateDraft(d.id, { _include: e.target.checked })} />
@@ -632,14 +632,14 @@ function ImportarPage() {
                           {d._errors.length > 0 && (
                             <span title={d._errors.join(", ")} className="inline-flex text-amber-500"><AlertTriangle className="h-4 w-4" /></span>
                           )}
-                          <button onClick={() => removeDraft(d.id)} className="ml-1 text-slate-400 hover:text-rose-600">
+                          <button onClick={() => removeDraft(d.id)} className="ml-1 text-white/40 hover:text-rose-600">
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </td>
                       </tr>
                     ))}
                     {!drafts.length && (
-                      <tr><td colSpan={8} className="p-10 text-center text-sm text-slate-400">Nada para revisar.</td></tr>
+                      <tr><td colSpan={8} className="p-10 text-center text-sm text-white/40">Nada para revisar.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -648,7 +648,7 @@ function ImportarPage() {
 
             <div className="sticky bottom-4">
               <div className="rounded-2xl border bg-white shadow-lg p-4 flex flex-wrap items-center gap-3 justify-between">
-                <div className="text-sm text-slate-600">
+                <div className="text-sm text-white/70">
                   {progress ? (
                     <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />
                       Importando {progress.done}/{progress.total}…</span>
@@ -672,12 +672,12 @@ function ImportarPage() {
 
 function Stat({ label, value, tone = "slate" }: { label: string; value: number; tone?: string }) {
   const tones: Record<string, string> = {
-    slate: "text-slate-900", emerald: "text-emerald-700",
+    slate: "text-white", emerald: "text-emerald-700",
     rose: "text-rose-700", indigo: "text-indigo-700",
   };
   return (
     <div className="rounded-xl border bg-white p-3">
-      <div className="text-xs text-slate-500">{label}</div>
+      <div className="text-xs text-white/60">{label}</div>
       <div className={cn("text-xl font-bold tabular-nums", tones[tone])}>{value}</div>
     </div>
   );
