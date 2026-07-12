@@ -246,7 +246,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
             {session ? (
               <>
                 <button onClick={() => setOpenDialog("mov")}
-                  className="h-10 px-4 rounded-lg bg-white text-black text-sm font-medium hover:bg-white/90 hover:text-black flex items-center gap-2">
+                  className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-medium flex items-center gap-2">
                   <Plus className="h-4 w-4" /> Lançamento
                 </button>
                 <button onClick={() => setOpenDialog("fechar")}
