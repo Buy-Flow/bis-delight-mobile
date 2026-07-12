@@ -59,7 +59,7 @@ export function FloatingActions() {
           type="button"
           onClick={scrollToMenu}
           aria-label="Ver cardápio"
-          className="flex items-center gap-1.5 rounded-full bg-neon-pink px-3 h-11 text-white font-bold shadow-2xl glow-pink touch-manipulation [-webkit-tap-highlight-color:transparent] transition-transform duration-100 ease-out active:scale-95"
+          className="flex items-center gap-1.5 rounded-full bg-neon-pink px-3 h-11 text-white font-bold shadow-2xl touch-manipulation [-webkit-tap-highlight-color:transparent] transition-transform duration-100 ease-out active:scale-95"
         >
           <UtensilsCrossed className="h-4 w-4" />
           <span className="text-[11px] uppercase tracking-wider">Ver cardápio</span>
