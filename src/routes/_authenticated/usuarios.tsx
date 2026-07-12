@@ -892,3 +892,137 @@ function AuditDrawer({ rows, onClose }: { rows: AuditRow[]; onClose: () => void 
     </div>
   );
 }
+
+type InvitePayload = { email: string; fullName?: string; role?: Role; note?: string };
+
+function InviteDialog({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void;
+  onSubmit: (p: InvitePayload) => Promise<void> | void;
+}) {
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<Role>("staff");
+  const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSaving(true);
+    try {
+      await onSubmit({
+        email: email.trim(),
+        fullName: fullName.trim() || undefined,
+        role,
+        note: note.trim() || undefined,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg overflow-hidden rounded-t-2xl border border-white/10 bg-slate-950 shadow-2xl sm:rounded-2xl"
+      >
+        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+            <UserPlus className="h-4 w-4" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-base font-bold text-white">Adicionar usuário</h2>
+            <p className="text-[11px] text-white/50">Envia convite por email e atribui o papel escolhido.</p>
+          </div>
+          <button type="button" onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white hover:bg-white/10">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-5 py-5">
+          <div>
+            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-white/60">Email *</label>
+            <input
+              type="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="funcionario@exemplo.com"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-white/60">Nome (opcional)</label>
+            <input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Nome completo"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-white/60">Papel inicial</label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {ALL_ROLES.filter((r) => r !== "user").map((r) => {
+                const m = ROLE_META[r];
+                const Icon = m.icon;
+                const active = role === r;
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border p-2.5 text-left transition",
+                      active ? "border-white/30 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
+                    )}
+                  >
+                    <div className={cn("grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br text-white", m.color)}>
+                      <Icon className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs font-semibold text-white">{m.short}</div>
+                      <div className="truncate text-[10px] text-white/50">{m.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-white/60">Nota (opcional)</label>
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ex.: contratação do turno da noite"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-white/10 bg-white/[0.02] px-5 py-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white hover:bg-white/10"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={saving || !email.trim()}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-400/40 bg-gradient-to-br from-indigo-500 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <UserPlus className="h-3.5 w-3.5" /> {saving ? "Enviando…" : "Enviar convite"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
