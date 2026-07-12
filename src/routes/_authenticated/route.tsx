@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { ProfileCompletionBanner } from "@/components/ProfileCompletionBanner";
 
 const ADMIN_PREFIXES = [
   "/admin",
@@ -44,7 +45,12 @@ function AuthenticatedLayout() {
       </AdminShell>
     );
   }
-  return <Outlet />;
+  return (
+    <>
+      <ProfileCompletionBanner />
+      <Outlet />
+    </>
+  );
 }
 
 export const Route = createFileRoute("/_authenticated")({
