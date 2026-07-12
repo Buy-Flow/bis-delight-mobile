@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type PopupFrequency = "session" | "daily" | "always";
+export type PopupKind = "today" | "weekly" | "template";
 export type PopupAudience =
   | "all"
   | "new_customer"
@@ -16,6 +17,7 @@ export type SitePopup = {
   name: string;
   active: boolean;
   priority: number;
+  kind: PopupKind;
   title: string;
   body: string;
   image_url: string;
