@@ -694,6 +694,27 @@ export function CheckoutSheet() {
                   );
                 })()}
 
+                <button
+                  type="button"
+                  onClick={() => setMapPickerOpen(true)}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2.5 text-[12px] font-bold transition",
+                    preGeocoded
+                      ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
+                      : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <Route className="h-4 w-4" />
+                    {preGeocoded ? "Pin ajustado no mapa" : "Ajustar pin no mapa"}
+                  </span>
+                  <span className="text-[10px] font-normal opacity-70">
+                    {preGeocoded
+                      ? `${preGeocoded.lat.toFixed(4)}, ${preGeocoded.lng.toFixed(4)}`
+                      : "endereço exato"}
+                  </span>
+                </button>
+
                 <IconField
                   icon={MapPin}
                   label="Referência"
