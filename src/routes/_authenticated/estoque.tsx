@@ -186,7 +186,7 @@ function EstoquePage() {
       .filter((p) => {
         if (filter === "all") return true;
         const s = p.stock;
-        if (s === null) return filter === "all";
+        if (s === null) return false;
         if (filter === "out") return s <= 0;
         if (filter === "low") return s > 0 && s <= p.low_stock_threshold;
         if (filter === "ok") return s > p.low_stock_threshold;
