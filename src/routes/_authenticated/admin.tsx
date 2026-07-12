@@ -123,7 +123,7 @@ import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["dashboard", "products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings"] as const;
+    const validTabs = ["dashboard", "products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings", "announcement", "popup", "coupons"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
@@ -139,7 +139,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "dashboard" | "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings";
+type Tab = "dashboard" | "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings" | "announcement" | "popup" | "coupons";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -193,6 +193,9 @@ function AdminPage() {
         {tab === "promos" && <PromosTab />}
         {tab === "loyalty" && <LoyaltyTiersTab />}
         {tab === "settings" && <SettingsTab />}
+        {tab === "announcement" && <SettingsTab initialSection="announcement" hideNav />}
+        {tab === "popup" && <SettingsTab initialSection="popup" hideNav />}
+        {tab === "coupons" && <SettingsTab initialSection="coupons" hideNav />}
       </main>
     </div>
   );
@@ -2931,7 +2934,7 @@ function NewsTab() {
   );
 }
 
-function SettingsTab({ initialSection = "identity" }: { initialSection?: SettingsSection } = {}) {
+function SettingsTab({ initialSection = "identity", hideNav = false }: { initialSection?: SettingsSection; hideNav?: boolean } = {}) {
   const { data } = useSiteSettings();
   const update = useUpdateSettings();
   const [s, setS] = useState<SiteSettings | null>(null);
@@ -3008,9 +3011,6 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
     { id: "delivery", label: "Entrega", icon: Truck },
     { id: "payment", label: "Pagamento", icon: CreditCard },
     { id: "social", label: "Redes sociais", icon: Globe },
-    { id: "announcement", label: "Anúncio", icon: Megaphone },
-    { id: "popup", label: "Pop-up", icon: Sparkles },
-    { id: "coupons", label: "Cupons", icon: Tag },
     { id: "appearance", label: "Aparência", icon: Palette },
   ];
 
@@ -3021,7 +3021,8 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
     <div className="pb-28">
 
       {/* Two-column layout */}
-      <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
+      <div className={cn("grid gap-5", !hideNav && "lg:grid-cols-[260px_1fr]")}>
+        {!hideNav && (<>
         {/* Section nav — desktop rail */}
         <aside className="hidden lg:block">
           <div className="sticky top-4 rounded-3xl border border-white/10 bg-white/[0.03] p-2">
@@ -3082,15 +3083,20 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
             );
           })}
         </div>
+        </>)}
+
+
 
         {/* Content panel */}
         <section className="min-w-0">
+          {!hideNav && (
           <div className="mb-3 flex items-center gap-2 lg:hidden">
             <activeSection.icon className="h-4 w-4 text-neon-pink" />
             <div className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
               {activeSection.label}
             </div>
           </div>
+          )}
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)] sm:p-6">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             {section === "identity" && <IdentitySection s={s} set={set} onLogo={uploadLogo} logoBusy={logoBusy} />}
