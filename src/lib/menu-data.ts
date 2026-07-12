@@ -844,7 +844,7 @@ export function useUpdateSettings() {
         tiktok: s.tiktok,
         announcement_text: s.announcementText,
         announcement_active: s.announcementActive,
-        pix_key: s.pixKey,
+        // pix_key is admin-restricted; set via RPC below
         payment_methods: s.paymentMethods,
         free_delivery_threshold: s.freeDeliveryThreshold,
         min_order: s.minOrder,
