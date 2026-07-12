@@ -3089,12 +3089,14 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
 
         {/* Content panel */}
         <section className="min-w-0">
+          {!hideNav && (
           <div className="mb-3 flex items-center gap-2 lg:hidden">
             <activeSection.icon className="h-4 w-4 text-neon-pink" />
             <div className="text-[11px] font-semibold uppercase tracking-widest text-white/50">
               {activeSection.label}
             </div>
           </div>
+          )}
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-4 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.6)] sm:p-6">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             {section === "identity" && <IdentitySection s={s} set={set} onLogo={uploadLogo} logoBusy={logoBusy} />}
