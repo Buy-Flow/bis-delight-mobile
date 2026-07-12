@@ -231,7 +231,13 @@ function DeliveriesPage() {
   };
 
   const setOrderStatus = async (orderId: string, next: string) => {
-    const patch: Record<string, unknown> = { status: next };
+    const patch: {
+      status: string;
+      preparing_at?: string;
+      dispatched_at?: string;
+      delivery_started_at?: string;
+      delivered_at?: string;
+    } = { status: next };
     const now = new Date().toISOString();
     if (next === "preparing") patch.preparing_at = now;
     if (next === "saiu_para_entrega") {
