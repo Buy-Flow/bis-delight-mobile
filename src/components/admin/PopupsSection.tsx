@@ -267,19 +267,26 @@ function PopupRow({
   onToggle,
   onDuplicate,
   onDelete,
+  onPublishToday,
+  onPublishWeekly,
 }: {
   popup: SitePopup;
   onEdit: () => void;
   onToggle: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onPublishToday: () => void;
+  onPublishWeekly: () => void;
 }) {
   const days = popup.days_of_week ?? [];
+  const isTemplate = popup.kind === "template";
   const daysLabel =
     days.length === 7
       ? "Todo dia"
       : days.length === 0
-        ? "Nenhum dia"
+        ? popup.kind === "today"
+          ? "Só hoje"
+          : "Nenhum dia"
         : days
             .slice()
             .sort()
@@ -297,9 +304,11 @@ function PopupRow({
     <div
       className={cn(
         "flex items-center gap-3 rounded-2xl border p-3",
-        popup.active
-          ? "border-white/10 bg-white/5"
-          : "border-white/5 bg-black/30 opacity-70",
+        isTemplate
+          ? "border-neon-cyan/20 bg-neon-cyan/5"
+          : popup.active
+            ? "border-white/10 bg-white/5"
+            : "border-white/5 bg-black/30 opacity-70",
       )}
     >
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40">
@@ -317,21 +326,27 @@ function PopupRow({
           <span
             className={cn(
               "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-              popup.active
-                ? "bg-neon-yellow/20 text-neon-yellow"
-                : "bg-white/10 text-white/50",
+              isTemplate
+                ? "bg-neon-cyan/20 text-neon-cyan"
+                : popup.active
+                  ? "bg-neon-yellow/20 text-neon-yellow"
+                  : "bg-white/10 text-white/50",
             )}
           >
-            {popup.active ? "Ativo" : "Pausado"}
+            {isTemplate ? "Modelo" : popup.active ? "Ativo" : "Pausado"}
           </span>
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-white/50">
-          <span className="inline-flex items-center gap-1">
-            <Calendar className="h-3 w-3" /> {daysLabel}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" /> {hourLabel}
-          </span>
+          {!isTemplate && (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> {daysLabel}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" /> {hourLabel}
+              </span>
+            </>
+          )}
           <span className="inline-flex items-center gap-1">
             <Users className="h-3 w-3" /> {audLabel}
           </span>
@@ -340,18 +355,42 @@ function PopupRow({
               prioridade {popup.priority}
             </span>
           )}
+          {isTemplate && (
+            <span className="text-[10px] italic text-white/40">não exibido — publique pra ativar</span>
+          )}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
-          aria-label={popup.active ? "Pausar" : "Ativar"}
-          title={popup.active ? "Pausar" : "Ativar"}
-        >
-          {popup.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-        </button>
+        {isTemplate ? (
+          <>
+            <button
+              type="button"
+              onClick={onPublishToday}
+              className="inline-flex items-center gap-1 rounded-lg border border-neon-yellow/50 bg-neon-yellow/10 px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-neon-yellow hover:bg-neon-yellow/20"
+              title="Publicar como pop-up de hoje"
+            >
+              <Rocket className="h-3 w-3" /> Hoje
+            </button>
+            <button
+              type="button"
+              onClick={onPublishWeekly}
+              className="inline-flex items-center gap-1 rounded-lg border border-neon-cyan/50 bg-neon-cyan/10 px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-neon-cyan hover:bg-neon-cyan/20"
+              title="Publicar na programação semanal"
+            >
+              <CalendarRange className="h-3 w-3" /> Semana
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
+            aria-label={popup.active ? "Pausar" : "Ativar"}
+            title={popup.active ? "Pausar" : "Ativar"}
+          >
+            {popup.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </button>
+        )}
         <button
           type="button"
           onClick={onDuplicate}
