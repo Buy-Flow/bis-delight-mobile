@@ -18,6 +18,7 @@ import {
   isWithinRadius,
 } from "@/lib/delivery-zone";
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
+import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star } from "lucide-react";
 
 type Mode = "entrega" | "retirada";
