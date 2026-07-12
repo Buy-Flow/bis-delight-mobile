@@ -80,9 +80,10 @@ type OrderItem = {
   name: string;
   quantity: number;
   unit_price: number;
-  
+  total_price: number;
   note: string | null;
 };
+
 
 type Tab = "salao" | "lista" | "config";
 
