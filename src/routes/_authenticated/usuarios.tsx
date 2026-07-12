@@ -595,12 +595,14 @@ function UserDrawer({
   onClose,
   onGrant,
   onRevoke,
+  onResend,
 }: {
   user: UserRow;
   isSelf: boolean;
   onClose: () => void;
   onGrant: (r: Role) => void;
   onRevoke: (r: Role) => void;
+  onResend?: () => void;
 }) {
   const topRole: Role = user.roles.includes("admin") ? "admin" : (user.roles[0] as Role) || "user";
   const meta = ROLE_META[topRole];
