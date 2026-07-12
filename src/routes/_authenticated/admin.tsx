@@ -2934,7 +2934,7 @@ function NewsTab() {
   );
 }
 
-function SettingsTab({ initialSection = "identity" }: { initialSection?: SettingsSection } = {}) {
+function SettingsTab({ initialSection = "identity", hideNav = false }: { initialSection?: SettingsSection; hideNav?: boolean } = {}) {
   const { data } = useSiteSettings();
   const update = useUpdateSettings();
   const [s, setS] = useState<SiteSettings | null>(null);
