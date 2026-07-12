@@ -1158,15 +1158,66 @@ function EditTableDialog({
               />
             </label>
           </div>
-          <label className="block text-[11px] text-white/60">
+          <div className="block text-[11px] text-white/60">
             Zona
-            <input
-              value={zone}
-              onChange={(e) => setZone(e.target.value)}
-              placeholder="Salão, Varanda, Balcão..."
-              className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
-            />
-          </label>
+            {!creatingZone ? (
+              <div className="mt-1 flex gap-2">
+                <select
+                  value={zone}
+                  onChange={(e) => setZone(e.target.value)}
+                  className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
+                >
+                  {zoneOptions.map((z) => (
+                    <option key={z} value={z} className="bg-[#120833]">
+                      {z}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreatingZone(true);
+                    setNewZone("");
+                  }}
+                  className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+                >
+                  + Nova
+                </button>
+              </div>
+            ) : (
+              <div className="mt-1 flex gap-2">
+                <input
+                  autoFocus
+                  value={newZone}
+                  onChange={(e) => setNewZone(e.target.value)}
+                  placeholder="Nome da nova zona"
+                  className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const v = newZone.trim();
+                    if (!v) {
+                      toast.error("Digite um nome");
+                      return;
+                    }
+                    setZone(v);
+                    setCreatingZone(false);
+                  }}
+                  className="shrink-0 rounded-lg bg-neon-pink/80 px-3 py-1.5 text-xs font-black text-white hover:bg-neon-pink"
+                >
+                  OK
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCreatingZone(false)}
+                  className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
+          </div>
           <label className="block text-[11px] text-white/60">
             Etiqueta (opcional)
             <input
