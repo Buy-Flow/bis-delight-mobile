@@ -311,7 +311,7 @@ function PrintCenterPage() {
 
   if (loading || !settings) {
     return (
-      <div className="min-h-screen bg-[oklch(0.09_0.05_300)] p-8 text-white">
+      <div className="min-h-screen bg-[#0c031f] p-8 text-white">
         <div className="mx-auto max-w-7xl">
           <div className="h-8 w-48 animate-pulse rounded bg-white/10" />
           <div className="mt-6 grid gap-3 md:grid-cols-4">
@@ -327,7 +327,7 @@ function PrintCenterPage() {
   const S = settings;
 
   return (
-    <div className="min-h-screen bg-[oklch(0.09_0.05_300)] text-white">
+    <div className="min-h-screen bg-[#0c031f] text-white">
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

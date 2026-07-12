@@ -251,7 +251,7 @@ function WaitersPage() {
   const podium = ranking.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[oklch(0.09_0.05_300)] text-white">
+    <div className="min-h-screen bg-[#0c031f] text-white">
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -780,7 +780,7 @@ function Dialog({
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div
         className={cn(
-          "relative m-0 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl border border-white/10 bg-[oklch(0.11_0.06_300)] p-5 shadow-2xl md:m-6 md:rounded-3xl",
+          "relative m-0 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl border border-white/10 bg-[#170a2e] p-5 shadow-2xl md:m-6 md:rounded-3xl",
           width,
         )}
       >
