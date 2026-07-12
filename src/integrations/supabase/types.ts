@@ -1155,6 +1155,57 @@ export type Database = {
         }
         Relationships: []
       }
+      product_recipes: {
+        Row: {
+          created_at: string
+          id: string
+          ingredient_id: string
+          notes: string | null
+          product_id: string
+          qty: number
+          sort_order: number
+          updated_at: string
+          waste_pct: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ingredient_id: string
+          notes?: string | null
+          product_id: string
+          qty: number
+          sort_order?: number
+          updated_at?: string
+          waste_pct?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ingredient_id?: string
+          notes?: string | null
+          product_id?: string
+          qty?: number
+          sort_order?: number
+          updated_at?: string
+          waste_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_recipes_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_recipes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_templates: {
         Row: {
           base_price: number
