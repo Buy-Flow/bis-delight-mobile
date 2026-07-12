@@ -54,6 +54,34 @@ function maskCpf(v: string): string {
   return out;
 }
 
+/** Máscara DD/MM/AAAA enquanto o usuário digita. */
+function maskBirthday(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  const dd = d.slice(0, 2);
+  const mm = d.slice(2, 4);
+  const yy = d.slice(4, 8);
+  let out = dd;
+  if (mm) out += "/" + mm;
+  if (yy) out += "/" + yy;
+  return out;
+}
+
+/** Converte DD/MM/AAAA → AAAA-MM-DD (ISO). Retorna null se inválida. */
+function birthdayToIso(v: string): string | null {
+  const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const dd = parseInt(m[1], 10);
+  const mm = parseInt(m[2], 10);
+  const yyyy = parseInt(m[3], 10);
+  if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
+  const dt = new Date(Date.UTC(yyyy, mm - 1, dd));
+  if (dt.getUTCFullYear() !== yyyy || dt.getUTCMonth() !== mm - 1 || dt.getUTCDate() !== dd) return null;
+  const today = new Date();
+  if (dt > today) return null;
+  if (yyyy < 1900) return null;
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
 /**
  * Valida CPF pelo algoritmo oficial dos dígitos verificadores.
  * Rejeita CPFs com todos dígitos iguais (111.111.111-11) e formatos inválidos.
