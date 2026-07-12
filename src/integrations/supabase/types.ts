@@ -1906,6 +1906,7 @@ export type Database = {
           image_pos_y: number
           image_scale: number
           image_url: string
+          kind: string
           link: string
           name: string
           priority: number
@@ -1930,6 +1931,7 @@ export type Database = {
           image_pos_y?: number
           image_scale?: number
           image_url?: string
+          kind?: string
           link?: string
           name?: string
           priority?: number
@@ -1954,6 +1956,7 @@ export type Database = {
           image_pos_y?: number
           image_scale?: number
           image_url?: string
+          kind?: string
           link?: string
           name?: string
           priority?: number

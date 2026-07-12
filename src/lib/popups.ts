@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type PopupFrequency = "session" | "daily" | "always";
+export type PopupKind = "today" | "weekly" | "template";
 export type PopupAudience =
   | "all"
   | "new_customer"
@@ -16,6 +17,7 @@ export type SitePopup = {
   name: string;
   active: boolean;
   priority: number;
+  kind: PopupKind;
   title: string;
   body: string;
   image_url: string;
@@ -48,11 +50,33 @@ export const AUDIENCE_LABELS: Record<PopupAudience, { label: string; hint: strin
 
 export const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-export function makeDefaultPopup(): Omit<SitePopup, "id" | "created_at" | "updated_at"> {
-  return {
-    name: "Novo pop-up",
-    active: true,
+export const KIND_LABELS: Record<PopupKind, { label: string; hint: string }> = {
+  today: { label: "Só hoje", hint: "Aparece hoje e some sozinho" },
+  weekly: { label: "Programado", hint: "Roda em dias e horários fixos" },
+  template: { label: "Modelo salvo", hint: "Rascunho pronto pra publicar" },
+};
+
+function todayRange() {
+  const s = new Date();
+  s.setHours(0, 0, 0, 0);
+  const e = new Date();
+  e.setHours(23, 59, 59, 999);
+  return { starts_at: s.toISOString(), ends_at: e.toISOString() };
+}
+
+export function makeDefaultPopup(
+  kind: PopupKind = "weekly",
+): Omit<SitePopup, "id" | "created_at" | "updated_at"> {
+  const base = {
+    name:
+      kind === "today"
+        ? "Pop-up de hoje"
+        : kind === "template"
+          ? "Novo modelo"
+          : "Novo pop-up",
+    active: kind !== "template",
     priority: 0,
+    kind,
     title: "",
     body: "",
     image_url: "",
@@ -61,14 +85,33 @@ export function makeDefaultPopup(): Omit<SitePopup, "id" | "created_at" | "updat
     image_scale: 1,
     cta: "Ver agora",
     link: "",
-    frequency: "session",
-    days_of_week: [0, 1, 2, 3, 4, 5, 6],
+    frequency: "session" as PopupFrequency,
+    days_of_week: kind === "weekly" ? [0, 1, 2, 3, 4, 5, 6] : [],
     start_hour: null,
     end_hour: null,
+    starts_at: null as string | null,
+    ends_at: null as string | null,
+    audience: "all" as PopupAudience,
+    audience_days: null,
+  };
+  if (kind === "today") Object.assign(base, todayRange());
+  return base;
+}
+
+type PopupDraftInsert = Omit<SitePopup, "id" | "created_at" | "updated_at">;
+
+export function promoteTemplateToToday(p: PopupDraftInsert): PopupDraftInsert {
+  return { ...p, kind: "today", active: true, ...todayRange(), days_of_week: [] };
+}
+
+export function promoteTemplateToWeekly(p: PopupDraftInsert): PopupDraftInsert {
+  return {
+    ...p,
+    kind: "weekly",
+    active: true,
     starts_at: null,
     ends_at: null,
-    audience: "all",
-    audience_days: null,
+    days_of_week: p.days_of_week?.length ? p.days_of_week : [0, 1, 2, 3, 4, 5, 6],
   };
 }
 
@@ -234,7 +277,7 @@ export function pickPopupToShow(
   now = new Date(),
 ): SitePopup | null {
   const eligible = popups
-    .filter((p) => p.active)
+    .filter((p) => p.active && p.kind !== "template")
     .filter((p) => p.title || p.body || p.image_url)
     .filter((p) => matchesTiming(p, now))
     .filter((p) => matchesAudience(p, ctx, now))

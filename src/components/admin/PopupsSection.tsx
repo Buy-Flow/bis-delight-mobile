@@ -12,11 +12,14 @@ import {
   ImagePlus,
   ImageOff,
   Package,
-  ChevronDown,
   Pencil,
   Calendar,
   Users,
   Clock,
+  Sun,
+  CalendarRange,
+  Bookmark,
+  Rocket,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -28,18 +31,28 @@ import {
   AUDIENCE_LABELS,
   WEEKDAY_LABELS,
   makeDefaultPopup,
+  promoteTemplateToToday,
+  promoteTemplateToWeekly,
   type PopupAudience,
   type PopupFrequency,
+  type PopupKind,
   type SitePopup,
 } from "@/lib/popups";
 
 type Draft = Omit<SitePopup, "created_at" | "updated_at">;
+
+const TAB_META: Record<PopupKind, { label: string; hint: string; icon: typeof Sun }> = {
+  today: { label: "Hoje", hint: "Publicados só para o dia de hoje", icon: Sun },
+  weekly: { label: "Programados", hint: "Rodam em dias fixos da semana", icon: CalendarRange },
+  template: { label: "Modelos salvos", hint: "Rascunhos prontos pra publicar depois", icon: Bookmark },
+};
 
 export function PopupsSection() {
   const [items, setItems] = useState<SitePopup[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<PopupKind>("today");
 
   const load = async () => {
     setLoading(true);
@@ -59,8 +72,16 @@ export function PopupsSection() {
     void load();
   }, []);
 
+  const counts = useMemo(() => {
+    const c: Record<PopupKind, number> = { today: 0, weekly: 0, template: 0 };
+    for (const p of items) c[p.kind] = (c[p.kind] ?? 0) + 1;
+    return c;
+  }, [items]);
+
+  const visible = useMemo(() => items.filter((p) => p.kind === tab), [items, tab]);
+
   const startNew = () => {
-    setEditing({ id: crypto.randomUUID(), ...makeDefaultPopup() });
+    setEditing({ id: crypto.randomUUID(), ...makeDefaultPopup(tab) });
   };
 
   const startEdit = (p: SitePopup) => {
@@ -69,6 +90,10 @@ export function PopupsSection() {
   };
 
   const toggleActive = async (p: SitePopup) => {
+    if (p.kind === "template") {
+      toast.error("Modelos ficam inativos. Use 'Publicar' pra ativar.");
+      return;
+    }
     const { error } = await supabase
       .from("site_popups")
       .update({ active: !p.active })
@@ -80,16 +105,26 @@ export function PopupsSection() {
     }
   };
 
-  const duplicate = async (p: SitePopup) => {
+  const duplicate = async (p: SitePopup, targetKind?: PopupKind) => {
     const { id: _id, created_at: _c, updated_at: _u, ...rest } = p;
-    const { error } = await supabase.from("site_popups").insert({
+    let payload: Omit<SitePopup, "id" | "created_at" | "updated_at"> = {
       ...rest,
       name: `${p.name} (cópia)`,
       active: false,
-    });
-    if (error) toast.error("Erro ao duplicar");
+    };
+    if (targetKind === "today") payload = { ...promoteTemplateToToday(payload), name: p.name };
+    else if (targetKind === "weekly") payload = { ...promoteTemplateToWeekly(payload), name: p.name };
+    const { error } = await supabase.from("site_popups").insert(payload);
+    if (error) toast.error("Erro ao publicar");
     else {
-      toast.success("Pop-up duplicado");
+      toast.success(
+        targetKind === "today"
+          ? "Publicado como pop-up de hoje"
+          : targetKind === "weekly"
+            ? "Publicado como programado"
+            : "Pop-up duplicado",
+      );
+      if (targetKind) setTab(targetKind);
       await load();
     }
   };
@@ -110,10 +145,11 @@ export function PopupsSection() {
     }
   };
 
-  const save = async () => {
+  const save = async (overrides?: Partial<Draft>) => {
     if (!editing) return;
+    const payloadDraft = overrides ? { ...editing, ...overrides } : editing;
     setSaving(true);
-    const { id, ...payload } = editing;
+    const { id, ...payload } = payloadDraft;
     const { error } = await supabase.from("site_popups").upsert({ id, ...payload });
     setSaving(false);
     if (error) {
@@ -121,9 +157,12 @@ export function PopupsSection() {
       return;
     }
     toast.success("Salvo");
+    setTab(payloadDraft.kind);
     setEditing(null);
     await load();
   };
+
+  const saveAsTemplate = () => save({ kind: "template", active: false });
 
   if (editing) {
     return (
@@ -131,42 +170,79 @@ export function PopupsSection() {
         draft={editing}
         onChange={setEditing}
         onCancel={() => setEditing(null)}
-        onSave={save}
+        onSave={() => save()}
+        onSaveAsTemplate={saveAsTemplate}
         saving={saving}
       />
     );
   }
 
+  const activeMeta = TAB_META[tab];
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-lg font-black">Pop-ups programados</h3>
-          <p className="text-xs text-white/50">
-            Crie vários pop-ups com regras de dia, horário e público-alvo.
-          </p>
+          <h3 className="font-display text-lg font-black">Pop-ups</h3>
+          <p className="text-xs text-white/50">{activeMeta.hint}</p>
         </div>
         <button
           type="button"
           onClick={startNew}
           className="inline-flex items-center gap-1.5 rounded-xl bg-neon-yellow px-3 py-2 text-xs font-black text-[oklch(0.15_0.10_305)] shadow hover:brightness-110"
         >
-          <Plus className="h-4 w-4" /> Novo pop-up
+          <Plus className="h-4 w-4" />
+          {tab === "today" ? "Novo pop-up de hoje" : tab === "weekly" ? "Novo programado" : "Novo modelo"}
         </button>
+      </div>
+
+      <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-white/10 bg-black/30 p-1.5">
+        {(Object.keys(TAB_META) as PopupKind[]).map((k) => {
+          const meta = TAB_META[k];
+          const Icon = meta.icon;
+          const active = tab === k;
+          return (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setTab(k)}
+              className={cn(
+                "flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-bold transition",
+                active
+                  ? "bg-neon-yellow text-[oklch(0.15_0.10_305)] shadow"
+                  : "text-white/70 hover:bg-white/5",
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span>{meta.label}</span>
+              <span
+                className={cn(
+                  "ml-0.5 rounded-full px-1.5 py-0.5 text-[10px]",
+                  active ? "bg-black/20 text-[oklch(0.15_0.10_305)]" : "bg-white/10 text-white/60",
+                )}
+              >
+                {counts[k]}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {loading ? (
         <div className="grid place-items-center py-10 text-white/50">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
-      ) : items.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/15 bg-black/30 p-8 text-center text-sm text-white/60">
-          Nenhum pop-up ainda. Clique em <span className="font-bold text-white">Novo pop-up</span>{" "}
-          pra criar o primeiro.
+          {tab === "today"
+            ? "Nenhum pop-up de hoje. Crie um ou publique um modelo salvo."
+            : tab === "weekly"
+              ? "Nenhum pop-up programado. Crie um pra rodar em dias fixos da semana."
+              : "Nenhum modelo salvo ainda. Modelos ficam guardados pra você publicar depois."}
         </div>
       ) : (
         <div className="space-y-2">
-          {items.map((p) => (
+          {visible.map((p) => (
             <PopupRow
               key={p.id}
               popup={p}
@@ -174,6 +250,8 @@ export function PopupsSection() {
               onToggle={() => toggleActive(p)}
               onDuplicate={() => duplicate(p)}
               onDelete={() => remove(p)}
+              onPublishToday={() => duplicate(p, "today")}
+              onPublishWeekly={() => duplicate(p, "weekly")}
             />
           ))}
         </div>
@@ -182,25 +260,33 @@ export function PopupsSection() {
   );
 }
 
+
 function PopupRow({
   popup,
   onEdit,
   onToggle,
   onDuplicate,
   onDelete,
+  onPublishToday,
+  onPublishWeekly,
 }: {
   popup: SitePopup;
   onEdit: () => void;
   onToggle: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onPublishToday: () => void;
+  onPublishWeekly: () => void;
 }) {
   const days = popup.days_of_week ?? [];
+  const isTemplate = popup.kind === "template";
   const daysLabel =
     days.length === 7
       ? "Todo dia"
       : days.length === 0
-        ? "Nenhum dia"
+        ? popup.kind === "today"
+          ? "Só hoje"
+          : "Nenhum dia"
         : days
             .slice()
             .sort()
@@ -218,9 +304,11 @@ function PopupRow({
     <div
       className={cn(
         "flex items-center gap-3 rounded-2xl border p-3",
-        popup.active
-          ? "border-white/10 bg-white/5"
-          : "border-white/5 bg-black/30 opacity-70",
+        isTemplate
+          ? "border-neon-cyan/20 bg-neon-cyan/5"
+          : popup.active
+            ? "border-white/10 bg-white/5"
+            : "border-white/5 bg-black/30 opacity-70",
       )}
     >
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40">
@@ -238,21 +326,27 @@ function PopupRow({
           <span
             className={cn(
               "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-              popup.active
-                ? "bg-neon-yellow/20 text-neon-yellow"
-                : "bg-white/10 text-white/50",
+              isTemplate
+                ? "bg-neon-cyan/20 text-neon-cyan"
+                : popup.active
+                  ? "bg-neon-yellow/20 text-neon-yellow"
+                  : "bg-white/10 text-white/50",
             )}
           >
-            {popup.active ? "Ativo" : "Pausado"}
+            {isTemplate ? "Modelo" : popup.active ? "Ativo" : "Pausado"}
           </span>
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-white/50">
-          <span className="inline-flex items-center gap-1">
-            <Calendar className="h-3 w-3" /> {daysLabel}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" /> {hourLabel}
-          </span>
+          {!isTemplate && (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> {daysLabel}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3 w-3" /> {hourLabel}
+              </span>
+            </>
+          )}
           <span className="inline-flex items-center gap-1">
             <Users className="h-3 w-3" /> {audLabel}
           </span>
@@ -261,18 +355,42 @@ function PopupRow({
               prioridade {popup.priority}
             </span>
           )}
+          {isTemplate && (
+            <span className="text-[10px] italic text-white/40">não exibido — publique pra ativar</span>
+          )}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
-          aria-label={popup.active ? "Pausar" : "Ativar"}
-          title={popup.active ? "Pausar" : "Ativar"}
-        >
-          {popup.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-        </button>
+        {isTemplate ? (
+          <>
+            <button
+              type="button"
+              onClick={onPublishToday}
+              className="inline-flex items-center gap-1 rounded-lg border border-neon-yellow/50 bg-neon-yellow/10 px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-neon-yellow hover:bg-neon-yellow/20"
+              title="Publicar como pop-up de hoje"
+            >
+              <Rocket className="h-3 w-3" /> Hoje
+            </button>
+            <button
+              type="button"
+              onClick={onPublishWeekly}
+              className="inline-flex items-center gap-1 rounded-lg border border-neon-cyan/50 bg-neon-cyan/10 px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-neon-cyan hover:bg-neon-cyan/20"
+              title="Publicar na programação semanal"
+            >
+              <CalendarRange className="h-3 w-3" /> Semana
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
+            aria-label={popup.active ? "Pausar" : "Ativar"}
+            title={popup.active ? "Pausar" : "Ativar"}
+          >
+            {popup.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </button>
+        )}
         <button
           type="button"
           onClick={onDuplicate}
@@ -336,12 +454,14 @@ function PopupEditor({
   onChange,
   onCancel,
   onSave,
+  onSaveAsTemplate,
   saving,
 }: {
   draft: Draft;
   onChange: (d: Draft) => void;
   onCancel: () => void;
   onSave: () => void;
+  onSaveAsTemplate?: () => void;
   saving: boolean;
 }) {
   const update = (patch: Partial<Draft>) => onChange({ ...draft, ...patch });
@@ -400,6 +520,17 @@ function PopupEditor({
           >
             Cancelar
           </button>
+          {onSaveAsTemplate && draft.kind !== "template" && (
+            <button
+              type="button"
+              onClick={onSaveAsTemplate}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-neon-cyan/50 bg-neon-cyan/10 px-3 py-2 text-xs font-black uppercase tracking-wider text-neon-cyan hover:bg-neon-cyan/20 disabled:opacity-60"
+              title="Salvar como modelo (rascunho)"
+            >
+              <Bookmark className="h-3.5 w-3.5" /> Modelo
+            </button>
+          )}
           <button
             type="button"
             onClick={onSave}
