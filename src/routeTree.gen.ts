@@ -34,6 +34,7 @@ import { Route as AuthenticatedCopilotoRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
+import { Route as AuthenticatedCaixaRouteImport } from './routes/_authenticated/caixa'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
@@ -167,6 +168,11 @@ const AuthenticatedCarrinhosRoute = AuthenticatedCarrinhosRouteImport.update({
   path: '/carrinhos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCaixaRoute = AuthenticatedCaixaRouteImport.update({
+  id: '/caixa',
+  path: '/caixa',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBibliotecaRoute = AuthenticatedBibliotecaRouteImport.update({
   id: '/biblioteca',
   path: '/biblioteca',
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
+  '/caixa': typeof AuthenticatedCaixaRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
+  '/caixa': typeof AuthenticatedCaixaRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
+  '/_authenticated/caixa': typeof AuthenticatedCaixaRoute
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/ai-growth'
     | '/avaliacoes'
     | '/biblioteca'
+    | '/caixa'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/ai-growth'
     | '/avaliacoes'
     | '/biblioteca'
+    | '/caixa'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-growth'
     | '/_authenticated/avaliacoes'
     | '/_authenticated/biblioteca'
+    | '/_authenticated/caixa'
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
     | '/_authenticated/conta'
@@ -575,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarrinhosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/caixa': {
+      id: '/_authenticated/caixa'
+      path: '/caixa'
+      fullPath: '/caixa'
+      preLoaderRoute: typeof AuthenticatedCaixaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/biblioteca': {
       id: '/_authenticated/biblioteca'
       path: '/biblioteca'
@@ -618,6 +637,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiGrowthRoute: typeof AuthenticatedAiGrowthRoute
   AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
+  AuthenticatedCaixaRoute: typeof AuthenticatedCaixaRoute
   AuthenticatedCarrinhosRoute: typeof AuthenticatedCarrinhosRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
@@ -642,6 +662,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiGrowthRoute: AuthenticatedAiGrowthRoute,
   AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
+  AuthenticatedCaixaRoute: AuthenticatedCaixaRoute,
   AuthenticatedCarrinhosRoute: AuthenticatedCarrinhosRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
