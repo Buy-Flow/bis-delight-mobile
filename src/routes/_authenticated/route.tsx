@@ -26,6 +26,7 @@ const ADMIN_PREFIXES = [
   "/importar",
   "/estoque",
   "/ficha-tecnica",
+  "/usuarios",
 ];
 
 function isAdminRoute(pathname: string) {
