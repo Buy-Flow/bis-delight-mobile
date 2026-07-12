@@ -32,6 +32,10 @@ Deno.serve(async (req) => {
 
   const results: Record<string, unknown> = {};
   const now = new Date();
+  // Brazil local time (America/Sao_Paulo, UTC-3, no DST since 2019) for hour/dow scheduling.
+  const brtNow = new Date(now.getTime() - 3 * 3600 * 1000);
+  const brtHour = brtNow.getUTCHours();
+  const brtDow = brtNow.getUTCDay();
 
   try {
     // 1) Scheduled campaigns due now
