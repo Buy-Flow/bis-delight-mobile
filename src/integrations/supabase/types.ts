@@ -2718,6 +2718,7 @@ export type Database = {
         }
       }
       compute_expected_cash: { Args: { _session_id: string }; Returns: number }
+      cpf_exists: { Args: { _cpf: string }; Returns: boolean }
       get_birthday_gift_status: {
         Args: never
         Returns: {
