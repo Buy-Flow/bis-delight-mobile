@@ -295,8 +295,17 @@ function OrdersPanel() {
   const { user } = useAuth();
   const { add } = useCart();
   const navigate = useNavigate();
+  const { data: allProducts = [] } = useProducts();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const productImageById = useMemo(() => {
+    const m = new Map<string, string>();
+    (allProducts as any[]).forEach((p) => {
+      if (p?.id && p?.image) m.set(p.id, p.image);
+    });
+    return m;
+  }, [allProducts]);
 
   useEffect(() => {
     if (!user) return;
@@ -331,10 +340,11 @@ function OrdersPanel() {
 
   const reorder = (o: OrderRow) => {
     o.items.forEach((it: any) => {
+      const image = (it.product_id && productImageById.get(it.product_id)) || "";
       add({
-        productId: it.product_id ?? "reorder",
+        productId: it.product_id ?? `reorder-${it.name}`,
         name: it.name,
-        image: "",
+        image,
         size: it.size ?? undefined,
         flavor: it.flavor ?? undefined,
         extras: Array.isArray(it.extras) ? it.extras : [],
