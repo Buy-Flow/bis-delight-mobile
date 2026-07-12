@@ -446,6 +446,48 @@ export type Database = {
         }
         Relationships: []
       }
+      couriers: {
+        Row: {
+          active: boolean
+          avatar_url: string | null
+          created_at: string
+          fee_per_delivery: number
+          id: string
+          name: string
+          note: string | null
+          phone: string | null
+          plate: string | null
+          updated_at: string
+          vehicle: string
+        }
+        Insert: {
+          active?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          fee_per_delivery?: number
+          id?: string
+          name: string
+          note?: string | null
+          phone?: string | null
+          plate?: string | null
+          updated_at?: string
+          vehicle?: string
+        }
+        Update: {
+          active?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          fee_per_delivery?: number
+          id?: string
+          name?: string
+          note?: string | null
+          phone?: string | null
+          plate?: string | null
+          updated_at?: string
+          vehicle?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -683,12 +725,14 @@ export type Database = {
           address: string | null
           canceled_at: string | null
           coupon_code: string | null
+          courier_id: string | null
           created_at: string
           customer_name: string
           delivered_at: string | null
           delivery_fee: number
           delivery_lat: number | null
           delivery_lng: number | null
+          delivery_started_at: string | null
           dispatched_at: string | null
           distance_km: number | null
           id: string
@@ -708,12 +752,14 @@ export type Database = {
           address?: string | null
           canceled_at?: string | null
           coupon_code?: string | null
+          courier_id?: string | null
           created_at?: string
           customer_name: string
           delivered_at?: string | null
           delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
+          delivery_started_at?: string | null
           dispatched_at?: string | null
           distance_km?: number | null
           id?: string
@@ -733,12 +779,14 @@ export type Database = {
           address?: string | null
           canceled_at?: string | null
           coupon_code?: string | null
+          courier_id?: string | null
           created_at?: string
           customer_name?: string
           delivered_at?: string | null
           delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
+          delivery_started_at?: string | null
           dispatched_at?: string | null
           distance_km?: number | null
           id?: string
@@ -755,6 +803,13 @@ export type Database = {
           waiter_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_waiter_id_fkey"
             columns: ["waiter_id"]
