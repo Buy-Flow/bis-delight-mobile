@@ -281,18 +281,18 @@ function useCurrentPage(): PageInfo {
   return useMemo(() => {
     if (pathname === "/admin" && tab) {
       const map: Record<string, PageInfo> = {
-        products: { label: "Produtos", context: "Cardápio: gerenciar produtos, preços, ativar/pausar, badges, ordem.", suggestions: ["Aplica 10% off em todos", "Pausa o morango"] },
-        categories: { label: "Categorias", context: "Categorias do cardápio.", suggestions: ["Cria categoria 'Especiais'"] },
-        extras: { label: "Complementos", context: "Complementos/extras dos produtos.", suggestions: ["Lista todos os complementos"] },
-        highlights: { label: "Destaques", context: "Produtos em destaque na home.", suggestions: ["Coloca shake como destaque"] },
-        news: { label: "Novidades", context: "Ticker e banner de novidades da home.", suggestions: ["Muda ticker pra 'Frete grátis hoje'"] },
-        promos: { label: "Promos & Combos", context: "Combos e promoções ativas.", suggestions: ["Cria combo Casal 2 shakes"] },
-        coupons: { label: "Cupons", context: "Cupons de desconto.", suggestions: ["Cria SHAKE20 20% off"] },
-        loyalty: { label: "Fidelidade", context: "Programa de fidelidade (Bronze/Prata/Ouro).", suggestions: ["Como estão os tiers?"] },
-        notifications: { label: "Notificações", context: "Push notifications e campanhas.", suggestions: ["Cria push 'Chegou açaí novo'"] },
-        announcement: { label: "Anúncio", context: "Anúncio no topo do site.", suggestions: ["Muda anúncio pra 'Aberto até 23h'"] },
-        popup: { label: "Pop-up", context: "Pop-ups do site.", suggestions: ["Cria popup de 15% off"] },
-        settings: { label: "Configurações da Loja", context: "Config: taxa entrega, mínimo, WhatsApp, cores.", suggestions: ["Muda taxa de entrega pra R$8"] },
+        products: { label: "Produtos", context: "Cardápio: gerenciar produtos, preços, ativar/pausar, badges, ordem.", suggestions: ["Aplica 10% off em todos", "Pausa o morango", "Reverte último desconto", "Coloca badge 'Novo' no shake ninho", "Produtos sem foto", "Reordena por mais vendidos", "Ativa todos pausados"] },
+        categories: { label: "Categorias", context: "Categorias do cardápio.", suggestions: ["Cria categoria 'Especiais'", "Reorganiza categorias", "Categoria mais vendida"] },
+        extras: { label: "Complementos", context: "Complementos/extras dos produtos.", suggestions: ["Lista todos os complementos", "Cria complemento 'Leite condensado'", "Complementos mais pedidos"] },
+        highlights: { label: "Destaques", context: "Produtos em destaque na home.", suggestions: ["Coloca shake como destaque", "Remove destaques antigos", "Destaques que vendem menos"] },
+        news: { label: "Novidades", context: "Ticker e banner de novidades da home.", suggestions: ["Muda ticker pra 'Frete grátis hoje'", "Cria banner de fim de semana", "Remove banner antigo"] },
+        promos: { label: "Promos & Combos", context: "Combos e promoções ativas.", suggestions: ["Cria combo Casal 2 shakes", "Combo família 4 pessoas", "Promos que mais vendem", "Encerra promo do mês passado"] },
+        coupons: { label: "Cupons", context: "Cupons de desconto.", suggestions: ["Cria SHAKE20 20% off", "Cupom PRIMEIRA10 pra novos", "Cupom de aniversário", "Cupons ativos agora", "Cupom mais usado"] },
+        loyalty: { label: "Fidelidade", context: "Programa de fidelidade (Bronze/Prata/Ouro).", suggestions: ["Como estão os tiers?", "Clientes Ouro esse mês", "Sobe recompensa do Prata", "Quantos selos gerados hoje"] },
+        notifications: { label: "Notificações", context: "Push notifications e campanhas.", suggestions: ["Cria push 'Chegou açaí novo'", "Push pros fãs de shake", "Push pros inativos 30d", "Últimas campanhas", "Taxa de abertura"] },
+        announcement: { label: "Anúncio", context: "Anúncio no topo do site.", suggestions: ["Muda anúncio pra 'Aberto até 23h'", "Anúncio de feriado", "Remove anúncio"] },
+        popup: { label: "Pop-up", context: "Pop-ups do site.", suggestions: ["Cria popup de 15% off", "Popup de boas-vindas", "Programa popup pro fim de semana", "Salva como modelo"] },
+        settings: { label: "Configurações da Loja", context: "Config: taxa entrega, mínimo, WhatsApp, cores.", suggestions: ["Muda taxa de entrega pra R$8", "Pedido mínimo R$25", "Muda horário pra 18h-23h", "Atualiza WhatsApp"] },
       };
       if (map[tab]) return map[tab];
     }
