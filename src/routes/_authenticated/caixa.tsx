@@ -706,8 +706,8 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
             <p className="text-xs text-white/60">{session.operator_name} · {session.terminal}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={onCsv} className="h-9 px-3 rounded-lg border text-xs flex items-center gap-1"><Download className="h-3.5 w-3.5" />CSV</button>
-            <button onClick={onPrint} className="h-9 px-3 rounded-lg border text-xs flex items-center gap-1"><Printer className="h-3.5 w-3.5" />Imprimir</button>
+            <button onClick={onCsv} className="h-9 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs flex items-center gap-1"><Download className="h-3.5 w-3.5" />CSV</button>
+            <button onClick={onPrint} className="h-9 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs flex items-center gap-1"><Printer className="h-3.5 w-3.5" />Imprimir</button>
             <button onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-white/10 grid place-items-center"><X className="h-4 w-4" /></button>
           </div>
         </div>
