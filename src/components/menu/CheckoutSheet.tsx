@@ -48,6 +48,27 @@ function formatPhone(v: string) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
+function parseAddressParts(full: string): { street: string; number: string; neighborhood: string; city: string } {
+  const s = (full || "").trim();
+  if (!s) return { street: "", number: "", neighborhood: "", city: "" };
+  const [left, rightRaw] = s.includes("—") ? s.split("—") : s.includes(" - ") ? s.split(" - ") : [s, ""];
+  const leftParts = left.split(",").map((x) => x.trim()).filter(Boolean);
+  let street = leftParts[0] ?? "";
+  let number = "";
+  if (leftParts[1] && /^\d/.test(leftParts[1])) number = leftParts[1];
+  else if (leftParts[1]) street = `${street}, ${leftParts[1]}`;
+  const right = (rightRaw || leftParts.slice(2).join(", ")).trim();
+  const rightParts = right.split(",").map((x) => x.trim()).filter(Boolean);
+  return { street, number, neighborhood: rightParts[0] ?? "", city: rightParts.slice(1).join(", ") };
+}
+
+function joinAddressParts(p: { street: string; number: string; neighborhood: string; city: string }): string {
+  const left = [p.street.trim(), p.number.trim()].filter(Boolean).join(", ");
+  const right = [p.neighborhood.trim(), p.city.trim()].filter(Boolean).join(", ");
+  return [left, right].filter(Boolean).join(" — ");
+}
+
+
 export function CheckoutSheet() {
   const { isCheckoutOpen, closeCheckout, items, update, subtotal, clear } = useCart();
   useBackDismiss(isCheckoutOpen, closeCheckout);
