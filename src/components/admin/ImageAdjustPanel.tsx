@@ -253,3 +253,38 @@ function NudgeBtn({
 function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
 }
+
+function GridOverlay({ divisions }: { divisions: number }) {
+  const lines: ReactNode[] = [];
+  for (let i = 1; i < divisions; i++) {
+    const p = (i / divisions) * 100;
+    lines.push(
+      <div
+        key={`v${i}`}
+        className="absolute inset-y-0"
+        style={{
+          left: `${p}%`,
+          width: 0,
+          borderLeft: "1px dashed rgba(255,255,255,0.55)",
+        }}
+      />,
+    );
+    lines.push(
+      <div
+        key={`h${i}`}
+        className="absolute inset-x-0"
+        style={{
+          top: `${p}%`,
+          height: 0,
+          borderTop: "1px dashed rgba(255,255,255,0.55)",
+        }}
+      />,
+    );
+  }
+  return (
+    <div className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/20 mix-blend-difference">
+      {lines}
+    </div>
+  );
+}
+
