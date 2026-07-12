@@ -21,7 +21,8 @@ import { cn } from "@/lib/utils";
 const DISMISS_KEY = "review_prompt_dismissed";
 const REVIEWED_KEY = "reviewed_orders";
 const APPEAR_DELAY = 8_000;
-const DISMISS_MS = 3 * 24 * 60 * 60 * 1000;
+// Só aparece 6h após o pedido; depois de mostrado/dispensado, não volta mais para o mesmo pedido.
+const MIN_AGE_MS = 6 * 60 * 60 * 1000;
 
 type Candidate = {
   id: string;
@@ -89,12 +90,10 @@ export function ReviewPromptPopup() {
 
       const found = orders.find((o: { id: string; status: string; created_at: string }) => {
         if (reviewedIds.has(o.id)) return false;
-        const dismissAt = dismissed[o.id];
-        if (dismissAt && now - dismissAt < DISMISS_MS) return false;
-        if (o.status === "entregue") return true;
-        // pago com mais de 30min também prompta (retirada/mesa/balcão sem tracking de entrega)
+        // qualquer aparição anterior desse pedido invalida — só volta em novo pedido
+        if (dismissed[o.id]) return false;
         const age = now - new Date(o.created_at).getTime();
-        return age > 30 * 60 * 1000;
+        return age >= MIN_AGE_MS;
       });
 
       if (!found) return;
@@ -116,7 +115,17 @@ export function ReviewPromptPopup() {
         items_preview: names || "Seu último pedido",
         items_images: images.slice(0, 3),
       });
-      timer = setTimeout(() => !cancelled && setVisible(true), APPEAR_DELAY);
+      timer = setTimeout(() => {
+        if (cancelled) return;
+        // Marca como visto imediatamente — não volta para o mesmo pedido
+        try {
+          const raw = localStorage.getItem(DISMISS_KEY) ?? "{}";
+          const map = JSON.parse(raw);
+          map[found.id] = Date.now();
+          localStorage.setItem(DISMISS_KEY, JSON.stringify(map));
+        } catch { /* ignore */ }
+        setVisible(true);
+      }, APPEAR_DELAY);
     };
 
     check();
