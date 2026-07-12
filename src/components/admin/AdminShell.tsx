@@ -507,6 +507,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="flex-1">{children}</main>
       </div>
+      <FloatingAssistant />
     </div>
   );
 }
