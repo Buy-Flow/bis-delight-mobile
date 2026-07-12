@@ -116,7 +116,7 @@ export function buildCopilotTools(ctx: Ctx) {
             supabaseAdmin: ctx.supabaseAdmin as unknown as Parameters<typeof generateAndUploadBanner>[0]["supabaseAdmin"],
           });
           await logAction(ctx, { action_type: "gerar_imagem_banner", params: { prompt }, result: r, target_table: "storage", target_id: r.key });
-          return { image_url: r.url, key: r.key };
+          return { image_url: r.image_url, key: r.key };
         } catch (e) {
           await logAction(ctx, { action_type: "gerar_imagem_banner", params: { prompt }, status: "failed", result: { error: String(e) } });
           throw e;
