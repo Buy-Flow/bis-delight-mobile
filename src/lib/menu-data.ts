@@ -436,7 +436,7 @@ export const siteSettingsQueryOptions = queryOptions({
       tiktok: String(data.tiktok ?? ""),
       announcementText: String(data.announcement_text ?? ""),
       announcementActive: Boolean(data.announcement_active ?? false),
-      pixKey: String(data.pix_key ?? ""),
+      pixKey: "",
       paymentMethods: Array.isArray(rawMethods) && rawMethods.length ? rawMethods : ["Dinheiro", "Pix", "Cartão"],
       freeDeliveryThreshold: Number(data.free_delivery_threshold ?? 0),
       minOrder: Number(data.min_order ?? 0),
