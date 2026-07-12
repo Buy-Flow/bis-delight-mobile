@@ -44,6 +44,7 @@ import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
+import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -224,6 +225,12 @@ const AuthenticatedRastrearOrderIdRoute =
     path: '/rastrear/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAvaliarOrderIdRoute =
+  AuthenticatedAvaliarOrderIdRouteImport.update({
+    id: '/avaliar/$orderId',
+    path: '/avaliar/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
 export interface FileRoutesByTo {
@@ -295,6 +303,7 @@ export interface FileRoutesByTo {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
 export interface FileRoutesById {
@@ -333,6 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
 export interface FileRouteTypes {
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/api/copilot-chat'
     | '/produto/$id'
+    | '/avaliar/$orderId'
     | '/rastrear/$orderId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/api/copilot-chat'
     | '/produto/$id'
+    | '/avaliar/$orderId'
     | '/rastrear/$orderId'
   id:
     | '__root__'
@@ -444,6 +456,7 @@ export interface FileRouteTypes {
     | '/_authenticated/usuarios'
     | '/api/copilot-chat'
     | '/produto/$id'
+    | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
   fileRoutesById: FileRoutesById
 }
@@ -706,6 +719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRastrearOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/avaliar/$orderId': {
+      id: '/_authenticated/avaliar/$orderId'
+      path: '/avaliar/$orderId'
+      fullPath: '/avaliar/$orderId'
+      preLoaderRoute: typeof AuthenticatedAvaliarOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -735,6 +755,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
+  AuthenticatedAvaliarOrderIdRoute: typeof AuthenticatedAvaliarOrderIdRoute
   AuthenticatedRastrearOrderIdRoute: typeof AuthenticatedRastrearOrderIdRoute
 }
 
@@ -764,6 +785,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
+  AuthenticatedAvaliarOrderIdRoute: AuthenticatedAvaliarOrderIdRoute,
   AuthenticatedRastrearOrderIdRoute: AuthenticatedRastrearOrderIdRoute,
 }
 
