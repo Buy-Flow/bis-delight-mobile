@@ -663,7 +663,7 @@ function FecharDialog({ session, expected, onClose, onDone }:
           {saving ? "Fechando…" : "Confirmar fechamento"}
         </button>
       </>}>
-      <div className="rounded-xl bg-white/5 border p-3 space-y-1 text-sm">
+      <div className="rounded-xl bg-white/5 border border-white/10 p-3 space-y-1 text-sm">
         <div className="flex justify-between"><span className="text-white/60">Abertura</span><span className="font-semibold tabular-nums">{BRL(session.opening_amount)}</span></div>
         <div className="flex justify-between"><span className="text-white/60">Esperado em dinheiro</span><span className="font-semibold tabular-nums">{BRL(expected)}</span></div>
       </div>
