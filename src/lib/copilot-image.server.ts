@@ -1,6 +1,10 @@
 /**
- * Generate an image via Lovable AI Gateway image endpoint (non-streaming)
+ * Generate an image via Lovable AI Gateway (chat-shape Gemini image model)
  * and upload it to the banner-images bucket. Returns a long-lived signed URL.
+ *
+ * Per ai-image-generation: Gemini image models take the chat-completions
+ * shape (messages + modalities) at /v1/images/generations, and the Gateway
+ * normalizes the response into the OpenAI images shape (data[0].b64_json).
  */
 export async function generateAndUploadBanner(params: {
   prompt: string;
@@ -13,10 +17,15 @@ export async function generateAndUploadBanner(params: {
       };
     };
   };
-  size?: "1024x1024" | "1024x1536" | "1536x1024";
 }) {
   const styleSuffix =
-    ", vibrant modern acai/ice cream shop aesthetic, dark purple background, neon yellow (#facc15) and neon purple (#a855f7) accents, high contrast, mobile-friendly composition, no watermark, no text artifacts";
+    ". Estilo: fundo escuro roxo/preto, destaques em amarelo neon (#facc15) e roxo (#a855f7), alto contraste, composição centralizada mobile-friendly, sem watermark, sem texto artificial, moderno açaí/sorveteria.";
+
+  const body = {
+    model: "google/gemini-2.5-flash-image",
+    messages: [{ role: "user", content: params.prompt + styleSuffix }],
+    modalities: ["image", "text"],
+  };
 
   const res = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
     method: "POST",
@@ -24,25 +33,32 @@ export async function generateAndUploadBanner(params: {
       Authorization: `Bearer ${params.apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model: "google/gemini-3.1-flash-image",
-      messages: [
-        { role: "user", content: params.prompt + styleSuffix },
-      ],
-      modalities: ["image", "text"],
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
     const t = await res.text().catch(() => "");
-    throw new Error(`Falha ao gerar imagem: ${res.status} ${t.slice(0, 200)}`);
+    throw new Error(`Falha ao gerar imagem: ${res.status} ${t.slice(0, 300)}`);
   }
 
-  const data = (await res.json()) as { data?: Array<{ b64_json?: string }> };
-  const b64 = data?.data?.[0]?.b64_json;
-  if (!b64) throw new Error("Modelo não retornou imagem.");
+  const json = (await res.json()) as {
+    data?: Array<{ b64_json?: string }>;
+    choices?: Array<{ message?: { images?: Array<{ image_url?: { url?: string } }> } }>;
+  };
 
-  // base64 → Uint8Array
+  // Primary path: normalized OpenAI images shape
+  let b64 = json?.data?.[0]?.b64_json ?? "";
+
+  // Fallback: raw chat-completions shape (data URL in image_url.url)
+  if (!b64) {
+    const u = json?.choices?.[0]?.message?.images?.[0]?.image_url?.url ?? "";
+    if (u.startsWith("data:image")) {
+      b64 = u.split(",")[1] ?? "";
+    }
+  }
+
+  if (!b64) throw new Error("Modelo não retornou imagem. Resposta: " + JSON.stringify(json).slice(0, 200));
+
   const binary = atob(b64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -55,11 +71,11 @@ export async function generateAndUploadBanner(params: {
   });
   if (up.error) throw new Error("Falha ao salvar imagem: " + up.error.message);
 
-  // 1-year signed URL (bucket is private)
+  // 1-year signed URL (bucket is private per workspace policy)
   const signed = await params.supabaseAdmin.storage
     .from("banner-images")
     .createSignedUrl(key, 60 * 60 * 24 * 365);
   if (signed.error || !signed.data) throw new Error("Falha ao gerar URL: " + signed.error?.message);
 
-  return { url: signed.data.signedUrl, key };
+  return { image_url: signed.data.signedUrl, key };
 }

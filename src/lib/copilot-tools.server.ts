@@ -116,7 +116,7 @@ export function buildCopilotTools(ctx: Ctx) {
             supabaseAdmin: ctx.supabaseAdmin as unknown as Parameters<typeof generateAndUploadBanner>[0]["supabaseAdmin"],
           });
           await logAction(ctx, { action_type: "gerar_imagem_banner", params: { prompt }, result: r, target_table: "storage", target_id: r.key });
-          return { image_url: r.url, key: r.key };
+          return { image_url: r.image_url, key: r.key };
         } catch (e) {
           await logAction(ctx, { action_type: "gerar_imagem_banner", params: { prompt }, status: "failed", result: { error: String(e) } });
           throw e;
@@ -317,6 +317,166 @@ export function buildCopilotTools(ctx: Ctx) {
         }
         await logAction(ctx, { action_type: "disparar_push", params: input, result: data, target_table: "push_campaigns", target_id: campaign.id });
         return { ok: true, campaign: data };
+      },
+    }),
+
+    atualizar_produto: tool({
+      description:
+        "Atualiza campos de um produto existente: preço, nome, descrição, badge, ativo/inativo, hero, categoria. Passe apenas os campos que quer mudar (os outros ficam iguais). Use buscar_produtos primeiro pra pegar o ID.",
+      inputSchema: z.object({
+        product_id: z.string().describe("ID do produto"),
+        name: z.string().nullable(),
+        description: z.string().nullable(),
+        base_price: z.number().positive().nullable().describe("Novo preço base em R$"),
+        category: z.string().nullable().describe("Novo id de categoria (ex: 'shakes')"),
+        badge: z.string().nullable().describe("Selo curto ex: 'NOVO', 'PROMO', 'MAIS PEDIDO'"),
+        active: z.boolean().nullable(),
+        hero: z.boolean().nullable().describe("Destaque na home"),
+      }),
+      execute: async (input) => {
+        const patch: Record<string, unknown> = {};
+        if (input.name !== null) patch.name = input.name;
+        if (input.description !== null) patch.description = input.description;
+        if (input.base_price !== null) patch.base_price = input.base_price;
+        if (input.category !== null) patch.category = input.category;
+        if (input.badge !== null) patch.badge = input.badge;
+        if (input.active !== null) patch.active = input.active;
+        if (input.hero !== null) patch.hero = input.hero;
+        if (!Object.keys(patch).length) return { ok: true, noop: true };
+        const { error } = await ctx.supabaseAdmin.from("products").update(patch).eq("id", input.product_id);
+        if (error) {
+          await logAction(ctx, { action_type: "atualizar_produto", params: input, status: "failed", result: { error: error.message } });
+          throw new Error("Erro ao atualizar: " + error.message);
+        }
+        await logAction(ctx, { action_type: "atualizar_produto", params: input, result: { ok: true, patch }, target_table: "products", target_id: input.product_id });
+        return { ok: true, patch };
+      },
+    }),
+
+    desconto_massa: tool({
+      description:
+        "Aplica um desconto percentual em vários produtos ao mesmo tempo (reduz o base_price). Passe categoria (opcional) ou uma lista de product_ids. ⚠️ AÇÃO EM LOTE — sempre confirme com o admin ANTES de chamar (mostre qual % vai aplicar e em quantos produtos) e aguarde 'ok'. Salva original_price em pause_reason para permitir reverter depois manualmente.",
+      inputSchema: z.object({
+        percent_off: z.number().min(1).max(90).describe("Desconto em % (1-90)"),
+        categoria: z.string().nullable().describe("ID de categoria ou null para todos"),
+        product_ids: z.array(z.string()).nullable().describe("Lista de IDs específicos, ou null"),
+      }),
+      execute: async (input) => {
+        const { data: rows, error: qErr } = await ctx.supabaseAdmin.from("products").select("id,name,base_price,category,active").limit(500);
+        if (qErr) throw new Error(qErr.message);
+        let list = ((rows as Array<{ id: string; name: string; base_price: number; category: string; active: boolean }>) ?? []).filter(r => r.active !== false);
+        if (input.categoria) list = list.filter(r => String(r.category).toLowerCase() === input.categoria!.toLowerCase());
+        if (input.product_ids && input.product_ids.length) list = list.filter(r => input.product_ids!.includes(r.id));
+        if (!list.length) throw new Error("Nenhum produto encontrado com esse filtro.");
+        const factor = 1 - input.percent_off / 100;
+        const updates: Array<{ id: string; from: number; to: number }> = [];
+        for (const p of list) {
+          const newPrice = Math.round(p.base_price * factor * 100) / 100;
+          const { error } = await ctx.supabaseAdmin.from("products").update({ base_price: newPrice }).eq("id", p.id);
+          if (!error) updates.push({ id: p.id, from: p.base_price, to: newPrice });
+        }
+        await logAction(ctx, { action_type: "desconto_massa", params: input, result: { count: updates.length, updates } });
+        return { ok: true, updated: updates.length, sample: updates.slice(0, 5) };
+      },
+    }),
+
+    atualizar_config_loja: tool({
+      description:
+        "Atualiza configurações globais da loja: nome, taxa de entrega, pedido mínimo, cores, texturas, redes sociais, WhatsApp, endereço. Passe só os campos que quer mudar (outros ficam iguais).",
+      inputSchema: z.object({
+        name: z.string().nullable(),
+        tagline: z.string().nullable(),
+        delivery_fee: z.number().min(0).nullable().describe("Taxa de entrega em R$"),
+        min_order: z.number().min(0).nullable().describe("Pedido mínimo em R$"),
+        free_delivery_threshold: z.number().min(0).nullable().describe("Frete grátis a partir de R$"),
+        whatsapp: z.string().nullable(),
+        instagram: z.string().nullable(),
+        address: z.string().nullable(),
+        announcement_text: z.string().nullable().describe("Texto do anúncio no topo do site"),
+        announcement_active: z.boolean().nullable(),
+        accepts_delivery: z.boolean().nullable(),
+        accepts_pickup: z.boolean().nullable(),
+        bg_color: z.string().nullable().describe("Cor de fundo hex ex: #0b0518"),
+        accent_color: z.string().nullable().describe("Cor de destaque hex ex: #facc15"),
+      }),
+      execute: async (input) => {
+        const patch: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(input)) if (v !== null) patch[k] = v;
+        if (!Object.keys(patch).length) return { ok: true, noop: true };
+        const { data: rows } = await ctx.supabaseAdmin.from("site_settings").select("id").limit(1);
+        const id = (rows as Array<{ id: number }>)?.[0]?.id ?? 1;
+        const { error } = await ctx.supabaseAdmin.from("site_settings").update(patch).eq("id", id);
+        if (error) {
+          await logAction(ctx, { action_type: "atualizar_config_loja", params: input, status: "failed", result: { error: error.message } });
+          throw new Error("Erro ao atualizar config: " + error.message);
+        }
+        await logAction(ctx, { action_type: "atualizar_config_loja", params: input, result: { ok: true, patch }, target_table: "site_settings", target_id: String(id) });
+        return { ok: true, patch };
+      },
+    }),
+
+    forcar_status_loja: tool({
+      description:
+        "Força o status da loja: 'open' força aberta, 'closed' força fechada, null volta ao horário automático. Use pra fechar antes da hora ou abrir excepcionalmente.",
+      inputSchema: z.object({
+        override: z.enum(["open", "closed", "auto"]).describe("'open', 'closed' ou 'auto'"),
+      }),
+      execute: async (input) => {
+        const val = input.override === "auto" ? null : input.override;
+        const { data: rows } = await ctx.supabaseAdmin.from("site_settings").select("id").limit(1);
+        const id = (rows as Array<{ id: number }>)?.[0]?.id ?? 1;
+        const { error } = await ctx.supabaseAdmin.from("site_settings").update({ open_override: val }).eq("id", id);
+        if (error) throw new Error("Erro: " + error.message);
+        await logAction(ctx, { action_type: "forcar_status_loja", params: input, result: { override: val }, target_table: "site_settings", target_id: String(id) });
+        return { ok: true, override: val };
+      },
+    }),
+
+    atualizar_novidades_home: tool({
+      description:
+        "Configura a seção de novidades da home (news_title, subtitle, ticker rodando embaixo do hero). Passe null pros campos que quer manter, ou active=false pra desligar.",
+      inputSchema: z.object({
+        active: z.boolean().nullable(),
+        title: z.string().nullable(),
+        subtitle: z.string().nullable(),
+        ticker: z.string().nullable().describe("Texto do ticker rolante"),
+      }),
+      execute: async (input) => {
+        const patch: Record<string, unknown> = {};
+        if (input.active !== null) patch.news_active = input.active;
+        if (input.title !== null) patch.news_title = input.title;
+        if (input.subtitle !== null) patch.news_subtitle = input.subtitle;
+        if (input.ticker !== null) patch.news_ticker = input.ticker;
+        if (!Object.keys(patch).length) return { ok: true, noop: true };
+        const { data: rows } = await ctx.supabaseAdmin.from("site_settings").select("id").limit(1);
+        const id = (rows as Array<{ id: number }>)?.[0]?.id ?? 1;
+        const { error } = await ctx.supabaseAdmin.from("site_settings").update(patch).eq("id", id);
+        if (error) throw new Error("Erro: " + error.message);
+        await logAction(ctx, { action_type: "atualizar_novidades_home", params: input, result: patch, target_table: "site_settings", target_id: String(id) });
+        return { ok: true, patch };
+      },
+    }),
+
+    criar_categoria: tool({
+      description:
+        "Cria uma nova categoria de produtos. O id deve ser um slug curto minúsculo sem espaços (ex: 'combos'). Emoji opcional.",
+      inputSchema: z.object({
+        id: z.string().min(2).max(30).regex(/^[a-z0-9-]+$/, "slug minúsculo sem espaço"),
+        name: z.string().min(2).max(40),
+        emoji: z.string().max(4).nullable(),
+      }),
+      execute: async (input) => {
+        const { data, error } = await ctx.supabaseAdmin
+          .from("categories")
+          .insert({ id: input.id, name: input.name, emoji: input.emoji ?? "🍧", active: true, sort_order: 999 })
+          .select("id,name")
+          .single();
+        if (error) {
+          await logAction(ctx, { action_type: "criar_categoria", params: input, status: "failed", result: { error: error.message } });
+          throw new Error("Erro ao criar categoria: " + error.message);
+        }
+        await logAction(ctx, { action_type: "criar_categoria", params: input, result: data, target_table: "categories", target_id: input.id });
+        return { ok: true, categoria: data };
       },
     }),
   };
