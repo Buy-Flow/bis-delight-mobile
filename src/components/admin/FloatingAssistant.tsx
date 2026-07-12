@@ -401,6 +401,7 @@ export function FloatingAssistant() {
               </button>
             </div>
           </div>
+          </aside>
         </div>
       )}
     </>
