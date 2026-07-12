@@ -32,6 +32,10 @@ Deno.serve(async (req) => {
 
   const results: Record<string, unknown> = {};
   const now = new Date();
+  // Brazil local time (America/Sao_Paulo, UTC-3, no DST since 2019) for hour/dow scheduling.
+  const brtNow = new Date(now.getTime() - 3 * 3600 * 1000);
+  const brtHour = brtNow.getUTCHours();
+  const brtDow = brtNow.getUTCDay();
 
   try {
     // 1) Scheduled campaigns due now
@@ -65,9 +69,9 @@ Deno.serve(async (req) => {
 
       if (kind === "birthday") {
         const hour = Number(cfg.hour ?? 9);
-        // Only run once per day, only after configured hour
-        if (now.getHours() < hour) {
-          runReport.push({ id: a.id, kind, skipped: `before_hour_${hour}` });
+        // Only run once per day, only after configured hour (Brazil time)
+        if (brtHour < hour) {
+          runReport.push({ id: a.id, kind, skipped: `before_hour_${hour}_brt` });
           continue;
         }
         const daysOffset = Number(cfg.days_offset ?? 0);
@@ -117,14 +121,15 @@ Deno.serve(async (req) => {
           .gte("created_at", lower)
           .lte("created_at", upper)
           .not("user_id", "is", null);
-        // Keep users whose total order count is exactly 1
+        // Keep users whose total non-cancelled order count is exactly 1
         const candidates = Array.from(new Set((recent ?? []).map((o: any) => o.user_id))) as string[];
         const kept: string[] = [];
         for (const uid of candidates) {
           const { count } = await admin
             .from("orders")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", uid);
+            .eq("user_id", uid)
+            .neq("status", "cancelado");
           if ((count ?? 0) === 1) kept.push(uid);
         }
         eligibleUserIds = kept;
@@ -206,14 +211,25 @@ Deno.serve(async (req) => {
           .from("loyalty")
           .select("user_id, stamps")
           .gte("stamps", minStamps);
-        eligibleUserIds = (rows ?? []).map((r: any) => r.user_id).filter(Boolean);
+        const candidates = (rows ?? []).map((r: any) => r.user_id).filter(Boolean) as string[];
+        // Skip users who already have an unused loyalty coupon
+        let excluded = new Set<string>();
+        if (candidates.length) {
+          const { data: openCoupons } = await admin
+            .from("loyalty_coupons")
+            .select("user_id")
+            .is("used_at", null)
+            .in("user_id", candidates);
+          excluded = new Set((openCoupons ?? []).map((c: any) => c.user_id));
+        }
+        eligibleUserIds = candidates.filter((u) => !excluded.has(u));
         runKey = cfg.repeat_weekly ? `w-${weekKey(now)}-s${minStamps}` : `s${minStamps}`;
       } else if (kind === "weekly_promo") {
-        // Recurring weekly at chosen weekday+hour. dow: 0=Sun..6=Sat
+        // Recurring weekly at chosen weekday+hour (Brazil time). dow: 0=Sun..6=Sat
         const dow = Number(cfg.dow ?? 5);
         const hour = Number(cfg.hour ?? 18);
-        if (now.getDay() !== dow || now.getHours() < hour) {
-          runReport.push({ id: a.id, kind, skipped: `wait_dow${dow}_h${hour}` });
+        if (brtDow !== dow || brtHour < hour) {
+          runReport.push({ id: a.id, kind, skipped: `wait_dow${dow}_h${hour}_brt` });
           continue;
         }
         const { data: subs } = await admin
