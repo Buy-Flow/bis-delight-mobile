@@ -17,7 +17,7 @@ function iconFor(label: string) {
   return p?.icon ?? MapPin;
 }
 
-export function AddressManager() {
+export function AddressManager({ embedded = false }: { embedded?: boolean } = {}) {
   const { user } = useAuth();
   const { items, loading, create, update, remove, setDefault } = useUserAddresses(user?.id);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -26,17 +26,23 @@ export function AddressManager() {
   if (!user) return null;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan ring-1 ring-neon-cyan/30">
-            <MapPin className="h-4 w-4" />
+    <div className={embedded ? "" : "rounded-2xl border border-white/10 bg-white/[0.04] p-4"}>
+      <div className={cn("flex items-center justify-between", embedded ? "mb-2" : "mb-3")}>
+        {embedded ? (
+          <div className="text-[11px] text-white/60">
+            {items.length > 0 ? `${items.length} endereço${items.length > 1 ? "s" : ""} salvo${items.length > 1 ? "s" : ""}` : "Salve casa, trabalho e outros locais"}
           </div>
-          <div>
-            <div className="text-sm font-extrabold text-white">Meus endereços</div>
-            <div className="text-[11px] text-white/60">Salve casa, trabalho e outros locais</div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan ring-1 ring-neon-cyan/30">
+              <MapPin className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-sm font-extrabold text-white">Meus endereços</div>
+              <div className="text-[11px] text-white/60">Salve casa, trabalho e outros locais</div>
+            </div>
           </div>
-        </div>
+        )}
         {!showForm && !editingId && (
           <button
             type="button"
@@ -47,6 +53,8 @@ export function AddressManager() {
           </button>
         )}
       </div>
+
+
 
       {loading ? (
         <div className="flex items-center gap-2 py-4 text-xs text-white/60">
