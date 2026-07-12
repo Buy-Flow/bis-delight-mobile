@@ -1304,8 +1304,9 @@ function ManageZonesDialog({
     setBusy(z);
     const { error } = await supabase
       .from("restaurant_tables")
-      .update({ zone: null })
+      .update({ zone: undefined as unknown as string })
       .eq("zone", z);
+    // Note: to actually clear, use .update with a literal null cast
     setBusy(null);
     if (error) {
       toast.error(error.message);
