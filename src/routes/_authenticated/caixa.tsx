@@ -334,7 +334,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
                     );
                   })}
                 </div>
-                <div className="mt-4 pt-3 border-t flex justify-between text-sm">
+                <div className="mt-4 pt-3 border-t border-white/10 flex justify-between text-sm">
                   <span className="text-white/60">Total de vendas</span>
                   <span className="font-bold text-white">{BRL(totals.vendas)}</span>
                 </div>
@@ -342,7 +342,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
 
               {/* Movimentos */}
               <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5">
-                <div className="p-5 border-b flex items-center justify-between">
+                <div className="p-5 border-b border-white/10 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                     <Clock className="h-4 w-4 text-white/60" /> Movimentos ({movs.length})
                   </h3>
@@ -351,7 +351,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
                     <Download className="h-3.5 w-3.5" /> CSV
                   </button>
                 </div>
-                <div className="divide-y max-h-[520px] overflow-auto">
+                <div className="divide-y divide-white/10 max-h-[520px] overflow-auto">
                   {movs.length === 0 && (
                     <div className="p-10 text-center text-sm text-white/40">Nenhum movimento ainda.</div>
                   )}
@@ -386,11 +386,11 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
 
         {!loading && tab === "historico" && (
           <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-            <div className="p-5 border-b flex items-center justify-between">
+            <div className="p-5 border-b border-white/10 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white">Últimas sessões</h3>
               <span className="text-xs text-white/60">{history.length} registros</span>
             </div>
-            <div className="divide-y">
+            <div className="divide-y divide-white/10">
               {history.length === 0 && (
                 <div className="p-10 text-center text-sm text-white/40">Nenhuma sessão registrada.</div>
               )}
@@ -483,7 +483,7 @@ function DialogShell({ title, icon: Icon, onClose, children, footer, tone = "sla
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
       <div className="w-full max-w-lg bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b flex items-center justify-between">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-9 w-9 rounded-lg bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
               <Icon className="h-4 w-4" />
@@ -495,7 +495,7 @@ function DialogShell({ title, icon: Icon, onClose, children, footer, tone = "sla
           </button>
         </div>
         <div className="p-5 space-y-4">{children}</div>
-        {footer && <div className="p-4 border-t bg-white/5 flex justify-end gap-2">{footer}</div>}
+        {footer && <div className="p-4 border-t border-white/10 bg-white/5 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>
   );
@@ -700,7 +700,7 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
       <div className="w-full max-w-2xl bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b flex items-center justify-between">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-white">Sessão de {new Date(session.opened_at).toLocaleDateString("pt-BR")}</h3>
             <p className="text-xs text-white/60">{session.operator_name} · {session.terminal}</p>
@@ -711,14 +711,14 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
             <button onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-white/10 grid place-items-center"><X className="h-4 w-4" /></button>
           </div>
         </div>
-        <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-2 border-b bg-white/5">
+        <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-2 border-b border-white/10 bg-white/5">
           <Mini label="Abertura" value={BRL(session.opening_amount)} />
           <Mini label="Esperado" value={BRL(session.expected_amount ?? 0)} />
           <Mini label="Contado" value={BRL(session.counted_amount ?? 0)} />
           <Mini label="Diferença" value={BRL(session.difference ?? 0)}
             tone={Math.abs(Number(session.difference ?? 0)) < 0.01 ? "emerald" : (Number(session.difference) > 0 ? "sky" : "rose")} />
         </div>
-        <div className="flex-1 overflow-auto divide-y">
+        <div className="flex-1 overflow-auto divide-y divide-white/10">
           {movs.length === 0 && <div className="p-8 text-center text-sm text-white/40">Sem movimentos.</div>}
           {movs.map(m => {
             const T = typeMeta[m.type]; const M = methodMeta[m.payment_method]; const Icon = M.icon;

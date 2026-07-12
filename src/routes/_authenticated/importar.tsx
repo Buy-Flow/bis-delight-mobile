@@ -557,7 +557,7 @@ function ImportarPage() {
                 </thead>
                 <tbody>
                   {rawRows.slice(0, 3).map((r, i) => (
-                    <tr key={i} className="border-t">
+                    <tr key={i} className="border-t border-white/10">
                       {headers.map((h) => <td key={h} className="p-2 text-white/80 truncate max-w-[200px]">{String(r[h] ?? "")}</td>)}
                     </tr>
                   ))}
@@ -586,7 +586,7 @@ function ImportarPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-              <div className="p-4 border-b flex flex-wrap items-center justify-between gap-2">
+              <div className="p-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-2">
                 <div className="text-sm text-white/70 flex items-center gap-2">
                   <button onClick={() => bulkToggle("all")} className="text-xs px-2 py-1 rounded border hover:bg-white/10">Selecionar todos</button>
                   <button onClick={() => bulkToggle("valid")} className="text-xs px-2 py-1 rounded border hover:bg-white/10">Só válidos</button>
@@ -613,7 +613,7 @@ function ImportarPage() {
                   </thead>
                   <tbody>
                     {drafts.map((d) => (
-                      <tr key={d.id} className={cn("border-t hover:bg-white/10", d._errors.length && "bg-rose-50/40")}>
+                      <tr key={d.id} className={cn("border-t border-white/10 hover:bg-white/10", d._errors.length && "bg-rose-50/40")}>
                         <td className="p-2 text-center">
                           <input type="checkbox" checked={d._include} disabled={d._errors.length > 0}
                             onChange={(e) => updateDraft(d.id, { _include: e.target.checked })} />
