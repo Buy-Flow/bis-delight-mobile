@@ -542,7 +542,7 @@ function AbrirDialog({ onClose, onDone }: { onClose: () => void; onDone: () => v
       <div>
         <label className="text-sm font-medium text-white/80">Observação (opcional)</label>
         <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
-          className="mt-1 w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
       </div>
     </DialogShell>
   );
