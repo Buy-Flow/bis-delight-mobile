@@ -392,7 +392,9 @@ function parseHeroImages(raw: unknown): HeroImagesConfig {
 export const siteSettingsQueryOptions = queryOptions({
   queryKey: ["site_settings"],
   queryFn: async (): Promise<SiteSettings> => {
-    const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+    // site_settings_public is a view that excludes the admin-only pix_key column.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from("site_settings_public" as any) as any).select("*").eq("id", 1).maybeSingle();
     if (!data) {
       return {
         name: STATIC_BRAND.name,
@@ -434,7 +436,7 @@ export const siteSettingsQueryOptions = queryOptions({
       tiktok: String(data.tiktok ?? ""),
       announcementText: String(data.announcement_text ?? ""),
       announcementActive: Boolean(data.announcement_active ?? false),
-      pixKey: String(data.pix_key ?? ""),
+      pixKey: "",
       paymentMethods: Array.isArray(rawMethods) && rawMethods.length ? rawMethods : ["Dinheiro", "Pix", "Cartão"],
       freeDeliveryThreshold: Number(data.free_delivery_threshold ?? 0),
       minOrder: Number(data.min_order ?? 0),
@@ -842,7 +844,7 @@ export function useUpdateSettings() {
         tiktok: s.tiktok,
         announcement_text: s.announcementText,
         announcement_active: s.announcementActive,
-        pix_key: s.pixKey,
+        // pix_key is admin-restricted; set via RPC below
         payment_methods: s.paymentMethods,
         free_delivery_threshold: s.freeDeliveryThreshold,
         min_order: s.minOrder,
@@ -884,6 +886,10 @@ export function useUpdateSettings() {
         delivery_zone_json: s.deliveryZone,
       }, { onConflict: "id" });
       if (error) throw error;
+      // Persist PIX key via admin-only RPC (RLS-enforced)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: pixErr } = await (supabase.rpc as any)("set_pix_key", { _val: s.pixKey ?? "" });
+      if (pixErr) throw pixErr;
     },
     onSuccess: invalidate,
   });
