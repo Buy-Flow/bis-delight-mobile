@@ -630,7 +630,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
       <div>
         <label className="text-sm font-medium text-white/80">Observação</label>
         <input value={note} onChange={e => setNote(e.target.value)}
-          className="mt-1 w-full h-10 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
+          className="mt-1 w-full h-10 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-neon-pink/50" />
       </div>
     </DialogShell>
   );
