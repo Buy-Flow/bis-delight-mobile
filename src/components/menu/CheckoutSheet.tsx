@@ -86,6 +86,10 @@ export function CheckoutSheet() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [addrStreet, setAddrStreet] = useState("");
+  const [addrNumber, setAddrNumber] = useState("");
+  const [addrNeighborhood, setAddrNeighborhood] = useState("");
+  const [addrCity, setAddrCity] = useState("");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
