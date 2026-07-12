@@ -115,7 +115,17 @@ export function ReviewPromptPopup() {
         items_preview: names || "Seu último pedido",
         items_images: images.slice(0, 3),
       });
-      timer = setTimeout(() => !cancelled && setVisible(true), APPEAR_DELAY);
+      timer = setTimeout(() => {
+        if (cancelled) return;
+        // Marca como visto imediatamente — não volta para o mesmo pedido
+        try {
+          const raw = localStorage.getItem(DISMISS_KEY) ?? "{}";
+          const map = JSON.parse(raw);
+          map[found.id] = Date.now();
+          localStorage.setItem(DISMISS_KEY, JSON.stringify(map));
+        } catch { /* ignore */ }
+        setVisible(true);
+      }, APPEAR_DELAY);
     };
 
     check();
