@@ -908,97 +908,167 @@ function bodyHtml(
   S: PrintSettings,
   site: SiteSettings | null,
 ) {
-  const storeName = site?.name || "Quero Bis";
+  const storeName = (site?.name || "Quero Bis").toUpperCase();
   const address = [site?.address, site?.city].filter(Boolean).join(" — ");
-  const dateStr = new Date(order.created_at).toLocaleString("pt-BR");
-  const line = "--------------------------------";
+  const d = new Date(order.created_at);
+  const dateStr = d.toLocaleDateString("pt-BR");
+  const timeStr = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const shortId = order.id.slice(0, 6).toUpperCase();
+  const dashed = "- - - - - - - - - - - - - - - -";
+  const solid = "════════════════════════════════";
+  const wave = "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~";
+  const totalItems = its.reduce((a, b) => a + b.quantity, 0);
+  const modeLabel: Record<string, string> = {
+    entrega: "🛵  DELIVERY",
+    retirada: "🏪  RETIRADA",
+    mesa: "🍽️  MESA",
+    balcao: "🧾  BALCÃO",
+  };
+  const modeTxt = modeLabel[order.mode || ""] || (order.mode || "—").toUpperCase();
 
   if (kind === "entrega") {
     return `
-      <div style="text-align:center;font-weight:900;font-size:1.35em;">ENTREGA</div>
-      <div style="text-align:center;">${line}</div>
-      <div style="font-size:1.15em;"><b>${escapeHtml(order.customer_name || "Cliente")}</b></div>
-      <div>${escapeHtml(order.phone || "")}</div>
-      <div style="margin-top:6px;font-size:1.05em;line-height:1.4;"><b>${escapeHtml(order.address || "—")}</b></div>
-      <div style="text-align:center;margin-top:8px;">${line}</div>
-      <div>Pedido: <b>#${order.id.slice(0, 6).toUpperCase()}</b></div>
-      <div>Data: ${escapeHtml(dateStr)}</div>
-      <div>Itens: ${its.reduce((a, b) => a + b.quantity, 0)}</div>
-      <div>Total: <b>${BRL(Number(order.total ?? 0))}</b></div>
-      <div>Pgto: ${escapeHtml(order.status || "—")}</div>
-      <div style="text-align:center;margin-top:6px;">${line}</div>
-      <div style="text-align:center;">${escapeHtml(storeName)}</div>
-      <div style="text-align:center;">${escapeHtml(site?.whatsapp_display || site?.whatsapp || "")}</div>
+      <div style="text-align:center;font-weight:900;font-size:1.5em;letter-spacing:2px;">✦ ENTREGA ✦</div>
+      <div style="text-align:center;font-size:0.85em;margin-bottom:2px;">${escapeHtml(storeName)}</div>
+      <div style="text-align:center;">${solid}</div>
+      <div style="text-align:center;font-size:1.6em;font-weight:900;margin:4px 0;">#${shortId}</div>
+      <div style="text-align:center;">${dashed}</div>
+      <div style="font-size:0.85em;color:#333;margin-top:6px;">📞 CLIENTE</div>
+      <div style="font-size:1.2em;font-weight:900;">${escapeHtml(order.customer_name || "Cliente")}</div>
+      <div style="font-size:1.05em;">${escapeHtml(order.phone || "—")}</div>
+      <div style="font-size:0.85em;color:#333;margin-top:8px;">📍 ENDEREÇO</div>
+      <div style="font-size:1.1em;line-height:1.35;font-weight:700;">${escapeHtml(order.address || "—")}</div>
+      <div style="text-align:center;margin-top:8px;">${dashed}</div>
+      <div style="display:flex;justify-content:space-between;"><span>📅 ${escapeHtml(dateStr)}</span><span>⏰ ${escapeHtml(timeStr)}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span>Itens</span><span><b>${totalItems}</b></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:1.15em;"><span>Total</span><span><b>${BRL(Number(order.total ?? 0))}</b></span></div>
+      <div>Pagto: <b>${escapeHtml(order.status || "—")}</b></div>
+      <div style="text-align:center;margin-top:8px;">${solid}</div>
+      <div style="text-align:center;font-weight:900;">Feito com ♥ por ${escapeHtml(storeName)}</div>
+      <div style="text-align:center;font-size:0.9em;">${escapeHtml(site?.whatsapp_display || site?.whatsapp || "")}</div>
     `;
   }
 
   if (kind === "cozinha") {
     const rows = its
-      .map((it) => {
+      .map((it, i) => {
         const extras = extrasSummary(it.extras);
         return `
-          <div style="margin:4px 0;">
-            <div style="font-size:1.15em;font-weight:900;">${it.quantity}x  ${escapeHtml(it.name)}</div>
-            ${extras ? `<div style="padding-left:1.5em;">+ ${escapeHtml(extras)}</div>` : ""}
+          <div style="margin:6px 0;padding:4px 0;border-bottom:1px dashed #999;">
+            <div style="display:flex;gap:6px;align-items:baseline;">
+              <div style="font-size:1.6em;font-weight:900;min-width:1.8em;">${it.quantity}×</div>
+              <div style="flex:1;font-size:1.2em;font-weight:900;text-transform:uppercase;">${escapeHtml(it.name)}</div>
+            </div>
+            ${extras ? `<div style="padding-left:2em;font-size:1em;font-weight:700;">↳ ${escapeHtml(extras)}</div>` : ""}
+            <div style="text-align:right;font-size:0.75em;color:#666;">item ${i + 1}/${its.length}</div>
           </div>
         `;
       })
       .join("");
     return `
-      <div style="text-align:center;font-weight:900;font-size:1.35em;">COZINHA</div>
-      <div style="text-align:center;">${line}</div>
-      <div><b>#${order.id.slice(0, 6).toUpperCase()}</b> — ${escapeHtml(dateStr)}</div>
-      <div>${escapeHtml(order.customer_name || "Cliente")} · ${escapeHtml(order.mode || "—")}</div>
-      <div style="text-align:center;">${line}</div>
+      <div style="text-align:center;font-weight:900;font-size:1.5em;letter-spacing:3px;">👨‍🍳 COZINHA</div>
+      <div style="text-align:center;">${solid}</div>
+      <div style="display:flex;justify-content:space-between;font-size:1.1em;">
+        <span><b>#${shortId}</b></span>
+        <span>${escapeHtml(timeStr)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.9em;">
+        <span>${escapeHtml(order.customer_name || "Cliente")}</span>
+        <span><b>${modeTxt}</b></span>
+      </div>
+      <div style="text-align:center;">${dashed}</div>
       ${rows || `<div style="text-align:center;color:#666;">Sem itens</div>`}
-      <div style="text-align:center;">${line}</div>
-      <div style="text-align:center;font-weight:900;">TOTAL DE ITENS: ${its.reduce((a, b) => a + b.quantity, 0)}</div>
+      <div style="text-align:center;margin-top:4px;">${solid}</div>
+      <div style="text-align:center;font-size:1.25em;font-weight:900;">TOTAL: ${totalItems} ITENS</div>
+      <div style="text-align:center;font-size:0.85em;margin-top:4px;">Bora fazer com carinho ♥</div>
     `;
   }
 
-  // cliente
+  // cliente — recibo personalizado Quero Bis
   const rows = its
     .map((it) => {
       const extras = extrasSummary(it.extras);
       const sub = it.quantity * Number(it.unit_price);
       return `
-        <div style="display:flex;justify-content:space-between;gap:8px;margin:2px 0;">
-          <div style="flex:1;">
-            <div>${it.quantity}x ${escapeHtml(it.name)}</div>
-            ${extras ? `<div style="padding-left:1em;font-size:0.9em;color:#333;">+ ${escapeHtml(extras)}</div>` : ""}
+        <div style="margin:3px 0;">
+          <div style="display:flex;justify-content:space-between;gap:8px;">
+            <div style="flex:1;font-weight:700;">★ ${it.quantity}x ${escapeHtml(it.name)}</div>
+            <div style="white-space:nowrap;font-weight:700;">${BRL(sub)}</div>
           </div>
-          <div style="white-space:nowrap;">${BRL(sub)}</div>
+          ${extras ? `<div style="padding-left:1.3em;font-size:0.88em;color:#333;">↳ ${escapeHtml(extras)}</div>` : ""}
+          <div style="padding-left:1.3em;font-size:0.8em;color:#666;">${it.quantity} × ${BRL(Number(it.unit_price))}</div>
         </div>
       `;
     })
     .join("");
+
+  const totalNum = Number(order.total ?? 0);
   return `
-    ${S.show_logo && site?.logo_url ? `<div style="text-align:center;margin-bottom:4px;"><img src="${escapeHtml(site.logo_url)}" style="max-height:48px;"/></div>` : ""}
-    <div style="text-align:center;font-weight:900;font-size:1.2em;">${escapeHtml(storeName)}</div>
-    ${address ? `<div style="text-align:center;font-size:0.9em;">${escapeHtml(address)}</div>` : ""}
-    ${site?.whatsapp_display || site?.whatsapp ? `<div style="text-align:center;font-size:0.9em;">${escapeHtml(site.whatsapp_display || site.whatsapp || "")}</div>` : ""}
-    ${S.show_cnpj && S.cnpj ? `<div style="text-align:center;font-size:0.85em;">CNPJ ${escapeHtml(S.cnpj)}</div>` : ""}
-    ${S.header_text ? `<div style="text-align:center;margin-top:4px;">${escapeHtml(S.header_text)}</div>` : ""}
-    <div style="text-align:center;">${line}</div>
-    <div>Pedido: <b>#${order.id.slice(0, 6).toUpperCase()}</b></div>
-    <div>Data: ${escapeHtml(dateStr)}</div>
-    <div>Cliente: ${escapeHtml(order.customer_name || "—")}</div>
-    ${order.phone ? `<div>Tel: ${escapeHtml(order.phone)}</div>` : ""}
-    <div>Modo: ${escapeHtml(order.mode || "—")}</div>
-    ${order.address ? `<div>End: ${escapeHtml(order.address)}</div>` : ""}
-    <div style="text-align:center;">${line}</div>
+    ${S.show_logo && site?.logo_url ? `<div style="text-align:center;margin-bottom:2px;"><img src="${escapeHtml(site.logo_url)}" style="max-height:56px;"/></div>` : ""}
+    <div style="text-align:center;font-weight:900;font-size:1.55em;letter-spacing:2px;">${escapeHtml(storeName)}</div>
+    <div style="text-align:center;font-size:0.85em;font-style:italic;color:#444;">— shakes feitos com amor —</div>
+    ${address ? `<div style="text-align:center;font-size:0.85em;margin-top:2px;">📍 ${escapeHtml(address)}</div>` : ""}
+    ${site?.whatsapp_display || site?.whatsapp ? `<div style="text-align:center;font-size:0.85em;">📱 ${escapeHtml(site.whatsapp_display || site.whatsapp || "")}</div>` : ""}
+    ${S.show_cnpj && S.cnpj ? `<div style="text-align:center;font-size:0.78em;color:#555;">CNPJ ${escapeHtml(S.cnpj)}</div>` : ""}
+    ${S.header_text ? `<div style="text-align:center;margin-top:4px;font-size:0.9em;">${escapeHtml(S.header_text)}</div>` : ""}
+    <div style="text-align:center;margin-top:4px;">${wave}</div>
+    <div style="text-align:center;font-weight:900;letter-spacing:3px;font-size:1.05em;">R E C I B O   N Ã O   F I S C A L</div>
+    <div style="text-align:center;">${wave}</div>
+
+    <div style="margin-top:4px;display:flex;justify-content:space-between;">
+      <span>Pedido</span><span><b>#${shortId}</b></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;">
+      <span>Data</span><span>${escapeHtml(dateStr)} · ${escapeHtml(timeStr)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;">
+      <span>Modo</span><span><b>${modeTxt}</b></span>
+    </div>
+
+    <div style="margin-top:6px;padding:4px 6px;border:1px dashed #000;">
+      <div style="font-size:0.8em;color:#333;">Olá,</div>
+      <div style="font-size:1.15em;font-weight:900;">${escapeHtml(order.customer_name || "Cliente")} 👋</div>
+      ${order.phone ? `<div style="font-size:0.85em;">${escapeHtml(order.phone)}</div>` : ""}
+      ${order.address ? `<div style="font-size:0.85em;margin-top:2px;">📍 ${escapeHtml(order.address)}</div>` : ""}
+    </div>
+
+    <div style="text-align:center;margin-top:6px;">${dashed}</div>
+    <div style="text-align:center;font-weight:900;letter-spacing:2px;">✦ SEU PEDIDO ✦</div>
+    <div style="text-align:center;">${dashed}</div>
     ${rows || `<div style="text-align:center;color:#666;">Sem itens</div>`}
-    <div style="text-align:center;">${line}</div>
+    <div style="text-align:center;">${dashed}</div>
+
     <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span>${BRL(Number(order.subtotal ?? 0))}</span></div>
-    ${Number(order.delivery_fee ?? 0) > 0 ? `<div style="display:flex;justify-content:space-between;"><span>Entrega</span><span>${BRL(Number(order.delivery_fee))}</span></div>` : ""}
-    ${order.coupon_code ? `<div style="display:flex;justify-content:space-between;"><span>Cupom ${escapeHtml(order.coupon_code)}</span><span></span></div>` : ""}
-    <div style="display:flex;justify-content:space-between;font-size:1.2em;font-weight:900;"><span>TOTAL</span><span>${BRL(Number(order.total ?? 0))}</span></div>
-    <div>Pagamento: <b>${escapeHtml(order.status || "—")}</b></div>
-    ${S.show_pix && site?.pix_key ? `<div style="text-align:center;margin-top:4px;">PIX: ${escapeHtml(site.pix_key)}</div>` : ""}
-    ${S.show_qr ? `<div style="text-align:center;margin-top:6px;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://querobis.lovable.app/pedido/${order.id}`)}" style="width:110px;height:110px;"/></div>` : ""}
-    <div style="text-align:center;margin-top:6px;">${line}</div>
-    ${S.footer_text ? `<div style="text-align:center;margin-top:4px;">${escapeHtml(S.footer_text)}</div>` : ""}
-    ${S.tax_note ? `<div style="text-align:center;margin-top:4px;font-size:0.8em;color:#666;">${escapeHtml(S.tax_note)}</div>` : ""}
+    ${Number(order.delivery_fee ?? 0) > 0 ? `<div style="display:flex;justify-content:space-between;"><span>Taxa de entrega</span><span>${BRL(Number(order.delivery_fee))}</span></div>` : ""}
+    ${order.coupon_code ? `<div style="display:flex;justify-content:space-between;color:#0a7;"><span>🎟️ Cupom ${escapeHtml(order.coupon_code)}</span><span>aplicado</span></div>` : ""}
+    <div style="margin-top:4px;padding:4px 6px;background:#000;color:#fff;display:flex;justify-content:space-between;font-size:1.3em;font-weight:900;">
+      <span>TOTAL</span><span>${BRL(totalNum)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;">
+      <span>Pagamento</span><span><b>${escapeHtml((order.status || "—").toUpperCase())}</b></span>
+    </div>
+
+    ${S.show_pix && site?.pix_key ? `
+      <div style="margin-top:6px;padding:4px 6px;border:1px dashed #000;text-align:center;">
+        <div style="font-weight:900;">PIX</div>
+        <div style="font-size:0.9em;word-break:break-all;">${escapeHtml(site.pix_key)}</div>
+      </div>
+    ` : ""}
+    ${S.show_qr ? `
+      <div style="text-align:center;margin-top:8px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://querobis.lovable.app/pedido/${order.id}`)}" style="width:118px;height:118px;"/>
+        <div style="font-size:0.8em;color:#333;">Acompanhe seu pedido</div>
+      </div>
+    ` : ""}
+
+    <div style="text-align:center;margin-top:8px;">${wave}</div>
+    <div style="text-align:center;font-weight:900;font-size:1.05em;">Obrigado pelo carinho! ♥</div>
+    <div style="text-align:center;font-size:0.9em;">Volte sempre — a gente ama te ver por aqui.</div>
+    <div style="text-align:center;font-size:0.85em;margin-top:2px;">#QueroBis · @querobis</div>
+    ${S.footer_text ? `<div style="text-align:center;margin-top:4px;font-size:0.85em;font-style:italic;">${escapeHtml(S.footer_text)}</div>` : ""}
+    ${S.tax_note ? `<div style="text-align:center;margin-top:4px;font-size:0.75em;color:#666;">${escapeHtml(S.tax_note)}</div>` : ""}
+    <div style="text-align:center;margin-top:4px;">${wave}</div>
+    <div style="text-align:center;font-size:0.7em;color:#666;margin-top:2px;">${escapeHtml(shortId)} · ${escapeHtml(dateStr)} ${escapeHtml(timeStr)}</div>
   `;
 }
 
@@ -1014,9 +1084,10 @@ function renderReceipt(
     <style>
       @page { size: ${width} auto; margin: 3mm; }
       html,body { margin:0; padding:0; }
-      body { font-family:'Courier New', monospace; font-size:${S.font_size}pt; color:#000; width:${width}; }
-      .receipt { padding: 2mm; }
+      body { font-family:'Courier New', ui-monospace, monospace; font-size:${S.font_size}pt; color:#000; width:${width}; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .receipt { padding: 2mm; line-height:1.35; }
       .receipt img { max-width:100%; }
+      .receipt * { box-sizing:border-box; }
     </style></head><body><div class="receipt">${bodyHtml(kind, order, its, S, site)}</div>
     <script>window.addEventListener('load', () => { for (let i=0;i<${S.copies};i++) window.print(); });</script>
     </body></html>`;
