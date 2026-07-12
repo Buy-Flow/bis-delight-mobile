@@ -84,7 +84,6 @@ const groups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/rush", label: "Pedidos ao vivo", icon: Flame },
       { to: "/rush", label: "Cozinha", icon: ChefHat },
       { to: "/pdv", label: "PDV", icon: Store },
       { to: "/garcons", label: "Garçons", icon: UserCheck },
@@ -123,9 +122,7 @@ const groups: NavGroup[] = [
       { to: "/notificacoes", label: "Marketing / Push", icon: Megaphone },
       { to: "/ai-growth", label: "AI Growth Engine", icon: TrendingUp },
       { to: "/copiloto", label: "Copiloto (IA)", icon: Bot },
-      { label: "Parceiros", icon: Handshake, soon: true },
       { label: "WhatsApp", icon: MessageCircle, soon: true },
-      { label: "Afiliados", icon: Share2, soon: true },
       { to: "/carrinhos", label: "Carrinhos abandonados", icon: ShoppingCart },
       { to: "/previsao", label: "Previsão de demanda", icon: Sparkles },
       { to: "/financeiro", label: "Relatórios", icon: BarChart3 },
@@ -149,10 +146,8 @@ const groups: NavGroup[] = [
     id: "conta",
     label: "Conta",
     items: [
-      { label: "Meu plano", icon: CreditCard, soon: true },
       { to: "/admin", tab: "settings", label: "Configurações", icon: Settings },
       { label: "Automações", icon: Zap, soon: true },
-      { label: "Suporte", icon: LifeBuoy, soon: true },
     ],
   },
 ];
