@@ -2451,6 +2451,7 @@ export type Database = {
           tier: string
         }[]
       }
+      get_pix_key: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2482,6 +2483,7 @@ export type Database = {
           id: string
         }[]
       }
+      set_pix_key: { Args: { _val: string }; Returns: undefined }
       transfer_table: {
         Args: { _from: string; _to: string }
         Returns: undefined
