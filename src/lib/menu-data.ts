@@ -886,6 +886,10 @@ export function useUpdateSettings() {
         delivery_zone_json: s.deliveryZone,
       }, { onConflict: "id" });
       if (error) throw error;
+      // Persist PIX key via admin-only RPC (RLS-enforced)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: pixErr } = await (supabase.rpc as any)("set_pix_key", { _val: s.pixKey ?? "" });
+      if (pixErr) throw pixErr;
     },
     onSuccess: invalidate,
   });
