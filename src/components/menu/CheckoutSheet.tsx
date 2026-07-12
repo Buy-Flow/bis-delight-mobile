@@ -48,6 +48,27 @@ function formatPhone(v: string) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
+function parseAddressParts(full: string): { street: string; number: string; neighborhood: string; city: string } {
+  const s = (full || "").trim();
+  if (!s) return { street: "", number: "", neighborhood: "", city: "" };
+  const [left, rightRaw] = s.includes("—") ? s.split("—") : s.includes(" - ") ? s.split(" - ") : [s, ""];
+  const leftParts = left.split(",").map((x) => x.trim()).filter(Boolean);
+  let street = leftParts[0] ?? "";
+  let number = "";
+  if (leftParts[1] && /^\d/.test(leftParts[1])) number = leftParts[1];
+  else if (leftParts[1]) street = `${street}, ${leftParts[1]}`;
+  const right = (rightRaw || leftParts.slice(2).join(", ")).trim();
+  const rightParts = right.split(",").map((x) => x.trim()).filter(Boolean);
+  return { street, number, neighborhood: rightParts[0] ?? "", city: rightParts.slice(1).join(", ") };
+}
+
+function joinAddressParts(p: { street: string; number: string; neighborhood: string; city: string }): string {
+  const left = [p.street.trim(), p.number.trim()].filter(Boolean).join(", ");
+  const right = [p.neighborhood.trim(), p.city.trim()].filter(Boolean).join(", ");
+  return [left, right].filter(Boolean).join(" — ");
+}
+
+
 export function CheckoutSheet() {
   const { isCheckoutOpen, closeCheckout, items, update, subtotal, clear } = useCart();
   useBackDismiss(isCheckoutOpen, closeCheckout);
@@ -65,6 +86,10 @@ export function CheckoutSheet() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [addrStreet, setAddrStreet] = useState("");
+  const [addrNumber, setAddrNumber] = useState("");
+  const [addrNeighborhood, setAddrNeighborhood] = useState("");
+  const [addrCity, setAddrCity] = useState("");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
@@ -82,6 +107,20 @@ export function CheckoutSheet() {
   const [quoting, setQuoting] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const geocodeReq = useRef(0);
+
+  // Sync combined address <-> 4 parts when address changes externally
+  useEffect(() => {
+    const current = joinAddressParts({ street: addrStreet, number: addrNumber, neighborhood: addrNeighborhood, city: addrCity });
+    if (current === address) return;
+    const p = parseAddressParts(address);
+    setAddrStreet(p.street);
+    setAddrNumber(p.number);
+    setAddrNeighborhood(p.neighborhood);
+    setAddrCity(p.city);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
+
+
 
   useEffect(() => {
     if (!isCheckoutOpen) return;
@@ -593,20 +632,68 @@ export function CheckoutSheet() {
                     </div>
                   </div>
                 )}
-                <IconField
-                  icon={MapPin}
-                  label="Endereço"
-                  value={address}
-                  onChange={(v) => {
-                    setAddress(v);
+                {(() => {
+                  const updatePart = (patch: Partial<{ street: string; number: string; neighborhood: string; city: string }>) => {
+                    const next = {
+                      street: patch.street ?? addrStreet,
+                      number: patch.number ?? addrNumber,
+                      neighborhood: patch.neighborhood ?? addrNeighborhood,
+                      city: patch.city ?? addrCity,
+                    };
+                    if (patch.street !== undefined) setAddrStreet(patch.street);
+                    if (patch.number !== undefined) setAddrNumber(patch.number);
+                    if (patch.neighborhood !== undefined) setAddrNeighborhood(patch.neighborhood);
+                    if (patch.city !== undefined) setAddrCity(patch.city);
+                    setAddress(joinAddressParts(next));
                     setSelectedAddressId(null);
                     setPreGeocoded(null);
-                  }}
-                  placeholder="Rua, número, bairro"
-                  autoComplete="street-address"
-                  name="street-address"
-                  trailing={<div className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80"><Settings className="h-4 w-4" /></div>}
-                />
+                  };
+                  return (
+                    <>
+                      <div className="grid grid-cols-[1fr_110px] gap-2">
+                        <IconField
+                          icon={MapPin}
+                          label="Rua / Avenida"
+                          value={addrStreet}
+                          onChange={(v) => updatePart({ street: v })}
+                          placeholder="Ex: Av. Brasil"
+                          autoComplete="address-line1"
+                          name="address-line1"
+                        />
+                        <IconField
+                          icon={MapPin}
+                          label="Número"
+                          value={addrNumber}
+                          onChange={(v) => updatePart({ number: v })}
+                          placeholder="Nº"
+                          inputMode="numeric"
+                          autoComplete="off"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <IconField
+                          icon={MapPin}
+                          label="Bairro"
+                          value={addrNeighborhood}
+                          onChange={(v) => updatePart({ neighborhood: v })}
+                          placeholder="Ex: Centro"
+                          autoComplete="address-level3"
+                          name="address-level3"
+                        />
+                        <IconField
+                          icon={MapPin}
+                          label="Cidade"
+                          value={addrCity}
+                          onChange={(v) => updatePart({ city: v })}
+                          placeholder="(opcional)"
+                          autoComplete="address-level2"
+                          name="address-level2"
+                        />
+                      </div>
+                    </>
+                  );
+                })()}
+
                 <IconField
                   icon={MapPin}
                   label="Referência"
