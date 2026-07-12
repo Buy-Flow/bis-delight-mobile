@@ -520,6 +520,17 @@ function PopupEditor({
           >
             Cancelar
           </button>
+          {onSaveAsTemplate && draft.kind !== "template" && (
+            <button
+              type="button"
+              onClick={onSaveAsTemplate}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-neon-cyan/50 bg-neon-cyan/10 px-3 py-2 text-xs font-black uppercase tracking-wider text-neon-cyan hover:bg-neon-cyan/20 disabled:opacity-60"
+              title="Salvar como modelo (rascunho)"
+            >
+              <Bookmark className="h-3.5 w-3.5" /> Modelo
+            </button>
+          )}
           <button
             type="button"
             onClick={onSave}
