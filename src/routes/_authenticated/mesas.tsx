@@ -364,6 +364,13 @@ function TablesPage() {
                   {z}
                 </button>
               ))}
+              <button
+                onClick={() => setManagingZones(true)}
+                title="Gerenciar zonas"
+                className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-white/70 transition hover:bg-white/10"
+              >
+                Gerenciar zonas
+              </button>
             </div>
           </div>
         )}
