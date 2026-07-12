@@ -98,15 +98,13 @@ export function makeDefaultPopup(
   return base;
 }
 
-export function promoteTemplateToToday(
-  p: Omit<SitePopup, "created_at" | "updated_at">,
-): Omit<SitePopup, "created_at" | "updated_at"> {
+type PopupDraftInsert = Omit<SitePopup, "id" | "created_at" | "updated_at">;
+
+export function promoteTemplateToToday(p: PopupDraftInsert): PopupDraftInsert {
   return { ...p, kind: "today", active: true, ...todayRange(), days_of_week: [] };
 }
 
-export function promoteTemplateToWeekly(
-  p: Omit<SitePopup, "created_at" | "updated_at">,
-): Omit<SitePopup, "created_at" | "updated_at"> {
+export function promoteTemplateToWeekly(p: PopupDraftInsert): PopupDraftInsert {
   return {
     ...p,
     kind: "weekly",
