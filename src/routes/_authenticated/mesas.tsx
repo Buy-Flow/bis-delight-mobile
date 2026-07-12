@@ -643,22 +643,12 @@ function ManageView({
             <div className="flex-1 min-w-0">
               <div className="truncate font-semibold text-white">
                 {t.label || `Mesa ${t.number}`}
-                {!t.active && (
-                  <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white/60">
-                    inativa
-                  </span>
-                )}
               </div>
               <div className="text-[11px] text-white/50">
                 {t.zone || "—"} · {t.seats} pessoas
               </div>
             </div>
-            <button
-              onClick={() => toggleActive(t)}
-              className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-white/70 hover:bg-white/10"
-            >
-              {t.active ? "Desativar" : "Ativar"}
-            </button>
+
             <button
               onClick={() => onEdit(t)}
               className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
