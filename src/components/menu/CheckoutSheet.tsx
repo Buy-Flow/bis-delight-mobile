@@ -108,6 +108,20 @@ export function CheckoutSheet() {
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const geocodeReq = useRef(0);
 
+  // Sync combined address <-> 4 parts when address changes externally
+  useEffect(() => {
+    const current = joinAddressParts({ street: addrStreet, number: addrNumber, neighborhood: addrNeighborhood, city: addrCity });
+    if (current === address) return;
+    const p = parseAddressParts(address);
+    setAddrStreet(p.street);
+    setAddrNumber(p.number);
+    setAddrNeighborhood(p.neighborhood);
+    setAddrCity(p.city);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
+
+
+
   useEffect(() => {
     if (!isCheckoutOpen) return;
     const saved = loadSaved();
