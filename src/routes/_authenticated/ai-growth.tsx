@@ -1,16 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Toaster, toast } from "sonner";
 import {
-  ChevronLeft,
   RefreshCw,
   TrendingUp,
   Loader2,
   Send,
-  MessageSquare,
   ChevronDown,
   ChevronUp,
-  X,
   Sparkles,
   Copy,
   Check,
@@ -20,9 +17,17 @@ import {
   Zap,
   BrainCircuit,
   Trash2,
+  Plus,
+  MessageSquare,
+  Globe,
+  Menu,
+  X,
+  MoreVertical,
+  Pencil,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useIsAdmin } from "@/lib/menu-data";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
@@ -31,10 +36,16 @@ import {
   dismissGrowthInsight,
   dispatchGrowthCampaign,
   growthChat,
-  getGrowthChatHistory,
+  listGrowthThreads,
+  createGrowthThread,
+  deleteGrowthThread,
+  renameGrowthThread,
+  getGrowthThreadMessages,
   type GrowthReport,
   type GrowthInsight,
   type GrowthClient,
+  type GrowthThread,
+  type GrowthChatMessage,
 } from "@/lib/ai-growth.functions";
 
 export const Route = createFileRoute("/_authenticated/ai-growth")({
@@ -114,16 +125,13 @@ function AIGrowthPage() {
     <div className="min-h-screen bg-gradient-to-b from-purple-950 via-purple-950 to-black text-white pb-24">
       <Toaster richColors position="top-center" />
 
-
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
-        {/* Hero */}
         <HeroCard
           report={report}
           loading={loading}
           onRefresh={() => load(true)}
         />
 
-        {/* Insights list */}
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -172,8 +180,7 @@ function AIGrowthPage() {
           )}
         </section>
 
-        {/* Chat */}
-        <GrowthChatPanel />
+        <ConsultantChat />
       </div>
     </div>
   );
@@ -344,7 +351,6 @@ function InsightCard({
         return toast.warning(
           "Nenhum cliente selecionado tem telefone cadastrado.",
         );
-      // Open first, offer to copy the rest
       window.open(res.links[0].whatsapp_url, "_blank");
       toast.success(
         `Campanha registrada: ${res.dispatched} contato(s). Primeiro WhatsApp aberto.`,
@@ -525,106 +531,256 @@ function ClientRow({
   );
 }
 
-// ---------------- Chat ----------------
+// ============ Consultant Chat (threaded, advisory only) ============
 
-type ChatMsg = { role: "user" | "assistant"; content: string };
+const SUGGESTIONS = [
+  "Quais tendências de açaí estão bombando esse mês?",
+  "Como reduzir churn de clientes VIP?",
+  "Ideias de combos para o inverno",
+  "Que estratégia de mídia social usar para açaí premium?",
+  "Benchmark de ticket médio no meu segmento",
+  "Sugestões de sabores sazonais",
+];
 
-function GrowthChatPanel() {
+function ConsultantChat() {
+  const listFn = useServerFn(listGrowthThreads);
+  const createFn = useServerFn(createGrowthThread);
+  const deleteFn = useServerFn(deleteGrowthThread);
+  const renameFn = useServerFn(renameGrowthThread);
+  const msgsFn = useServerFn(getGrowthThreadMessages);
   const chatFn = useServerFn(growthChat);
-  const historyFn = useServerFn(getGrowthChatHistory);
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+
+  const [threads, setThreads] = useState<GrowthThread[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<GrowthChatMessage[]>([]);
+  const [loadingThreads, setLoadingThreads] = useState(true);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [webSearch, setWebSearch] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  const active = useMemo(
+    () => threads.find((t) => t.id === activeId) ?? null,
+    [threads, activeId],
+  );
+
+  const refreshThreads = async (): Promise<GrowthThread[]> => {
+    const res = await listFn({ data: undefined });
+    setThreads(res.threads);
+    return res.threads;
+  };
+
+  const loadMessages = async (tid: string) => {
+    try {
+      const res = await msgsFn({ data: { thread_id: tid } });
+      setMessages(res.messages);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
 
   useEffect(() => {
-    historyFn({ data: undefined }).then((res) => {
-      setMessages(
-        (res.messages ?? [])
-          .filter((m) => m.role === "user" || m.role === "assistant")
-          .map((m) => ({
-            role: m.role as "user" | "assistant",
-            content: m.content,
-          })),
-      );
-    });
+    (async () => {
+      setLoadingThreads(true);
+      try {
+        let list = await refreshThreads();
+        if (!list.length) {
+          const res = await createFn({ data: {} });
+          list = [res.thread];
+          setThreads(list);
+        }
+        setActiveId(list[0].id);
+      } catch (e) {
+        toast.error((e as Error).message);
+      } finally {
+        setLoadingThreads(false);
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if (activeId) loadMessages(activeId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId]);
+
+  useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, expanded]);
+  }, [messages, sending]);
+
+  const newThread = async () => {
+    try {
+      const res = await createFn({ data: {} });
+      setThreads((t) => [res.thread, ...t]);
+      setActiveId(res.thread.id);
+      setMessages([]);
+      setDrawerOpen(false);
+      setTimeout(() => taRef.current?.focus(), 50);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
+  const removeThread = async (id: string) => {
+    if (!confirm("Apagar esta conversa?")) return;
+    try {
+      await deleteFn({ data: { id } });
+      const next = threads.filter((t) => t.id !== id);
+      setThreads(next);
+      if (activeId === id) {
+        if (next.length) setActiveId(next[0].id);
+        else {
+          const res = await createFn({ data: {} });
+          setThreads([res.thread]);
+          setActiveId(res.thread.id);
+          setMessages([]);
+        }
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
+  const rename = async (id: string) => {
+    const cur = threads.find((t) => t.id === id);
+    const next = prompt("Renomear conversa:", cur?.title ?? "")?.trim();
+    if (!next) return;
+    try {
+      await renameFn({ data: { id, title: next.slice(0, 80) } });
+      setThreads((t) =>
+        t.map((x) => (x.id === id ? { ...x, title: next.slice(0, 80) } : x)),
+      );
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
 
   const send = async () => {
     const text = input.trim();
-    if (!text || sending) return;
+    if (!text || sending || !activeId) return;
     setInput("");
-    setMessages((m) => [...m, { role: "user", content: text }]);
+    const optimistic: GrowthChatMessage = {
+      id: `tmp-${Date.now()}`,
+      role: "user",
+      content: text,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((m) => [...m, optimistic]);
     setSending(true);
     try {
-      const res = await chatFn({ data: { message: text } });
-      setMessages((m) => [...m, { role: "assistant", content: res.reply }]);
+      const res = await chatFn({
+        data: {
+          thread_id: activeId,
+          message: text,
+          web_search: webSearch,
+        },
+      });
+      let reply = res.reply;
+      if (res.citations?.length) {
+        reply +=
+          "\n\n**Fontes:**\n" +
+          res.citations.map((u, i) => `${i + 1}. ${u}`).join("\n");
+      }
+      setMessages((m) => [
+        ...m,
+        {
+          id: `a-${Date.now()}`,
+          role: "assistant",
+          content: reply,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      refreshThreads();
     } catch (e) {
       toast.error((e as Error).message);
       setMessages((m) => [
         ...m,
         {
+          id: `err-${Date.now()}`,
           role: "assistant",
-          content: "Ops, não consegui responder. Tente de novo.",
+          content: `⚠️ ${(e as Error).message}`,
+          created_at: new Date().toISOString(),
         },
       ]);
     } finally {
       setSending(false);
+      setTimeout(() => taRef.current?.focus(), 50);
     }
   };
 
-  const reset = async () => {
-    await chatFn({ data: { message: "Olá", reset: true } }).catch(() => null);
-    setMessages([]);
-    toast.success("Histórico limpo");
-  };
-
-  const suggestions = useMemo(
-    () => [
-      "Qual promo lançar essa semana?",
-      "Ideia de push para hoje à noite",
-      "Como recuperar clientes que sumiram?",
-      "Que sabor destacar no fim de semana?",
-    ],
-    [],
-  );
+  const showEmpty = !messages.length && !sending;
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.03]">
-      <button
-        onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center gap-2 p-4 text-left"
-      >
-        <MessageSquare className="h-4 w-4 text-neon-yellow" />
-        <span className="flex-1 font-semibold">Assistente de crescimento</span>
-        <span className="text-xs text-white/50">
-          {messages.length} mensagens
-        </span>
-        {expanded ? (
-          <ChevronUp className="h-4 w-4 text-white/60" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-white/60" />
-        )}
-      </button>
+    <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-purple-900/40 to-black/40 overflow-hidden">
+      <div className="flex flex-col lg:flex-row h-[640px] lg:h-[680px]">
+        {/* Desktop sidebar */}
+        <aside className="hidden lg:flex lg:w-64 xl:w-72 shrink-0 flex-col border-r border-white/10 bg-black/30">
+          <SidebarContent
+            threads={threads}
+            activeId={activeId}
+            loading={loadingThreads}
+            onSelect={(id) => setActiveId(id)}
+            onNew={newThread}
+            onDelete={removeThread}
+            onRename={rename}
+          />
+        </aside>
 
-      {expanded && (
-        <div className="border-t border-white/10 flex flex-col h-[520px]">
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.length === 0 && (
-              <div className="text-center text-sm text-white/60 py-6">
-                <p>Pergunte qualquer coisa sobre marketing, cardápio, retenção ou operação.</p>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {suggestions.map((s) => (
+        {/* Chat column */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header */}
+          <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 bg-black/20">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="lg:hidden rounded-lg p-2 hover:bg-white/10"
+              aria-label="Conversas"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <BrainCircuit className="h-4 w-4 text-neon-yellow shrink-0" />
+                <span className="font-semibold truncate">
+                  {active?.title ?? "Consultor de crescimento"}
+                </span>
+              </div>
+              <div className="text-[11px] text-white/50 truncate">
+                Consultor — só conversa e dá ideias, não altera o site.
+              </div>
+            </div>
+            <button
+              onClick={newThread}
+              title="Nova conversa"
+              className="rounded-lg p-2 hover:bg-white/10"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {showEmpty && (
+              <div className="max-w-lg mx-auto text-center py-8 space-y-4">
+                <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-neon-yellow/30 to-neon-pink/30 flex items-center justify-center">
+                  <BrainCircuit className="h-7 w-7 text-neon-yellow" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">
+                    Consultor de crescimento
+                  </h3>
+                  <p className="text-sm text-white/60 mt-1">
+                    Estratégia, tendências e ideias para o Quero Bis. Ative a
+                    busca na web para consultar o mercado em tempo real.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                  {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => setInput(s)}
-                      className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80 hover:bg-white/10"
+                      className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left text-xs text-white/80 hover:bg-white/10 hover:border-neon-yellow/40 active:scale-[0.98] transition"
                     >
                       {s}
                     </button>
@@ -632,66 +788,276 @@ function GrowthChatPanel() {
                 </div>
               </div>
             )}
-            {messages.map((m, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "flex",
-                  m.role === "user" ? "justify-end" : "justify-start",
-                )}
-              >
-                <div
-                  className={cn(
-                    "max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap",
-                    m.role === "user"
-                      ? "bg-neon-pink text-white"
-                      : "bg-white/10 text-white/90",
-                  )}
-                >
-                  {m.content}
-                </div>
-              </div>
+            {messages.map((m) => (
+              <MessageBubble key={m.id} message={m} />
             ))}
             {sending && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl bg-white/10 px-3 py-2 text-sm text-white/60">
-                  <Loader2 className="inline h-3 w-3 animate-spin" /> pensando…
+              <div className="flex items-start gap-2">
+                <div className="h-7 w-7 rounded-full bg-neon-yellow/20 flex items-center justify-center shrink-0">
+                  <BrainCircuit className="h-4 w-4 text-neon-yellow" />
+                </div>
+                <div className="rounded-2xl bg-white/5 px-3 py-2 text-sm text-white/60">
+                  <Loader2 className="inline h-3 w-3 animate-spin mr-1" />
+                  {webSearch ? "consultando mercado…" : "pensando…"}
                 </div>
               </div>
             )}
             <div ref={endRef} />
           </div>
 
-          <div className="flex items-center gap-2 border-t border-white/10 p-3">
-            <button
-              onClick={reset}
-              title="Limpar histórico"
-              className="rounded-full border border-white/15 p-2 text-white/70 hover:bg-white/10"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder="Pergunte ao assistente…"
-              className="flex-1 rounded-full border border-white/15 bg-black/40 px-4 py-2 text-sm outline-none focus:border-neon-yellow"
-            />
-            <button
-              onClick={send}
-              disabled={sending || !input.trim()}
-              className="rounded-full bg-neon-yellow p-2 text-black disabled:opacity-50"
-            >
-              <Send className="h-4 w-4" />
-            </button>
+          {/* Composer */}
+          <div className="border-t border-white/10 p-3 bg-black/30 space-y-2">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setWebSearch((v) => !v)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition",
+                  webSearch
+                    ? "bg-neon-yellow text-black border-neon-yellow"
+                    : "border-white/15 text-white/70 hover:bg-white/5",
+                )}
+                title="Buscar informações atualizadas na web"
+              >
+                <Globe className="h-3.5 w-3.5" />
+                Web {webSearch ? "on" : "off"}
+              </button>
+              <span className="text-[10px] text-white/40 hidden sm:inline">
+                {webSearch
+                  ? "Respostas com fontes atualizadas"
+                  : "Só conhecimento do modelo + KPIs da loja"}
+              </span>
+            </div>
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={taRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (
+                    e.key === "Enter" &&
+                    !e.shiftKey &&
+                    window.matchMedia("(min-width: 768px)").matches
+                  ) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                placeholder="Pergunte ao consultor…"
+                rows={2}
+                className="flex-1 resize-none rounded-2xl border border-white/15 bg-black/40 px-4 py-2.5 text-sm text-white outline-none focus:border-neon-yellow"
+              />
+              <button
+                onClick={send}
+                disabled={sending || !input.trim()}
+                className="shrink-0 h-11 w-11 rounded-2xl bg-neon-yellow text-black hover:brightness-110 disabled:opacity-40 flex items-center justify-center"
+              >
+                {sending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile drawer */}
+      {drawerOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+          onClick={() => setDrawerOpen(false)}
+        >
+          <aside
+            className="absolute inset-y-0 left-0 w-[85%] max-w-xs bg-purple-950 border-r border-white/10 flex flex-col animate-in slide-in-from-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-3 border-b border-white/10">
+              <span className="font-semibold text-sm flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" /> Conversas
+              </span>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="rounded-lg p-1.5 hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <SidebarContent
+              threads={threads}
+              activeId={activeId}
+              loading={loadingThreads}
+              onSelect={(id) => {
+                setActiveId(id);
+                setDrawerOpen(false);
+              }}
+              onNew={newThread}
+              onDelete={removeThread}
+              onRename={rename}
+            />
+          </aside>
         </div>
       )}
     </section>
+  );
+}
+
+function SidebarContent({
+  threads,
+  activeId,
+  loading,
+  onSelect,
+  onNew,
+  onDelete,
+  onRename,
+}: {
+  threads: GrowthThread[];
+  activeId: string | null;
+  loading: boolean;
+  onSelect: (id: string) => void;
+  onNew: () => void;
+  onDelete: (id: string) => void;
+  onRename: (id: string) => void;
+}) {
+  return (
+    <>
+      <div className="p-3 border-b border-white/10">
+        <button
+          onClick={onNew}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-neon-yellow px-3 py-2 text-sm font-bold text-black hover:brightness-110 active:scale-[0.98] transition"
+        >
+          <Plus className="h-4 w-4" /> Nova conversa
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        {loading && (
+          <div className="text-center text-xs text-white/50 py-4">
+            <Loader2 className="inline h-3 w-3 animate-spin" /> carregando…
+          </div>
+        )}
+        {!loading && !threads.length && (
+          <div className="text-center text-xs text-white/50 py-4">
+            Sem conversas ainda.
+          </div>
+        )}
+        {threads.map((t) => (
+          <ThreadRow
+            key={t.id}
+            thread={t}
+            active={t.id === activeId}
+            onSelect={() => onSelect(t.id)}
+            onDelete={() => onDelete(t.id)}
+            onRename={() => onRename(t.id)}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ThreadRow({
+  thread,
+  active,
+  onSelect,
+  onDelete,
+  onRename,
+}: {
+  thread: GrowthThread;
+  active: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+  onRename: () => void;
+}) {
+  const [menu, setMenu] = useState(false);
+  return (
+    <div
+      className={cn(
+        "group relative rounded-xl border transition",
+        active
+          ? "border-neon-yellow/40 bg-neon-yellow/10"
+          : "border-transparent hover:border-white/10 hover:bg-white/5",
+      )}
+    >
+      <button
+        onClick={onSelect}
+        className="w-full text-left px-3 py-2.5 flex items-center gap-2 min-w-0"
+      >
+        <MessageSquare
+          className={cn(
+            "h-3.5 w-3.5 shrink-0",
+            active ? "text-neon-yellow" : "text-white/50",
+          )}
+        />
+        <span className="flex-1 truncate text-sm">{thread.title}</span>
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setMenu((v) => !v);
+        }}
+        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-white/50 hover:bg-white/10 hover:text-white opacity-0 group-hover:opacity-100 focus:opacity-100"
+      >
+        <MoreVertical className="h-3.5 w-3.5" />
+      </button>
+      {menu && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setMenu(false)}
+          />
+          <div className="absolute right-1 top-9 z-50 min-w-[130px] rounded-lg border border-white/10 bg-purple-950 shadow-xl p-1">
+            <button
+              onClick={() => {
+                setMenu(false);
+                onRename();
+              }}
+              className="w-full text-left px-2 py-1.5 rounded text-xs text-white/80 hover:bg-white/10 flex items-center gap-2"
+            >
+              <Pencil className="h-3 w-3" /> Renomear
+            </button>
+            <button
+              onClick={() => {
+                setMenu(false);
+                onDelete();
+              }}
+              className="w-full text-left px-2 py-1.5 rounded text-xs text-red-300 hover:bg-red-500/20 flex items-center gap-2"
+            >
+              <Trash2 className="h-3 w-3" /> Apagar
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function MessageBubble({ message }: { message: GrowthChatMessage }) {
+  const isUser = message.role === "user";
+  return (
+    <div className={cn("flex gap-2", isUser ? "justify-end" : "justify-start")}>
+      {!isUser && (
+        <div className="h-7 w-7 rounded-full bg-neon-yellow/20 flex items-center justify-center shrink-0 mt-0.5">
+          <BrainCircuit className="h-4 w-4 text-neon-yellow" />
+        </div>
+      )}
+      <div
+        className={cn(
+          "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm",
+          isUser
+            ? "bg-neon-pink text-white"
+            : "bg-white/[0.06] border border-white/10 text-white/90",
+        )}
+      >
+        {isUser ? (
+          <div className="whitespace-pre-wrap">{message.content}</div>
+        ) : (
+          <div className="prose prose-sm prose-invert max-w-none prose-headings:mt-2 prose-headings:mb-1 prose-p:my-1.5 prose-ul:my-1.5 prose-li:my-0 prose-a:text-neon-yellow prose-strong:text-white">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.content}
+            </ReactMarkdown>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

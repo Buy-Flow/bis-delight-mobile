@@ -5,10 +5,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 /**
  * AI Growth Engine
  *
- * Analyzes real orders/profiles/abandoned_carts and produces prioritized
- * revenue opportunities. The heuristics build deterministic customer
- * segments (real data, never invented) and the LLM only rewrites the
- * copy / priority label for each segment.
+ * Detects revenue opportunities (deterministic segments on real data) and
+ * provides a threaded consultant chat with optional web search.
+ * The consultant NEVER modifies the site — it is advisory only.
  */
 
 export type GrowthClient = {
@@ -46,6 +45,20 @@ export type GrowthReport = {
   totalActive: number;
   insights: GrowthInsight[];
   aiError?: string;
+};
+
+export type GrowthThread = {
+  id: string;
+  title: string;
+  updated_at: string;
+  created_at: string;
+};
+
+export type GrowthChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
 };
 
 const DAY = 86400000;
@@ -132,7 +145,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabase } = context;
 
-    // 1. Reuse cached insights if fresh and not forced
     if (!data.refresh) {
       const { data: cached } = await supabase
         .from("ai_insights")
@@ -172,7 +184,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
     const now = Date.now();
     const from180 = new Date(now - 180 * DAY).toISOString();
 
-    // 2. Load raw data in parallel
     const [ordersRes, profilesRes, itemsRes, productsRes, cartsRes] =
       await Promise.all([
         supabase
@@ -211,7 +222,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
       }
     }
 
-    // 3. Aggregate per client
     const clients = new Map<string, ClientAgg>();
     for (const o of orders) {
       if (!o.user_id) continue;
@@ -248,7 +258,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
 
     const daysSince = (iso: string) => (now - new Date(iso).getTime()) / DAY;
 
-    // 4. Build segments (deterministic real data)
     type Segment = {
       key: string;
       category: string;
@@ -259,7 +268,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
     };
     const segments: Segment[] = [];
 
-    // A. Churned VIPs — ordered 30-90d ago, LTV top 30%
     const ltvSorted = [...allClients].sort((a, b) => b.ltv - a.ltv);
     const vipCut = ltvSorted[Math.floor(ltvSorted.length * 0.3)]?.ltv ?? 0;
     const churnedVIP = allClients.filter((c) => {
@@ -287,7 +295,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
       });
     }
 
-    // B. Aniversariantes do mês
     const thisMonth = new Date().getMonth() + 1;
     const birthdayClients = profiles.filter((p) => {
       if (!p.birthday) return false;
@@ -318,7 +325,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
       });
     }
 
-    // C. Carrinhos abandonados sem recuperação (últimos 14d)
     if (carts.length) {
       const cartClients: GrowthClient[] = carts
         .slice(0, 20)
@@ -351,7 +357,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
       }
     }
 
-    // D. First-timers que não voltaram (30-60d)
     const oneShots = allClients.filter(
       (c) =>
         c.orders === 1 &&
@@ -379,7 +384,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
       });
     }
 
-    // E. Fãs de categoria (top 1 categoria, 3+ pedidos, mais de 15d parados)
     const catFans: Record<string, GrowthClient[]> = {};
     for (const c of allClients) {
       if (c.orders < 3) continue;
@@ -411,7 +415,6 @@ export const generateGrowthInsights = createServerFn({ method: "POST" })
       });
     }
 
-    // 5. Ask AI to produce priority + copy for each segment
     const apiKey = process.env.LOVABLE_API_KEY;
     let aiError: string | undefined;
     const enriched: Array<{
@@ -499,7 +502,6 @@ Devolva JSON:
       aiError = "LOVABLE_API_KEY ausente no servidor.";
     }
 
-    // 6. Persist insights (clear pending first)
     await supabase.from("ai_insights").delete().eq("status", "pending");
 
     const toInsert = segments.map((s) => {
@@ -543,7 +545,6 @@ Devolva JSON:
 
     saved.sort((a, b) => b.impacto - a.impacto);
 
-    // 7. KPIs
     const activeClients = allClients.filter(
       (c) => daysSince(c.last_order_at) <= 60,
     ).length;
@@ -644,13 +645,162 @@ export const dispatchGrowthCampaign = createServerFn({ method: "POST" })
     return { links, dispatched: links.length };
   });
 
+// ============ Threaded Consultant Chat ============
+
+export const listGrowthThreads = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ threads: GrowthThread[] }> => {
+    await assertAdmin(context);
+    const { data, error } = await context.supabase
+      .from("ai_growth_threads")
+      .select("id,title,created_at,updated_at")
+      .eq("user_id", context.userId)
+      .order("updated_at", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    return { threads: (data ?? []) as GrowthThread[] };
+  });
+
+export const createGrowthThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ title: z.string().max(80).optional() }).parse(data ?? {}),
+  )
+  .handler(async ({ data, context }): Promise<{ thread: GrowthThread }> => {
+    await assertAdmin(context);
+    const { data: row, error } = await context.supabase
+      .from("ai_growth_threads")
+      .insert({
+        user_id: context.userId,
+        title: data.title ?? "Nova conversa",
+      })
+      .select("id,title,created_at,updated_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return { thread: row as GrowthThread };
+  });
+
+export const renameGrowthThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({ id: z.string().uuid(), title: z.string().min(1).max(80) })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("ai_growth_threads")
+      .update({ title: data.title })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteGrowthThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ id: z.string().uuid() }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("ai_growth_threads")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const getGrowthThreadMessages = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ thread_id: z.string().uuid() }).parse(data),
+  )
+  .handler(
+    async ({ data, context }): Promise<{ messages: GrowthChatMessage[] }> => {
+      await assertAdmin(context);
+      const { data: rows, error } = await context.supabase
+        .from("ai_growth_chat")
+        .select("id,role,content,created_at")
+        .eq("user_id", context.userId)
+        .eq("thread_id", data.thread_id)
+        .order("created_at", { ascending: true })
+        .limit(200);
+      if (error) throw new Error(error.message);
+      const messages = (rows ?? [])
+        .filter((r) => r.role === "user" || r.role === "assistant")
+        .map((r) => ({
+          id: r.id as string,
+          role: r.role as "user" | "assistant",
+          content: r.content as string,
+          created_at: r.created_at as string,
+        }));
+      return { messages };
+    },
+  );
+
+async function callGatewayChat(
+  apiKey: string,
+  body: Record<string, unknown>,
+): Promise<{ content: string; citations?: string[] }> {
+  const resp = await fetch(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+    },
+  );
+  if (resp.status === 429)
+    throw new Error("Muitas requisições — tente em instantes.");
+  if (resp.status === 402)
+    throw new Error(
+      "Créditos de IA esgotados. Adicione créditos ao workspace.",
+    );
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new Error(`IA indisponível (${resp.status}). ${text.slice(0, 200)}`);
+  }
+  const payload = (await resp.json()) as {
+    choices?: Array<{
+      message?: {
+        content?: string;
+        annotations?: Array<{
+          type?: string;
+          url_citation?: { url?: string; title?: string };
+        }>;
+      };
+    }>;
+    citations?: string[];
+  };
+  const msg = payload.choices?.[0]?.message;
+  const content = msg?.content?.trim() ?? "";
+  const annotations = msg?.annotations ?? [];
+  const citations: string[] = [];
+  for (const a of annotations) {
+    const url = a.url_citation?.url;
+    if (url && !citations.includes(url)) citations.push(url);
+  }
+  for (const c of payload.citations ?? []) {
+    if (!citations.includes(c)) citations.push(c);
+  }
+  return { content, citations };
+}
+
 export const growthChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
     z
       .object({
-        message: z.string().min(1).max(1200),
-        reset: z.boolean().default(false),
+        thread_id: z.string().uuid(),
+        message: z.string().min(1).max(2000),
+        web_search: z.boolean().default(false),
       })
       .parse(data),
   )
@@ -658,11 +808,17 @@ export const growthChat = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabase, userId } = context;
 
-    if (data.reset) {
-      await supabase.from("ai_growth_chat").delete().eq("user_id", userId);
-    }
+    // Verify thread ownership
+    const { data: thread, error: threadErr } = await supabase
+      .from("ai_growth_threads")
+      .select("id,title")
+      .eq("id", data.thread_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (threadErr) throw new Error(threadErr.message);
+    if (!thread) throw new Error("Conversa não encontrada");
 
-    // Context: latest KPIs
+    // KPIs context (last 90d)
     const now = Date.now();
     const from90 = new Date(now - 90 * DAY).toISOString();
     const { data: recent } = await supabase
@@ -691,25 +847,48 @@ export const growthChat = createServerFn({ method: "POST" })
       clientes_unicos_90d: totals.users.size,
     };
 
-    // History
+    // History for this thread only
     const { data: history } = await supabase
       .from("ai_growth_chat")
       .select("role,content")
       .eq("user_id", userId)
+      .eq("thread_id", data.thread_id)
       .order("created_at", { ascending: true })
-      .limit(40);
+      .limit(60);
 
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY ausente");
 
+    const today = new Date().toLocaleDateString("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+
+    const systemPrompt = `Você é um consultor sênior de crescimento e marketing para uma loja de açaí premium no Brasil ("Quero Bis").
+
+📌 SEU PAPEL É **CONSULTIVO** — você conversa, dá ideias, sugere estratégias, analisa tendências. **Você NÃO tem acesso ao sistema da loja e NÃO executa alterações** (não cria cupons, não muda preços, não dispara campanhas). Apenas aconselha.
+
+Hoje é ${today}.
+
+Contexto real da loja (últimos 90 dias):
+- Pedidos: ${kpis.pedidos_90d}
+- Receita: R$ ${kpis.receita_90d}
+- Ticket médio: R$ ${kpis.ticket_medio}
+- Clientes únicos: ${kpis.clientes_unicos_90d}
+
+Diretrizes:
+- Responda em pt-BR, tom de consultor experiente, prático e direto.
+- Estruture com títulos curtos e bullets quando útil. Use markdown.
+- Traga números, benchmarks e exemplos reais quando fizer sentido.
+- Se usar web search, cite fontes ao final como lista.
+- Se o usuário pedir para "fazer/criar/enviar" algo no sistema, explique que você é consultor e sugira o que ele mesmo pode configurar no painel (menu de Automações, Copiloto, Push, Cupons, etc.).
+- Foco: tendências de mercado, cardápio, precificação, mídia social, retenção, upsell, sazonalidade, campanhas.`;
+
     const messages = [
-      {
-        role: "system" as const,
-        content: `Você é o head de crescimento da loja de açaí Quero Bis.
-Responda em pt-BR, direto, curto (máx 6 linhas), com números quando fizer sentido.
-KPIs recentes (últimos 90d): ${JSON.stringify(kpis)}.
-Se o dono pedir campanha, sugira formato, horário e mensagem pronta.`,
-      },
+      { role: "system" as const, content: systemPrompt },
       ...((history ?? []).map((h) => ({
         role: h.role as "user" | "assistant",
         content: h.content,
@@ -717,47 +896,46 @@ Se o dono pedir campanha, sugira formato, horário e mensagem pronta.`,
       { role: "user" as const, content: data.message },
     ];
 
-    const resp = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages,
-          temperature: 0.7,
-        }),
-      },
-    );
-    if (resp.status === 429) throw new Error("Muitas requisições — tente em instantes.");
-    if (resp.status === 402)
-      throw new Error("Créditos de IA esgotados. Adicione créditos ao workspace.");
-    if (!resp.ok) throw new Error(`IA indisponível (${resp.status})`);
-    const payload = (await resp.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const reply = payload.choices?.[0]?.message?.content?.trim() ?? "";
+    // Model + optional web search
+    // OpenRouter's `:online` suffix enables the web plugin for grounded, cited answers.
+    const model = data.web_search
+      ? "google/gemini-2.5-flash:online"
+      : "google/gemini-2.5-flash";
 
+    const { content: reply, citations } = await callGatewayChat(apiKey, {
+      model,
+      messages,
+      temperature: 0.7,
+    });
+
+    // Persist both turns
     await supabase.from("ai_growth_chat").insert([
-      { user_id: userId, role: "user", content: data.message },
-      { user_id: userId, role: "assistant", content: reply },
+      {
+        user_id: userId,
+        thread_id: data.thread_id,
+        role: "user",
+        content: data.message,
+      },
+      {
+        user_id: userId,
+        thread_id: data.thread_id,
+        role: "assistant",
+        content: reply,
+      },
     ]);
 
-    return { reply, kpis };
-  });
+    // Bump thread updated_at + auto-title on first exchange
+    const isFirst = !(history ?? []).length;
+    const auto = data.message.trim().slice(0, 60);
+    const patch: { updated_at: string; title?: string } = {
+      updated_at: new Date().toISOString(),
+    };
+    if (isFirst && auto) patch.title = auto;
+    await supabase
+      .from("ai_growth_threads")
+      .update(patch)
+      .eq("id", data.thread_id)
+      .eq("user_id", userId);
 
-export const getGrowthChatHistory = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertAdmin(context);
-    const { data } = await context.supabase
-      .from("ai_growth_chat")
-      .select("id,role,content,created_at")
-      .eq("user_id", context.userId)
-      .order("created_at", { ascending: true })
-      .limit(60);
-    return { messages: data ?? [] };
+    return { reply, kpis, citations, used_web: data.web_search };
   });
