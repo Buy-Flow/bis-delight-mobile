@@ -150,7 +150,12 @@ function PrintCenterPage() {
         .limit(50),
     ]);
     if (ps.data) setSettings(ps.data as PrintSettings);
-    if (ss.data) setSite(ss.data as SiteSettings);
+    if (ss.data) {
+      // Load admin-only pix_key via RPC and merge in
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: pk } = await (supabase.rpc as any)("get_pix_key");
+      setSite({ ...(ss.data as SiteSettings), pix_key: (pk as string) ?? "" } as SiteSettings);
+    }
     if (ord.data) {
       const orderRows = ord.data as OrderRow[];
       setOrders(orderRows);
