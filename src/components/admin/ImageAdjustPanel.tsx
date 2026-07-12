@@ -101,11 +101,40 @@ export function ImageAdjustPanel({
 
   const reset = () => onChange({ ...defaults });
 
+  const [showGrid, setShowGrid] = useState(true);
+  const [gridDivisions, setGridDivisions] = useState(3);
+
   return (
     <div className="space-y-5">
       <div>
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-          {previewLabel}
+        <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          <span>{previewLabel}</span>
+          <div className="flex items-center gap-1 normal-case">
+            <button
+              type="button"
+              onClick={() => setShowGrid((v) => !v)}
+              className={cn(
+                "rounded-md border px-2 py-0.5 text-[10px] font-semibold transition",
+                showGrid
+                  ? "border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan"
+                  : "border-white/10 bg-white/5 text-white/50 hover:bg-white/10",
+              )}
+            >
+              Grade
+            </button>
+            {showGrid && (
+              <select
+                value={gridDivisions}
+                onChange={(e) => setGridDivisions(Number(e.target.value))}
+                className="rounded-md border border-white/10 bg-black/40 px-1 py-0.5 text-[10px] text-white/70"
+              >
+                <option value={2}>2×2</option>
+                <option value={3}>3×3</option>
+                <option value={4}>4×4</option>
+                <option value={6}>6×6</option>
+              </select>
+            )}
+          </div>
         </div>
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-4">
           <div
@@ -113,14 +142,18 @@ export function ImageAdjustPanel({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
-            className="touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none [&_article]:!w-full [&_article]:!max-w-full [&_img]:!transition-none"
+            className="relative touch-none select-none cursor-grab active:cursor-grabbing [&_*]:pointer-events-none [&_article]:!w-full [&_article]:!max-w-full [&_img]:!transition-none"
             style={{ width: "100%", maxWidth: previewMaxWidth }}
           >
             {renderPreview(values)}
+            {showGrid && <GridOverlay divisions={gridDivisions} />}
           </div>
-          <div className="text-[10px] text-white/40">{previewHint}</div>
+          <div className="text-[10px] text-white/40">
+            Arraste a foto com o mouse • use a grade para alinhar
+          </div>
         </div>
       </div>
+
 
       <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-3">
         <div>
