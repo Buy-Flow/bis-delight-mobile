@@ -235,9 +235,15 @@ export function FloatingAssistant() {
         </button>
       )}
 
-      {/* Chat popup */}
+      {/* Chat drawer — mesmo formato do menu hambúrguer, lado direito */}
       {open && (
-        <div className="fixed bottom-4 right-4 z-[60] flex h-[min(560px,calc(100vh-2rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#170a2e] shadow-2xl shadow-black/50">
+        <div className="fixed inset-0 z-[60]">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm md:bg-black/40"
+            onClick={() => setOpen(false)}
+          />
+          <aside className="absolute right-0 top-0 flex h-full w-[380px] max-w-[85vw] flex-col border-l border-white/10 bg-[#170a2e] shadow-2xl">
+
           {/* Header */}
           <div className="flex items-center gap-2 border-b border-white/10 bg-gradient-to-r from-neon-pink/20 to-purple-600/20 px-3 py-2.5">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-neon-pink to-purple-600">
