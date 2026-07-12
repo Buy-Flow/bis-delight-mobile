@@ -3011,9 +3011,6 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
     { id: "delivery", label: "Entrega", icon: Truck },
     { id: "payment", label: "Pagamento", icon: CreditCard },
     { id: "social", label: "Redes sociais", icon: Globe },
-    { id: "announcement", label: "Anúncio", icon: Megaphone },
-    { id: "popup", label: "Pop-up", icon: Sparkles },
-    { id: "coupons", label: "Cupons", icon: Tag },
     { id: "appearance", label: "Aparência", icon: Palette },
   ];
 
