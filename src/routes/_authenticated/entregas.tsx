@@ -224,7 +224,7 @@ function DeliveriesPage() {
   );
 
   const assignCourier = async (orderId: string, courierId: string | null) => {
-    const patch: Record<string, unknown> = { courier_id: courierId };
+    const patch = { courier_id: courierId };
     const { error } = await supabase.from("orders").update(patch).eq("id", orderId);
     if (error) toast.error("Falha ao atribuir motoboy");
     else toast.success(courierId ? "Motoboy atribuído" : "Motoboy removido");
