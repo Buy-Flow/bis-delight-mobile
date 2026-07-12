@@ -133,7 +133,7 @@ function PrintCenterPage() {
       supabase.from("print_settings").select("*").eq("id", 1).maybeSingle(),
       supabase
         .from("site_settings")
-        .select("name,address,city,whatsapp,whatsapp_display,logo_url,pix_key")
+        .select("name,address,city,whatsapp,whatsapp_display,logo_url")
         .maybeSingle(),
       supabase
         .from("orders")
