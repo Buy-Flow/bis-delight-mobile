@@ -1072,16 +1072,28 @@ function TableDialog({
 // ---------- Edit / New table dialog ----------
 function EditTableDialog({
   table,
+  zones,
   onClose,
   onSaved,
 }: {
   table: RestaurantTable | null;
+  zones: string[];
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const initialZone = table?.zone || zones[0] || "Salão";
+  const zoneOptions = useMemo(() => {
+    const set = new Set<string>(zones);
+    if (initialZone) set.add(initialZone);
+    if (set.size === 0) set.add("Salão");
+    return Array.from(set);
+  }, [zones, initialZone]);
+
   const [number, setNumber] = useState<number>(table?.number || 0);
   const [label, setLabel] = useState<string>(table?.label || "");
-  const [zone, setZone] = useState<string>(table?.zone || "Salão");
+  const [zone, setZone] = useState<string>(initialZone);
+  const [creatingZone, setCreatingZone] = useState(false);
+  const [newZone, setNewZone] = useState("");
   const [seats, setSeats] = useState<number>(table?.seats || 4);
   const [saving, setSaving] = useState(false);
 
