@@ -977,6 +977,43 @@ export function CheckoutSheet() {
           </button>
         </div>
       </div>
+
+      <AddressMapPicker
+        open={mapPickerOpen}
+        onClose={() => setMapPickerOpen(false)}
+        initial={{
+          lat: preGeocoded?.lat ?? quote?.lat ?? null,
+          lng: preGeocoded?.lng ?? quote?.lng ?? null,
+          address: address || preGeocoded?.address || null,
+        }}
+        storeOrigin={{ lat: originLat, lng: originLng }}
+        onConfirm={(loc) => {
+          const p = parseAddressParts(loc.address);
+          const nextAddress = joinAddressParts({
+            street: p.street || addrStreet,
+            number: p.number || addrNumber,
+            neighborhood: p.neighborhood || addrNeighborhood,
+            city: p.city || addrCity,
+          }) || loc.address;
+          if (p.street) setAddrStreet(p.street);
+          if (p.number) setAddrNumber(p.number);
+          if (p.neighborhood) setAddrNeighborhood(p.neighborhood);
+          if (p.city) setAddrCity(p.city);
+          setAddress(nextAddress);
+          setPreGeocoded({ lat: loc.lat, lng: loc.lng, address: nextAddress });
+          // Immediately update the quote with real coords + distance if we know the store origin
+          if (originLat != null && originLng != null) {
+            const km = haversineKm(
+              { lat: originLat, lng: originLng },
+              { lat: loc.lat, lng: loc.lng },
+            );
+            setQuote({ lat: loc.lat, lng: loc.lng, km, label: nextAddress });
+          }
+          setSelectedAddressId(null);
+          setMapPickerOpen(false);
+          toast.success("Pin confirmado");
+        }}
+      />
     </div>
   );
 }
