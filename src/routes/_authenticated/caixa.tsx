@@ -482,7 +482,7 @@ function DialogShell({ title, icon: Icon, onClose, children, footer, tone = "sla
   };
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-lg bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-lg bg-[#170a2e] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-9 w-9 rounded-lg bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
