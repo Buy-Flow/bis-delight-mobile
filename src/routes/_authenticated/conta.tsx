@@ -40,6 +40,8 @@ import {
   LoyaltyPanelSkeleton,
 } from "@/components/ui/skeletons";
 import { AddressManager } from "@/components/account/AddressManager";
+import { formatCpf, isValidCpf, cpfDigits } from "@/lib/cpf";
+
 
 
 
@@ -617,6 +619,8 @@ function ProfilePanel() {
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [cpfLocked, setCpfLocked] = useState(false);
   const [address, setAddress] = useState("");
   const [reference, setReference] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -627,13 +631,16 @@ function ProfilePanel() {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("full_name, phone, address, reference, birthday")
+      .select("full_name, phone, cpf, address, reference, birthday")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setFullName(data.full_name ?? "");
           setPhone(data.phone ?? "");
+          const existingCpf = (data.cpf ?? "") as string;
+          setCpf(existingCpf ? formatCpf(existingCpf) : "");
+          setCpfLocked(!!existingCpf && isValidCpf(existingCpf));
           setAddress(data.address ?? "");
           setReference(data.reference ?? "");
           setBirthday(data.birthday ?? "");
@@ -644,18 +651,63 @@ function ProfilePanel() {
 
   const save = async () => {
     if (!user) return;
+    const cpfClean = cpfDigits(cpf);
+    if (cpfClean && !isValidCpf(cpfClean)) {
+      toast.error("CPF inválido — verifique os números digitados.");
+      return;
+    }
     setSaving(true);
+
+    if (cpfClean && !cpfLocked) {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("cpf", cpfClean)
+        .neq("id", user.id)
+        .maybeSingle();
+      if (existing) {
+        setSaving(false);
+        toast.error("Este CPF já está cadastrado em outra conta.");
+        return;
+      }
+    }
+
     const { error } = await supabase.from("profiles").upsert({
       id: user.id,
       full_name: fullName.trim() || null,
       phone: phone.trim() || null,
+      cpf: cpfClean || null,
       address: address.trim() || null,
       reference: reference.trim() || null,
       birthday: birthday || null,
     });
     setSaving(false);
-    if (error) toast.error("Erro ao salvar");
-    else toast.success("Perfil atualizado!");
+    if (error) {
+      const msg = error.message || "";
+      if (/profiles_cpf_unique/i.test(msg) || /duplicate key/i.test(msg)) {
+        toast.error("Este CPF já está cadastrado em outra conta.");
+      } else {
+        toast.error("Erro ao salvar");
+      }
+      return;
+    }
+    // Sincroniza o cache do checkout para que telefone/nome atualizem em
+    // todas as telas (carrinho, sheet, WhatsApp) sem precisar deslogar.
+    try {
+      const cached = JSON.parse(localStorage.getItem("querobis:customer") || "{}");
+      localStorage.setItem(
+        "querobis:customer",
+        JSON.stringify({
+          ...cached,
+          name: fullName.trim() || cached.name || "",
+          phone: phone.trim() || cached.phone || "",
+        }),
+      );
+    } catch {
+      /* ignore */
+    }
+    if (cpfClean) setCpfLocked(true);
+    toast.success("Perfil atualizado!");
   };
 
   if (loading) return <ProfilePanelSkeleton />;
@@ -726,8 +778,37 @@ function ProfilePanel() {
         <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
       </Link>
 
-      <DadosPessoaisCard>
+      <AccordionCard
+        title="Dados pessoais"
+        subtitle="Nome, CPF, contato e aniversário"
+        icon={<UserIcon className="h-5 w-5" />}
+        iconClass="bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30"
+        defaultOpen
+      >
         <Input label="Nome completo" value={fullName} onChange={setFullName} autoComplete="name" />
+        <div>
+          <label className="mb-1 block text-[12px] font-semibold text-white/80">
+            CPF {cpfLocked && <span className="text-white/40">(verificado 🔒)</span>}
+          </label>
+          <input
+            value={cpf}
+            onChange={(e) => !cpfLocked && setCpf(formatCpf(e.target.value))}
+            inputMode="numeric"
+            placeholder="000.000.000-00"
+            readOnly={cpfLocked}
+            className={cn(
+              "w-full rounded-2xl border px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none",
+              cpfLocked
+                ? "cursor-not-allowed border-white/5 bg-white/[0.03] text-white/70"
+                : "border-white/10 bg-white/5 focus:border-neon-cyan",
+            )}
+          />
+          {!cpfLocked && (
+            <div className="mt-1 text-[10.5px] text-white/45">
+              Usamos o CPF para nota fiscal, cashback e programa de fidelidade.
+            </div>
+          )}
+        </div>
         <Input label="Telefone (WhatsApp)" value={phone} onChange={setPhone} autoComplete="tel" type="tel" />
         <div>
           <label className="mb-1 block text-[12px] font-semibold text-white/80">
@@ -748,12 +829,20 @@ function ProfilePanel() {
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           Salvar perfil
         </button>
-      </DadosPessoaisCard>
+      </AccordionCard>
 
-      <AddressManager />
+      <AccordionCard
+        title="Meus endereços"
+        subtitle="Salve casa, trabalho e outros locais"
+        icon={<MapPin className="h-5 w-5" />}
+        iconClass="bg-neon-cyan/15 text-neon-cyan ring-1 ring-neon-cyan/30"
+      >
+        <AddressManager embedded />
+      </AccordionCard>
     </div>
   );
 }
+
 
 
 function Input({
@@ -783,8 +872,22 @@ function Input({
   );
 }
 
-function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
+function AccordionCard({
+  title,
+  subtitle,
+  icon,
+  iconClass,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  iconClass?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
       <button
@@ -793,12 +896,12 @@ function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
         className="group flex w-full items-center gap-3 p-3 text-left transition hover:bg-white/[0.06]"
         aria-expanded={open}
       >
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30">
-          <UserIcon className="h-5 w-5" />
+        <span className={cn("grid h-11 w-11 place-items-center rounded-xl", iconClass)}>
+          {icon}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-bold text-white">Dados pessoais</div>
-          <div className="text-[11px] text-white/60">Nome, contato, endereço e aniversário</div>
+          <div className="text-sm font-bold text-white">{title}</div>
+          {subtitle && <div className="text-[11px] text-white/60">{subtitle}</div>}
         </div>
         <ChevronRight
           className={cn(
@@ -813,6 +916,7 @@ function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
 
 function PanelSpinner() {
   return (
