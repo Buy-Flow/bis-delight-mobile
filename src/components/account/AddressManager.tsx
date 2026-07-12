@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { MapPin, Home, Briefcase, Star, Trash2, Plus, Check, Loader2, Pencil, X } from "lucide-react";
+import { MapPin, Home, Briefcase, Star, Trash2, Plus, Check, Loader2, Pencil, X, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/use-auth";
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
 import { geocodeAddress } from "@/lib/delivery-zone";
+import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
+import { useSiteSettings } from "@/lib/menu-data";
 import { cn } from "@/lib/utils";
 
 const LABEL_PRESETS = [
@@ -217,6 +219,11 @@ function AddressForm({
   const [reference, setReference] = useState(initial?.reference ?? "");
   const [isDefault, setIsDefault] = useState(initial?.is_default ?? false);
   const [saving, setSaving] = useState(false);
+  const [lat, setLat] = useState<number | null>(initial?.lat ?? null);
+  const [lng, setLng] = useState<number | null>(initial?.lng ?? null);
+  const [pinned, setPinned] = useState<boolean>(initial?.lat != null && initial?.lng != null);
+  const [mapOpen, setMapOpen] = useState(false);
+  const { data: settings } = useSiteSettings();
 
   const submit = async () => {
     if (!street.trim()) {
@@ -234,17 +241,18 @@ function AddressForm({
     const fullAddress = joinAddress({ street, number, neighborhood, city });
     setSaving(true);
     try {
-      let lat: number | null = initial?.lat ?? null;
-      let lng: number | null = initial?.lng ?? null;
-      if (!initial || fullAddress !== initial.address) {
+      let finalLat: number | null = lat;
+      let finalLng: number | null = lng;
+      // Only fall back to text-based geocoding if the user never pinned on the map
+      if (!pinned && (!initial || fullAddress !== initial.address)) {
         try {
           const geo = await geocodeAddress(fullAddress);
           if (geo) {
-            lat = geo.lat;
-            lng = geo.lng;
+            finalLat = geo.lat;
+            finalLng = geo.lng;
           } else {
-            lat = null;
-            lng = null;
+            finalLat = null;
+            finalLng = null;
           }
         } catch {
           /* ignore */
@@ -254,8 +262,8 @@ function AddressForm({
         label: label.trim() || "Casa",
         address: fullAddress,
         reference: reference.trim() || null,
-        lat,
-        lng,
+        lat: finalLat,
+        lng: finalLng,
         is_default: isDefault,
       });
     } catch (err) {
@@ -358,6 +366,24 @@ function AddressForm({
           placeholder="Ponto de referência (opcional)"
           className={inputCls}
         />
+        <button
+          type="button"
+          onClick={() => setMapOpen(true)}
+          className={cn(
+            "flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2.5 text-[12px] font-bold transition",
+            pinned
+              ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
+              : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <MapIcon className="h-4 w-4" />
+            {pinned ? "Pin ajustado no mapa" : "Ajustar pin no mapa"}
+          </span>
+          <span className="text-[10px] font-normal opacity-70">
+            {pinned ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : "recomendado"}
+          </span>
+        </button>
         <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/80">
           <input
             type="checkbox"
@@ -387,6 +413,30 @@ function AddressForm({
           Salvar
         </button>
       </div>
+
+      <AddressMapPicker
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        initial={{
+          lat,
+          lng,
+          address: joinAddress({ street, number, neighborhood, city }),
+        }}
+        storeOrigin={{ lat: settings?.storeLat ?? null, lng: settings?.storeLng ?? null }}
+        onConfirm={(loc) => {
+          setLat(loc.lat);
+          setLng(loc.lng);
+          setPinned(true);
+          // Overwrite address parts with the reverse-geocoded text, best-effort
+          const p = parseAddress(loc.address);
+          if (p.street) setStreet(p.street);
+          if (p.number) setNumber(p.number);
+          if (p.neighborhood) setNeighborhood(p.neighborhood);
+          if (p.city) setCity(p.city);
+          setMapOpen(false);
+          toast.success("Pin confirmado");
+        }}
+      />
     </div>
   );
 }

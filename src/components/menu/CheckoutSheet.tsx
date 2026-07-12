@@ -18,6 +18,7 @@ import {
   isWithinRadius,
 } from "@/lib/delivery-zone";
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
+import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star } from "lucide-react";
 
 type Mode = "entrega" | "retirada";
@@ -81,6 +82,7 @@ export function CheckoutSheet() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [preGeocoded, setPreGeocoded] = useState<{ lat: number; lng: number; address: string } | null>(null);
   const [savingAddress, setSavingAddress] = useState(false);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
   const [mode, setMode] = useState<Mode>("entrega");
   const [name, setName] = useState("");
@@ -694,6 +696,27 @@ export function CheckoutSheet() {
                   );
                 })()}
 
+                <button
+                  type="button"
+                  onClick={() => setMapPickerOpen(true)}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2.5 text-[12px] font-bold transition",
+                    preGeocoded
+                      ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
+                      : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <Route className="h-4 w-4" />
+                    {preGeocoded ? "Pin ajustado no mapa" : "Ajustar pin no mapa"}
+                  </span>
+                  <span className="text-[10px] font-normal opacity-70">
+                    {preGeocoded
+                      ? `${preGeocoded.lat.toFixed(4)}, ${preGeocoded.lng.toFixed(4)}`
+                      : "endereço exato"}
+                  </span>
+                </button>
+
                 <IconField
                   icon={MapPin}
                   label="Referência"
@@ -954,6 +977,43 @@ export function CheckoutSheet() {
           </button>
         </div>
       </div>
+
+      <AddressMapPicker
+        open={mapPickerOpen}
+        onClose={() => setMapPickerOpen(false)}
+        initial={{
+          lat: preGeocoded?.lat ?? quote?.lat ?? null,
+          lng: preGeocoded?.lng ?? quote?.lng ?? null,
+          address: address || preGeocoded?.address || null,
+        }}
+        storeOrigin={{ lat: originLat, lng: originLng }}
+        onConfirm={(loc) => {
+          const p = parseAddressParts(loc.address);
+          const nextAddress = joinAddressParts({
+            street: p.street || addrStreet,
+            number: p.number || addrNumber,
+            neighborhood: p.neighborhood || addrNeighborhood,
+            city: p.city || addrCity,
+          }) || loc.address;
+          if (p.street) setAddrStreet(p.street);
+          if (p.number) setAddrNumber(p.number);
+          if (p.neighborhood) setAddrNeighborhood(p.neighborhood);
+          if (p.city) setAddrCity(p.city);
+          setAddress(nextAddress);
+          setPreGeocoded({ lat: loc.lat, lng: loc.lng, address: nextAddress });
+          // Immediately update the quote with real coords + distance if we know the store origin
+          if (originLat != null && originLng != null) {
+            const km = haversineKm(
+              { lat: originLat, lng: originLng },
+              { lat: loc.lat, lng: loc.lng },
+            );
+            setQuote({ lat: loc.lat, lng: loc.lng, km, label: nextAddress });
+          }
+          setSelectedAddressId(null);
+          setMapPickerOpen(false);
+          toast.success("Pin confirmado");
+        }}
+      />
     </div>
   );
 }
