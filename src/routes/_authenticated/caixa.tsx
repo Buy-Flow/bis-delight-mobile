@@ -222,9 +222,9 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
   };
 
   return (
-    <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white pb-24">
+    <div className="min-h-screen bg-[#0c031f] text-white pb-24">
       {/* Header */}
-      <div className="border-b bg-black/40 backdrop-blur-md border-white/10 sticky top-0 z-20">
+      <div className="border-b bg-[#170a2e]/80 backdrop-blur-md border-white/10 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-wrap items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-11 w-11 rounded-xl grid place-items-center text-white",
