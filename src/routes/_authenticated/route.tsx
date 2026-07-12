@@ -45,7 +45,12 @@ function AuthenticatedLayout() {
       </AdminShell>
     );
   }
-  return <Outlet />;
+  return (
+    <>
+      <ProfileCompletionBanner />
+      <Outlet />
+    </>
+  );
 }
 
 export const Route = createFileRoute("/_authenticated")({
