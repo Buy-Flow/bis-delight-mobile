@@ -3061,6 +3061,9 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
             </nav>
           </div>
         </aside>
+        )}
+
+        {!hideNav && (
 
         {/* Mobile section chips */}
         <div className="-mx-1 flex gap-1.5 overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
