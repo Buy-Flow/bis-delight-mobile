@@ -297,9 +297,9 @@ function UsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 pb-16">
+    <div className="min-h-screen bg-[#0c031f] pb-16">
       {/* Header */}
-      <div className="border-b border-white/5 bg-slate-950/70 backdrop-blur">
+      <div className="border-b border-white/5 bg-[#0c031f]/70 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/20">
