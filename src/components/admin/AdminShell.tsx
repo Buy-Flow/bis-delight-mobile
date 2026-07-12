@@ -146,10 +146,8 @@ const groups: NavGroup[] = [
     id: "conta",
     label: "Conta",
     items: [
-      { label: "Meu plano", icon: CreditCard, soon: true },
       { to: "/admin", tab: "settings", label: "Configurações", icon: Settings },
       { label: "Automações", icon: Zap, soon: true },
-      { label: "Suporte", icon: LifeBuoy, soon: true },
     ],
   },
 ];
