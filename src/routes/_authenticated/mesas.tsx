@@ -126,6 +126,7 @@ function TablesPage() {
   const [zoneFilter, setZoneFilter] = useState<string>("todas");
   const [selected, setSelected] = useState<RestaurantTable | null>(null);
   const [editing, setEditing] = useState<RestaurantTable | "new" | null>(null);
+  const [managingZones, setManagingZones] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -363,6 +364,13 @@ function TablesPage() {
                   {z}
                 </button>
               ))}
+              <button
+                onClick={() => setManagingZones(true)}
+                title="Gerenciar zonas"
+                className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-white/70 transition hover:bg-white/10"
+              >
+                Gerenciar zonas
+              </button>
             </div>
           </div>
         )}
@@ -414,11 +422,21 @@ function TablesPage() {
       {editing && (
         <EditTableDialog
           table={editing === "new" ? null : editing}
+          zones={zones}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
             void load();
           }}
+        />
+      )}
+
+      {managingZones && (
+        <ManageZonesDialog
+          zones={zones}
+          tables={tables}
+          onClose={() => setManagingZones(false)}
+          onChanged={() => void load()}
         />
       )}
     </div>
@@ -1054,16 +1072,28 @@ function TableDialog({
 // ---------- Edit / New table dialog ----------
 function EditTableDialog({
   table,
+  zones,
   onClose,
   onSaved,
 }: {
   table: RestaurantTable | null;
+  zones: string[];
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const initialZone = table?.zone || zones[0] || "Salão";
+  const zoneOptions = useMemo(() => {
+    const set = new Set<string>(zones);
+    if (initialZone) set.add(initialZone);
+    if (set.size === 0) set.add("Salão");
+    return Array.from(set);
+  }, [zones, initialZone]);
+
   const [number, setNumber] = useState<number>(table?.number || 0);
   const [label, setLabel] = useState<string>(table?.label || "");
-  const [zone, setZone] = useState<string>(table?.zone || "Salão");
+  const [zone, setZone] = useState<string>(initialZone);
+  const [creatingZone, setCreatingZone] = useState(false);
+  const [newZone, setNewZone] = useState("");
   const [seats, setSeats] = useState<number>(table?.seats || 4);
   const [saving, setSaving] = useState(false);
 
@@ -1128,15 +1158,66 @@ function EditTableDialog({
               />
             </label>
           </div>
-          <label className="block text-[11px] text-white/60">
+          <div className="block text-[11px] text-white/60">
             Zona
-            <input
-              value={zone}
-              onChange={(e) => setZone(e.target.value)}
-              placeholder="Salão, Varanda, Balcão..."
-              className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
-            />
-          </label>
+            {!creatingZone ? (
+              <div className="mt-1 flex gap-2">
+                <select
+                  value={zone}
+                  onChange={(e) => setZone(e.target.value)}
+                  className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
+                >
+                  {zoneOptions.map((z) => (
+                    <option key={z} value={z} className="bg-[#120833]">
+                      {z}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreatingZone(true);
+                    setNewZone("");
+                  }}
+                  className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+                >
+                  + Nova
+                </button>
+              </div>
+            ) : (
+              <div className="mt-1 flex gap-2">
+                <input
+                  autoFocus
+                  value={newZone}
+                  onChange={(e) => setNewZone(e.target.value)}
+                  placeholder="Nome da nova zona"
+                  className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const v = newZone.trim();
+                    if (!v) {
+                      toast.error("Digite um nome");
+                      return;
+                    }
+                    setZone(v);
+                    setCreatingZone(false);
+                  }}
+                  className="shrink-0 rounded-lg bg-neon-pink/80 px-3 py-1.5 text-xs font-black text-white hover:bg-neon-pink"
+                >
+                  OK
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCreatingZone(false)}
+                  className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
+          </div>
           <label className="block text-[11px] text-white/60">
             Etiqueta (opcional)
             <input
@@ -1185,6 +1266,131 @@ function Kpi({
         <span>{label}</span>
       </div>
       <div className="mt-1 text-lg font-black text-white">{value}</div>
+    </div>
+  );
+}
+
+// ---------- Manage zones dialog ----------
+function ManageZonesDialog({
+  zones,
+  tables,
+  onClose,
+  onChanged,
+}: {
+  zones: string[];
+  tables: RestaurantTable[];
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const counts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const t of tables) {
+      const z = t.zone || "";
+      if (!z) continue;
+      m[z] = (m[z] || 0) + 1;
+    }
+    return m;
+  }, [tables]);
+
+  async function removeZone(z: string) {
+    const count = counts[z] || 0;
+    const msg =
+      count > 0
+        ? `Remover a zona "${z}"? ${count} mesa(s) ficarão sem zona.`
+        : `Remover a zona "${z}"?`;
+    if (!confirm(msg)) return;
+    setBusy(z);
+    const { error } = await supabase
+      .from("restaurant_tables")
+      .update({ zone: null as unknown as string })
+      .eq("zone", z);
+    setBusy(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Zona removida");
+    onChanged();
+  }
+
+  async function renameZone(z: string) {
+    const nv = prompt(`Renomear zona "${z}" para:`, z);
+    if (!nv || nv.trim() === "" || nv.trim() === z) return;
+    setBusy(z);
+    const { error } = await supabase
+      .from("restaurant_tables")
+      .update({ zone: nv.trim() })
+      .eq("zone", z);
+    setBusy(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Zona renomeada");
+    onChanged();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-[#120833]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <div className="text-sm font-black text-white">Gerenciar zonas</div>
+          <button
+            onClick={onClose}
+            className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 hover:bg-white/10"
+          >
+            Fechar
+          </button>
+        </div>
+        <div className="max-h-[60vh] space-y-2 overflow-y-auto p-4">
+          {zones.length === 0 ? (
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center text-xs text-white/60">
+              Nenhuma zona criada. Crie mesas com zonas para vê-las aqui.
+            </div>
+          ) : (
+            zones.map((z) => (
+              <div
+                key={z}
+                className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-bold text-white capitalize">{z}</div>
+                  <div className="text-[11px] text-white/50">
+                    {counts[z] || 0} mesa(s)
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <button
+                    disabled={busy === z}
+                    onClick={() => renameZone(z)}
+                    className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-white/10 disabled:opacity-50"
+                  >
+                    Renomear
+                  </button>
+                  <button
+                    disabled={busy === z}
+                    onClick={() => removeZone(z)}
+                    className="rounded-lg border border-red-400/30 bg-red-500/10 px-2.5 py-1 text-[11px] font-semibold text-red-200 hover:bg-red-500/20 disabled:opacity-50"
+                  >
+                    Remover
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="border-t border-white/10 px-4 py-3 text-[11px] text-white/50">
+          Para criar uma nova zona, edite uma mesa e escolha "+ Nova".
+        </div>
+      </div>
     </div>
   );
 }
