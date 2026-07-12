@@ -121,14 +121,15 @@ Deno.serve(async (req) => {
           .gte("created_at", lower)
           .lte("created_at", upper)
           .not("user_id", "is", null);
-        // Keep users whose total order count is exactly 1
+        // Keep users whose total non-cancelled order count is exactly 1
         const candidates = Array.from(new Set((recent ?? []).map((o: any) => o.user_id))) as string[];
         const kept: string[] = [];
         for (const uid of candidates) {
           const { count } = await admin
             .from("orders")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", uid);
+            .eq("user_id", uid)
+            .neq("status", "cancelado");
           if ((count ?? 0) === 1) kept.push(uid);
         }
         eligibleUserIds = kept;
