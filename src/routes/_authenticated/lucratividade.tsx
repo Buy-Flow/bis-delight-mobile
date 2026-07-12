@@ -185,7 +185,7 @@ function LucratividadePage() {
           supabase
             .from("products")
             .select("id,name,category,image_url,base_price,cost_price,packaging_cost"),
-          supabase.from("site_settings").select("*").eq("id", 1).maybeSingle(),
+          supabase.from("site_settings").select("id,pricing_card_fee_pct,pricing_tax_pct,pricing_platform_fee_pct,pricing_fixed_cost_monthly").eq("id", 1).maybeSingle(),
         ]);
         if (cancel) return;
         if (curOrd.error) throw curOrd.error;
