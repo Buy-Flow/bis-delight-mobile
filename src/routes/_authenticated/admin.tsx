@@ -193,6 +193,9 @@ function AdminPage() {
         {tab === "promos" && <PromosTab />}
         {tab === "loyalty" && <LoyaltyTiersTab />}
         {tab === "settings" && <SettingsTab />}
+        {tab === "announcement" && <SettingsTab initialSection="announcement" hideNav />}
+        {tab === "popup" && <SettingsTab initialSection="popup" hideNav />}
+        {tab === "coupons" && <SettingsTab initialSection="coupons" hideNav />}
       </main>
     </div>
   );
