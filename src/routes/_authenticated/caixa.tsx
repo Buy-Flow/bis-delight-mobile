@@ -699,7 +699,7 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
   { session: SessionRow; movs: MovementRow[]; onClose: () => void; onPrint: () => void; onCsv: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-2xl bg-[#170a2e] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-white">Sessão de {new Date(session.opened_at).toLocaleDateString("pt-BR")}</h3>
