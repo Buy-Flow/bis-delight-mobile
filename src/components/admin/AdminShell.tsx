@@ -114,6 +114,9 @@ const groups: NavGroup[] = [
     label: "Crescimento",
     items: [
       { to: "/admin", tab: "promos", label: "Promos & Combos", icon: Ticket },
+      { to: "/admin", tab: "coupons", label: "Cupons", icon: Tag },
+      { to: "/admin", tab: "announcement", label: "Anúncio", icon: Megaphone },
+      { to: "/admin", tab: "popup", label: "Pop-up", icon: Sparkles },
       { to: "/admin", tab: "notifications", label: "Notificações", icon: BellRing },
       { to: "/admin", tab: "loyalty", label: "Fidelidade", icon: Award },
       { to: "/clientes", label: "Clientes", icon: Users },
