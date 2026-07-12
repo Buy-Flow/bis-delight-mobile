@@ -581,7 +581,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
       footer={<>
         <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
-          className="h-10 px-5 rounded-lg bg-white text-black text-sm font-semibold disabled:opacity-60">
+          className="h-10 px-5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold disabled:opacity-60">
           {saving ? "Salvando…" : "Registrar"}
         </button>
       </>}>
