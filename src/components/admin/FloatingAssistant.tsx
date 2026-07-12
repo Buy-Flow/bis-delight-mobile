@@ -235,25 +235,20 @@ export function FloatingAssistant() {
         </button>
       )}
 
-      {/* Chat drawer — mesmo formato do menu hambúrguer, lado direito */}
+      {/* Chat popover — compacto, ancorado no canto inferior direito, sem backdrop */}
       {open && (
-        <div className="fixed inset-0 z-[60]">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm md:bg-black/40"
-            onClick={() => setOpen(false)}
-          />
-          <aside className="absolute right-0 top-0 flex h-full w-[380px] max-w-[85vw] flex-col border-l border-white/10 bg-[#170a2e] shadow-2xl">
+        <aside className="fixed bottom-4 right-4 z-[60] flex h-[520px] max-h-[75vh] w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#170a2e] shadow-2xl shadow-black/50">
 
           {/* Header */}
           <div className="flex items-center gap-2 border-b border-white/10 bg-gradient-to-r from-neon-pink/20 to-purple-600/20 px-3 py-2.5">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-neon-pink to-purple-600">
               <Bot className="h-4 w-4 text-white" />
             </div>
-            <div className="flex-1 leading-tight">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-neon-yellow">
+            <div className="min-w-0 flex-1 leading-tight">
+              <div className="truncate text-[10px] font-bold uppercase tracking-widest text-neon-yellow">
                 Assistente · {page.label}
               </div>
-              <div className="text-[11px] text-white/60 truncate">
+              <div className="truncate text-[11px] text-white/60">
                 Foco na página atual
               </div>
             </div>
@@ -401,8 +396,7 @@ export function FloatingAssistant() {
               </button>
             </div>
           </div>
-          </aside>
-        </div>
+        </aside>
       )}
     </>
   );
