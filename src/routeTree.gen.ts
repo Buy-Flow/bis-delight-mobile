@@ -30,6 +30,7 @@ import { Route as AuthenticatedImpressaoRouteImport } from './routes/_authentica
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
 import { Route as AuthenticatedGarconsRouteImport } from './routes/_authenticated/garcons'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedFichaTecnicaRouteImport } from './routes/_authenticated/ficha-tecnica'
 import { Route as AuthenticatedEstoqueRouteImport } from './routes/_authenticated/estoque'
 import { Route as AuthenticatedEntregasRouteImport } from './routes/_authenticated/entregas'
 import { Route as AuthenticatedCopilotoRouteImport } from './routes/_authenticated/copiloto'
@@ -150,6 +151,12 @@ const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFichaTecnicaRoute =
+  AuthenticatedFichaTecnicaRouteImport.update({
+    id: '/ficha-tecnica',
+    path: '/ficha-tecnica',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEstoqueRoute = AuthenticatedEstoqueRouteImport.update({
   id: '/estoque',
   path: '/estoque',
@@ -230,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/copiloto': typeof AuthenticatedCopilotoRoute
   '/entregas': typeof AuthenticatedEntregasRoute
   '/estoque': typeof AuthenticatedEstoqueRoute
+  '/ficha-tecnica': typeof AuthenticatedFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/garcons': typeof AuthenticatedGarconsRoute
   '/importar': typeof AuthenticatedImportarRoute
@@ -264,6 +272,7 @@ export interface FileRoutesByTo {
   '/copiloto': typeof AuthenticatedCopilotoRoute
   '/entregas': typeof AuthenticatedEntregasRoute
   '/estoque': typeof AuthenticatedEstoqueRoute
+  '/ficha-tecnica': typeof AuthenticatedFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/garcons': typeof AuthenticatedGarconsRoute
   '/importar': typeof AuthenticatedImportarRoute
@@ -300,6 +309,7 @@ export interface FileRoutesById {
   '/_authenticated/copiloto': typeof AuthenticatedCopilotoRoute
   '/_authenticated/entregas': typeof AuthenticatedEntregasRoute
   '/_authenticated/estoque': typeof AuthenticatedEstoqueRoute
+  '/_authenticated/ficha-tecnica': typeof AuthenticatedFichaTecnicaRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/garcons': typeof AuthenticatedGarconsRoute
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/copiloto'
     | '/entregas'
     | '/estoque'
+    | '/ficha-tecnica'
     | '/financeiro'
     | '/garcons'
     | '/importar'
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/copiloto'
     | '/entregas'
     | '/estoque'
+    | '/ficha-tecnica'
     | '/financeiro'
     | '/garcons'
     | '/importar'
@@ -405,6 +417,7 @@ export interface FileRouteTypes {
     | '/_authenticated/copiloto'
     | '/_authenticated/entregas'
     | '/_authenticated/estoque'
+    | '/_authenticated/ficha-tecnica'
     | '/_authenticated/financeiro'
     | '/_authenticated/garcons'
     | '/_authenticated/importar'
@@ -583,6 +596,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ficha-tecnica': {
+      id: '/_authenticated/ficha-tecnica'
+      path: '/ficha-tecnica'
+      fullPath: '/ficha-tecnica'
+      preLoaderRoute: typeof AuthenticatedFichaTecnicaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/estoque': {
       id: '/_authenticated/estoque'
       path: '/estoque'
@@ -682,6 +702,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCopilotoRoute: typeof AuthenticatedCopilotoRoute
   AuthenticatedEntregasRoute: typeof AuthenticatedEntregasRoute
   AuthenticatedEstoqueRoute: typeof AuthenticatedEstoqueRoute
+  AuthenticatedFichaTecnicaRoute: typeof AuthenticatedFichaTecnicaRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedGarconsRoute: typeof AuthenticatedGarconsRoute
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
@@ -709,6 +730,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCopilotoRoute: AuthenticatedCopilotoRoute,
   AuthenticatedEntregasRoute: AuthenticatedEntregasRoute,
   AuthenticatedEstoqueRoute: AuthenticatedEstoqueRoute,
+  AuthenticatedFichaTecnicaRoute: AuthenticatedFichaTecnicaRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedGarconsRoute: AuthenticatedGarconsRoute,
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
