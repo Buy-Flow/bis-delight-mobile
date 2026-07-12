@@ -18,6 +18,8 @@ import {
   Award,
   Heart,
   ClipboardList,
+  AlertCircle,
+  X as XIcon,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -122,6 +124,8 @@ function AuthPage() {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -129,44 +133,82 @@ function AuthPage() {
     });
   }, [navigate, next]);
 
+  const showError = (title: string, detail?: string) => {
+    setErrorMsg(title);
+    setErrorDetail(detail ?? null);
+    toast.error(title, detail ? { description: detail } : undefined);
+  };
+
+  const translateAuthError = (raw: string): { title: string; detail?: string } => {
+    const s = raw.toLowerCase();
+    if (/profiles_cpf_unique|duplicate key.*cpf/.test(s))
+      return { title: "Este CPF já está cadastrado.", detail: "Faça login ou use outro CPF." };
+    if (/database error saving new user/.test(s))
+      return {
+        title: "Não foi possível criar a conta.",
+        detail: "O CPF ou e-mail já pode estar cadastrado. Tente entrar ou use outro CPF/e-mail.",
+      };
+    if (/user already registered|already exists/.test(s))
+      return { title: "E-mail já cadastrado.", detail: "Tente fazer login com esse e-mail." };
+    if (/invalid login credentials/.test(s))
+      return { title: "E-mail ou senha incorretos.", detail: "Confira os dados e tente novamente." };
+    if (/email not confirmed/.test(s))
+      return { title: "Confirme seu e-mail.", detail: "Enviamos um link de confirmação para sua caixa de entrada." };
+    if (/password should be at least/.test(s))
+      return { title: "Senha muito curta.", detail: "Use no mínimo 6 caracteres." };
+    if (/rate limit|too many/.test(s))
+      return { title: "Muitas tentativas.", detail: "Aguarde um instante e tente novamente." };
+    if (/network|failed to fetch/.test(s))
+      return { title: "Sem conexão.", detail: "Verifique sua internet e tente novamente." };
+    return { title: "Erro ao autenticar.", detail: raw };
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
+    setErrorDetail(null);
     setLoading(true);
     try {
       if (mode === "signup") {
         // 1) Validação algorítmica do CPF (dígitos verificadores)
         const cpfDigits = cpf.replace(/\D/g, "");
         if (!isValidCpf(cpfDigits)) {
-          toast.error("CPF inválido. Confira os números digitados.");
+          showError("CPF inválido.", "Confira os números digitados.");
           setLoading(false);
           return;
         }
 
-        // 2) Unicidade: 1 conta por CPF
-        const { data: existing, error: checkErr } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("cpf", cpfDigits)
-          .maybeSingle();
-        if (checkErr && checkErr.code !== "PGRST116") {
-          throw checkErr;
+        // 2) Validação da data de aniversário (DD/MM/AAAA)
+        let birthdayIso: string | null = null;
+        if (birthday) {
+          birthdayIso = birthdayToIso(birthday);
+          if (!birthdayIso) {
+            showError("Data de aniversário inválida.", "Use o formato DD/MM/AAAA.");
+            setLoading(false);
+            return;
+          }
         }
-        if (existing) {
-          toast.error("Este CPF já está cadastrado. Faça login para continuar.");
+
+        // 3) Unicidade: 1 conta por CPF (via RPC security-definer, bypassa RLS)
+        const { data: exists, error: checkErr } = await supabase.rpc("cpf_exists", {
+          _cpf: cpfDigits,
+        });
+        if (checkErr) {
+          console.error("[auth] cpf_exists error:", checkErr);
+          // não bloqueia — o índice único ainda protege no servidor
+        }
+        if (exists === true) {
+          showError("Este CPF já está cadastrado.", "Faça login para continuar.");
           setMode("signin");
           setLoading(false);
           return;
         }
 
-        // 3) Validação da data de aniversário (DD/MM/AAAA)
-        let birthdayIso: string | null = null;
-        if (birthday) {
-          birthdayIso = birthdayToIso(birthday);
-          if (!birthdayIso) {
-            toast.error("Data de aniversário inválida. Use DD/MM/AAAA.");
-            setLoading(false);
-            return;
-          }
+        // 4) Validação de senha mínima
+        if (password.length < 6) {
+          showError("Senha muito curta.", "Use no mínimo 6 caracteres.");
+          setLoading(false);
+          return;
         }
 
         const { error } = await supabase.auth.signUp({
@@ -199,19 +241,18 @@ function AuthPage() {
         navigate({ to: next });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro ao autenticar";
-      // Se o índice único disparar no servidor (corrida), traduz para PT-BR
-      if (/profiles_cpf_unique/i.test(msg) || /duplicate key/i.test(msg)) {
-        toast.error("Este CPF já está cadastrado.");
-      } else {
-        toast.error(msg);
-      }
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[auth] error:", err);
+      const t = translateAuthError(msg);
+      showError(t.title, t.detail);
     } finally {
       setLoading(false);
     }
   };
 
   const google = async () => {
+    setErrorMsg(null);
+    setErrorDetail(null);
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
@@ -221,7 +262,9 @@ function AuthPage() {
       if (result.redirected) return;
       navigate({ to: next });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro no login com Google");
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[auth] google error:", err);
+      showError("Erro no login com Google", msg);
       setLoading(false);
     }
   };
@@ -324,7 +367,34 @@ function AuthPage() {
               <div className="h-px flex-1 bg-white/10" /> ou com e-mail <div className="h-px flex-1 bg-white/10" />
             </div>
 
+            {errorMsg && (
+              <div
+                role="alert"
+                className="mb-3 flex items-start gap-2.5 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3 text-left text-rose-100 backdrop-blur"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold leading-tight">{errorMsg}</p>
+                  {errorDetail && (
+                    <p className="mt-0.5 text-xs text-rose-200/80 break-words">{errorDetail}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setErrorDetail(null);
+                  }}
+                  aria-label="Fechar aviso"
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-rose-200/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  <XIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
             <form onSubmit={submit} className="space-y-3" autoComplete="on">
+
               {mode === "signup" && (
                 <>
                   <Field icon={UserIcon}>
