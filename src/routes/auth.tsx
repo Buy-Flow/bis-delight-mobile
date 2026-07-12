@@ -251,6 +251,8 @@ function AuthPage() {
   };
 
   const google = async () => {
+    setErrorMsg(null);
+    setErrorDetail(null);
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
@@ -260,7 +262,9 @@ function AuthPage() {
       if (result.redirected) return;
       navigate({ to: next });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro no login com Google");
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[auth] google error:", err);
+      showError("Erro no login com Google", msg);
       setLoading(false);
     }
   };
