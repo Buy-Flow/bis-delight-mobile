@@ -1064,10 +1064,26 @@ function RushOrderCard({
             )}
           </div>
           {order.mode === "entrega" && (order.address || order.reference) && (
-            <div className="rounded-xl bg-white/5 px-2.5 py-2 text-[11px] text-white/70">
-              <span className="mr-1 font-bold text-white/90">Endereço:</span>
-              {order.address}
-              {order.reference ? ` · ${order.reference}` : ""}
+            <div className="space-y-1.5 rounded-xl bg-white/5 px-2.5 py-2 text-[11px] text-white/70">
+              <div>
+                <span className="mr-1 font-bold text-white/90">Endereço:</span>
+                {order.address}
+                {order.reference ? ` · ${order.reference}` : ""}
+              </div>
+              <a
+                href={
+                  order.delivery_lat != null && order.delivery_lng != null
+                    ? `https://www.google.com/maps/dir/?api=1&destination=${order.delivery_lat},${order.delivery_lng}&travelmode=driving`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.address ?? "")}&travelmode=driving`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-lg bg-neon-cyan/15 px-2 py-1 text-[11px] font-bold text-neon-cyan hover:bg-neon-cyan/25"
+              >
+                <MapPin className="h-3 w-3" />
+                {order.delivery_lat != null ? "Rota GPS (pin exato)" : "Rota (endereço)"}
+              </a>
             </div>
           )}
           <ul className="space-y-2 text-sm">
