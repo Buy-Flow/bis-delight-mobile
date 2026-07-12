@@ -20,7 +20,14 @@ import {
   Bike,
   PackageCheck,
   MapPin,
+  Phone,
+  Cake,
+  Mail,
+  IdCard,
+  KeyRound,
+  BadgeCheck,
 } from "lucide-react";
+
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -778,58 +785,152 @@ function ProfilePanel() {
         <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
       </Link>
 
-      <AccordionCard
-        title="Dados pessoais"
-        subtitle="Nome, CPF, contato e aniversário"
-        icon={<UserIcon className="h-5 w-5" />}
-        iconClass="bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30"
-        defaultOpen
-      >
-        <Input label="Nome completo" value={fullName} onChange={setFullName} autoComplete="name" />
-        <div>
-          <label className="mb-1 block text-[12px] font-semibold text-white/80">
-            CPF {cpfLocked && <span className="text-white/40">(verificado 🔒)</span>}
-          </label>
-          <input
-            value={cpf}
-            onChange={(e) => !cpfLocked && setCpf(formatCpf(e.target.value))}
-            inputMode="numeric"
-            placeholder="000.000.000-00"
-            readOnly={cpfLocked}
-            className={cn(
-              "w-full rounded-2xl border px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none",
-              cpfLocked
-                ? "cursor-not-allowed border-white/5 bg-white/[0.03] text-white/70"
-                : "border-white/10 bg-white/5 focus:border-neon-cyan",
-            )}
-          />
-          {!cpfLocked && (
-            <div className="mt-1 text-[10.5px] text-white/45">
-              Usamos o CPF para nota fiscal, cashback e programa de fidelidade.
+      {(() => {
+        const filled = [fullName, phone, cpf && isValidCpf(cpfDigits(cpf)), birthday, user?.email].filter(Boolean).length;
+        const total = 5;
+        const pct = Math.round((filled / total) * 100);
+        return (
+          <AccordionCard
+            title="Dados pessoais"
+            subtitle={`Perfil ${pct}% completo · ${filled}/${total} campos`}
+            icon={<UserIcon className="h-5 w-5" />}
+            iconClass="bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30"
+            defaultOpen
+            accent={
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan transition-all"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            }
+          >
+            {/* Identidade */}
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Identidade</div>
+            <FieldCard
+              icon={<UserIcon className="h-4 w-4" />}
+              iconClass="bg-neon-pink/15 text-neon-pink ring-1 ring-neon-pink/30"
+              label="Nome completo"
+              hint="Como aparece nos pedidos e cupons"
+              filled={!!fullName.trim()}
+            >
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                autoComplete="name"
+                placeholder="Seu nome completo"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-cyan"
+              />
+            </FieldCard>
+
+            <FieldCard
+              icon={<IdCard className="h-4 w-4" />}
+              iconClass="bg-neon-cyan/15 text-neon-cyan ring-1 ring-neon-cyan/30"
+              label="CPF"
+              hint={cpfLocked ? "Verificado — não pode ser alterado" : "Nota fiscal, cashback e fidelidade"}
+              filled={!!cpf && isValidCpf(cpfDigits(cpf))}
+              trailing={
+                cpfLocked ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-emerald-300">
+                    <BadgeCheck className="h-3 w-3" /> Verificado
+                  </span>
+                ) : null
+              }
+            >
+              <input
+                value={cpf}
+                onChange={(e) => !cpfLocked && setCpf(formatCpf(e.target.value))}
+                inputMode="numeric"
+                placeholder="000.000.000-00"
+                readOnly={cpfLocked}
+                className={cn(
+                  "w-full rounded-xl border px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none",
+                  cpfLocked
+                    ? "cursor-not-allowed border-white/5 bg-white/[0.03] text-white/70"
+                    : "border-white/10 bg-white/5 focus:border-neon-cyan",
+                )}
+              />
+            </FieldCard>
+
+            {/* Contato */}
+            <div className="mt-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Contato</div>
+            <FieldCard
+              icon={<Mail className="h-4 w-4" />}
+              iconClass="bg-white/10 text-white/70 ring-1 ring-white/15"
+              label="E-mail"
+              hint="Usado para login e recuperação"
+              filled={!!user?.email}
+              trailing={
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-white/50">
+                  <Check className="h-3 w-3" /> Login
+                </span>
+              }
+            >
+              <div className="truncate rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2.5 text-sm text-white/70">
+                {user?.email ?? "—"}
+              </div>
+            </FieldCard>
+
+            <FieldCard
+              icon={<Phone className="h-4 w-4" />}
+              iconClass="bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30"
+              label="Telefone (WhatsApp)"
+              hint="Recebe status do pedido e ofertas"
+              filled={!!phone.trim()}
+            >
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                autoComplete="tel"
+                type="tel"
+                placeholder="(00) 00000-0000"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-cyan"
+              />
+            </FieldCard>
+
+            {/* Preferências */}
+            <div className="mt-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/40">Preferências</div>
+            <FieldCard
+              icon={<Cake className="h-4 w-4" />}
+              iconClass="bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30"
+              label="Aniversário"
+              hint="Ganhe 1 selo bônus 🎂 no mês do aniversário"
+              filled={!!birthday}
+            >
+              <input
+                type="date"
+                value={birthday}
+                onChange={(e) => setBirthday(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-neon-cyan"
+              />
+            </FieldCard>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={async () => {
+                  if (!user?.email) return;
+                  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+                    redirectTo: `${window.location.origin}/auth`,
+                  });
+                  if (error) toast.error("Erro ao enviar e-mail");
+                  else toast.success("Enviamos um link para redefinir sua senha!");
+                }}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-[12px] font-bold text-white/80 transition hover:bg-white/10"
+              >
+                <KeyRound className="h-3.5 w-3.5" /> Trocar senha
+              </button>
+              <button
+                onClick={save}
+                disabled={saving}
+                className="flex flex-[1.4] items-center justify-center gap-2 rounded-xl bg-neon-pink px-4 py-2.5 text-sm font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-60"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                Salvar perfil
+              </button>
             </div>
-          )}
-        </div>
-        <Input label="Telefone (WhatsApp)" value={phone} onChange={setPhone} autoComplete="tel" type="tel" />
-        <div>
-          <label className="mb-1 block text-[12px] font-semibold text-white/80">
-            Data de aniversário <span className="text-white/40">(ganha 1 selo bônus no mês 🎂)</span>
-          </label>
-          <input
-            type="date"
-            value={birthday}
-            onChange={(e) => setBirthday(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none focus:border-neon-cyan"
-          />
-        </div>
-        <button
-          onClick={save}
-          disabled={saving}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold text-white glow-pink active:scale-[.98] disabled:opacity-60"
-        >
-          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          Salvar perfil
-        </button>
-      </AccordionCard>
+          </AccordionCard>
+        );
+      })()}
 
       <AccordionCard
         title="Meus endereços"
@@ -839,6 +940,7 @@ function ProfilePanel() {
       >
         <AddressManager embedded />
       </AccordionCard>
+
     </div>
   );
 }
@@ -872,12 +974,54 @@ function Input({
   );
 }
 
+function FieldCard({
+  icon,
+  iconClass,
+  label,
+  hint,
+  filled,
+  trailing,
+  children,
+}: {
+  icon: React.ReactNode;
+  iconClass?: string;
+  label: string;
+  hint?: string;
+  filled?: boolean;
+  trailing?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+      <div className="mb-2 flex items-center gap-2.5">
+        <span className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-xl", iconClass)}>
+          {icon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[12.5px] font-bold text-white">{label}</span>
+            {filled && (
+              <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-500/20 text-emerald-300">
+                <Check className="h-2.5 w-2.5" />
+              </span>
+            )}
+          </div>
+          {hint && <div className="truncate text-[10.5px] text-white/45">{hint}</div>}
+        </div>
+        {trailing}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 function AccordionCard({
   title,
   subtitle,
   icon,
   iconClass,
   defaultOpen = false,
+  accent,
   children,
 }: {
   title: string;
@@ -885,6 +1029,7 @@ function AccordionCard({
   icon: React.ReactNode;
   iconClass?: string;
   defaultOpen?: boolean;
+  accent?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -893,19 +1038,20 @@ function AccordionCard({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex w-full items-center gap-3 p-3 text-left transition hover:bg-white/[0.06]"
+        className="group flex w-full items-start gap-3 p-3 text-left transition hover:bg-white/[0.06]"
         aria-expanded={open}
       >
-        <span className={cn("grid h-11 w-11 place-items-center rounded-xl", iconClass)}>
+        <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl", iconClass)}>
           {icon}
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold text-white">{title}</div>
           {subtitle && <div className="text-[11px] text-white/60">{subtitle}</div>}
+          {accent}
         </div>
         <ChevronRight
           className={cn(
-            "h-4 w-4 text-white/40 transition",
+            "mt-1 h-4 w-4 shrink-0 text-white/40 transition",
             open ? "rotate-90 text-white" : "group-hover:translate-x-0.5 group-hover:text-white",
           )}
         />
@@ -916,6 +1062,7 @@ function AccordionCard({
     </div>
   );
 }
+
 
 
 function PanelSpinner() {
