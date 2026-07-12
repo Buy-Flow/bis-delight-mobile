@@ -181,11 +181,11 @@ export function Hero({
             <button
               type="button"
               onClick={onScrollMenu}
-              aria-label="Ver cardápio"
+              aria-label="Quero Bis"
               className="rounded-full border border-neon-yellow/50 bg-neon-yellow/10 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-neon-yellow shadow-[0_0_14px_rgba(255,215,60,0.4)] backdrop-blur-sm animate-pulse-glow-yellow-sm transition active:scale-95 hover:bg-neon-yellow/20 cursor-pointer"
               style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800 }}
             >
-              Ver cardápio
+              Quero Bis
             </button>
             <span className="h-px w-5 bg-linear-to-l from-transparent via-neon-yellow/60 to-neon-yellow" />
             <span className="inline-block h-[5px] w-[5px] rotate-45 bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.8)] animate-sparkle" style={{ animationDelay: "0.9s" }} />
