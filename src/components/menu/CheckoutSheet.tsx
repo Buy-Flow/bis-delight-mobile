@@ -930,7 +930,7 @@ export function CheckoutSheet() {
               "flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white active:scale-[.98] disabled:opacity-60",
               storeStatus.isClosed || (mode === "entrega" && outsideRadius)
                 ? "bg-white/10 ring-1 ring-white/15"
-                : "bg-neon-pink glow-pink",
+                : "bg-neon-pink",
             )}
           >
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
