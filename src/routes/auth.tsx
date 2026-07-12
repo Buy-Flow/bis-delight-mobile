@@ -54,6 +54,34 @@ function maskCpf(v: string): string {
   return out;
 }
 
+/** Máscara DD/MM/AAAA enquanto o usuário digita. */
+function maskBirthday(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  const dd = d.slice(0, 2);
+  const mm = d.slice(2, 4);
+  const yy = d.slice(4, 8);
+  let out = dd;
+  if (mm) out += "/" + mm;
+  if (yy) out += "/" + yy;
+  return out;
+}
+
+/** Converte DD/MM/AAAA → AAAA-MM-DD (ISO). Retorna null se inválida. */
+function birthdayToIso(v: string): string | null {
+  const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const dd = parseInt(m[1], 10);
+  const mm = parseInt(m[2], 10);
+  const yyyy = parseInt(m[3], 10);
+  if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
+  const dt = new Date(Date.UTC(yyyy, mm - 1, dd));
+  if (dt.getUTCFullYear() !== yyyy || dt.getUTCMonth() !== mm - 1 || dt.getUTCDate() !== dd) return null;
+  const today = new Date();
+  if (dt > today) return null;
+  if (yyyy < 1900) return null;
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
 /**
  * Valida CPF pelo algoritmo oficial dos dígitos verificadores.
  * Rejeita CPFs com todos dígitos iguais (111.111.111-11) e formatos inválidos.
@@ -130,6 +158,17 @@ function AuthPage() {
           return;
         }
 
+        // 3) Validação da data de aniversário (DD/MM/AAAA)
+        let birthdayIso: string | null = null;
+        if (birthday) {
+          birthdayIso = birthdayToIso(birthday);
+          if (!birthdayIso) {
+            toast.error("Data de aniversário inválida. Use DD/MM/AAAA.");
+            setLoading(false);
+            return;
+          }
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -138,7 +177,7 @@ function AuthPage() {
             data: {
               full_name: fullName,
               phone,
-              birthday: birthday || null,
+              birthday: birthdayIso,
               cpf: cpfDigits,
             },
           },
@@ -324,14 +363,15 @@ function AuthPage() {
                   </Field>
                   <Field icon={Cake}>
                     <input
-                      type="date"
+                      type="text"
                       required
+                      inputMode="numeric"
                       autoComplete="bday"
                       value={birthday}
-                      onChange={(e) => setBirthday(e.target.value)}
-                      max={new Date().toISOString().slice(0, 10)}
-                      placeholder="Data de aniversário"
-                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none [color-scheme:dark]"
+                      onChange={(e) => setBirthday(maskBirthday(e.target.value))}
+                      placeholder="Aniversário (DD/MM/AAAA)"
+                      maxLength={10}
+                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
                     />
                   </Field>
                 </>
