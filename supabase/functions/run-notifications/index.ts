@@ -69,9 +69,9 @@ Deno.serve(async (req) => {
 
       if (kind === "birthday") {
         const hour = Number(cfg.hour ?? 9);
-        // Only run once per day, only after configured hour
-        if (now.getHours() < hour) {
-          runReport.push({ id: a.id, kind, skipped: `before_hour_${hour}` });
+        // Only run once per day, only after configured hour (Brazil time)
+        if (brtHour < hour) {
+          runReport.push({ id: a.id, kind, skipped: `before_hour_${hour}_brt` });
           continue;
         }
         const daysOffset = Number(cfg.days_offset ?? 0);
