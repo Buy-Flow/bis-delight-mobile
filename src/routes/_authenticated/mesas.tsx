@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   Grid3x3,
-  ArrowLeft,
   Users,
   Clock,
   DollarSign,
