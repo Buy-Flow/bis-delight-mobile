@@ -676,9 +676,9 @@ function FecharDialog({ session, expected, onClose, onDone }:
         </div>
       </div>
       {counted && (
-        <div className={cn("rounded-xl p-3 flex items-center gap-2 text-sm",
-          Math.abs(diff) < 0.01 ? "bg-emerald-50 text-emerald-800"
-            : diff > 0 ? "bg-sky-50 text-sky-800" : "bg-rose-50 text-rose-800")}>
+        <div className={cn("rounded-xl p-3 flex items-center gap-2 text-sm border",
+          Math.abs(diff) < 0.01 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+            : diff > 0 ? "bg-sky-500/15 border-sky-500/30 text-sky-300" : "bg-rose-500/15 border-rose-500/30 text-rose-300")}>
           {Math.abs(diff) < 0.01 ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
           <span className="font-medium">
             {Math.abs(diff) < 0.01 ? "Caixa bate certinho" : diff > 0 ? "Sobra de" : "Falta de"}
