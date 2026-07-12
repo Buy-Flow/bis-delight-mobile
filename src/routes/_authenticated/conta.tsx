@@ -872,8 +872,22 @@ function Input({
   );
 }
 
-function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
+function AccordionCard({
+  title,
+  subtitle,
+  icon,
+  iconClass,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  iconClass?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
       <button
@@ -882,12 +896,12 @@ function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
         className="group flex w-full items-center gap-3 p-3 text-left transition hover:bg-white/[0.06]"
         aria-expanded={open}
       >
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30">
-          <UserIcon className="h-5 w-5" />
+        <span className={cn("grid h-11 w-11 place-items-center rounded-xl", iconClass)}>
+          {icon}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-bold text-white">Dados pessoais</div>
-          <div className="text-[11px] text-white/60">Nome, contato, endereço e aniversário</div>
+          <div className="text-sm font-bold text-white">{title}</div>
+          {subtitle && <div className="text-[11px] text-white/60">{subtitle}</div>}
         </div>
         <ChevronRight
           className={cn(
@@ -902,6 +916,7 @@ function DadosPessoaisCard({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
 
 function PanelSpinner() {
   return (
