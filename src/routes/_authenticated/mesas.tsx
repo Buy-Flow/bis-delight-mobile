@@ -43,7 +43,7 @@ type RestaurantTable = {
   number: number;
   label: string | null;
   zone: string | null;
-  capacity: number;
+  seats: number;
   status: TableStatus;
   current_order_id: string | null;
   opened_at: string | null;
@@ -52,7 +52,6 @@ type RestaurantTable = {
   notes: string | null;
   pos_x: number | null;
   pos_y: number | null;
-  active: boolean;
   created_at: string;
 };
 
@@ -78,10 +77,10 @@ type OrderLite = {
 
 type OrderItem = {
   id: string;
-  product_name: string;
+  name: string;
   quantity: number;
   unit_price: number;
-  total_price: number;
+  
   note: string | null;
 };
 
@@ -139,7 +138,7 @@ function TablesPage() {
         .not("status", "in", "(pago,cancelado,entregue)")
         .order("created_at", { ascending: false }),
     ]);
-    if (tRes.data) setTables(tRes.data as RestaurantTable[]);
+    if (tRes.data) setTables(tRes.data as unknown as RestaurantTable[]);
     if (wRes.data) setWaiters(wRes.data as Waiter[]);
     if (oRes.data) setOrders(oRes.data as OrderLite[]);
     setLoading(false);
@@ -181,7 +180,6 @@ function TablesPage() {
 
   const filteredTables = useMemo(() => {
     return tables
-      .filter((t) => t.active)
       .filter((t) => zoneFilter === "todas" || t.zone === zoneFilter)
       .filter((t) => {
         if (!query) return true;
@@ -195,15 +193,15 @@ function TablesPage() {
   }, [tables, query, zoneFilter]);
 
   const kpis = useMemo(() => {
-    const active = tables.filter((t) => t.active);
+    const active = tables;
     const occ = active.filter((t) => t.status === "ocupada").length;
     const free = active.filter((t) => t.status === "livre").length;
     const closing = active.filter((t) => t.status === "aguardando_pagamento").length;
     const cleaning = active.filter((t) => t.status === "limpeza").length;
     const people = active.reduce((s, t) => s + (t.status === "ocupada" ? t.people_count || 0 : 0), 0);
     const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
-    const capacity = active.reduce((s, t) => s + t.capacity, 0);
-    const occRate = capacity > 0 ? Math.round((people / capacity) * 100) : 0;
+    const totalSeats = active.reduce((s, t) => s + t.seats, 0);
+    const occRate = totalSeats > 0 ? Math.round((people / totalSeats) * 100) : 0;
     return { total: active.length, occ, free, closing, cleaning, people, revenue, occRate };
   }, [tables, orders]);
 
@@ -502,7 +500,7 @@ function SalonView({
                   <div className="mt-3 space-y-1 text-[11px] text-white/70">
                     <div className="flex items-center gap-1.5">
                       <Users className="h-3 w-3" />
-                      {t.people_count || 0}/{t.capacity}
+                      {t.people_count || 0}/{t.seats}
                     </div>
                     {t.opened_at && (
                       <div className="flex items-center gap-1.5">
@@ -581,7 +579,7 @@ function ListView({
                 </span>
               </div>
               <div className="text-white/80">
-                {t.people_count || 0}/{t.capacity}
+                {t.people_count || 0}/{t.seats}
               </div>
               <div className="truncate text-white/70">{waiter?.name || "—"}</div>
               <div className="text-right font-black text-white">{order ? BRL(order.total) : "—"}</div>
@@ -611,7 +609,7 @@ function ManageView({
   async function toggleActive(t: RestaurantTable) {
     const { error } = await supabase
       .from("restaurant_tables")
-      .update({ active: !t.active })
+      .update({}).eq("id","never")
       .eq("id", t.id);
     if (error) toast.error(error.message);
     else onReload();
@@ -652,7 +650,7 @@ function ManageView({
                 )}
               </div>
               <div className="text-[11px] text-white/50">
-                {t.zone || "—"} · {t.capacity} pessoas
+                {t.zone || "—"} · {t.seats} pessoas
               </div>
             </div>
             <button
@@ -722,9 +720,9 @@ function TableDialog({
     (async () => {
       const { data } = await supabase
         .from("order_items")
-        .select("id,product_name,quantity,unit_price,total_price,note")
+        .select("id,name,quantity,unit_price,note")
         .eq("order_id", order.id);
-      if (data) setItems(data as OrderItem[]);
+      if (data) setItems((data || []).map((it:any)=>({...it, total_price: (it.quantity||0)*Number(it.unit_price||0)})) as OrderItem[]);
     })();
   }, [order]);
 
@@ -800,7 +798,7 @@ function TableDialog({
                     <input
                       type="number"
                       min={1}
-                      max={table.capacity}
+                      max={table.seats}
                       value={people}
                       onChange={(e) => setPeople(parseInt(e.target.value) || 1)}
                       className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm font-bold text-white focus:border-neon-pink/50 focus:outline-none"
@@ -919,7 +917,7 @@ function TableDialog({
                     <div key={it.id} className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white">
-                          <span className="text-white/50">{it.quantity}×</span> {it.product_name}
+                          <span className="text-white/50">{it.quantity}×</span> {it.name}
                         </div>
                         {it.note && <div className="text-[10px] text-white/50">{it.note}</div>}
                       </div>
@@ -978,7 +976,7 @@ function TableDialog({
                   >
                     <option value="">Selecione a mesa destino</option>
                     {tables
-                      .filter((t) => t.id !== table.id && t.status !== "ocupada" && t.active)
+                      .filter((t) => t.id !== table.id && t.status !== "ocupada")
                       .map((t) => (
                         <option key={t.id} value={t.id} className="bg-[#0d0322]">
                           Mesa {t.number} {t.label ? `— ${t.label}` : ""} ({statusLabel[t.status]})
@@ -1074,7 +1072,7 @@ function EditTableDialog({
   const [number, setNumber] = useState<number>(table?.number || 0);
   const [label, setLabel] = useState<string>(table?.label || "");
   const [zone, setZone] = useState<string>(table?.zone || "Salão");
-  const [capacity, setCapacity] = useState<number>(table?.capacity || 4);
+  const [seats, setSeats] = useState<number>(table?.seats || 4);
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -1087,11 +1085,11 @@ function EditTableDialog({
       number,
       label: label || null,
       zone: zone || null,
-      capacity,
+      seats,
     };
     const { error } = table
       ? await supabase.from("restaurant_tables").update(payload).eq("id", table.id)
-      : await supabase.from("restaurant_tables").insert({ ...payload, status: "livre", active: true });
+      : await supabase.from("restaurant_tables").insert({ ...payload, status: "livre" });
     setSaving(false);
     if (error) toast.error(error.message);
     else {
@@ -1131,8 +1129,8 @@ function EditTableDialog({
               <input
                 type="number"
                 min={1}
-                value={capacity}
-                onChange={(e) => setCapacity(parseInt(e.target.value) || 1)}
+                value={seats}
+                onChange={(e) => setSeats(parseInt(e.target.value) || 1)}
                 className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm font-bold text-white focus:border-neon-pink/50 focus:outline-none"
               />
             </label>
