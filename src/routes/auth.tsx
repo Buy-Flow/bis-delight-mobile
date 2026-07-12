@@ -363,14 +363,15 @@ function AuthPage() {
                   </Field>
                   <Field icon={Cake}>
                     <input
-                      type="date"
+                      type="text"
                       required
+                      inputMode="numeric"
                       autoComplete="bday"
                       value={birthday}
-                      onChange={(e) => setBirthday(e.target.value)}
-                      max={new Date().toISOString().slice(0, 10)}
-                      placeholder="Data de aniversário"
-                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none [color-scheme:dark]"
+                      onChange={(e) => setBirthday(maskBirthday(e.target.value))}
+                      placeholder="Aniversário (DD/MM/AAAA)"
+                      maxLength={10}
+                      className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
                     />
                   </Field>
                 </>
