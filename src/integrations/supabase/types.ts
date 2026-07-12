@@ -256,6 +256,111 @@ export type Database = {
           },
         ]
       }
+      cash_movements: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          order_id: string | null
+          payment_method: string
+          session_id: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          payment_method?: string
+          session_id: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          payment_method?: string
+          session_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_sessions: {
+        Row: {
+          closed_at: string | null
+          closing_note: string | null
+          counted_amount: number | null
+          created_at: string
+          difference: number | null
+          expected_amount: number | null
+          id: string
+          opened_at: string
+          opening_amount: number
+          opening_note: string | null
+          operator_id: string | null
+          operator_name: string | null
+          status: string
+          terminal: string | null
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closing_note?: string | null
+          counted_amount?: number | null
+          created_at?: string
+          difference?: number | null
+          expected_amount?: number | null
+          id?: string
+          opened_at?: string
+          opening_amount?: number
+          opening_note?: string | null
+          operator_id?: string | null
+          operator_name?: string | null
+          status?: string
+          terminal?: string | null
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          closing_note?: string | null
+          counted_amount?: number | null
+          created_at?: string
+          difference?: number | null
+          expected_amount?: number | null
+          id?: string
+          opened_at?: string
+          opening_amount?: number
+          opening_note?: string | null
+          operator_id?: string | null
+          operator_name?: string | null
+          status?: string
+          terminal?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           active: boolean
@@ -2427,6 +2532,33 @@ export type Database = {
         }[]
       }
       clear_table: { Args: { _table_id: string }; Returns: undefined }
+      close_cash_session: {
+        Args: { _counted: number; _note?: string; _session_id: string }
+        Returns: {
+          closed_at: string | null
+          closing_note: string | null
+          counted_amount: number | null
+          created_at: string
+          difference: number | null
+          expected_amount: number | null
+          id: string
+          opened_at: string
+          opening_amount: number
+          opening_note: string | null
+          operator_id: string | null
+          operator_name: string | null
+          status: string
+          terminal: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "cash_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      compute_expected_cash: { Args: { _session_id: string }; Returns: number }
       get_birthday_gift_status: {
         Args: never
         Returns: {
@@ -2450,6 +2582,32 @@ export type Database = {
           stamps_to_next: number
           tier: string
         }[]
+      }
+      get_open_cash_session: {
+        Args: never
+        Returns: {
+          closed_at: string | null
+          closing_note: string | null
+          counted_amount: number | null
+          created_at: string
+          difference: number | null
+          expected_amount: number | null
+          id: string
+          opened_at: string
+          opening_amount: number
+          opening_note: string | null
+          operator_id: string | null
+          operator_name: string | null
+          status: string
+          terminal: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "cash_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_pix_key: { Args: never; Returns: string }
       has_role: {
