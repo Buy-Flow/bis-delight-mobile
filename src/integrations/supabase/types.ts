@@ -1825,16 +1825,24 @@ export type Database = {
           helpful_count: number
           id: string
           order_id: string | null
+          order_mode: string | null
           photos: string[]
           product_id: string | null
           rating: number
+          rating_delivery: number | null
+          rating_food: number | null
+          rating_packaging: number | null
+          rating_service: number | null
+          rating_value: number | null
           replied_at: string | null
           replied_by: string | null
           reply: string | null
           status: Database["public"]["Enums"]["review_status"]
+          tags: string[]
           title: string | null
           updated_at: string
           user_id: string
+          would_recommend: boolean | null
         }
         Insert: {
           comment?: string | null
@@ -1843,16 +1851,24 @@ export type Database = {
           helpful_count?: number
           id?: string
           order_id?: string | null
+          order_mode?: string | null
           photos?: string[]
           product_id?: string | null
           rating: number
+          rating_delivery?: number | null
+          rating_food?: number | null
+          rating_packaging?: number | null
+          rating_service?: number | null
+          rating_value?: number | null
           replied_at?: string | null
           replied_by?: string | null
           reply?: string | null
           status?: Database["public"]["Enums"]["review_status"]
+          tags?: string[]
           title?: string | null
           updated_at?: string
           user_id: string
+          would_recommend?: boolean | null
         }
         Update: {
           comment?: string | null
@@ -1861,16 +1877,24 @@ export type Database = {
           helpful_count?: number
           id?: string
           order_id?: string | null
+          order_mode?: string | null
           photos?: string[]
           product_id?: string | null
           rating?: number
+          rating_delivery?: number | null
+          rating_food?: number | null
+          rating_packaging?: number | null
+          rating_service?: number | null
+          rating_value?: number | null
           replied_at?: string | null
           replied_by?: string | null
           reply?: string | null
           status?: Database["public"]["Enums"]["review_status"]
+          tags?: string[]
           title?: string | null
           updated_at?: string
           user_id?: string
+          would_recommend?: boolean | null
         }
         Relationships: [
           {
