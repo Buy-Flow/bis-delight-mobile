@@ -41,6 +41,7 @@ import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCaixaRouteImport } from './routes/_authenticated/caixa'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
+import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authenticated/automacoes'
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
@@ -209,6 +210,11 @@ const AuthenticatedAvaliacoesRoute = AuthenticatedAvaliacoesRouteImport.update({
   path: '/avaliacoes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAutomacoesRoute = AuthenticatedAutomacoesRouteImport.update({
+  id: '/automacoes',
+  path: '/automacoes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAiGrowthRoute = AuthenticatedAiGrowthRouteImport.update({
   id: '/ai-growth',
   path: '/ai-growth',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/caixa': typeof AuthenticatedCaixaRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/caixa': typeof AuthenticatedCaixaRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/_authenticated/caixa': typeof AuthenticatedCaixaRoute
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/automacoes'
     | '/avaliacoes'
     | '/biblioteca'
     | '/caixa'
@@ -393,6 +403,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/automacoes'
     | '/avaliacoes'
     | '/biblioteca'
     | '/caixa'
@@ -431,6 +442,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/ai-growth'
+    | '/_authenticated/automacoes'
     | '/_authenticated/avaliacoes'
     | '/_authenticated/biblioteca'
     | '/_authenticated/caixa'
@@ -698,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAvaliacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/automacoes': {
+      id: '/_authenticated/automacoes'
+      path: '/automacoes'
+      fullPath: '/automacoes'
+      preLoaderRoute: typeof AuthenticatedAutomacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ai-growth': {
       id: '/_authenticated/ai-growth'
       path: '/ai-growth'
@@ -732,6 +751,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiGrowthRoute: typeof AuthenticatedAiGrowthRoute
+  AuthenticatedAutomacoesRoute: typeof AuthenticatedAutomacoesRoute
   AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
   AuthenticatedCaixaRoute: typeof AuthenticatedCaixaRoute
@@ -762,6 +782,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiGrowthRoute: AuthenticatedAiGrowthRoute,
+  AuthenticatedAutomacoesRoute: AuthenticatedAutomacoesRoute,
   AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
   AuthenticatedCaixaRoute: AuthenticatedCaixaRoute,

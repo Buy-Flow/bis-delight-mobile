@@ -158,7 +158,7 @@ const groups: NavGroup[] = [
     items: [
       { to: "/admin", tab: "settings", label: "Loja", icon: Settings },
       { to: "/usuarios", label: "Usuários e permissões", icon: ShieldCheck },
-      { label: "Automações", icon: Zap, soon: true },
+      { to: "/automacoes", label: "Automações", icon: Zap },
     ],
   },
 ];
