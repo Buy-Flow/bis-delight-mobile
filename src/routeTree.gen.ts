@@ -24,6 +24,7 @@ import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authent
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated/modelos'
+import { Route as AuthenticatedMesasRouteImport } from './routes/_authenticated/mesas'
 import { Route as AuthenticatedLucratividadeRouteImport } from './routes/_authenticated/lucratividade'
 import { Route as AuthenticatedImpressaoRouteImport } from './routes/_authenticated/impressao'
 import { Route as AuthenticatedGarconsRouteImport } from './routes/_authenticated/garcons'
@@ -113,6 +114,11 @@ const AuthenticatedNotificacoesRoute =
 const AuthenticatedModelosRoute = AuthenticatedModelosRouteImport.update({
   id: '/modelos',
   path: '/modelos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMesasRoute = AuthenticatedMesasRouteImport.update({
+  id: '/mesas',
+  path: '/mesas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLucratividadeRoute =
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/garcons': typeof AuthenticatedGarconsRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
+  '/mesas': typeof AuthenticatedMesasRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pdv': typeof AuthenticatedPdvRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/garcons': typeof AuthenticatedGarconsRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
+  '/mesas': typeof AuthenticatedMesasRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pdv': typeof AuthenticatedPdvRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/_authenticated/garcons': typeof AuthenticatedGarconsRoute
   '/_authenticated/impressao': typeof AuthenticatedImpressaoRoute
   '/_authenticated/lucratividade': typeof AuthenticatedLucratividadeRoute
+  '/_authenticated/mesas': typeof AuthenticatedMesasRoute
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/garcons'
     | '/impressao'
     | '/lucratividade'
+    | '/mesas'
     | '/modelos'
     | '/notificacoes'
     | '/pdv'
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/garcons'
     | '/impressao'
     | '/lucratividade'
+    | '/mesas'
     | '/modelos'
     | '/notificacoes'
     | '/pdv'
@@ -363,6 +374,7 @@ export interface FileRouteTypes {
     | '/_authenticated/garcons'
     | '/_authenticated/impressao'
     | '/_authenticated/lucratividade'
+    | '/_authenticated/mesas'
     | '/_authenticated/modelos'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pdv'
@@ -493,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedModelosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mesas': {
+      id: '/_authenticated/mesas'
+      path: '/mesas'
+      fullPath: '/mesas'
+      preLoaderRoute: typeof AuthenticatedMesasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lucratividade': {
       id: '/_authenticated/lucratividade'
       path: '/lucratividade'
@@ -608,6 +627,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGarconsRoute: typeof AuthenticatedGarconsRoute
   AuthenticatedImpressaoRoute: typeof AuthenticatedImpressaoRoute
   AuthenticatedLucratividadeRoute: typeof AuthenticatedLucratividadeRoute
+  AuthenticatedMesasRoute: typeof AuthenticatedMesasRoute
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
@@ -631,6 +651,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGarconsRoute: AuthenticatedGarconsRoute,
   AuthenticatedImpressaoRoute: AuthenticatedImpressaoRoute,
   AuthenticatedLucratividadeRoute: AuthenticatedLucratividadeRoute,
+  AuthenticatedMesasRoute: AuthenticatedMesasRoute,
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
