@@ -20,7 +20,14 @@ import {
   Bike,
   PackageCheck,
   MapPin,
+  Phone,
+  Cake,
+  Mail,
+  IdCard,
+  KeyRound,
+  BadgeCheck,
 } from "lucide-react";
+
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
