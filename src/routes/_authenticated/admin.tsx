@@ -3021,7 +3021,8 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
     <div className="pb-28">
 
       {/* Two-column layout */}
-      <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
+      <div className={cn("grid gap-5", !hideNav && "lg:grid-cols-[260px_1fr]")}>
+        {!hideNav && (
         {/* Section nav — desktop rail */}
         <aside className="hidden lg:block">
           <div className="sticky top-4 rounded-3xl border border-white/10 bg-white/[0.03] p-2">
