@@ -18,6 +18,8 @@ import {
   Award,
   Heart,
   ClipboardList,
+  AlertCircle,
+  X as XIcon,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -122,6 +124,8 @@ function AuthPage() {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
