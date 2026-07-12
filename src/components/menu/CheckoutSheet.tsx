@@ -81,6 +81,7 @@ export function CheckoutSheet() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [preGeocoded, setPreGeocoded] = useState<{ lat: number; lng: number; address: string } | null>(null);
   const [savingAddress, setSavingAddress] = useState(false);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
   const [mode, setMode] = useState<Mode>("entrega");
   const [name, setName] = useState("");
