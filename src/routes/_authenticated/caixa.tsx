@@ -74,7 +74,7 @@ const methodMeta: Record<MovementRow["payment_method"], { label: string; icon: t
   debito: { label: "Débito", icon: CreditCard, color: "text-indigo-600 bg-indigo-50" },
   credito: { label: "Crédito", icon: CreditCard, color: "text-violet-600 bg-violet-50" },
   voucher: { label: "Voucher", icon: Ticket, color: "text-amber-600 bg-amber-50" },
-  outro: { label: "Outro", icon: Receipt, color: "text-slate-600 bg-slate-100" },
+  outro: { label: "Outro", icon: Receipt, color: "text-white/70 bg-white/10" },
 };
 
 const typeMeta: Record<MovementRow["type"], { label: string; sign: 1 | -1; tone: string }> = {
@@ -84,7 +84,7 @@ const typeMeta: Record<MovementRow["type"], { label: string; sign: 1 | -1; tone:
   sangria: { label: "Sangria", sign: -1, tone: "text-rose-700" },
   troco: { label: "Troco", sign: -1, tone: "text-rose-700" },
   estorno: { label: "Estorno", sign: -1, tone: "text-rose-700" },
-  ajuste: { label: "Ajuste", sign: 1, tone: "text-slate-700" },
+  ajuste: { label: "Ajuste", sign: 1, tone: "text-white/80" },
 };
 
 function CaixaPage() {
@@ -222,9 +222,9 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white pb-24">
+    <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white pb-24">
       {/* Header */}
-      <div className="border-b bg-white/80 backdrop-blur sticky top-0 z-20">
+      <div className="border-b bg-black/40 backdrop-blur-md border-white/10 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-wrap items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-11 w-11 rounded-xl grid place-items-center text-white",
@@ -232,21 +232,21 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
               <Wallet className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-slate-900">Caixa</h1>
-              <p className="text-xs md:text-sm text-slate-500 flex items-center gap-1.5">
+              <h1 className="text-xl md:text-2xl font-bold text-white">Caixa</h1>
+              <p className="text-xs md:text-sm text-white/60 flex items-center gap-1.5">
                 <span className={cn("h-2 w-2 rounded-full", session ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
                 {session ? `Aberto desde ${new Date(session.opened_at).toLocaleString("pt-BR")}` : "Caixa fechado"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={load} className="h-10 px-3 rounded-lg border bg-white hover:bg-slate-50 text-sm flex items-center gap-2">
+            <button onClick={load} className="h-10 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-sm flex items-center gap-2">
               <RefreshCcw className="h-4 w-4" /> Atualizar
             </button>
             {session ? (
               <>
                 <button onClick={() => setOpenDialog("mov")}
-                  className="h-10 px-4 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 flex items-center gap-2">
+                  className="h-10 px-4 rounded-lg bg-white text-black text-sm font-medium hover:bg-white/90 hover:text-black flex items-center gap-2">
                   <Plus className="h-4 w-4" /> Lançamento
                 </button>
                 <button onClick={() => setOpenDialog("fechar")}
@@ -271,7 +271,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
             return (
               <button key={t.id} onClick={() => setTab(t.id as any)}
                 className={cn("px-4 py-2.5 text-sm font-medium border-b-2 -mb-px flex items-center gap-2",
-                  active ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-800")}>
+                  active ? "border-white text-white" : "border-transparent text-white/60 hover:text-white/90")}>
                 <Icon className="h-4 w-4" /> {t.label}
               </button>
             );
@@ -280,15 +280,15 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 space-y-6">
-        {loading && <div className="text-center py-12 text-slate-400">Carregando…</div>}
+        {loading && <div className="text-center py-12 text-white/40">Carregando…</div>}
 
         {!loading && tab === "atual" && !session && (
-          <div className="rounded-2xl border-2 border-dashed p-12 text-center bg-white">
-            <div className="h-16 w-16 rounded-full bg-slate-100 grid place-items-center mx-auto mb-4">
-              <Lock className="h-7 w-7 text-slate-400" />
+          <div className="rounded-2xl border-2 border-dashed border-white/15 p-12 text-center bg-white/5">
+            <div className="h-16 w-16 rounded-full bg-white/10 grid place-items-center mx-auto mb-4">
+              <Lock className="h-7 w-7 text-white/40" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-1">Nenhum caixa aberto</h2>
-            <p className="text-sm text-slate-500 mb-6">Abra o caixa para começar a registrar vendas e movimentos.</p>
+            <h2 className="text-lg font-semibold text-white mb-1">Nenhum caixa aberto</h2>
+            <p className="text-sm text-white/60 mb-6">Abra o caixa para começar a registrar vendas e movimentos.</p>
             <button onClick={() => setOpenDialog("abrir")}
               className="h-11 px-6 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold inline-flex items-center gap-2">
               <Unlock className="h-4 w-4" /> Abrir caixa
@@ -308,9 +308,9 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Métodos */}
-              <div className="lg:col-span-1 rounded-2xl border bg-white p-5">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-slate-500" /> Vendas por método
+              <div className="lg:col-span-1 rounded-2xl border border-white/10 bg-white/5 p-5">
+                <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-white/60" /> Vendas por método
                 </h3>
                 <div className="space-y-2">
                   {(Object.keys(methodMeta) as MovementRow["payment_method"][]).map(m => {
@@ -323,51 +323,51 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between text-sm">
-                            <span className="text-slate-700">{M.label}</span>
-                            <span className="font-semibold text-slate-900">{BRL(v)}</span>
+                            <span className="text-white/80">{M.label}</span>
+                            <span className="font-semibold text-white">{BRL(v)}</span>
                           </div>
-                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1">
-                            <div className="h-full bg-slate-900 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
+                            <div className="h-full bg-white/10 rounded-full transition-all" style={{ width: `${pct}%` }} />
                           </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
-                <div className="mt-4 pt-3 border-t flex justify-between text-sm">
-                  <span className="text-slate-500">Total de vendas</span>
-                  <span className="font-bold text-slate-900">{BRL(totals.vendas)}</span>
+                <div className="mt-4 pt-3 border-t border-white/10 flex justify-between text-sm">
+                  <span className="text-white/60">Total de vendas</span>
+                  <span className="font-bold text-white">{BRL(totals.vendas)}</span>
                 </div>
               </div>
 
               {/* Movimentos */}
-              <div className="lg:col-span-2 rounded-2xl border bg-white">
-                <div className="p-5 border-b flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-slate-500" /> Movimentos ({movs.length})
+              <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5">
+                <div className="p-5 border-b border-white/10 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-white/60" /> Movimentos ({movs.length})
                   </h3>
                   <button onClick={() => exportCsv(session, movs)}
-                    className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1">
+                    className="text-xs text-white/70 hover:text-white flex items-center gap-1">
                     <Download className="h-3.5 w-3.5" /> CSV
                   </button>
                 </div>
-                <div className="divide-y max-h-[520px] overflow-auto">
+                <div className="divide-y divide-white/10 max-h-[520px] overflow-auto">
                   {movs.length === 0 && (
-                    <div className="p-10 text-center text-sm text-slate-400">Nenhum movimento ainda.</div>
+                    <div className="p-10 text-center text-sm text-white/40">Nenhum movimento ainda.</div>
                   )}
                   {movs.map(m => {
                     const T = typeMeta[m.type]; const M = methodMeta[m.payment_method]; const Icon = M.icon;
                     return (
-                      <div key={m.id} className="p-3 md:p-4 flex items-center gap-3 hover:bg-slate-50">
+                      <div key={m.id} className="p-3 md:p-4 flex items-center gap-3 hover:bg-white/10">
                         <div className={cn("h-9 w-9 rounded-lg grid place-items-center", M.color)}>
                           <Icon className="h-4 w-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-slate-900">{T.label}</span>
-                            <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{M.label}</span>
+                            <span className="text-sm font-medium text-white">{T.label}</span>
+                            <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-white/10 text-white/70">{M.label}</span>
                           </div>
-                          <div className="text-xs text-slate-500 truncate">
+                          <div className="text-xs text-white/60 truncate">
                             {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                             {m.note ? ` · ${m.note}` : ""}
                           </div>
@@ -385,31 +385,31 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
         )}
 
         {!loading && tab === "historico" && (
-          <div className="rounded-2xl border bg-white overflow-hidden">
-            <div className="p-5 border-b flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">Últimas sessões</h3>
-              <span className="text-xs text-slate-500">{history.length} registros</span>
+          <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+            <div className="p-5 border-b border-white/10 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-white">Últimas sessões</h3>
+              <span className="text-xs text-white/60">{history.length} registros</span>
             </div>
-            <div className="divide-y">
+            <div className="divide-y divide-white/10">
               {history.length === 0 && (
-                <div className="p-10 text-center text-sm text-slate-400">Nenhuma sessão registrada.</div>
+                <div className="p-10 text-center text-sm text-white/40">Nenhuma sessão registrada.</div>
               )}
               {history.map(s => {
                 const diff = Number(s.difference ?? 0);
                 const isOpen = s.status === "open";
                 return (
                   <button key={s.id} onClick={() => openDetail(s)}
-                    className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 text-left">
+                    className="w-full p-4 flex items-center gap-4 hover:bg-white/10 text-left">
                     <div className={cn("h-10 w-10 rounded-lg grid place-items-center",
-                      isOpen ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600")}>
+                      isOpen ? "bg-emerald-50 text-emerald-600" : "bg-white/10 text-white/70")}>
                       {isOpen ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-slate-900">
+                      <div className="text-sm font-medium text-white">
                         {new Date(s.opened_at).toLocaleString("pt-BR")}
                         {s.closed_at && ` → ${new Date(s.closed_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-white/60">
                         {s.operator_name ?? "Operador"} · Abertura {BRL(s.opening_amount)}
                         {isOpen && " · aberto"}
                       </div>
@@ -457,14 +457,14 @@ function Kpi({ icon: Icon, label, value, tone }: { icon: typeof Wallet; label: s
     indigo: "from-indigo-500 to-indigo-600",
   };
   return (
-    <div className="rounded-2xl border bg-white p-4">
-      <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+      <div className="flex items-center gap-2 text-xs text-white/60 mb-2">
         <div className={cn("h-6 w-6 rounded-md bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
           <Icon className="h-3.5 w-3.5" />
         </div>
         {label}
       </div>
-      <div className="text-xl font-bold text-slate-900 tabular-nums">{value}</div>
+      <div className="text-xl font-bold text-white tabular-nums">{value}</div>
     </div>
   );
 }
@@ -482,20 +482,20 @@ function DialogShell({ title, icon: Icon, onClose, children, footer, tone = "sla
   };
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b flex items-center justify-between">
+      <div className="w-full max-w-lg bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-9 w-9 rounded-lg bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
               <Icon className="h-4 w-4" />
             </div>
-            <h3 className="font-semibold text-slate-900">{title}</h3>
+            <h3 className="font-semibold text-white">{title}</h3>
           </div>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-slate-100 grid place-items-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-white/10 grid place-items-center">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="p-5 space-y-4">{children}</div>
-        {footer && <div className="p-4 border-t bg-slate-50 flex justify-end gap-2">{footer}</div>}
+        {footer && <div className="p-4 border-t border-white/10 bg-white/5 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>
   );
@@ -525,22 +525,22 @@ function AbrirDialog({ onClose, onDone }: { onClose: () => void; onDone: () => v
   return (
     <DialogShell title="Abrir caixa" icon={Unlock} tone="emerald" onClose={onClose}
       footer={<>
-        <button onClick={onClose} className="h-10 px-4 rounded-lg border bg-white text-sm">Cancelar</button>
+        <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
           className="h-10 px-5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold disabled:opacity-60">
           {saving ? "Abrindo…" : "Abrir caixa"}
         </button>
       </>}>
       <div>
-        <label className="text-sm font-medium text-slate-700">Valor de abertura (fundo de troco)</label>
+        <label className="text-sm font-medium text-white/80">Valor de abertura (fundo de troco)</label>
         <div className="mt-1 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">R$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">R$</span>
           <input autoFocus value={amount} onChange={e => setAmount(e.target.value)} inputMode="decimal" placeholder="0,00"
-            className="w-full h-12 pl-10 pr-3 rounded-lg border bg-white text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            className="w-full h-12 pl-10 pr-3 rounded-lg border border-white/10 bg-white/5 text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500" />
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700">Observação (opcional)</label>
+        <label className="text-sm font-medium text-white/80">Observação (opcional)</label>
         <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
           className="mt-1 w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
       </div>
@@ -579,14 +579,14 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
   return (
     <DialogShell title="Novo lançamento" icon={Plus} onClose={onClose}
       footer={<>
-        <button onClick={onClose} className="h-10 px-4 rounded-lg border bg-white text-sm">Cancelar</button>
+        <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
-          className="h-10 px-5 rounded-lg bg-slate-900 text-white text-sm font-semibold disabled:opacity-60">
+          className="h-10 px-5 rounded-lg bg-white text-black text-sm font-semibold disabled:opacity-60">
           {saving ? "Salvando…" : "Registrar"}
         </button>
       </>}>
       <div>
-        <label className="text-sm font-medium text-slate-700 mb-2 block">Tipo</label>
+        <label className="text-sm font-medium text-white/80 mb-2 block">Tipo</label>
         <div className="grid grid-cols-3 gap-2">
           {types.map(t => {
             const Icon = t.icon; const active = type === t.id;
@@ -595,7 +595,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
                 className={cn("p-3 rounded-lg border text-sm flex flex-col items-center gap-1 transition",
                   active ? (t.tone === "emerald" ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                                                  : "border-rose-500 bg-rose-50 text-rose-700")
-                         : "border-slate-200 hover:bg-slate-50 text-slate-600")}>
+                         : "border-white/10 hover:bg-white/10 text-white/70")}>
                 <Icon className="h-4 w-4" />
                 {t.label}
               </button>
@@ -604,14 +604,14 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700 mb-2 block">Método</label>
+        <label className="text-sm font-medium text-white/80 mb-2 block">Método</label>
         <div className="grid grid-cols-3 gap-2">
           {(Object.keys(methodMeta) as MovementRow["payment_method"][]).map(m => {
             const M = methodMeta[m]; const Icon = M.icon; const active = method === m;
             return (
               <button key={m} onClick={() => setMethod(m)}
                 className={cn("p-2.5 rounded-lg border text-xs flex flex-col items-center gap-1",
-                  active ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 hover:bg-slate-50 text-slate-600")}>
+                  active ? "border-white bg-white text-black" : "border-white/10 hover:bg-white/10 text-white/70")}>
                 <Icon className="h-4 w-4" />
                 {M.label}
               </button>
@@ -620,15 +620,15 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700">Valor</label>
+        <label className="text-sm font-medium text-white/80">Valor</label>
         <div className="mt-1 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">R$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">R$</span>
           <input autoFocus value={amount} onChange={e => setAmount(e.target.value)} inputMode="decimal" placeholder="0,00"
-            className="w-full h-12 pl-10 pr-3 rounded-lg border bg-white text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-slate-900" />
+            className="w-full h-12 pl-10 pr-3 rounded-lg border border-white/10 bg-white/5 text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-slate-900" />
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700">Observação</label>
+        <label className="text-sm font-medium text-white/80">Observação</label>
         <input value={note} onChange={e => setNote(e.target.value)}
           className="mt-1 w-full h-10 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
       </div>
@@ -657,22 +657,22 @@ function FecharDialog({ session, expected, onClose, onDone }:
   return (
     <DialogShell title="Fechar caixa" icon={Lock} tone="rose" onClose={onClose}
       footer={<>
-        <button onClick={onClose} className="h-10 px-4 rounded-lg border bg-white text-sm">Cancelar</button>
+        <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
           className="h-10 px-5 rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 text-white text-sm font-semibold disabled:opacity-60">
           {saving ? "Fechando…" : "Confirmar fechamento"}
         </button>
       </>}>
-      <div className="rounded-xl bg-slate-50 border p-3 space-y-1 text-sm">
-        <div className="flex justify-between"><span className="text-slate-500">Abertura</span><span className="font-semibold tabular-nums">{BRL(session.opening_amount)}</span></div>
-        <div className="flex justify-between"><span className="text-slate-500">Esperado em dinheiro</span><span className="font-semibold tabular-nums">{BRL(expected)}</span></div>
+      <div className="rounded-xl bg-white/5 border p-3 space-y-1 text-sm">
+        <div className="flex justify-between"><span className="text-white/60">Abertura</span><span className="font-semibold tabular-nums">{BRL(session.opening_amount)}</span></div>
+        <div className="flex justify-between"><span className="text-white/60">Esperado em dinheiro</span><span className="font-semibold tabular-nums">{BRL(expected)}</span></div>
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700">Valor contado em dinheiro</label>
+        <label className="text-sm font-medium text-white/80">Valor contado em dinheiro</label>
         <div className="mt-1 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">R$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">R$</span>
           <input autoFocus value={counted} onChange={e => setCounted(e.target.value)} inputMode="decimal" placeholder="0,00"
-            className="w-full h-12 pl-10 pr-3 rounded-lg border bg-white text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            className="w-full h-12 pl-10 pr-3 rounded-lg border border-white/10 bg-white/5 text-lg font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-rose-500" />
         </div>
       </div>
       {counted && (
@@ -687,7 +687,7 @@ function FecharDialog({ session, expected, onClose, onDone }:
         </div>
       )}
       <div>
-        <label className="text-sm font-medium text-slate-700">Observação (opcional)</label>
+        <label className="text-sm font-medium text-white/80">Observação (opcional)</label>
         <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
           className="mt-1 w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
       </div>
@@ -699,35 +699,35 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
   { session: SessionRow; movs: MovementRow[]; onClose: () => void; onPrint: () => void; onCsv: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="p-5 border-b flex items-center justify-between">
+      <div className="w-full max-w-2xl bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-slate-900">Sessão de {new Date(session.opened_at).toLocaleDateString("pt-BR")}</h3>
-            <p className="text-xs text-slate-500">{session.operator_name} · {session.terminal}</p>
+            <h3 className="font-semibold text-white">Sessão de {new Date(session.opened_at).toLocaleDateString("pt-BR")}</h3>
+            <p className="text-xs text-white/60">{session.operator_name} · {session.terminal}</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onCsv} className="h-9 px-3 rounded-lg border text-xs flex items-center gap-1"><Download className="h-3.5 w-3.5" />CSV</button>
             <button onClick={onPrint} className="h-9 px-3 rounded-lg border text-xs flex items-center gap-1"><Printer className="h-3.5 w-3.5" />Imprimir</button>
-            <button onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-slate-100 grid place-items-center"><X className="h-4 w-4" /></button>
+            <button onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-white/10 grid place-items-center"><X className="h-4 w-4" /></button>
           </div>
         </div>
-        <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-2 border-b bg-slate-50">
+        <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-2 border-b border-white/10 bg-white/5">
           <Mini label="Abertura" value={BRL(session.opening_amount)} />
           <Mini label="Esperado" value={BRL(session.expected_amount ?? 0)} />
           <Mini label="Contado" value={BRL(session.counted_amount ?? 0)} />
           <Mini label="Diferença" value={BRL(session.difference ?? 0)}
             tone={Math.abs(Number(session.difference ?? 0)) < 0.01 ? "emerald" : (Number(session.difference) > 0 ? "sky" : "rose")} />
         </div>
-        <div className="flex-1 overflow-auto divide-y">
-          {movs.length === 0 && <div className="p-8 text-center text-sm text-slate-400">Sem movimentos.</div>}
+        <div className="flex-1 overflow-auto divide-y divide-white/10">
+          {movs.length === 0 && <div className="p-8 text-center text-sm text-white/40">Sem movimentos.</div>}
           {movs.map(m => {
             const T = typeMeta[m.type]; const M = methodMeta[m.payment_method]; const Icon = M.icon;
             return (
               <div key={m.id} className="p-3 flex items-center gap-3">
                 <div className={cn("h-8 w-8 rounded-lg grid place-items-center", M.color)}><Icon className="h-4 w-4" /></div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-slate-900">{T.label} <span className="text-xs text-slate-500">· {M.label}</span></div>
-                  <div className="text-xs text-slate-500">{new Date(m.created_at).toLocaleString("pt-BR")} {m.note ? `· ${m.note}` : ""}</div>
+                  <div className="text-sm font-medium text-white">{T.label} <span className="text-xs text-white/60">· {M.label}</span></div>
+                  <div className="text-xs text-white/60">{new Date(m.created_at).toLocaleString("pt-BR")} {m.note ? `· ${m.note}` : ""}</div>
                 </div>
                 <div className={cn("text-sm font-bold tabular-nums", T.tone)}>{T.sign > 0 ? "+" : "−"} {BRL(Number(m.amount))}</div>
               </div>
@@ -741,11 +741,11 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
 
 function Mini({ label, value, tone = "slate" }: { label: string; value: string; tone?: string }) {
   const tones: Record<string, string> = {
-    slate: "text-slate-900", emerald: "text-emerald-700", sky: "text-sky-700", rose: "text-rose-700",
+    slate: "text-white", emerald: "text-emerald-700", sky: "text-sky-700", rose: "text-rose-700",
   };
   return (
-    <div className="rounded-lg bg-white border p-2">
-      <div className="text-[10px] uppercase tracking-wide text-slate-500">{label}</div>
+    <div className="rounded-lg bg-white/5 border border-white/10 p-2">
+      <div className="text-[10px] uppercase tracking-wide text-white/60">{label}</div>
       <div className={cn("text-sm font-bold tabular-nums", tones[tone])}>{value}</div>
     </div>
   );
