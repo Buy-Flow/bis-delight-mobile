@@ -158,6 +158,17 @@ function AuthPage() {
           return;
         }
 
+        // 3) Validação da data de aniversário (DD/MM/AAAA)
+        let birthdayIso: string | null = null;
+        if (birthday) {
+          birthdayIso = birthdayToIso(birthday);
+          if (!birthdayIso) {
+            toast.error("Data de aniversário inválida. Use DD/MM/AAAA.");
+            setLoading(false);
+            return;
+          }
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -166,7 +177,7 @@ function AuthPage() {
             data: {
               full_name: fullName,
               phone,
-              birthday: birthday || null,
+              birthday: birthdayIso,
               cpf: cpfDigits,
             },
           },
