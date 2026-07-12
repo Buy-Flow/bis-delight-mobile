@@ -88,6 +88,8 @@ type Order = {
   preparing_at: string | null;
   dispatched_at: string | null;
   delivered_at: string | null;
+  delivery_lat: number | null;
+  delivery_lng: number | null;
   order_items: OrderItem[];
 };
 
