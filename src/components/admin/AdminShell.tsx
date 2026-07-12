@@ -119,13 +119,11 @@ const groups: NavGroup[] = [
       { to: "/admin", tab: "notifications", label: "Notificações", icon: BellRing },
       { to: "/admin", tab: "loyalty", label: "Fidelidade", icon: Award },
       { to: "/clientes", label: "Clientes", icon: Users },
-      { to: "/notificacoes", label: "Marketing / Push", icon: Megaphone },
       { to: "/ai-growth", label: "AI Growth Engine", icon: TrendingUp },
       { to: "/copiloto", label: "Copiloto (IA)", icon: Bot },
       { label: "WhatsApp", icon: MessageCircle, soon: true },
       { to: "/carrinhos", label: "Carrinhos abandonados", icon: ShoppingCart },
       { to: "/previsao", label: "Previsão de demanda", icon: Sparkles },
-      { to: "/financeiro", label: "Relatórios", icon: BarChart3 },
     ],
   },
   {
