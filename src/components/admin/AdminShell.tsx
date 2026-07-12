@@ -103,7 +103,7 @@ const groups: NavGroup[] = [
       { to: "/admin", tab: "extras", label: "Complementos", icon: Plus },
       { to: "/modelos", label: "Modelos", icon: Layers },
       { to: "/biblioteca", label: "Biblioteca", icon: BookMarked },
-      { label: "Importar cardápio", icon: FileDown, soon: true },
+      { to: "/importar", label: "Importar cardápio", icon: FileDown },
     ],
   },
   {
