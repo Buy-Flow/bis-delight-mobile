@@ -632,20 +632,68 @@ export function CheckoutSheet() {
                     </div>
                   </div>
                 )}
-                <IconField
-                  icon={MapPin}
-                  label="Endereço"
-                  value={address}
-                  onChange={(v) => {
-                    setAddress(v);
+                {(() => {
+                  const updatePart = (patch: Partial<{ street: string; number: string; neighborhood: string; city: string }>) => {
+                    const next = {
+                      street: patch.street ?? addrStreet,
+                      number: patch.number ?? addrNumber,
+                      neighborhood: patch.neighborhood ?? addrNeighborhood,
+                      city: patch.city ?? addrCity,
+                    };
+                    if (patch.street !== undefined) setAddrStreet(patch.street);
+                    if (patch.number !== undefined) setAddrNumber(patch.number);
+                    if (patch.neighborhood !== undefined) setAddrNeighborhood(patch.neighborhood);
+                    if (patch.city !== undefined) setAddrCity(patch.city);
+                    setAddress(joinAddressParts(next));
                     setSelectedAddressId(null);
                     setPreGeocoded(null);
-                  }}
-                  placeholder="Rua, número, bairro"
-                  autoComplete="street-address"
-                  name="street-address"
-                  trailing={<div className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80"><Settings className="h-4 w-4" /></div>}
-                />
+                  };
+                  return (
+                    <>
+                      <div className="grid grid-cols-[1fr_110px] gap-2">
+                        <IconField
+                          icon={MapPin}
+                          label="Rua / Avenida"
+                          value={addrStreet}
+                          onChange={(v) => updatePart({ street: v })}
+                          placeholder="Ex: Av. Brasil"
+                          autoComplete="address-line1"
+                          name="address-line1"
+                        />
+                        <IconField
+                          icon={MapPin}
+                          label="Número"
+                          value={addrNumber}
+                          onChange={(v) => updatePart({ number: v })}
+                          placeholder="Nº"
+                          inputMode="numeric"
+                          autoComplete="off"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <IconField
+                          icon={MapPin}
+                          label="Bairro"
+                          value={addrNeighborhood}
+                          onChange={(v) => updatePart({ neighborhood: v })}
+                          placeholder="Ex: Centro"
+                          autoComplete="address-level3"
+                          name="address-level3"
+                        />
+                        <IconField
+                          icon={MapPin}
+                          label="Cidade"
+                          value={addrCity}
+                          onChange={(v) => updatePart({ city: v })}
+                          placeholder="(opcional)"
+                          autoComplete="address-level2"
+                          name="address-level2"
+                        />
+                      </div>
+                    </>
+                  );
+                })()}
+
                 <IconField
                   icon={MapPin}
                   label="Referência"
