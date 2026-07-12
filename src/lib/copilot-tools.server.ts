@@ -355,30 +355,58 @@ export function buildCopilotTools(ctx: Ctx) {
 
     desconto_massa: tool({
       description:
-        "Aplica um desconto percentual em vários produtos ao mesmo tempo (reduz o base_price). Passe categoria (opcional) ou uma lista de product_ids. ⚠️ AÇÃO EM LOTE — sempre confirme com o admin ANTES de chamar (mostre qual % vai aplicar e em quantos produtos) e aguarde 'ok'. Salva original_price em pause_reason para permitir reverter depois manualmente.",
+        "Aplica um desconto percentual em vários produtos ao mesmo tempo. IMPORTANTE: se categoria=null E product_ids=null, aplica em TODOS os produtos ativos da loja — isso é totalmente suportado e esperado. Salva o preço original em original_price para permitir reverter depois com reverter_desconto_massa. ⚠️ Confirme com o admin ANTES (mostre quantos produtos e o %) e aguarde 'ok'.",
       inputSchema: z.object({
         percent_off: z.number().min(1).max(90).describe("Desconto em % (1-90)"),
-        categoria: z.string().nullable().describe("ID de categoria ou null para todos"),
-        product_ids: z.array(z.string()).nullable().describe("Lista de IDs específicos, ou null"),
+        categoria: z.string().nullable().describe("ID de categoria. Null = todas."),
+        product_ids: z.array(z.string()).nullable().describe("Lista de IDs específicos. Null = todos que passam no filtro categoria."),
       }),
       execute: async (input) => {
-        const { data: rows, error: qErr } = await ctx.supabaseAdmin.from("products").select("id,name,base_price,category,active").limit(500);
+        const { data: rows, error: qErr } = await ctx.supabaseAdmin.from("products").select("id,name,base_price,category,active,original_price").limit(2000);
         if (qErr) throw new Error(qErr.message);
-        let list = ((rows as Array<{ id: string; name: string; base_price: number; category: string; active: boolean }>) ?? []).filter(r => r.active !== false);
+        let list = ((rows as Array<{ id: string; name: string; base_price: number; category: string; active: boolean; original_price: number | null }>) ?? []).filter(r => r.active !== false);
         if (input.categoria) list = list.filter(r => String(r.category).toLowerCase() === input.categoria!.toLowerCase());
         if (input.product_ids && input.product_ids.length) list = list.filter(r => input.product_ids!.includes(r.id));
         if (!list.length) throw new Error("Nenhum produto encontrado com esse filtro.");
         const factor = 1 - input.percent_off / 100;
-        const updates: Array<{ id: string; from: number; to: number }> = [];
+        const updates: Array<{ id: string; name: string; from: number; to: number }> = [];
         for (const p of list) {
-          const newPrice = Math.round(p.base_price * factor * 100) / 100;
-          const { error } = await ctx.supabaseAdmin.from("products").update({ base_price: newPrice }).eq("id", p.id);
-          if (!error) updates.push({ id: p.id, from: p.base_price, to: newPrice });
+          const baseline = p.original_price ?? p.base_price;
+          const newPrice = Math.round(baseline * factor * 100) / 100;
+          const patch: Record<string, unknown> = { base_price: newPrice };
+          if (p.original_price == null) patch.original_price = p.base_price;
+          const { error } = await ctx.supabaseAdmin.from("products").update(patch).eq("id", p.id);
+          if (!error) updates.push({ id: p.id, name: p.name, from: p.base_price, to: newPrice });
         }
         await logAction(ctx, { action_type: "desconto_massa", params: input, result: { count: updates.length, updates } });
-        return { ok: true, updated: updates.length, sample: updates.slice(0, 5) };
+        return { ok: true, updated: updates.length, percent_off: input.percent_off, sample: updates.slice(0, 5) };
       },
     }),
+
+    reverter_desconto_massa: tool({
+      description:
+        "Reverte descontos em massa: restaura base_price a partir de original_price para os produtos afetados. Passe categoria/product_ids para escopo, ou ambos null para reverter TODOS os produtos com original_price salvo.",
+      inputSchema: z.object({
+        categoria: z.string().nullable(),
+        product_ids: z.array(z.string()).nullable(),
+      }),
+      execute: async (input) => {
+        const { data: rows, error } = await ctx.supabaseAdmin.from("products").select("id,name,base_price,category,original_price").limit(2000);
+        if (error) throw new Error(error.message);
+        let list = ((rows as Array<{ id: string; name: string; base_price: number; category: string; original_price: number | null }>) ?? []).filter(r => r.original_price != null);
+        if (input.categoria) list = list.filter(r => String(r.category).toLowerCase() === input.categoria!.toLowerCase());
+        if (input.product_ids && input.product_ids.length) list = list.filter(r => input.product_ids!.includes(r.id));
+        if (!list.length) throw new Error("Nenhum produto com preço original salvo para reverter.");
+        const restored: Array<{ id: string; name: string; from: number; to: number }> = [];
+        for (const p of list) {
+          const { error: e } = await ctx.supabaseAdmin.from("products").update({ base_price: p.original_price, original_price: null }).eq("id", p.id);
+          if (!e) restored.push({ id: p.id, name: p.name, from: p.base_price, to: p.original_price! });
+        }
+        await logAction(ctx, { action_type: "reverter_desconto_massa", params: input, result: { count: restored.length, restored } });
+        return { ok: true, restored: restored.length, sample: restored.slice(0, 5) };
+      },
+    }),
+
 
     atualizar_config_loja: tool({
       description:
