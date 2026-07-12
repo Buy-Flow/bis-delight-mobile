@@ -90,12 +90,10 @@ export function ReviewPromptPopup() {
 
       const found = orders.find((o: { id: string; status: string; created_at: string }) => {
         if (reviewedIds.has(o.id)) return false;
-        const dismissAt = dismissed[o.id];
-        if (dismissAt && now - dismissAt < DISMISS_MS) return false;
-        if (o.status === "entregue") return true;
-        // pago com mais de 30min também prompta (retirada/mesa/balcão sem tracking de entrega)
+        // qualquer aparição anterior desse pedido invalida — só volta em novo pedido
+        if (dismissed[o.id]) return false;
         const age = now - new Date(o.created_at).getTime();
-        return age > 30 * 60 * 1000;
+        return age >= MIN_AGE_MS;
       });
 
       if (!found) return;
