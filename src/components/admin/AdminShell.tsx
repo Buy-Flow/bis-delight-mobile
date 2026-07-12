@@ -62,7 +62,10 @@ type AdminTab =
   | "notifications"
   | "promos"
   | "loyalty"
-  | "settings";
+  | "settings"
+  | "announcement"
+  | "popup"
+  | "coupons";
 
 type NavItem = {
   to?: string;
