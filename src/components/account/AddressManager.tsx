@@ -166,6 +166,32 @@ export function AddressManager({ embedded = false }: { embedded?: boolean } = {}
   );
 }
 
+function parseAddress(full: string): { street: string; number: string; neighborhood: string; city: string } {
+  // Best-effort parse of previously combined "Rua X, 123 — Bairro, Cidade"
+  const s = (full || "").trim();
+  if (!s) return { street: "", number: "", neighborhood: "", city: "" };
+  const [left, rightRaw] = s.includes("—") ? s.split("—") : s.includes(" - ") ? s.split(" - ") : [s, ""];
+  const leftParts = left.split(",").map((x) => x.trim()).filter(Boolean);
+  let street = leftParts[0] ?? "";
+  let number = "";
+  if (leftParts[1] && /^\d/.test(leftParts[1])) {
+    number = leftParts[1];
+  } else if (leftParts[1]) {
+    street = `${street}, ${leftParts[1]}`;
+  }
+  const right = (rightRaw || leftParts.slice(2).join(", ")).trim();
+  const rightParts = right.split(",").map((x) => x.trim()).filter(Boolean);
+  const neighborhood = rightParts[0] ?? "";
+  const city = rightParts.slice(1).join(", ");
+  return { street, number, neighborhood, city };
+}
+
+function joinAddress(p: { street: string; number: string; neighborhood: string; city: string }): string {
+  const left = [p.street.trim(), p.number.trim()].filter(Boolean).join(", ");
+  const right = [p.neighborhood.trim(), p.city.trim()].filter(Boolean).join(", ");
+  return [left, right].filter(Boolean).join(" — ");
+}
+
 function AddressForm({
   initial,
   onSubmit,
@@ -182,25 +208,37 @@ function AddressForm({
   }) => Promise<void>;
   onCancel: () => void;
 }) {
+  const parsed = parseAddress(initial?.address ?? "");
   const [label, setLabel] = useState(initial?.label ?? "Casa");
-  const [address, setAddress] = useState(initial?.address ?? "");
+  const [street, setStreet] = useState(parsed.street);
+  const [number, setNumber] = useState(parsed.number);
+  const [neighborhood, setNeighborhood] = useState(parsed.neighborhood);
+  const [city, setCity] = useState(parsed.city);
   const [reference, setReference] = useState(initial?.reference ?? "");
   const [isDefault, setIsDefault] = useState(initial?.is_default ?? false);
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
-    if (!address.trim()) {
-      toast.error("Informe o endereço");
+    if (!street.trim()) {
+      toast.error("Informe a rua");
       return;
     }
+    if (!number.trim()) {
+      toast.error("Informe o número");
+      return;
+    }
+    if (!neighborhood.trim()) {
+      toast.error("Informe o bairro");
+      return;
+    }
+    const fullAddress = joinAddress({ street, number, neighborhood, city });
     setSaving(true);
     try {
-      // Best-effort geocode so checkout can skip re-geocoding later
       let lat: number | null = initial?.lat ?? null;
       let lng: number | null = initial?.lng ?? null;
-      if (!initial || address.trim() !== initial.address) {
+      if (!initial || fullAddress !== initial.address) {
         try {
-          const geo = await geocodeAddress(address);
+          const geo = await geocodeAddress(fullAddress);
           if (geo) {
             lat = geo.lat;
             lng = geo.lng;
@@ -214,7 +252,7 @@ function AddressForm({
       }
       await onSubmit({
         label: label.trim() || "Casa",
-        address: address.trim(),
+        address: fullAddress,
         reference: reference.trim() || null,
         lat,
         lng,
@@ -227,6 +265,9 @@ function AddressForm({
       setSaving(false);
     }
   };
+
+  const inputCls =
+    "w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-neon-cyan";
 
   return (
     <div className="rounded-2xl border border-neon-cyan/30 bg-neon-cyan/[0.04] p-3">
@@ -271,22 +312,51 @@ function AddressForm({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Rótulo (ex: Casa da mãe)"
-          className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-neon-cyan"
+          className={inputCls}
         />
-        <input
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Rua, número, bairro"
-          autoComplete="street-address"
-          className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-neon-cyan"
-        />
+        <div className="grid grid-cols-[1fr_90px] gap-2">
+          <input
+            type="text"
+            value={street}
+            onChange={(e) => setStreet(e.target.value)}
+            placeholder="Rua / Avenida"
+            autoComplete="address-line1"
+            className={inputCls}
+          />
+          <input
+            type="text"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            placeholder="Nº"
+            inputMode="numeric"
+            autoComplete="off"
+            className={inputCls}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            type="text"
+            value={neighborhood}
+            onChange={(e) => setNeighborhood(e.target.value)}
+            placeholder="Bairro"
+            autoComplete="address-level3"
+            className={inputCls}
+          />
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Cidade (opcional)"
+            autoComplete="address-level2"
+            className={inputCls}
+          />
+        </div>
         <input
           type="text"
           value={reference}
           onChange={(e) => setReference(e.target.value)}
           placeholder="Ponto de referência (opcional)"
-          className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-neon-cyan"
+          className={inputCls}
         />
         <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/80">
           <input
@@ -320,3 +390,4 @@ function AddressForm({
     </div>
   );
 }
+
