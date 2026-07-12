@@ -1343,6 +1343,7 @@ export type Database = {
           low_stock_threshold: number
           name: string
           option_groups: Json | null
+          original_price: number | null
           packaging_cost: number | null
           pause_reason: string | null
           paused_until: string | null
@@ -1380,6 +1381,7 @@ export type Database = {
           low_stock_threshold?: number
           name: string
           option_groups?: Json | null
+          original_price?: number | null
           packaging_cost?: number | null
           pause_reason?: string | null
           paused_until?: string | null
@@ -1417,6 +1419,7 @@ export type Database = {
           low_stock_threshold?: number
           name?: string
           option_groups?: Json | null
+          original_price?: number | null
           packaging_cost?: number | null
           pause_reason?: string | null
           paused_until?: string | null
