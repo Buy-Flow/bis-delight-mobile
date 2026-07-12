@@ -739,11 +739,14 @@ export type Database = {
           mode: string
           note: string | null
           paid_at: string | null
+          people_count: number | null
           phone: string
           preparing_at: string | null
           reference: string | null
+          service_fee: number | null
           status: string
           subtotal: number
+          table_id: string | null
           total: number
           user_id: string
           waiter_id: string | null
@@ -766,11 +769,14 @@ export type Database = {
           mode: string
           note?: string | null
           paid_at?: string | null
+          people_count?: number | null
           phone: string
           preparing_at?: string | null
           reference?: string | null
+          service_fee?: number | null
           status?: string
           subtotal: number
+          table_id?: string | null
           total: number
           user_id: string
           waiter_id?: string | null
@@ -793,11 +799,14 @@ export type Database = {
           mode?: string
           note?: string | null
           paid_at?: string | null
+          people_count?: number | null
           phone?: string
           preparing_at?: string | null
           reference?: string | null
+          service_fee?: number | null
           status?: string
           subtotal?: number
+          table_id?: string | null
           total?: number
           user_id?: string
           waiter_id?: string | null
@@ -808,6 +817,13 @@ export type Database = {
             columns: ["courier_id"]
             isOneToOne: false
             referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_tables"
             referencedColumns: ["id"]
           },
           {
@@ -1433,6 +1449,68 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      restaurant_tables: {
+        Row: {
+          created_at: string
+          current_order_id: string | null
+          id: string
+          label: string | null
+          notes: string | null
+          number: number
+          opened_at: string | null
+          people_count: number | null
+          pos_x: number | null
+          pos_y: number | null
+          seats: number
+          status: string
+          updated_at: string
+          waiter_id: string | null
+          zone: string
+        }
+        Insert: {
+          created_at?: string
+          current_order_id?: string | null
+          id?: string
+          label?: string | null
+          notes?: string | null
+          number: number
+          opened_at?: string | null
+          people_count?: number | null
+          pos_x?: number | null
+          pos_y?: number | null
+          seats?: number
+          status?: string
+          updated_at?: string
+          waiter_id?: string | null
+          zone?: string
+        }
+        Update: {
+          created_at?: string
+          current_order_id?: string | null
+          id?: string
+          label?: string | null
+          notes?: string | null
+          number?: number
+          opened_at?: string | null
+          people_count?: number | null
+          pos_x?: number | null
+          pos_y?: number | null
+          seats?: number
+          status?: string
+          updated_at?: string
+          waiter_id?: string | null
+          zone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_tables_waiter_id_fkey"
+            columns: ["waiter_id"]
+            isOneToOne: false
+            referencedRelation: "waiters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -2150,6 +2228,7 @@ export type Database = {
           expires_at: string
         }[]
       }
+      clear_table: { Args: { _table_id: string }; Returns: undefined }
       get_birthday_gift_status: {
         Args: never
         Returns: {
@@ -2186,6 +2265,10 @@ export type Database = {
       loyalty_stamp_bonus: { Args: { _tier: string }; Returns: number }
       loyalty_tier: { Args: { _lifetime: number }; Returns: string }
       mark_push_opened: { Args: { _delivery_id: string }; Returns: undefined }
+      open_table: {
+        Args: { _people?: number; _table_id: string; _waiter_id?: string }
+        Returns: string
+      }
       redeem_loyalty_coupon: {
         Args: { _code: string }
         Returns: {
@@ -2200,6 +2283,10 @@ export type Database = {
           discount: number
           id: string
         }[]
+      }
+      transfer_table: {
+        Args: { _from: string; _to: string }
+        Returns: undefined
       }
       validate_loyalty_coupon: {
         Args: { _code: string }
