@@ -222,9 +222,9 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
   };
 
   return (
-    <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white pb-24">
+    <div className="min-h-screen bg-[#0c031f] text-white pb-24">
       {/* Header */}
-      <div className="border-b bg-black/40 backdrop-blur-md border-white/10 sticky top-0 z-20">
+      <div className="border-b bg-[#170a2e]/80 backdrop-blur-md border-white/10 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-wrap items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-11 w-11 rounded-xl grid place-items-center text-white",
@@ -246,7 +246,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
             {session ? (
               <>
                 <button onClick={() => setOpenDialog("mov")}
-                  className="h-10 px-4 rounded-lg bg-white text-black text-sm font-medium hover:bg-white/90 hover:text-black flex items-center gap-2">
+                  className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-medium flex items-center gap-2">
                   <Plus className="h-4 w-4" /> Lançamento
                 </button>
                 <button onClick={() => setOpenDialog("fechar")}
@@ -482,7 +482,7 @@ function DialogShell({ title, icon: Icon, onClose, children, footer, tone = "sla
   };
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-lg bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-lg bg-[#170a2e] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-9 w-9 rounded-lg bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
@@ -542,7 +542,7 @@ function AbrirDialog({ onClose, onDone }: { onClose: () => void; onDone: () => v
       <div>
         <label className="text-sm font-medium text-white/80">Observação (opcional)</label>
         <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
-          className="mt-1 w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
       </div>
     </DialogShell>
   );
@@ -581,7 +581,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
       footer={<>
         <button onClick={onClose} className="h-10 px-4 rounded-lg border border-white/10 bg-white/5 text-sm">Cancelar</button>
         <button onClick={submit} disabled={saving}
-          className="h-10 px-5 rounded-lg bg-white text-black text-sm font-semibold disabled:opacity-60">
+          className="h-10 px-5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold disabled:opacity-60">
           {saving ? "Salvando…" : "Registrar"}
         </button>
       </>}>
@@ -593,8 +593,8 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
             return (
               <button key={t.id} onClick={() => setType(t.id)}
                 className={cn("p-3 rounded-lg border text-sm flex flex-col items-center gap-1 transition",
-                  active ? (t.tone === "emerald" ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                                                 : "border-rose-500 bg-rose-50 text-rose-700")
+                  active ? (t.tone === "emerald" ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-300"
+                                                 : "border-rose-500/60 bg-rose-500/15 text-rose-300")
                          : "border-white/10 hover:bg-white/10 text-white/70")}>
                 <Icon className="h-4 w-4" />
                 {t.label}
@@ -611,7 +611,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
             return (
               <button key={m} onClick={() => setMethod(m)}
                 className={cn("p-2.5 rounded-lg border text-xs flex flex-col items-center gap-1",
-                  active ? "border-white bg-white text-black" : "border-white/10 hover:bg-white/10 text-white/70")}>
+                  active ? "border-neon-pink/60 bg-neon-pink/15 text-white" : "border-white/10 hover:bg-white/10 text-white/70")}>
                 <Icon className="h-4 w-4" />
                 {M.label}
               </button>
@@ -630,7 +630,7 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
       <div>
         <label className="text-sm font-medium text-white/80">Observação</label>
         <input value={note} onChange={e => setNote(e.target.value)}
-          className="mt-1 w-full h-10 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" />
+          className="mt-1 w-full h-10 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-neon-pink/50" />
       </div>
     </DialogShell>
   );
@@ -663,7 +663,7 @@ function FecharDialog({ session, expected, onClose, onDone }:
           {saving ? "Fechando…" : "Confirmar fechamento"}
         </button>
       </>}>
-      <div className="rounded-xl bg-white/5 border p-3 space-y-1 text-sm">
+      <div className="rounded-xl bg-white/5 border border-white/10 p-3 space-y-1 text-sm">
         <div className="flex justify-between"><span className="text-white/60">Abertura</span><span className="font-semibold tabular-nums">{BRL(session.opening_amount)}</span></div>
         <div className="flex justify-between"><span className="text-white/60">Esperado em dinheiro</span><span className="font-semibold tabular-nums">{BRL(expected)}</span></div>
       </div>
@@ -676,9 +676,9 @@ function FecharDialog({ session, expected, onClose, onDone }:
         </div>
       </div>
       {counted && (
-        <div className={cn("rounded-xl p-3 flex items-center gap-2 text-sm",
-          Math.abs(diff) < 0.01 ? "bg-emerald-50 text-emerald-800"
-            : diff > 0 ? "bg-sky-50 text-sky-800" : "bg-rose-50 text-rose-800")}>
+        <div className={cn("rounded-xl p-3 flex items-center gap-2 text-sm border",
+          Math.abs(diff) < 0.01 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+            : diff > 0 ? "bg-sky-500/15 border-sky-500/30 text-sky-300" : "bg-rose-500/15 border-rose-500/30 text-rose-300")}>
           {Math.abs(diff) < 0.01 ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
           <span className="font-medium">
             {Math.abs(diff) < 0.01 ? "Caixa bate certinho" : diff > 0 ? "Sobra de" : "Falta de"}
@@ -689,7 +689,7 @@ function FecharDialog({ session, expected, onClose, onDone }:
       <div>
         <label className="text-sm font-medium text-white/80">Observação (opcional)</label>
         <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
-          className="mt-1 w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+          className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 p-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-rose-500" />
       </div>
     </DialogShell>
   );
@@ -699,15 +699,15 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
   { session: SessionRow; movs: MovementRow[]; onClose: () => void; onPrint: () => void; onCsv: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-[oklch(0.13_0.08_305)] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-2xl bg-[#170a2e] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-white">Sessão de {new Date(session.opened_at).toLocaleDateString("pt-BR")}</h3>
             <p className="text-xs text-white/60">{session.operator_name} · {session.terminal}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={onCsv} className="h-9 px-3 rounded-lg border text-xs flex items-center gap-1"><Download className="h-3.5 w-3.5" />CSV</button>
-            <button onClick={onPrint} className="h-9 px-3 rounded-lg border text-xs flex items-center gap-1"><Printer className="h-3.5 w-3.5" />Imprimir</button>
+            <button onClick={onCsv} className="h-9 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs flex items-center gap-1"><Download className="h-3.5 w-3.5" />CSV</button>
+            <button onClick={onPrint} className="h-9 px-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs flex items-center gap-1"><Printer className="h-3.5 w-3.5" />Imprimir</button>
             <button onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-white/10 grid place-items-center"><X className="h-4 w-4" /></button>
           </div>
         </div>
