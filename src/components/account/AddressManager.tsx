@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { MapPin, Home, Briefcase, Star, Trash2, Plus, Check, Loader2, Pencil, X } from "lucide-react";
+import { MapPin, Home, Briefcase, Star, Trash2, Plus, Check, Loader2, Pencil, X, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/use-auth";
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
 import { geocodeAddress } from "@/lib/delivery-zone";
+import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
+import { useSiteSettings } from "@/lib/menu-data";
 import { cn } from "@/lib/utils";
 
 const LABEL_PRESETS = [
