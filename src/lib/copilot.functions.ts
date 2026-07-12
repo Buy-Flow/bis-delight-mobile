@@ -60,15 +60,88 @@ export const renameCopilotThread = createServerFn({ method: "POST" })
 
 export const deleteCopilotThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: { id: string }) => z.object({ id: z.string().uuid() }).parse(v))
+  .inputValidator((v: { id: string; revertActions?: boolean }) =>
+    z.object({ id: z.string().uuid(), revertActions: z.boolean().optional() }).parse(v),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    let reverted = 0;
+    if (data.revertActions) reverted = await revertActionsForThread(data.id);
     await context.supabase.from("copilot_messages").delete().eq("thread_id", data.id);
     await context.supabase.from("copilot_actions").delete().eq("thread_id", data.id);
     const { error } = await context.supabase.from("copilot_threads").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, reverted };
   });
+
+export const revertCopilotThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: { id: string }) => z.object({ id: z.string().uuid() }).parse(v))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const reverted = await revertActionsForThread(data.id);
+    return { ok: true, reverted };
+  });
+
+async function revertActionsForThread(threadId: string): Promise<number> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabaseAdmin as any;
+  const { data: actions } = await sb
+    .from("copilot_actions")
+    .select("id,action_type,params,result,status,target_table,target_id,reverted_at")
+    .eq("thread_id", threadId)
+    .eq("status", "executed")
+    .is("reverted_at", null)
+    .order("created_at", { ascending: false });
+  const rows = (actions ?? []) as Array<{
+    id: string;
+    action_type: string;
+    params: Record<string, unknown> | null;
+    result: Record<string, unknown> | null;
+    target_table: string | null;
+    target_id: string | null;
+  }>;
+  let count = 0;
+  for (const a of rows) {
+    try {
+      switch (a.action_type) {
+        case "criar_popup":
+          if (a.target_id) await sb.from("site_popups").update({ active: false }).eq("id", a.target_id);
+          break;
+        case "criar_cupom":
+          if (a.target_id) await sb.from("promo_coupons").update({ active: false }).eq("id", a.target_id);
+          break;
+        case "pausar_produto":
+          if (a.target_id) await sb.from("products").update({ paused_until: null, pause_reason: null }).eq("id", a.target_id);
+          break;
+        case "banner_urgencia":
+          if (a.target_id) await sb.from("site_settings").update({ urgency_active: false }).eq("id", a.target_id);
+          break;
+        case "forcar_status_loja":
+          if (a.target_id) await sb.from("site_settings").update({ open_override: null }).eq("id", a.target_id);
+          break;
+        case "criar_categoria":
+          if (a.target_id) await sb.from("categories").delete().eq("id", a.target_id);
+          break;
+        case "desconto_massa": {
+          const updates = (a.result?.updates as Array<{ id: string; from: number }> | undefined) ?? [];
+          for (const u of updates) {
+            await sb.from("products").update({ base_price: u.from }).eq("id", u.id);
+          }
+          break;
+        }
+        default:
+          continue;
+      }
+      await sb.from("copilot_actions").update({ reverted_at: new Date().toISOString() }).eq("id", a.id);
+      count++;
+    } catch (e) {
+      console.error("[copilot revert]", a.action_type, e);
+    }
+  }
+  return count;
+}
 
 export const getCopilotThreadMessages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
