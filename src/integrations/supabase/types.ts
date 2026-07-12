@@ -619,6 +619,114 @@ export type Database = {
           },
         ]
       }
+      inventory_items: {
+        Row: {
+          active: boolean
+          category: string | null
+          cost_per_unit: number | null
+          created_at: string
+          id: string
+          low_stock_threshold: number
+          name: string
+          notes: string | null
+          sku: string | null
+          stock: number
+          supplier: string | null
+          supplier_phone: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          cost_per_unit?: number | null
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          name: string
+          notes?: string | null
+          sku?: string | null
+          stock?: number
+          supplier?: string | null
+          supplier_phone?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          cost_per_unit?: number | null
+          created_at?: string
+          id?: string
+          low_stock_threshold?: number
+          name?: string
+          notes?: string | null
+          sku?: string | null
+          stock?: number
+          supplier?: string | null
+          supplier_phone?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          id: string
+          ingredient_id: string | null
+          item_type: string
+          movement_type: string
+          product_id: string | null
+          qty: number
+          reason: string | null
+          reference: string | null
+          unit_cost: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          item_type: string
+          movement_type: string
+          product_id?: string | null
+          qty: number
+          reason?: string | null
+          reference?: string | null
+          unit_cost?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          item_type?: string
+          movement_type?: string
+          product_id?: string | null
+          qty?: number
+          reason?: string | null
+          reference?: string | null
+          unit_cost?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty: {
         Row: {
           created_at: string
