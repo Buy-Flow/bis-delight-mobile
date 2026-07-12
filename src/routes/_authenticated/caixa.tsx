@@ -647,7 +647,7 @@ function FecharDialog({ session, expected, onClose, onDone }:
     if (isNaN(cv) || cv < 0) { toast.error("Informe o valor contado"); return; }
     setSaving(true);
     const { error } = await supabase.rpc("close_cash_session", {
-      _session_id: session.id, _counted: cv, _note: note || null,
+      _session_id: session.id, _counted: cv, _note: note || undefined,
     });
     setSaving(false);
     if (error) { toast.error(error.message); return; }
