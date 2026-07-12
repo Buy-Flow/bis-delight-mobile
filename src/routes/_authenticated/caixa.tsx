@@ -593,8 +593,8 @@ function MovDialog({ sessionId, onClose, onDone }: { sessionId: string; onClose:
             return (
               <button key={t.id} onClick={() => setType(t.id)}
                 className={cn("p-3 rounded-lg border text-sm flex flex-col items-center gap-1 transition",
-                  active ? (t.tone === "emerald" ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                                                 : "border-rose-500 bg-rose-50 text-rose-700")
+                  active ? (t.tone === "emerald" ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-300"
+                                                 : "border-rose-500/60 bg-rose-500/15 text-rose-300")
                          : "border-white/10 hover:bg-white/10 text-white/70")}>
                 <Icon className="h-4 w-4" />
                 {t.label}
