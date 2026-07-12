@@ -587,13 +587,14 @@ function RastrearPage() {
                     ? "Você pode editar sua nota e comentário a qualquer momento."
                     : "Sua opinião ajuda a gente a melhorar sempre. Leva menos de 30s."}
                 </p>
-                <button
-                  onClick={() => setReviewOpen(true)}
+                <Link
+                  to={"/avaliar/$orderId" as never}
+                  params={{ orderId } as never}
                   className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-yellow to-amber-400 px-4 py-2 text-xs font-black text-[#1a0b2e] shadow-lg shadow-neon-yellow/30 transition hover:brightness-110"
                 >
                   <Star className="h-3.5 w-3.5 fill-current" />
                   {existingReview ? "Editar avaliação" : "Avaliar agora"}
-                </button>
+                </Link>
               </div>
             </div>
           </section>
