@@ -40,6 +40,8 @@ import {
   LoyaltyPanelSkeleton,
 } from "@/components/ui/skeletons";
 import { AddressManager } from "@/components/account/AddressManager";
+import { formatCpf, isValidCpf, cpfDigits } from "@/lib/cpf";
+
 
 
 
