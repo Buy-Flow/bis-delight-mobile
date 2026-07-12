@@ -367,7 +367,34 @@ function AuthPage() {
               <div className="h-px flex-1 bg-white/10" /> ou com e-mail <div className="h-px flex-1 bg-white/10" />
             </div>
 
+            {errorMsg && (
+              <div
+                role="alert"
+                className="mb-3 flex items-start gap-2.5 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3 text-left text-rose-100 backdrop-blur"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold leading-tight">{errorMsg}</p>
+                  {errorDetail && (
+                    <p className="mt-0.5 text-xs text-rose-200/80 break-words">{errorDetail}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setErrorDetail(null);
+                  }}
+                  aria-label="Fechar aviso"
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-rose-200/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  <XIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
             <form onSubmit={submit} className="space-y-3" autoComplete="on">
+
               {mode === "signup" && (
                 <>
                   <Field icon={UserIcon}>
