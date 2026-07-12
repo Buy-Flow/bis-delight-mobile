@@ -13,122 +13,259 @@ const PAGE_MAP: Record<string, PageInfo> = {
   "/admin": {
     label: "Dashboard",
     context: "Admin está no Dashboard geral. Pode pedir visão de vendas, produtos, ou comandar ações amplas.",
-    suggestions: ["Resumo do dia", "Cria promoção relâmpago 15%"],
+    suggestions: [
+      "Resumo do dia",
+      "Cria promoção relâmpago 15%",
+      "Top 5 produtos da semana",
+      "Compara faturamento com semana passada",
+      "Quais produtos estão parados?",
+      "Sugere 3 ações pra hoje",
+      "Dispara push de fim de tarde",
+      "Cria cupom PRIMEIRA10 pra novos clientes",
+    ],
   },
   "/precificacao": {
     label: "Precificação",
     context: "Página de Precificação: define margem-alvo dos produtos e ajusta preços com base no CMV. Se o admin pedir margem X%, aplique atualização em massa nos produtos ativos recalculando preço = custo / (1 - margem).",
-    suggestions: ["Muda margem-alvo pra 40% em todos", "Sugere preços com margem 45%"],
+    suggestions: [
+      "Muda margem-alvo pra 40% em todos",
+      "Sugere preços com margem 45%",
+      "Produtos com margem abaixo de 30%",
+      "Aplica 10% off em todos",
+      "Reverte último desconto em massa",
+      "Simula preço com CMV +10%",
+      "Recalcula preços pela margem-alvo atual",
+    ],
   },
   "/estoque": {
     label: "Estoque",
     context: "Página de Estoque: gerencia ingredientes, entradas, saídas, alertas de mínimo.",
-    suggestions: ["Quais itens estão abaixo do mínimo?", "Adiciona 10kg de morango"],
+    suggestions: [
+      "Quais itens estão abaixo do mínimo?",
+      "Adiciona 10kg de morango",
+      "Lista movimentações de hoje",
+      "Ingredientes mais consumidos essa semana",
+      "Registra perda de 2kg de banana",
+      "Ajusta mínimo do leite pra 20L",
+      "Previsão de ruptura próximos 7 dias",
+    ],
   },
   "/ficha-tecnica": {
     label: "Ficha técnica",
     context: "Ficha técnica dos produtos: receitas, CMV, margem por item.",
-    suggestions: ["Produtos com CMV acima de 40%", "Sugere onde cortar custo"],
+    suggestions: [
+      "Produtos com CMV acima de 40%",
+      "Sugere onde cortar custo",
+      "Cria ficha do Shake Ninho",
+      "Recalcula CMV de todos",
+      "Compara CMV mês passado x atual",
+    ],
   },
   "/lucratividade": {
     label: "Lucratividade",
     context: "Análise de lucratividade por produto, categoria e período.",
-    suggestions: ["Top 5 mais lucrativos", "Produtos deficitários"],
+    suggestions: [
+      "Top 5 mais lucrativos",
+      "Produtos deficitários",
+      "Categoria mais rentável",
+      "Sugere descontinuar produtos ruins",
+      "Lucro por dia da semana",
+    ],
   },
   "/financeiro": {
     label: "Financeiro",
     context: "Financeiro: receita, despesas, fluxo de caixa, comparativo.",
-    suggestions: ["Receita da semana", "Compara com semana passada"],
+    suggestions: [
+      "Receita da semana",
+      "Compara com semana passada",
+      "Maiores despesas do mês",
+      "Fluxo de caixa dos próximos 7 dias",
+      "Ticket médio hoje x mês",
+      "Projeção de fechamento do mês",
+    ],
   },
   "/clientes": {
     label: "Clientes",
     context: "Clientes: ranking VIP, LTV, RFM, aniversariantes.",
-    suggestions: ["Top 10 VIPs", "Dispara push pros aniversariantes"],
+    suggestions: [
+      "Top 10 VIPs",
+      "Dispara push pros aniversariantes",
+      "Clientes inativos há 30 dias",
+      "Cria cupom VOLTA15 pros inativos",
+      "Segmento Ouro — quantos são?",
+      "Novos clientes essa semana",
+      "Ranking por LTV",
+    ],
   },
   "/avaliacoes": {
     label: "Avaliações",
     context: "Avaliações dos clientes: notas, tags negativas, sentimento.",
-    suggestions: ["Média geral", "Reviews com nota baixa"],
+    suggestions: [
+      "Média geral",
+      "Reviews com nota baixa",
+      "Tags negativas mais frequentes",
+      "Reviews não respondidas",
+      "Sugere resposta pras 1 estrela",
+      "Evolução da média nos últimos 30 dias",
+    ],
   },
   "/rush": {
     label: "Cozinha",
     context: "Rush da cozinha: pedidos em tempo real, tempos, fila.",
-    suggestions: ["Quantos pedidos abertos?", "Pausa o morango"],
+    suggestions: [
+      "Quantos pedidos abertos?",
+      "Pausa o morango",
+      "Tempo médio de preparo hoje",
+      "Pedidos atrasados",
+      "Sugere ordem de preparo",
+      "Alerta se fila passar de 10",
+    ],
   },
   "/entregas": {
     label: "Entregas",
     context: "Kanban de entregas ao vivo, motoboys, rotas.",
-    suggestions: ["Pedidos em rota", "Tempo médio de entrega hoje"],
+    suggestions: [
+      "Pedidos em rota",
+      "Tempo médio de entrega hoje",
+      "Motoboy mais rápido",
+      "Entregas atrasadas",
+      "Reatribui rota mais longa",
+    ],
   },
   "/pdv": {
     label: "PDV",
     context: "Ponto de venda no balcão.",
-    suggestions: ["Vendas do PDV hoje"],
+    suggestions: [
+      "Vendas do PDV hoje",
+      "Ticket médio no balcão",
+      "Produto mais vendido no PDV",
+      "Compara PDV x delivery",
+    ],
   },
   "/caixa": {
     label: "Caixa",
     context: "Sessões de caixa: abertura, fechamento, sangrias, reforços.",
-    suggestions: ["Caixa aberto agora", "Resumo da última sessão"],
+    suggestions: [
+      "Caixa aberto agora",
+      "Resumo da última sessão",
+      "Sangrias do dia",
+      "Divergências nas últimas 5 sessões",
+    ],
   },
   "/mesas": {
     label: "Mesas",
     context: "Mesas e zonas do salão.",
-    suggestions: ["Mesas ocupadas", "Cria zona 'Varanda'"],
+    suggestions: [
+      "Mesas ocupadas",
+      "Cria zona 'Varanda'",
+      "Tempo médio de ocupação",
+      "Mesas mais rentáveis",
+    ],
   },
   "/garcons": {
     label: "Garçons",
     context: "Equipe de garçons e comissões.",
-    suggestions: ["Top garçom da semana"],
+    suggestions: [
+      "Top garçom da semana",
+      "Comissões do mês",
+      "Ranking por ticket médio",
+    ],
   },
   "/impressao": {
     label: "Impressão",
     context: "Configurações e fila de impressão térmica.",
-    suggestions: ["Jobs pendentes"],
+    suggestions: [
+      "Jobs pendentes",
+      "Reimprime último pedido",
+      "Falhas de impressão hoje",
+    ],
   },
   "/biblioteca": {
     label: "Biblioteca de mídia",
     context: "Imagens do site — logos, banners, fotos de produto.",
-    suggestions: ["Gera um banner de açaí"],
+    suggestions: [
+      "Gera um banner de açaí",
+      "Cria foto de shake de morango",
+      "Logo em fundo transparente",
+      "Banner de promoção de fim de semana",
+    ],
   },
   "/modelos": {
     label: "Modelos de produto",
     context: "Templates reutilizáveis de produto.",
-    suggestions: ["Cria modelo de shake premium"],
+    suggestions: [
+      "Cria modelo de shake premium",
+      "Modelo de combo casal",
+      "Lista modelos existentes",
+    ],
   },
   "/importar": {
     label: "Importar cardápio",
     context: "Importa cardápio via foto/PDF com IA.",
-    suggestions: ["Como funciona a importação?"],
+    suggestions: [
+      "Como funciona a importação?",
+      "Dicas pra foto do cardápio",
+      "Formatos suportados",
+    ],
   },
   "/carrinhos": {
     label: "Carrinhos abandonados",
     context: "Carrinhos abandonados dos clientes.",
-    suggestions: ["Quantos abandonos hoje?", "Dispara push de recuperação"],
+    suggestions: [
+      "Quantos abandonos hoje?",
+      "Dispara push de recuperação",
+      "Valor total abandonado essa semana",
+      "Cria cupom VOLTA10 pros abandonos",
+      "Produtos mais abandonados",
+    ],
   },
   "/copiloto": {
     label: "Copiloto",
     context: "Página completa do Copiloto — ações executivas amplas.",
-    suggestions: ["Cria campanha de fim de semana"],
+    suggestions: [
+      "Cria campanha de fim de semana",
+      "Monta combo do dia",
+      "Push + banner + cupom pra hoje",
+    ],
   },
   "/ai-growth": {
     label: "AI Growth Engine",
     context: "Consultor de crescimento (leitura, sem edição).",
-    suggestions: ["Ideias pra aumentar ticket médio"],
+    suggestions: [
+      "Ideias pra aumentar ticket médio",
+      "Como reter clientes inativos?",
+      "Estratégias pra terça-feira fraca",
+      "Benchmarks do setor",
+    ],
   },
   "/previsao": {
     label: "Previsão de demanda",
     context: "Heatmap e previsão de vendas por dia/hora.",
-    suggestions: ["Horário de pico amanhã"],
+    suggestions: [
+      "Horário de pico amanhã",
+      "Dia mais fraco da semana",
+      "Previsão pro fim de semana",
+      "Sugere escala com base na previsão",
+    ],
   },
   "/usuarios": {
     label: "Usuários e permissões",
     context: "Equipe interna e papéis (admin, staff, kitchen, delivery).",
-    suggestions: ["Quem tem acesso admin?"],
+    suggestions: [
+      "Quem tem acesso admin?",
+      "Últimos logins",
+      "Convida novo garçom",
+    ],
   },
   "/automacoes": {
     label: "Automações",
     context: "Automações e gatilhos push.",
-    suggestions: ["Roda notificações agora"],
+    suggestions: [
+      "Roda notificações agora",
+      "Automações ativas",
+      "Últimos disparos",
+      "Cria automação de aniversário",
+    ],
   },
 };
 
@@ -144,18 +281,18 @@ function useCurrentPage(): PageInfo {
   return useMemo(() => {
     if (pathname === "/admin" && tab) {
       const map: Record<string, PageInfo> = {
-        products: { label: "Produtos", context: "Cardápio: gerenciar produtos, preços, ativar/pausar, badges, ordem.", suggestions: ["Aplica 10% off em todos", "Pausa o morango"] },
-        categories: { label: "Categorias", context: "Categorias do cardápio.", suggestions: ["Cria categoria 'Especiais'"] },
-        extras: { label: "Complementos", context: "Complementos/extras dos produtos.", suggestions: ["Lista todos os complementos"] },
-        highlights: { label: "Destaques", context: "Produtos em destaque na home.", suggestions: ["Coloca shake como destaque"] },
-        news: { label: "Novidades", context: "Ticker e banner de novidades da home.", suggestions: ["Muda ticker pra 'Frete grátis hoje'"] },
-        promos: { label: "Promos & Combos", context: "Combos e promoções ativas.", suggestions: ["Cria combo Casal 2 shakes"] },
-        coupons: { label: "Cupons", context: "Cupons de desconto.", suggestions: ["Cria SHAKE20 20% off"] },
-        loyalty: { label: "Fidelidade", context: "Programa de fidelidade (Bronze/Prata/Ouro).", suggestions: ["Como estão os tiers?"] },
-        notifications: { label: "Notificações", context: "Push notifications e campanhas.", suggestions: ["Cria push 'Chegou açaí novo'"] },
-        announcement: { label: "Anúncio", context: "Anúncio no topo do site.", suggestions: ["Muda anúncio pra 'Aberto até 23h'"] },
-        popup: { label: "Pop-up", context: "Pop-ups do site.", suggestions: ["Cria popup de 15% off"] },
-        settings: { label: "Configurações da Loja", context: "Config: taxa entrega, mínimo, WhatsApp, cores.", suggestions: ["Muda taxa de entrega pra R$8"] },
+        products: { label: "Produtos", context: "Cardápio: gerenciar produtos, preços, ativar/pausar, badges, ordem.", suggestions: ["Aplica 10% off em todos", "Pausa o morango", "Reverte último desconto", "Coloca badge 'Novo' no shake ninho", "Produtos sem foto", "Reordena por mais vendidos", "Ativa todos pausados"] },
+        categories: { label: "Categorias", context: "Categorias do cardápio.", suggestions: ["Cria categoria 'Especiais'", "Reorganiza categorias", "Categoria mais vendida"] },
+        extras: { label: "Complementos", context: "Complementos/extras dos produtos.", suggestions: ["Lista todos os complementos", "Cria complemento 'Leite condensado'", "Complementos mais pedidos"] },
+        highlights: { label: "Destaques", context: "Produtos em destaque na home.", suggestions: ["Coloca shake como destaque", "Remove destaques antigos", "Destaques que vendem menos"] },
+        news: { label: "Novidades", context: "Ticker e banner de novidades da home.", suggestions: ["Muda ticker pra 'Frete grátis hoje'", "Cria banner de fim de semana", "Remove banner antigo"] },
+        promos: { label: "Promos & Combos", context: "Combos e promoções ativas.", suggestions: ["Cria combo Casal 2 shakes", "Combo família 4 pessoas", "Promos que mais vendem", "Encerra promo do mês passado"] },
+        coupons: { label: "Cupons", context: "Cupons de desconto.", suggestions: ["Cria SHAKE20 20% off", "Cupom PRIMEIRA10 pra novos", "Cupom de aniversário", "Cupons ativos agora", "Cupom mais usado"] },
+        loyalty: { label: "Fidelidade", context: "Programa de fidelidade (Bronze/Prata/Ouro).", suggestions: ["Como estão os tiers?", "Clientes Ouro esse mês", "Sobe recompensa do Prata", "Quantos selos gerados hoje"] },
+        notifications: { label: "Notificações", context: "Push notifications e campanhas.", suggestions: ["Cria push 'Chegou açaí novo'", "Push pros fãs de shake", "Push pros inativos 30d", "Últimas campanhas", "Taxa de abertura"] },
+        announcement: { label: "Anúncio", context: "Anúncio no topo do site.", suggestions: ["Muda anúncio pra 'Aberto até 23h'", "Anúncio de feriado", "Remove anúncio"] },
+        popup: { label: "Pop-up", context: "Pop-ups do site.", suggestions: ["Cria popup de 15% off", "Popup de boas-vindas", "Programa popup pro fim de semana", "Salva como modelo"] },
+        settings: { label: "Configurações da Loja", context: "Config: taxa entrega, mínimo, WhatsApp, cores.", suggestions: ["Muda taxa de entrega pra R$8", "Pedido mínimo R$25", "Muda horário pra 18h-23h", "Atualiza WhatsApp"] },
       };
       if (map[tab]) return map[tab];
     }
@@ -362,6 +499,28 @@ export function FloatingAssistant() {
               </div>
             )}
           </div>
+
+          {/* Sugestões rápidas — sempre visíveis quando há mensagens */}
+          {messages.length > 0 && (
+            <div className="border-t border-white/10 bg-black/10 px-2 py-1.5">
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+                {page.suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => {
+                      setInput("");
+                      sendMessage({ text: s });
+                    }}
+                    className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/75 hover:border-neon-pink/50 hover:bg-neon-pink/10 hover:text-white transition disabled:opacity-40"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Composer */}
           <div className="border-t border-white/10 bg-black/20 p-2">
