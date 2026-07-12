@@ -17,7 +17,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
-import { Route as AvaliarOrderIdRouteImport } from './routes/avaliar.$orderId'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
@@ -45,6 +44,7 @@ import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
+import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -83,11 +83,6 @@ const IndexRoute = IndexRouteImport.update({
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AvaliarOrderIdRoute = AvaliarOrderIdRouteImport.update({
-  id: '/avaliar/$orderId',
-  path: '/avaliar/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCopilotChatRoute = ApiCopilotChatRouteImport.update({
@@ -230,6 +225,12 @@ const AuthenticatedRastrearOrderIdRoute =
     path: '/rastrear/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAvaliarOrderIdRoute =
+  AuthenticatedAvaliarOrderIdRouteImport.update({
+    id: '/avaliar/$orderId',
+    path: '/avaliar/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -264,8 +265,8 @@ export interface FileRoutesByFullPath {
   '/rush': typeof AuthenticatedRushRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
-  '/avaliar/$orderId': typeof AvaliarOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
 export interface FileRoutesByTo {
@@ -301,8 +302,8 @@ export interface FileRoutesByTo {
   '/rush': typeof AuthenticatedRushRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
-  '/avaliar/$orderId': typeof AvaliarOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
 export interface FileRoutesById {
@@ -340,8 +341,8 @@ export interface FileRoutesById {
   '/_authenticated/rush': typeof AuthenticatedRushRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
-  '/avaliar/$orderId': typeof AvaliarOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
 }
 export interface FileRouteTypes {
@@ -379,8 +380,8 @@ export interface FileRouteTypes {
     | '/rush'
     | '/usuarios'
     | '/api/copilot-chat'
-    | '/avaliar/$orderId'
     | '/produto/$id'
+    | '/avaliar/$orderId'
     | '/rastrear/$orderId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -416,8 +417,8 @@ export interface FileRouteTypes {
     | '/rush'
     | '/usuarios'
     | '/api/copilot-chat'
-    | '/avaliar/$orderId'
     | '/produto/$id'
+    | '/avaliar/$orderId'
     | '/rastrear/$orderId'
   id:
     | '__root__'
@@ -454,8 +455,8 @@ export interface FileRouteTypes {
     | '/_authenticated/rush'
     | '/_authenticated/usuarios'
     | '/api/copilot-chat'
-    | '/avaliar/$orderId'
     | '/produto/$id'
+    | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
   fileRoutesById: FileRoutesById
 }
@@ -468,7 +469,6 @@ export interface RootRouteChildren {
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
-  AvaliarOrderIdRoute: typeof AvaliarOrderIdRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
 }
 
@@ -528,13 +528,6 @@ declare module '@tanstack/react-router' {
       path: '/produto/$id'
       fullPath: '/produto/$id'
       preLoaderRoute: typeof ProdutoIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/avaliar/$orderId': {
-      id: '/avaliar/$orderId'
-      path: '/avaliar/$orderId'
-      fullPath: '/avaliar/$orderId'
-      preLoaderRoute: typeof AvaliarOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/copilot-chat': {
@@ -726,6 +719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRastrearOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/avaliar/$orderId': {
+      id: '/_authenticated/avaliar/$orderId'
+      path: '/avaliar/$orderId'
+      fullPath: '/avaliar/$orderId'
+      preLoaderRoute: typeof AuthenticatedAvaliarOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -755,6 +755,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
+  AuthenticatedAvaliarOrderIdRoute: typeof AuthenticatedAvaliarOrderIdRoute
   AuthenticatedRastrearOrderIdRoute: typeof AuthenticatedRastrearOrderIdRoute
 }
 
@@ -784,6 +785,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
+  AuthenticatedAvaliarOrderIdRoute: AuthenticatedAvaliarOrderIdRoute,
   AuthenticatedRastrearOrderIdRoute: AuthenticatedRastrearOrderIdRoute,
 }
 
@@ -799,7 +801,6 @@ const rootRouteChildren: RootRouteChildren = {
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
-  AvaliarOrderIdRoute: AvaliarOrderIdRoute,
   ProdutoIdRoute: ProdutoIdRoute,
 }
 export const routeTree = rootRouteImport
