@@ -27,6 +27,7 @@ import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMesasRouteImport } from './routes/_authenticated/mesas'
 import { Route as AuthenticatedLucratividadeRouteImport } from './routes/_authenticated/lucratividade'
 import { Route as AuthenticatedImpressaoRouteImport } from './routes/_authenticated/impressao'
+import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
 import { Route as AuthenticatedGarconsRouteImport } from './routes/_authenticated/garcons'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedEntregasRouteImport } from './routes/_authenticated/entregas'
@@ -133,6 +134,11 @@ const AuthenticatedImpressaoRoute = AuthenticatedImpressaoRouteImport.update({
   path: '/impressao',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedImportarRoute = AuthenticatedImportarRouteImport.update({
+  id: '/importar',
+  path: '/importar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedGarconsRoute = AuthenticatedGarconsRouteImport.update({
   id: '/garcons',
   path: '/garcons',
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/entregas': typeof AuthenticatedEntregasRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/garcons': typeof AuthenticatedGarconsRoute
+  '/importar': typeof AuthenticatedImportarRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/mesas': typeof AuthenticatedMesasRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/entregas': typeof AuthenticatedEntregasRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/garcons': typeof AuthenticatedGarconsRoute
+  '/importar': typeof AuthenticatedImportarRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/mesas': typeof AuthenticatedMesasRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/_authenticated/entregas': typeof AuthenticatedEntregasRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/garcons': typeof AuthenticatedGarconsRoute
+  '/_authenticated/importar': typeof AuthenticatedImportarRoute
   '/_authenticated/impressao': typeof AuthenticatedImpressaoRoute
   '/_authenticated/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/_authenticated/mesas': typeof AuthenticatedMesasRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/entregas'
     | '/financeiro'
     | '/garcons'
+    | '/importar'
     | '/impressao'
     | '/lucratividade'
     | '/mesas'
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/entregas'
     | '/financeiro'
     | '/garcons'
+    | '/importar'
     | '/impressao'
     | '/lucratividade'
     | '/mesas'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/_authenticated/entregas'
     | '/_authenticated/financeiro'
     | '/_authenticated/garcons'
+    | '/_authenticated/importar'
     | '/_authenticated/impressao'
     | '/_authenticated/lucratividade'
     | '/_authenticated/mesas'
@@ -538,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedImpressaoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/importar': {
+      id: '/_authenticated/importar'
+      path: '/importar'
+      fullPath: '/importar'
+      preLoaderRoute: typeof AuthenticatedImportarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/garcons': {
       id: '/_authenticated/garcons'
       path: '/garcons'
@@ -645,6 +664,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEntregasRoute: typeof AuthenticatedEntregasRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedGarconsRoute: typeof AuthenticatedGarconsRoute
+  AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
   AuthenticatedImpressaoRoute: typeof AuthenticatedImpressaoRoute
   AuthenticatedLucratividadeRoute: typeof AuthenticatedLucratividadeRoute
   AuthenticatedMesasRoute: typeof AuthenticatedMesasRoute
@@ -670,6 +690,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEntregasRoute: AuthenticatedEntregasRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedGarconsRoute: AuthenticatedGarconsRoute,
+  AuthenticatedImportarRoute: AuthenticatedImportarRoute,
   AuthenticatedImpressaoRoute: AuthenticatedImpressaoRoute,
   AuthenticatedLucratividadeRoute: AuthenticatedLucratividadeRoute,
   AuthenticatedMesasRoute: AuthenticatedMesasRoute,
