@@ -2941,7 +2941,14 @@ function SettingsTab({ initialSection = "identity" }: { initialSection?: Setting
   const [textureBusy, setTextureBusy] = useState(false);
 
   useEffect(() => {
-    if (data && !s) setS(data);
+    if (data && !s) {
+      setS(data);
+      // Load admin-only pix_key via RPC and merge into state
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase.rpc as any)("get_pix_key").then(({ data: pk }: { data: string | null }) => {
+        setS((prev) => (prev ? { ...prev, pixKey: (pk as string) ?? "" } : prev));
+      });
+    }
   }, [data, s]);
 
   if (!s) {
