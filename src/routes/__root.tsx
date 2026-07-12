@@ -266,6 +266,7 @@ function RootComponent() {
         <ConfirmDialogHost />
         <InstallPWAButton />
         <BottomNav />
+        <ReviewPromptPopup />
       </CartProvider>
     </QueryClientProvider>
 
