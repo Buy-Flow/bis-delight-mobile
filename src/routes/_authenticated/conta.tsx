@@ -974,12 +974,54 @@ function Input({
   );
 }
 
+function FieldCard({
+  icon,
+  iconClass,
+  label,
+  hint,
+  filled,
+  trailing,
+  children,
+}: {
+  icon: React.ReactNode;
+  iconClass?: string;
+  label: string;
+  hint?: string;
+  filled?: boolean;
+  trailing?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+      <div className="mb-2 flex items-center gap-2.5">
+        <span className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-xl", iconClass)}>
+          {icon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[12.5px] font-bold text-white">{label}</span>
+            {filled && (
+              <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-500/20 text-emerald-300">
+                <Check className="h-2.5 w-2.5" />
+              </span>
+            )}
+          </div>
+          {hint && <div className="truncate text-[10.5px] text-white/45">{hint}</div>}
+        </div>
+        {trailing}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 function AccordionCard({
   title,
   subtitle,
   icon,
   iconClass,
   defaultOpen = false,
+  accent,
   children,
 }: {
   title: string;
@@ -987,6 +1029,7 @@ function AccordionCard({
   icon: React.ReactNode;
   iconClass?: string;
   defaultOpen?: boolean;
+  accent?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -995,19 +1038,20 @@ function AccordionCard({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="group flex w-full items-center gap-3 p-3 text-left transition hover:bg-white/[0.06]"
+        className="group flex w-full items-start gap-3 p-3 text-left transition hover:bg-white/[0.06]"
         aria-expanded={open}
       >
-        <span className={cn("grid h-11 w-11 place-items-center rounded-xl", iconClass)}>
+        <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl", iconClass)}>
           {icon}
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold text-white">{title}</div>
           {subtitle && <div className="text-[11px] text-white/60">{subtitle}</div>}
+          {accent}
         </div>
         <ChevronRight
           className={cn(
-            "h-4 w-4 text-white/40 transition",
+            "mt-1 h-4 w-4 shrink-0 text-white/40 transition",
             open ? "rotate-90 text-white" : "group-hover:translate-x-0.5 group-hover:text-white",
           )}
         />
@@ -1018,6 +1062,7 @@ function AccordionCard({
     </div>
   );
 }
+
 
 
 function PanelSpinner() {
