@@ -1075,13 +1075,14 @@ function EditTableDialog({
     setSaving(true);
     const payload = {
       number,
-      label: label || null,
-      zone: zone || null,
+      label: label || undefined,
+      zone: zone || undefined,
       seats,
     };
     const { error } = table
       ? await supabase.from("restaurant_tables").update(payload).eq("id", table.id)
       : await supabase.from("restaurant_tables").insert({ ...payload, status: "livre" });
+
     setSaving(false);
     if (error) toast.error(error.message);
     else {
