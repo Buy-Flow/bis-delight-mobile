@@ -126,6 +126,7 @@ function TablesPage() {
   const [zoneFilter, setZoneFilter] = useState<string>("todas");
   const [selected, setSelected] = useState<RestaurantTable | null>(null);
   const [editing, setEditing] = useState<RestaurantTable | "new" | null>(null);
+  const [managingZones, setManagingZones] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
