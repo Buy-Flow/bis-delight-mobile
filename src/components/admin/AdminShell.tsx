@@ -84,7 +84,6 @@ const groups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/rush", label: "Pedidos ao vivo", icon: Flame },
       { to: "/rush", label: "Cozinha", icon: ChefHat },
       { to: "/pdv", label: "PDV", icon: Store },
       { to: "/garcons", label: "Garçons", icon: UserCheck },
