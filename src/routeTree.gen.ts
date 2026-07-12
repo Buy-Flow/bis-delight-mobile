@@ -18,6 +18,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
+import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authenticated/precificacao'
@@ -87,6 +88,11 @@ const ApiCopilotChatRoute = ApiCopilotChatRouteImport.update({
   id: '/api/copilot-chat',
   path: '/api/copilot-chat',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
   id: '/rush',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -285,6 +292,7 @@ export interface FileRoutesByTo {
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/_authenticated/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
+  '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/precificacao'
     | '/previsao'
     | '/rush'
+    | '/usuarios'
     | '/api/copilot-chat'
     | '/produto/$id'
     | '/rastrear/$orderId'
@@ -394,6 +404,7 @@ export interface FileRouteTypes {
     | '/precificacao'
     | '/previsao'
     | '/rush'
+    | '/usuarios'
     | '/api/copilot-chat'
     | '/produto/$id'
     | '/rastrear/$orderId'
@@ -430,6 +441,7 @@ export interface FileRouteTypes {
     | '/_authenticated/precificacao'
     | '/_authenticated/previsao'
     | '/_authenticated/rush'
+    | '/_authenticated/usuarios'
     | '/api/copilot-chat'
     | '/produto/$id'
     | '/_authenticated/rastrear/$orderId'
@@ -511,6 +523,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/copilot-chat'
       preLoaderRoute: typeof ApiCopilotChatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/usuarios': {
+      id: '/_authenticated/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rush': {
       id: '/_authenticated/rush'
@@ -715,6 +734,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrecificacaoRoute: typeof AuthenticatedPrecificacaoRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
+  AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedRastrearOrderIdRoute: typeof AuthenticatedRastrearOrderIdRoute
 }
 
@@ -743,6 +763,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrecificacaoRoute: AuthenticatedPrecificacaoRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
+  AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedRastrearOrderIdRoute: AuthenticatedRastrearOrderIdRoute,
 }
 

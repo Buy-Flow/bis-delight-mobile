@@ -2163,6 +2163,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_role_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          note: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2655,6 +2685,14 @@ export type Database = {
       }
     }
     Functions: {
+      admin_grant_role: {
+        Args: {
+          _note?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _target: string
+        }
+        Returns: undefined
+      }
       admin_list_push_campaigns: {
         Args: { _limit?: number }
         Returns: {
@@ -2681,6 +2719,46 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      admin_list_role_audit: {
+        Args: { _limit?: number }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_name: string
+          created_at: string
+          id: string
+          note: string
+          role: string
+          target_email: string
+          target_name: string
+        }[]
+      }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          birthday: string
+          cpf: string
+          created_at: string
+          email: string
+          email_confirmed_at: string
+          full_name: string
+          id: string
+          last_sign_in_at: string
+          orders_count: number
+          phone: string
+          roles: string[]
+          total_spent: number
+        }[]
+      }
+      admin_revoke_role: {
+        Args: {
+          _note?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _target: string
+        }
+        Returns: undefined
       }
       claim_birthday_gift: {
         Args: never
@@ -2826,7 +2904,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "manager" | "staff" | "kitchen" | "delivery"
       review_status: "published" | "hidden" | "pending"
     }
     CompositeTypes: {
@@ -2955,7 +3033,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "manager", "staff", "kitchen", "delivery"],
       review_status: ["published", "hidden", "pending"],
     },
   },
