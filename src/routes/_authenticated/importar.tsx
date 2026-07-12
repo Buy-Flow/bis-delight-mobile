@@ -413,7 +413,7 @@ function ImportarPage() {
                 return (
                   <button key={t.id} onClick={() => setTab(t.id as any)}
                     className={cn("p-5 rounded-2xl border text-left transition group",
-                      active ? "border-white bg-white shadow-md" : "border-white/10 bg-white hover:border-white/25")}>
+                      active ? "border-white/40 bg-white/10 shadow-lg shadow-black/30" : "border-white/10 bg-white/5 hover:border-white/25")}>
                     <div className={cn("h-10 w-10 rounded-xl bg-gradient-to-br text-white grid place-items-center mb-3", t.color)}>
                       <Icon className="h-5 w-5" />
                     </div>
