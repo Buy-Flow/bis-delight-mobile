@@ -107,6 +107,48 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<
+    Array<{ id: string; code: string; discount: number; kind: "loyalty" | "promo"; label?: string; minOrder?: number }>
+  >([]);
+
+  // Load coupons the user already owns (loyalty) + active public promo coupons
+  useEffect(() => {
+    if (!isCheckoutOpen || !user) {
+      setAvailableCoupons([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        // Only loyalty coupons are user-owned; promo coupons are not listable by regular users (RLS).
+        const { data, error } = await supabase
+          .from("loyalty_coupons")
+          .select("id, code, discount_value, used_at, created_at")
+          .eq("user_id", user.id)
+          .is("used_at", null)
+          .order("created_at", { ascending: false });
+        if (cancelled) return;
+        if (error) throw error;
+        const list = (data || []).map((c: any) => {
+          const v = Number(c.discount_value) > 0 ? Number(c.discount_value) : 20;
+          return {
+            id: c.id as string,
+            code: c.code as string,
+            discount: v,
+            kind: "loyalty" as const,
+            label: `Bis Recompensa · −${brl(v)}`,
+            minOrder: v,
+          };
+        });
+        setAvailableCoupons(list);
+      } catch (e) {
+        console.error("[coupons] load failed", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isCheckoutOpen, user, subtotal]);
 
   // Distance-based delivery quote
   const [quote, setQuote] = useState<{
@@ -1134,6 +1176,48 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                   {couponChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aplicar"}
                 </button>
               </div>
+              {availableCoupons.length > 0 && (
+                <div className="mt-3">
+                  <div className="mb-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-white/50">
+                    Seus cupons disponíveis
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    {availableCoupons.map((c) => {
+                      const belowMin = c.minOrder != null && subtotal < c.minOrder;
+                      return (
+                        <button
+                          key={`${c.kind}-${c.id}`}
+                          type="button"
+                          disabled={couponChecking || belowMin}
+                          onClick={() => {
+                            setCouponInput(c.code);
+                            setTimeout(() => applyCoupon(), 0);
+                          }}
+                          className="group flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition hover:border-neon-cyan/50 hover:bg-neon-cyan/5 active:scale-[0.99] disabled:opacity-50 disabled:hover:border-white/10 disabled:hover:bg-white/[0.03]"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan">
+                              <Ticket className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="truncate text-[13px] font-extrabold text-white font-mono tracking-wider">
+                                {c.code}
+                              </div>
+                              <div className="truncate text-[10.5px] text-white/60">
+                                {c.label}
+                                {belowMin && c.minOrder != null && ` · mín. ${brl(c.minOrder)}`}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="shrink-0 text-[11px] font-bold text-neon-cyan group-disabled:text-white/30">
+                            {belowMin ? "Bloqueado" : "Usar"}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <button
