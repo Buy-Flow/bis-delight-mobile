@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff } from "lucide-react";
+import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff, Radio, Copy, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import {
   getWhatsappConnectionState,
   getWhatsappQrCode,
   disconnectWhatsapp,
+  getWhatsappWebhookInfo,
+  configureWhatsappWebhook,
 } from "@/lib/whatsapp.functions";
 
 type Props = {
@@ -18,11 +20,15 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   const getState = useServerFn(getWhatsappConnectionState);
   const getQr = useServerFn(getWhatsappQrCode);
   const logout = useServerFn(disconnectWhatsapp);
+  const getWebhook = useServerFn(getWhatsappWebhookInfo);
+  const setWebhook = useServerFn(configureWhatsappWebhook);
 
   const [state, setState] = useState<string>("loading");
   const [qr, setQr] = useState<{ base64: string | null; code: string | null; pairingCode: string | null } | null>(null);
   const [loadingQr, setLoadingQr] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [webhook, setWebhookState] = useState<{ url: string; currentUrl: string | null; configured: boolean; hasToken: boolean } | null>(null);
+  const [wbSaving, setWbSaving] = useState(false);
   const pollRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
 
@@ -74,9 +80,32 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
     }
   }
 
+  async function refreshWebhook() {
+    try {
+      const w = await getWebhook();
+      setWebhookState(w);
+    } catch {
+      /* noop */
+    }
+  }
+
+  async function handleConfigureWebhook() {
+    setWbSaving(true);
+    try {
+      const r = await setWebhook();
+      toast.success("Webhook configurado! Mensagens agora chegam em tempo real.");
+      setWebhookState((prev) => (prev ? { ...prev, currentUrl: r.url, configured: true } : prev));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao configurar webhook");
+    } finally {
+      setWbSaving(false);
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
     refreshState();
+    refreshWebhook();
     // Auto-load QR se não estiver conectado
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -205,6 +234,56 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
             </p>
           </div>
         )}
+
+        {/* Webhook / Recebimento de mensagens */}
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+          <div className="flex items-center gap-2">
+            <Radio className={`h-4 w-4 ${webhook?.configured ? "text-emerald-300" : "text-amber-300"}`} />
+            <div className="flex-1">
+              <div className="text-xs font-bold text-white">Recepção de mensagens</div>
+              <div className="text-[10px] text-white/50">
+                {webhook?.configured
+                  ? "Webhook ativo — mensagens chegam em tempo real."
+                  : "Sem webhook — mensagens recebidas não aparecem na caixa."}
+              </div>
+            </div>
+            {webhook?.configured ? (
+              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-200">
+                Ativo
+              </span>
+            ) : (
+              <button
+                onClick={handleConfigureWebhook}
+                disabled={wbSaving || !webhook?.hasToken}
+                className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-[11px] font-bold text-black hover:brightness-110 disabled:opacity-50"
+              >
+                {wbSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Radio className="h-3 w-3" />}
+                Ativar webhook
+              </button>
+            )}
+          </div>
+          {webhook?.url && (
+            <div className="mt-2 flex items-center gap-2 rounded-lg bg-black/30 px-2 py-1.5 text-[10px] text-white/60">
+              <code className="flex-1 truncate">{webhook.url}</code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(webhook.url);
+                  toast.success("URL copiada");
+                }}
+                className="rounded p-1 hover:bg-white/10"
+                aria-label="Copiar URL"
+              >
+                <Copy className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+          {webhook && !webhook.hasToken && (
+            <div className="mt-2 flex items-start gap-1.5 text-[10px] text-amber-200/80">
+              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+              EVOLUTION_WEBHOOK_TOKEN ausente nos secrets.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
