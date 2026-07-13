@@ -221,6 +221,9 @@ function WhatsappPage() {
   useEffect(() => {
     loadConversations();
     cfgFn().then(setConfig).catch(() => setConfig(null));
+    const loadState = () => stateFn().then(setConnState).catch(() => setConnState(null));
+    loadState();
+    const stateTimer = setInterval(loadState, 30_000);
     syncFromPhone(false);
 
     // realtime
