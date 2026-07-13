@@ -124,7 +124,8 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             }
             const found = arr.find((x) => x?.exists === true);
             if (found) {
-              const numberDigits = normalizePhone(String(found.number ?? ""));
+              const foundNumber = String(found.number ?? "");
+              const numberDigits = foundNumber.includes("@lid") ? "" : normalizePhone(foundNumber);
               const jid = String(found.jid ?? "");
               const jidDigits = jid.includes("@lid") ? "" : normalizePhone(jid.split("@")[0] ?? "");
               sendNumber = numberDigits || jidDigits || candidate;
