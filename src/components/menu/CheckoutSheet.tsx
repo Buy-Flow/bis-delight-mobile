@@ -107,6 +107,63 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<
+    Array<{ id: string; code: string; discount: number; kind: "loyalty" | "promo"; label?: string; minOrder?: number }>
+  >([]);
+
+  // Load coupons the user already owns (loyalty) + active public promo coupons
+  useEffect(() => {
+    if (!isCheckoutOpen || !user) {
+      setAvailableCoupons([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [loyaltyRes, promoRes] = await Promise.all([
+          supabase
+            .from("loyalty_coupons")
+            .select("id, code, discount_value, used_at")
+            .eq("user_id", user.id)
+            .is("used_at", null)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("promo_coupons")
+            .select("id, code, discount_value, discount_type, min_order_value, active, expires_at")
+            .eq("active", true)
+            .order("created_at", { ascending: false })
+            .limit(20),
+        ]);
+        if (cancelled) return;
+        const list: Array<{ id: string; code: string; discount: number; kind: "loyalty" | "promo"; label?: string; minOrder?: number }> = [];
+        (loyaltyRes.data || []).forEach((c: any) => {
+          const v = Number(c.discount_value) > 0 ? Number(c.discount_value) : 20;
+          list.push({ id: c.id, code: c.code, discount: v, kind: "loyalty", label: `Bis Recompensa · −${brl(v)}`, minOrder: v });
+        });
+        const now = Date.now();
+        (promoRes.data || []).forEach((c: any) => {
+          if (c.expires_at && new Date(c.expires_at).getTime() < now) return;
+          const raw = Number(c.discount_value) || 0;
+          const isPct = c.discount_type === "percent" || c.discount_type === "percentage";
+          const est = isPct ? (subtotal * raw) / 100 : raw;
+          list.push({
+            id: c.id,
+            code: c.code,
+            discount: est,
+            kind: "promo",
+            label: isPct ? `${raw}% de desconto` : `−${brl(raw)}`,
+            minOrder: c.min_order_value ? Number(c.min_order_value) : undefined,
+          });
+        });
+        setAvailableCoupons(list);
+      } catch (e) {
+        console.error("[coupons] load failed", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isCheckoutOpen, user, subtotal]);
 
   // Distance-based delivery quote
   const [quote, setQuote] = useState<{
