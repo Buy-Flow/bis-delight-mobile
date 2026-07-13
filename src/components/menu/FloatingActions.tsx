@@ -25,7 +25,9 @@ export function FloatingActions() {
   }, []);
 
   const scrollToMenu = () => {
-    const el = document.getElementById("menu-section");
+    const el =
+      document.getElementById("feito-com-amor") ||
+      document.getElementById("menu-section");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
