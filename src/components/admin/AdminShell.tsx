@@ -474,6 +474,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               onNavigate={() => setMobileOpen(false)}
               openGroups={openGroups}
               toggleGroup={toggleGroup}
+              groups={visibleGroups}
             />
             <div className="border-t border-white/10 p-2">
               <Link
