@@ -149,6 +149,7 @@ function WhatsappPage() {
   const pauseFn = useServerFn(setAiPaused);
   const readFn = useServerFn(markConversationRead);
   const cfgFn = useServerFn(getWhatsappConfigStatus);
+  const stateFn = useServerFn(getWhatsappConnectionState);
   const syncFn = useServerFn(syncWhatsappRecentMessages);
   const updatePhoneFn = useServerFn(updateWhatsappConversationPhone);
   const configureWebhookFn = useServerFn(configureWhatsappWebhook);
