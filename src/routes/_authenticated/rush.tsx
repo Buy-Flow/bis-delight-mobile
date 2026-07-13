@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSiteSettings, useUpdateSettings } from "@/lib/menu-data";
+import { usePermissions } from "@/lib/permissions";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import {
