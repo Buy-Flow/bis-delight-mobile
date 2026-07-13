@@ -336,6 +336,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const toggleGroup = (id: string) =>
     setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
 
+  // Filtra grupos/itens conforme papel do usuário.
+  const { canAccess, isAdmin: _isAdminRole } = usePermissions();
+  const visibleGroups = groups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((it) => {
+        if (!it.to) return _isAdminRole; // itens sem rota são só de admin
+        // Itens que apontam a /admin com tab: só admin pode (edição real).
+        if (it.to === "/admin") return _isAdminRole;
+        return canAccess(it.to);
+      }),
+    }))
+    .filter((g) => g.items.length > 0);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
