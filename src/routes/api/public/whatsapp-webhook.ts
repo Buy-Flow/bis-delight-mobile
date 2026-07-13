@@ -84,7 +84,7 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
               if (key?.remoteJid?.includes("@g.us")) continue;
 
               const fromMe = !!key?.fromMe;
-              const direction: "inbound" | "outbound" = fromMe ? "outbound" : "inbound";
+              const direction: "in" | "out" = fromMe ? "out" : "in";
               const { text, type, media } = extractText(item.message);
               const evoId = key?.id ?? null;
 
