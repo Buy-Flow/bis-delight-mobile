@@ -305,7 +305,7 @@ function RushPage() {
 
   // fetch + subscribe
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin && !canOperate) return;
     let cancelled = false;
 
     const load = async () => {
