@@ -14,17 +14,19 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
 }
 
 /**
- * Invite a new team user by email. Creates the auth user (or reuses if exists),
- * sends an invitation email, and optionally grants a role right away.
+ * Attribui um papel diretamente a um email — sem envio de convite.
+ * - Se o email já tem conta: concede o papel imediatamente.
+ * - Se ainda não tem conta: registra em `pending_role_grants` e o papel
+ *   é aplicado automaticamente quando a pessoa criar conta com esse email.
  */
-export const inviteTeamUser = createServerFn({ method: "POST" })
+export const assignUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
     z
       .object({
         email: z.string().email(),
         fullName: z.string().optional(),
-        role: z.enum(ROLES).optional(),
+        role: z.enum(ROLES),
         note: z.string().optional(),
       })
       .parse(data),
@@ -34,59 +36,57 @@ export const inviteTeamUser = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const email = data.email.trim().toLowerCase();
+
+    // Look up existing auth user by email
     let userId: string | null = null;
-    let invited = false;
-
-    // Try to invite by email — if user exists, fall back to lookup
-    const { data: inv, error: invErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: data.fullName ? { full_name: data.fullName } : undefined,
-    });
-    if (inv?.user) {
-      userId = inv.user.id;
-      invited = true;
-    } else if (invErr) {
-      // User may already exist — look them up via listUsers
-      const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    let page = 1;
+    while (page <= 10) {
+      const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+      if (error) break;
       const match = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
-      if (match) {
-        userId = match.id;
-      } else {
-        throw new Error(invErr.message || "Falha ao convidar usuário");
+      if (match) { userId = match.id; break; }
+      if (!list?.users || list.users.length < 200) break;
+      page++;
+    }
+
+    if (userId) {
+      if (data.fullName) {
+        await supabaseAdmin.from("profiles").update({ full_name: data.fullName }).eq("id", userId);
       }
-    }
-
-    if (!userId) throw new Error("Não foi possível localizar/criar o usuário");
-
-    // Best-effort profile update
-    if (data.fullName) {
-      await supabaseAdmin
-        .from("profiles")
-        .update({ full_name: data.fullName })
-        .eq("id", userId);
-    }
-
-    if (data.role) {
       const { error: grantErr } = await context.supabase.rpc("admin_grant_role", {
         _target: userId,
         _role: data.role,
-        _note: data.note ?? (invited ? "Convite enviado" : "Papel atribuído"),
+        _note: data.note ?? "Papel atribuído diretamente",
       });
       if (grantErr) throw new Error(grantErr.message);
+      return { status: "granted" as const, userId };
     }
 
-    return { userId, invited };
-  });
-
-/**
- * Send a password-reset / magic re-invite email to an existing user.
- */
-export const resendUserInvite = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ email: z.string().email() }).parse(data))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email.trim().toLowerCase());
-    if (error) throw new Error(error.message);
-    return { ok: true };
+    // No account yet — store as pending, applied on signup via trigger
+    const { error: pendErr } = await context.supabase
+      .from("pending_role_grants")
+      .upsert(
+        {
+          email,
+          role: data.role,
+          full_name: data.fullName ?? null,
+          note: data.note ?? null,
+          granted_by: context.userId,
+          applied_at: null,
+          applied_user_id: null,
+        },
+        { onConflict: "email,role", ignoreDuplicates: false },
+      );
+    if (pendErr) {
+      // fallback: plain insert if upsert conflict target isn't accepted
+      const { error: insErr } = await context.supabase.from("pending_role_grants").insert({
+        email,
+        role: data.role,
+        full_name: data.fullName ?? null,
+        note: data.note ?? null,
+        granted_by: context.userId,
+      });
+      if (insErr) throw new Error(insErr.message);
+    }
+    return { status: "pending" as const, userId: null };
   });
