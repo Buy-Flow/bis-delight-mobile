@@ -80,9 +80,32 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
     }
   }
 
+  async function refreshWebhook() {
+    try {
+      const w = await getWebhook();
+      setWebhookState(w);
+    } catch {
+      /* noop */
+    }
+  }
+
+  async function handleConfigureWebhook() {
+    setWbSaving(true);
+    try {
+      const r = await setWebhook();
+      toast.success("Webhook configurado! Mensagens agora chegam em tempo real.");
+      setWebhookState((prev) => (prev ? { ...prev, currentUrl: r.url, configured: true } : prev));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao configurar webhook");
+    } finally {
+      setWbSaving(false);
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
     refreshState();
+    refreshWebhook();
     // Auto-load QR se não estiver conectado
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
