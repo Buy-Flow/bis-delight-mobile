@@ -33,6 +33,7 @@ import {
   Mic,
   Square,
   Play,
+  Pause,
   Download,
   FileText,
   ImageIcon,
