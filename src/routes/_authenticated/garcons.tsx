@@ -630,7 +630,7 @@ function WaitersPage() {
       {assignOpen && (
         <AssignDialog
           waiters={waiters.filter((w) => w.active)}
-          orders={periodOrders.filter((o) => !o.waiter_id).slice(0, 100)}
+          orders={periodOrders.filter((o) => !o.waiter_id && !isSiteOrder(o)).slice(0, 100)}
           onClose={() => setAssignOpen(false)}
           onSaved={() => {
             setAssignOpen(false);
