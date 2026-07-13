@@ -72,10 +72,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           status = "failed";
         } else {
         // 1) Descobre o JID exato que a WhatsApp aceita para esse número.
-        //    Testa 3 variantes (original, com "9" extra, sem "9" extra)
-        //    contra o endpoint /chat/whatsappNumbers.
+        //    Testa variantes (original, com "9" extra, sem "9" extra)
+        //    contra o endpoint /chat/whatsappNumbers. Fail-close: se
+        //    nenhuma variante existir no WhatsApp, NÃO envia.
         const candidates = new Set<string>([normalized]);
-        // BR: 55 + DDD(2) + [9]? + 8 dígitos
         if (/^55\d{2}\d{8}$/.test(normalized)) {
           // 12 dígitos, sem o 9 → adiciona o 9
           candidates.add(normalized.slice(0, 4) + "9" + normalized.slice(4));
@@ -85,8 +85,9 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           candidates.add(normalized.slice(0, 4) + normalized.slice(5));
         }
 
-        let sendNumber = normalized;
+        let sendNumber: string | null = null;
         let checkDiag = "";
+        let checkOk = false;
         try {
           const check = await fetch(
             `${base}/chat/whatsappNumbers/${encodeURIComponent(instance)}`,
@@ -97,33 +98,33 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             },
           );
           const checkBody = await check.text();
-          checkDiag = `chk ${check.status} :: ${checkBody.slice(0, 200)}`;
+          checkDiag = `chk ${check.status} :: ${checkBody.slice(0, 300)}`;
           if (check.ok) {
+            checkOk = true;
             let arr: Array<{ exists?: boolean; jid?: string; number?: string }> = [];
             try {
               const parsed = JSON.parse(checkBody);
               arr = Array.isArray(parsed) ? parsed : parsed?.response ?? parsed?.data ?? [];
             } catch { /* keep [] */ }
-            const found = Array.isArray(arr)
-              ? arr.find((x) => x?.exists === true)
-              : null;
+            const found = Array.isArray(arr) ? arr.find((x) => x?.exists === true) : null;
             if (found?.jid) {
-              sendNumber = found.jid.split("@")[0] ?? sendNumber;
+              sendNumber = found.jid.split("@")[0] ?? null;
             } else if (found?.number) {
               sendNumber = String(found.number).replace(/\D/g, "");
-            } else if (Array.isArray(arr) && arr.length > 0) {
-              // Verificou e nenhuma variante existe no WhatsApp
-              evoError = `O número ${normalized} não está registrado no WhatsApp (nenhuma variante existe). Corrija o telefone da conversa.`;
-              status = "failed";
             }
-            // Se arr veio vazio ou em shape desconhecido, seguimos com o normalizado
           }
         } catch (err) {
           checkDiag = `chk exception :: ${err instanceof Error ? err.message : String(err)}`;
         }
 
-
-        if (status !== "failed") {
+        if (!sendNumber) {
+          // Fail-close: sem confirmação de que o número existe no WhatsApp, não envia.
+          const variants = Array.from(candidates).join(", ");
+          evoError = checkOk
+            ? `O número ${normalized} não está registrado no WhatsApp (testadas variantes: ${variants}). Corrija o telefone da conversa.\n[diag] ${checkDiag}`
+            : `Não foi possível confirmar o número ${normalized} no WhatsApp. Verifique a conexão da instância.\n[diag] ${checkDiag}`;
+          status = "failed";
+        } else {
         const resp = await fetch(`${base}/message/sendText/${encodeURIComponent(instance)}`, {
           method: "POST",
           headers: {
@@ -160,14 +161,11 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           } catch {
             evoId = null;
           }
-          // Guarda diagnóstico em warning mesmo em sucesso para depurar entregas
-          if (checkDiag && !checkDiag.startsWith("chk 2")) {
-            evoError = `[warn] verificação de número não conclusiva. ${checkDiag} | enviado para: ${sendNumber}`;
-          }
         }
 
         }
         }
+
 
 
 
