@@ -824,7 +824,6 @@ function ProfilePanel() {
             subtitle={`Perfil ${pct}% completo · ${filled}/${total} campos`}
             icon={<UserIcon className="h-5 w-5" />}
             iconClass="bg-neon-yellow/15 text-neon-yellow ring-1 ring-neon-yellow/30"
-            defaultOpen
             accent={
               <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
                 <div
