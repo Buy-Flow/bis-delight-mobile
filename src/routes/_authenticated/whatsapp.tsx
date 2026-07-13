@@ -29,6 +29,13 @@ import {
   ChevronDown,
   ChevronRight,
   Radio,
+  Paperclip,
+  Mic,
+  Square,
+  Play,
+  Download,
+  FileText,
+  ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -43,6 +50,10 @@ import {
   updateWhatsappConversationPhone,
   configureWhatsappWebhook,
 } from "@/lib/whatsapp.functions";
+import {
+  sendWhatsappMediaMessage,
+  resolveWhatsappInboundMedia,
+} from "@/lib/whatsapp-media.functions";
 import { WhatsappConnectDialog } from "@/components/admin/WhatsappConnectDialog";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
