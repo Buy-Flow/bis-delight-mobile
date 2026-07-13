@@ -239,6 +239,8 @@ function playChime() {
 function RushPage() {
   const navigate = useNavigate();
   const { data: isAdmin, isLoading } = useIsAdmin();
+  const { canAccess } = usePermissions();
+  const canOperate = canAccess("/rush");
   const { data: settings } = useSiteSettings();
   const updateSettings = useUpdateSettings();
   const sendTestPush = useServerFn(sendAdminTestPush);
