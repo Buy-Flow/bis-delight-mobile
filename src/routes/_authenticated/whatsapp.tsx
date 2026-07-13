@@ -403,6 +403,31 @@ function WhatsappPage() {
           />
         </section>
 
+        {/* Tabs */}
+        <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 p-1 text-xs font-bold">
+          <button
+            onClick={() => setTab("inbox")}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition",
+              tab === "inbox" ? "bg-emerald-500/20 text-emerald-100" : "text-white/60 hover:text-white",
+            )}
+          >
+            <Inbox className="h-3.5 w-3.5" /> Caixa de entrada
+          </button>
+          <button
+            onClick={() => setTab("logs")}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition",
+              tab === "logs" ? "bg-emerald-500/20 text-emerald-100" : "text-white/60 hover:text-white",
+            )}
+          >
+            <ScrollText className="h-3.5 w-3.5" /> Logs de ingestão
+          </button>
+        </div>
+
+        {tab === "logs" ? (
+          <LogsPanel />
+        ) : (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_1fr]">
           {/* Conversations list */}
           <aside className="flex h-[70vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
