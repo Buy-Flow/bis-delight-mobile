@@ -1012,7 +1012,7 @@ function bodyHtml(
     ${S.show_cnpj && S.cnpj ? `<div style="text-align:center;font-size:0.78em;color:#555;">CNPJ ${escapeHtml(S.cnpj)}</div>` : ""}
     ${S.header_text ? `<div style="text-align:center;margin-top:4px;font-size:0.9em;">${escapeHtml(S.header_text)}</div>` : ""}
     <div style="text-align:center;margin-top:4px;">${wave}</div>
-    <div style="text-align:center;font-weight:900;letter-spacing:3px;font-size:1.05em;">R E C I B O   N Ã O   F I S C A L</div>
+    <div style="text-align:center;font-weight:900;letter-spacing:2px;font-size:1.05em;">RECIBO NÃO FISCAL</div>
     <div style="text-align:center;">${wave}</div>
 
     <div style="margin-top:4px;display:flex;justify-content:space-between;">
