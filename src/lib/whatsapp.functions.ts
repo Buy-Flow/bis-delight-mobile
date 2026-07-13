@@ -18,11 +18,19 @@ function evoConfig() {
 
 /** Normaliza número para o formato aceito pelo Evolution/WhatsApp (dígitos, com DDI). */
 function normalizePhone(raw: string): string {
-  let n = String(raw ?? "").replace(/@.*$/, "").replace(/\D+/g, "");
+  const original = String(raw ?? "").trim();
+  const hasExplicitCountryCode = /^\s*\+/.test(original);
+  let n = original.replace(/@.*$/, "").replace(/\D+/g, "");
   if (!n) return "";
   n = n.replace(/^0+/, "");
-  // BR sem DDI → adiciona 55
-  if (n.length === 10 || n.length === 11) n = "55" + n;
+
+  // Se veio com +DDI ou já começa com DDI internacional conhecido, não força Brasil.
+  // Ex.: +1 850 774 4710 / 18507744710 precisa continuar 18507744710, não 551850...
+  if (hasExplicitCountryCode || (n.length === 11 && n.startsWith("1"))) return n;
+
+  // BR sem DDI → adiciona 55 apenas quando o padrão parece brasileiro.
+  // Fixo BR: DDD + 8 dígitos. Celular BR: DDD + 9 + 8 dígitos.
+  if (n.length === 10 || (n.length === 11 && /^\d{2}9/.test(n))) n = "55" + n;
   // 55 duplicado (55 55 + numero)
   while (n.length > 13 && n.startsWith("5555")) n = n.slice(2);
   return n;
