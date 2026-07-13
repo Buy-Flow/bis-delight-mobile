@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Download, Share, X } from "lucide-react";
-
-type BIPEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-};
+import {
+  getInstallPrompt,
+  isAppInstalled,
+  onInstallPromptChange,
+  triggerInstallPrompt,
+} from "@/lib/pwa-install";
 
 const DISMISS_KEY = "pwa-install-dismissed-at";
 const DISMISS_MS = 1000 * 60 * 60 * 24; // 1 dia (antes 7)
@@ -39,13 +40,13 @@ function recentlyDismissed() {
 }
 
 export function InstallPWAButton() {
-  const [deferred, setDeferred] = useState<BIPEvent | null>(null);
+  const [, setTick] = useState(0);
   const [showHelp, setShowHelp] = useState<null | "ios" | "android" | "desktop">(null);
   const [visible, setVisible] = useState(false);
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    if (isStandalone()) {
+    if (isStandalone() || isAppInstalled()) {
       setInstalled(true);
       return;
     }
@@ -56,19 +57,22 @@ export function InstallPWAButton() {
         window.matchMedia?.("(max-width: 900px)").matches);
     if (!isMobile) return;
 
-    const onBIP = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BIPEvent);
-      setVisible(true);
-    };
+    const unsub = onInstallPromptChange(() => {
+      setTick((t) => t + 1);
+      if (getInstallPrompt()) setVisible(true);
+      if (isAppInstalled()) {
+        setInstalled(true);
+        setVisible(false);
+      }
+    });
     const onInstalled = () => {
       setInstalled(true);
       setVisible(false);
-      setDeferred(null);
     };
-
-    window.addEventListener("beforeinstallprompt", onBIP);
     window.addEventListener("appinstalled", onInstalled);
+
+    // Se o BIP já foi capturado antes desse componente montar, exibe já.
+    if (getInstallPrompt()) setVisible(true);
 
     // Mostra o banner mesmo sem BIP (iOS, ou navegadores que já dispararam antes).
     // Só respeita o "dismiss recente" para não incomodar.
@@ -76,13 +80,13 @@ export function InstallPWAButton() {
       const t = setTimeout(() => setVisible(true), 1500);
       return () => {
         clearTimeout(t);
-        window.removeEventListener("beforeinstallprompt", onBIP);
+        unsub();
         window.removeEventListener("appinstalled", onInstalled);
       };
     }
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBIP);
+      unsub();
       window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
@@ -98,22 +102,17 @@ export function InstallPWAButton() {
   };
 
   const handleInstall = async () => {
-    if (deferred) {
-      try {
-        await deferred.prompt();
-        const choice = await deferred.userChoice;
-        if (choice.outcome === "dismissed") dismiss();
-        else setVisible(false);
-        setDeferred(null);
-      } catch {
-        dismiss();
-      }
+    if (getInstallPrompt()) {
+      const outcome = await triggerInstallPrompt();
+      if (outcome === "dismissed") dismiss();
+      else if (outcome === "accepted") setVisible(false);
       return;
     }
     if (isIOS()) setShowHelp("ios");
     else if (isAndroid()) setShowHelp("android");
     else setShowHelp("desktop");
   };
+
 
   if (installed || !visible) return null;
 

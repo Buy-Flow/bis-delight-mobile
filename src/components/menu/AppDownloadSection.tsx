@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Download, Share, Zap, Bell, Heart, Sparkles } from "lucide-react";
 import heroBgAsset from "@/assets/app-download-hero.jpg.asset.json";
+import {
+  getInstallPrompt,
+  isAppInstalled,
+  onInstallPromptChange,
+  triggerInstallPrompt,
+} from "@/lib/pwa-install";
 const heroBg = heroBgAsset.url;
-
-type BIPEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-};
 
 function isStandalone() {
   if (typeof window === "undefined") return false;
@@ -33,40 +34,37 @@ const perks = [
 ];
 
 export function AppDownloadSection() {
-  const [deferred, setDeferred] = useState<BIPEvent | null>(null);
+  const [hasPrompt, setHasPrompt] = useState(false);
   const [installed, setInstalled] = useState(false);
   const [help, setHelp] = useState<null | "ios" | "android" | "desktop">(null);
 
   useEffect(() => {
-    if (isStandalone()) setInstalled(true);
-    const onBIP = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BIPEvent);
-    };
+    if (isStandalone() || isAppInstalled()) setInstalled(true);
+    setHasPrompt(!!getInstallPrompt());
+    const unsub = onInstallPromptChange(() => {
+      setHasPrompt(!!getInstallPrompt());
+      if (isAppInstalled()) setInstalled(true);
+    });
     const onInstalled = () => setInstalled(true);
-    window.addEventListener("beforeinstallprompt", onBIP);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBIP);
+      unsub();
       window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
 
   const handleInstall = async () => {
-    if (deferred) {
-      try {
-        await deferred.prompt();
-        await deferred.userChoice;
-        setDeferred(null);
-      } catch {
-        /* noop */
-      }
+    if (getInstallPrompt()) {
+      const outcome = await triggerInstallPrompt();
+      if (outcome === "accepted") setInstalled(true);
       return;
     }
     if (isIOS()) setHelp("ios");
     else if (isAndroid()) setHelp("android");
     else setHelp("desktop");
   };
+  void hasPrompt;
+
 
   return (
     <section
