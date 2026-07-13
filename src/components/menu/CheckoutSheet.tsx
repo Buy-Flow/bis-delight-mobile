@@ -1010,6 +1010,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
 
           <CheckoutUpsellStrip />
 
+          {mode === "entrega" && <FreeDeliveryBar />}
+
           {/* Resumo */}
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
             <div className="mb-3 flex items-center justify-between">
