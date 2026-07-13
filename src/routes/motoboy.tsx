@@ -151,6 +151,32 @@ function MotoboyPortal() {
     } else {
       setOffers([]);
     }
+
+    // Missed offers — this courier saw them but rejected / expired / taken by others
+    const { data: missed } = await supabase
+      .from("delivery_offers")
+      .select("*")
+      .or(`courier_id.eq.${c.id},broadcast.eq.true`)
+      .in("status", ["rejected", "expired", "taken"])
+      .order("offered_at", { ascending: false })
+      .limit(50);
+    if (missed && missed.length) {
+      const mIds = missed.map((x) => x.order_id);
+      const { data: mos } = await supabase
+        .from("orders")
+        .select("id, customer_name, address, total, delivery_fee, distance_km, created_at, courier_id")
+        .in("id", mIds);
+      const mmap = new Map((mos ?? []).map((x) => [x.id, x]));
+      // Exclude ones that this courier ended up doing anyway
+      const filtered = missed.filter((x) => {
+        const o = mmap.get(x.order_id);
+        return !o || o.courier_id !== c.id;
+      });
+      setMissedOffers(filtered.map((x) => ({ ...x, order: mmap.get(x.order_id) as Order | undefined })));
+    } else {
+      setMissedOffers([]);
+    }
+
     setLoading(false);
   }, []);
 
