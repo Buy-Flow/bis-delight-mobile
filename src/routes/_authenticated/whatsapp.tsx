@@ -288,6 +288,12 @@ function WhatsappPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setConnectOpen(true)}
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25"
+            >
+              <Smartphone className="h-3.5 w-3.5" /> Conectar telefone
+            </button>
+            <button
               onClick={loadConversations}
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/80 transition hover:bg-white/10"
             >
@@ -295,6 +301,9 @@ function WhatsappPage() {
             </button>
           </div>
         </header>
+
+        <WhatsappConnectDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
+
 
         {/* Config warning */}
         {config && !config.configured && (
