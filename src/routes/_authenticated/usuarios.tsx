@@ -177,8 +177,7 @@ function UsersPage() {
   const [showAudit, setShowAudit] = useState(false);
   const [meId, setMeId] = useState<string | null>(null);
   const [showInvite, setShowInvite] = useState(false);
-  const invite = useServerFn(inviteTeamUser);
-  const resend = useServerFn(resendUserInvite);
+  const assignRole = useServerFn(assignUserRole);
 
   const loadUsers = async () => {
     setLoading(true);
