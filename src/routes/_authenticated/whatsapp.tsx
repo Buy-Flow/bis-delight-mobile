@@ -803,6 +803,52 @@ function MessageBubble({ m }: { m: Message }) {
   );
 }
 
+function FailedDetail({ error }: { error: string }) {
+  const [open, setOpen] = useState(false);
+  const firstLine = error.split("\n")[0] ?? error;
+  const hasMore = error.length > firstLine.length;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(error);
+      toast.success("Detalhes copiados");
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+    // eslint-disable-next-line no-console
+    console.error("[whatsapp] detalhes do envio falhado:\n" + error);
+  };
+  return (
+    <div className="mt-1 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-1 text-[10px] text-red-200">
+      <div className="whitespace-pre-wrap break-words">{firstLine}</div>
+      {hasMore && (
+        <div className="mt-1 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex items-center gap-1 rounded border border-red-400/40 px-1.5 py-0.5 text-[10px] font-medium text-red-100 hover:bg-red-400/10"
+          >
+            {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            {open ? "Ocultar detalhes técnicos" : "Ver detalhes técnicos"}
+          </button>
+          <button
+            type="button"
+            onClick={copy}
+            className="rounded border border-red-400/40 px-1.5 py-0.5 text-[10px] font-medium text-red-100 hover:bg-red-400/10"
+          >
+            Copiar
+          </button>
+        </div>
+      )}
+      {open && hasMore && (
+        <pre className="mt-1 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded bg-black/40 p-1.5 font-mono text-[10px] leading-tight text-red-100">
+          {error}
+        </pre>
+      )}
+    </div>
+  );
+}
+
+
 type StatusMeta = {
   kind: "sending" | "sent" | "delivered" | "read" | "failed";
   label: string;
