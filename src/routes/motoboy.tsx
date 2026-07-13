@@ -6,8 +6,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   Bike, Power, MapPin, Navigation, Check, X, Package, Clock, DollarSign,
-  Phone, MessageCircle, LogOut, Star, TrendingUp, Wifi, WifiOff, Battery,
-  Loader2, Home, User, Route as RouteIcon, PlayCircle, ChevronRight,
+  Phone, LogOut, Star, TrendingUp, Wifi, Target, Award, Flame, Timer,
+  Loader2, Home, User, Calendar, XCircle, CheckCircle2, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +72,8 @@ type Offer = {
   fee: number | null;
   distance_km: number | null;
   expires_at: string;
+  offered_at: string;
+  responded_at: string | null;
   order?: Order;
 };
 
@@ -80,10 +82,14 @@ function MotoboyPortal() {
   const [courier, setCourier] = useState<Courier | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [missedOffers, setMissedOffers] = useState<Offer[]>([]);
   const [tab, setTab] = useState<"home" | "map" | "history" | "profile">("home");
+  const [historyTab, setHistoryTab] = useState<"delivered" | "missed">("delivered");
+  const [period, setPeriod] = useState<"today" | "week" | "month" | "all">("today");
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [gpsCoord, setGpsCoord] = useState<{ lat: number; lng: number; acc?: number } | null>(null);
   const [isOnline, setIsOnline] = useState(false);
+  const [battery, setBattery] = useState<number | null>(null);
   const gpsWatch = useRef<number | null>(null);
   const heartbeatTimer = useRef<number | null>(null);
 
@@ -145,6 +151,32 @@ function MotoboyPortal() {
     } else {
       setOffers([]);
     }
+
+    // Missed offers — this courier saw them but rejected / expired / taken by others
+    const { data: missed } = await supabase
+      .from("delivery_offers")
+      .select("*")
+      .or(`courier_id.eq.${c.id},broadcast.eq.true`)
+      .in("status", ["rejected", "expired", "taken"])
+      .order("offered_at", { ascending: false })
+      .limit(50);
+    if (missed && missed.length) {
+      const mIds = missed.map((x) => x.order_id);
+      const { data: mos } = await supabase
+        .from("orders")
+        .select("id, customer_name, address, total, delivery_fee, distance_km, created_at, courier_id")
+        .in("id", mIds);
+      const mmap = new Map((mos ?? []).map((x) => [x.id, x]));
+      // Exclude ones that this courier ended up doing anyway
+      const filtered = missed.filter((x) => {
+        const o = mmap.get(x.order_id);
+        return !o || o.courier_id !== c.id;
+      });
+      setMissedOffers(filtered.map((x) => ({ ...x, order: mmap.get(x.order_id) as Order | undefined })));
+    } else {
+      setMissedOffers([]);
+    }
+
     setLoading(false);
   }, []);
 
@@ -271,11 +303,82 @@ function MotoboyPortal() {
 
   const activeOrders = orders.filter((o) => ["pago", "preparando", "saiu_para_entrega"].includes(o.status));
   const historyOrders = orders.filter((o) => o.status === "entregue" || o.status === "cancelado");
-  const todayDelivered = historyOrders.filter((o) => {
-    const d = new Date(o.created_at); const t = new Date(); t.setHours(0,0,0,0);
-    return d >= t;
-  });
-  const todayEarnings = todayDelivered.reduce((s, o) => s + (o.delivery_fee || 0), 0);
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
+    const startWeek = new Date(now); startWeek.setDate(now.getDate() - 6); startWeek.setHours(0, 0, 0, 0);
+    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const inRange = (d: string, start: Date) => new Date(d) >= start;
+    const delivered = historyOrders.filter((o) => o.status === "entregue");
+    const today = delivered.filter((o) => inRange(o.created_at, startToday));
+    const week = delivered.filter((o) => inRange(o.created_at, startWeek));
+    const month = delivered.filter((o) => inRange(o.created_at, startMonth));
+    const sumFee = (arr: Order[]) => arr.reduce((s, o) => s + (o.delivery_fee || 0), 0);
+    const sumKm = (arr: Order[]) => arr.reduce((s, o) => s + (o.distance_km || 0), 0);
+    const avgTime = (() => {
+      const times = delivered.filter((o) => o.dispatched_at && o.picked_up_at).map((o) => {
+        const start = new Date(o.picked_up_at!).getTime();
+        const end = new Date(o.dispatched_at!).getTime();
+        return Math.max(0, (end - start) / 60000);
+      });
+      if (!times.length) return null;
+      return times.reduce((a, b) => a + b, 0) / times.length;
+    })();
+    const totalMissed = missedOffers.filter((m) => inRange(m.offered_at, startToday)).length;
+    const totalOffered = today.length + totalMissed;
+    const acceptRate = totalOffered > 0 ? (today.length / totalOffered) * 100 : null;
+    return {
+      today: { count: today.length, earnings: sumFee(today), km: sumKm(today) },
+      week: { count: week.length, earnings: sumFee(week), km: sumKm(week) },
+      month: { count: month.length, earnings: sumFee(month), km: sumKm(month) },
+      avgTime,
+      acceptRate,
+      missedToday: totalMissed,
+    };
+  }, [historyOrders, missedOffers]);
+
+  // Battery indicator
+  useEffect(() => {
+    const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number; addEventListener: (e: string, cb: () => void) => void }> };
+    if (!nav.getBattery) return;
+    let cleanup: (() => void) | undefined;
+    nav.getBattery().then((bat) => {
+      const update = () => setBattery(Math.round(bat.level * 100));
+      update();
+      bat.addEventListener("levelchange", update);
+      cleanup = () => {};
+    }).catch(() => {});
+    return () => { cleanup?.(); };
+  }, []);
+
+  const filteredHistory = useMemo(() => {
+    const startOf = (p: typeof period): Date | null => {
+      const now = new Date();
+      if (p === "today") { const d = new Date(); d.setHours(0,0,0,0); return d; }
+      if (p === "week") { const d = new Date(now); d.setDate(now.getDate() - 6); d.setHours(0,0,0,0); return d; }
+      if (p === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
+      return null;
+    };
+    const s = startOf(period);
+    return historyOrders.filter((o) => !s || new Date(o.created_at) >= s);
+  }, [historyOrders, period]);
+
+  const filteredMissed = useMemo(() => {
+    const startOf = (p: typeof period): Date | null => {
+      const now = new Date();
+      if (p === "today") { const d = new Date(); d.setHours(0,0,0,0); return d; }
+      if (p === "week") { const d = new Date(now); d.setDate(now.getDate() - 6); d.setHours(0,0,0,0); return d; }
+      if (p === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
+      return null;
+    };
+    const s = startOf(period);
+    return missedOffers.filter((m) => !s || new Date(m.offered_at) >= s);
+  }, [missedOffers, period]);
+
+  // Motivational goal — R$ 100 per day
+  const dailyGoal = 100;
+  const goalPct = Math.min(100, (stats.today.earnings / dailyGoal) * 100);
 
   if (loading) {
     return (
@@ -326,10 +429,15 @@ function MotoboyPortal() {
                 {isOnline ? (courier.status === "busy" ? "Em rota" : "Online") : "Offline"}
               </span>
             </div>
-            <div className="text-[11px] text-white/50 flex items-center gap-2">
-              <Bike className="h-3 w-3" /> {courier.vehicle} {courier.plate && `• ${courier.plate}`}
+            <div className="text-[11px] text-white/50 flex items-center gap-2 flex-wrap">
+              <span className="flex items-center gap-1"><Bike className="h-3 w-3" /> {courier.vehicle} {courier.plate && `• ${courier.plate}`}</span>
               {gpsError && <span className="text-red-400">• GPS: {gpsError}</span>}
-              {gpsCoord && isOnline && <span className="text-emerald-400 flex items-center gap-1"><Wifi className="h-3 w-3"/> GPS ativo</span>}
+              {gpsCoord && isOnline && <span className="text-emerald-400 flex items-center gap-1"><Wifi className="h-3 w-3"/> GPS</span>}
+              {battery !== null && (
+                <span className={cn("flex items-center gap-1", battery < 20 ? "text-red-400" : "text-white/50")}>
+                  🔋 {battery}%
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -348,12 +456,43 @@ function MotoboyPortal() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-4 space-y-4">
+        {/* Daily earnings hero + goal */}
+        <div className="rounded-3xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-600/20 via-purple-700/10 to-transparent p-4">
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="text-[11px] uppercase tracking-widest text-fuchsia-300/80 font-bold">Ganhos hoje</div>
+              <div className="text-3xl font-black text-white mt-1">R$ {stats.today.earnings.toFixed(2)}</div>
+              <div className="text-[11px] text-white/60 mt-0.5">
+                {stats.today.count} {stats.today.count === 1 ? "entrega" : "entregas"} • {stats.today.km.toFixed(1)} km
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-white/50 uppercase font-bold">Meta R$ {dailyGoal}</div>
+              <div className="text-lg font-black text-emerald-400">{goalPct.toFixed(0)}%</div>
+            </div>
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all"
+              style={{ width: `${goalPct}%` }}
+            />
+          </div>
+        </div>
+
         {/* KPIs */}
         <div className="grid grid-cols-3 gap-2">
-          <KpiCard icon={Package} label="Hoje" value={String(todayDelivered.length)} />
-          <KpiCard icon={DollarSign} label="Ganhos hoje" value={`R$ ${todayEarnings.toFixed(2)}`} />
-          <KpiCard icon={Star} label="Avaliação" value={courier.rating ? courier.rating.toFixed(1) : "—"} />
+          <KpiCard icon={Package} label="Semana" value={String(stats.week.count)} sub={`R$ ${stats.week.earnings.toFixed(0)}`} />
+          <KpiCard icon={DollarSign} label="Mês" value={`R$ ${stats.month.earnings.toFixed(0)}`} sub={`${stats.month.count} entregas`} />
+          <KpiCard icon={Star} label="Avaliação" value={courier.rating ? courier.rating.toFixed(1) : "—"} sub={`${courier.total_deliveries} totais`} />
         </div>
+
+        {(stats.acceptRate !== null || stats.avgTime !== null || stats.missedToday > 0) && (
+          <div className="grid grid-cols-3 gap-2">
+            <MiniStat label="Aceitação" value={stats.acceptRate !== null ? `${stats.acceptRate.toFixed(0)}%` : "—"} tone="emerald" />
+            <MiniStat label="Tempo médio" value={stats.avgTime !== null ? `${stats.avgTime.toFixed(0)} min` : "—"} tone="cyan" />
+            <MiniStat label="Perdidas hoje" value={String(stats.missedToday)} tone={stats.missedToday > 0 ? "red" : "white"} />
+          </div>
+        )}
 
         {tab === "home" && (
           <>
@@ -401,26 +540,96 @@ function MotoboyPortal() {
         {tab === "map" && <LiveMap orders={activeOrders} coord={gpsCoord} />}
 
         {tab === "history" && (
-          <section className="space-y-2">
-            <h2 className="text-sm font-black text-white/80 uppercase">Histórico</h2>
-            {historyOrders.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
-                Você ainda não tem entregas concluídas.
-              </div>
+          <section className="space-y-3">
+            {/* Sub-tabs: entregues x perdidas */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setHistoryTab("delivered")}
+                className={cn(
+                  "flex-1 rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wide transition",
+                  historyTab === "delivered"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                    : "bg-white/5 text-white/60 border border-white/10"
+                )}
+              >
+                Aceitas
+              </button>
+              <button
+                onClick={() => setHistoryTab("missed")}
+                className={cn(
+                  "flex-1 rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wide transition",
+                  historyTab === "missed"
+                    ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                    : "bg-white/5 text-white/60 border border-white/10"
+                )}
+              >
+                Perdidas
+              </button>
+            </div>
+
+            {/* Period filter */}
+            <div className="flex gap-1 overflow-x-auto">
+              {(["today", "week", "month", "all"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-[11px] font-bold whitespace-nowrap transition",
+                    period === p ? "bg-fuchsia-500 text-white" : "bg-white/5 text-white/60"
+                  )}
+                >
+                  {p === "today" ? "Hoje" : p === "week" ? "7 dias" : p === "month" ? "Mês" : "Tudo"}
+                </button>
+              ))}
+            </div>
+
+            {historyTab === "delivered" ? (
+              <>
+                {filteredHistory.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
+                    Nenhuma entrega no período.
+                  </div>
+                )}
+                {filteredHistory.slice(0, 60).map((o) => (
+                  <div key={o.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold">#{o.id.slice(0, 6)} — {o.customer_name ?? "Cliente"}</span>
+                      <span className={cn("text-[11px] font-bold", o.status === "entregue" ? "text-emerald-400" : "text-red-400")}>
+                        {o.status === "entregue" ? "Entregue" : "Cancelado"}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-white/50 mt-1 flex flex-wrap gap-x-2">
+                      <span>{new Date(o.created_at).toLocaleString("pt-BR")}</span>
+                      <span>• R$ {(o.delivery_fee || 0).toFixed(2)}</span>
+                      {o.distance_km ? <span>• {o.distance_km.toFixed(1)} km</span> : null}
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                {filteredMissed.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
+                    Nenhuma corrida perdida no período. Ótimo trabalho! 🎉
+                  </div>
+                )}
+                {filteredMissed.slice(0, 60).map((m) => (
+                  <div key={m.id} className="rounded-2xl border border-red-500/10 bg-red-500/[0.03] p-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold text-white/80">Corrida perdida</span>
+                      <span className="text-[11px] font-bold text-red-300 uppercase">
+                        {m.status === "expired" ? "Expirou" : m.status === "rejected" ? "Recusada" : m.status === "taken" ? "Outro pegou" : m.status}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-white/50 mt-1 flex flex-wrap gap-x-2">
+                      <span>{new Date(m.offered_at).toLocaleString("pt-BR")}</span>
+                      {m.fee ? <span>• R$ {m.fee.toFixed(2)}</span> : null}
+                      {m.distance_km ? <span>• {m.distance_km.toFixed(1)} km</span> : null}
+                    </div>
+                  </div>
+                ))}
+              </>
             )}
-            {historyOrders.slice(0, 30).map((o) => (
-              <div key={o.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold">#{o.id.slice(0, 6)} — {o.customer_name ?? "Cliente"}</span>
-                  <span className={cn("text-[11px] font-bold", o.status === "entregue" ? "text-emerald-400" : "text-red-400")}>
-                    {o.status === "entregue" ? "Entregue" : "Cancelado"}
-                  </span>
-                </div>
-                <div className="text-[11px] text-white/50 mt-1">
-                  {new Date(o.created_at).toLocaleString("pt-BR")} • Ganho: R$ {(o.delivery_fee || 0).toFixed(2)}
-                </div>
-              </div>
-            ))}
           </section>
         )}
 
@@ -433,6 +642,15 @@ function MotoboyPortal() {
               <div className="flex justify-between text-sm"><span className="text-white/60">Veículo</span><span className="font-bold">{courier.vehicle} {courier.plate}</span></div>
               <div className="flex justify-between text-sm"><span className="text-white/60">Telefone</span><span className="font-bold">{courier.phone ?? "—"}</span></div>
             </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
+              <div className="text-[11px] font-black uppercase tracking-wider text-fuchsia-300 mb-2">Desempenho</div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Aceitação (hoje)</span><span className="font-bold">{stats.acceptRate !== null ? `${stats.acceptRate.toFixed(0)}%` : "—"}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Tempo médio de entrega</span><span className="font-bold">{stats.avgTime !== null ? `${stats.avgTime.toFixed(0)} min` : "—"}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Km percorridos (semana)</span><span className="font-bold">{stats.week.km.toFixed(1)} km</span></div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Corridas perdidas (hoje)</span><span className={cn("font-bold", stats.missedToday > 0 ? "text-red-400" : "text-white")}>{stats.missedToday}</span></div>
+            </div>
+
             <button onClick={signOut} className="w-full rounded-2xl bg-red-500/20 border border-red-500/30 py-3 text-red-300 font-bold flex items-center justify-center gap-2">
               <LogOut className="h-4 w-4" /> Sair
             </button>
@@ -453,12 +671,28 @@ function MotoboyPortal() {
   );
 }
 
-function KpiCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string }) {
+function KpiCard({ icon: Icon, label, value, sub }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
       <Icon className="h-4 w-4 text-fuchsia-400" />
       <div className="mt-1 text-[10px] uppercase text-white/50">{label}</div>
-      <div className="text-lg font-black">{value}</div>
+      <div className="text-lg font-black leading-tight">{value}</div>
+      {sub && <div className="text-[10px] text-white/40 mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+function MiniStat({ label, value, tone }: { label: string; value: string; tone: "emerald" | "cyan" | "red" | "white" }) {
+  const toneCls = {
+    emerald: "text-emerald-400",
+    cyan: "text-cyan-400",
+    red: "text-red-400",
+    white: "text-white",
+  }[tone];
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+      <div className="text-[10px] uppercase text-white/50">{label}</div>
+      <div className={cn("text-sm font-black", toneCls)}>{value}</div>
     </div>
   );
 }
