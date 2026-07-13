@@ -114,6 +114,7 @@ function WhatsappPage() {
     hasKey: boolean;
     hasInstance: boolean;
   } | null>(null);
+  const [connectOpen, setConnectOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sendFn = useServerFn(sendWhatsappMessage);
