@@ -170,6 +170,13 @@ function WaitersPage() {
       0,
     );
     const avgTicket = attributed > 0 ? attributedRevenue / attributed : 0;
+    const siteList = periodOrders.filter(isSiteOrder);
+    const siteRevenue = siteList.reduce((a, o) => a + Number(o.total ?? 0), 0);
+    const siteAvg = siteList.length > 0 ? siteRevenue / siteList.length : 0;
+    // "Não atribuídos" só considera pedidos do salão (não são vendas do site)
+    const unassignedSalao = periodOrders.filter(
+      (o) => !o.waiter_id && !isSiteOrder(o),
+    ).length;
     return {
       map,
       activeCount,
@@ -178,7 +185,10 @@ function WaitersPage() {
       attributedRevenue,
       avgTicket,
       totalCommission,
-      unassigned: periodOrders.filter((o) => !o.waiter_id).length,
+      unassigned: unassignedSalao,
+      siteOrders: siteList.length,
+      siteRevenue,
+      siteAvg,
     };
   }, [waiters, periodOrders]);
 
