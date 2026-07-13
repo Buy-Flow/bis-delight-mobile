@@ -479,7 +479,7 @@ export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
         const rec = (j ?? {}) as Record<string, unknown>;
         const w = (rec.webhook as Record<string, unknown> | undefined) ?? rec;
         currentUrl = (w.url as string | undefined) ?? null;
-        configured = !!currentUrl && currentUrl.includes("/api/public/whatsapp-webhook");
+        configured = !!currentUrl && !!url && currentUrl === url;
       }
     } catch {
       /* webhook não configurado ainda */
