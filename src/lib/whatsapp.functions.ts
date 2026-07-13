@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertAdmin(supabase: any, userId: string) {
@@ -59,7 +60,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
     let evoId: string | null = null;
     let evoError: string | null = null;
     let status = "pending";
-    let rawPayload: Record<string, unknown> | null = null;
+    let rawPayload: Json | null = null;
 
     if (!base || !key || !instance) {
       evoError =
@@ -207,8 +208,11 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               try {
                 const j = JSON.parse(sendBody) as Record<string, unknown>;
                 parsed = j;
-                evoId = j?.key?.id ?? j?.messageId ?? j?.id ?? j?.data?.key?.id ?? null;
-                const evoStatus = String(j?.status ?? j?.data?.status ?? "sent").toLowerCase();
+                const key = (j.key ?? {}) as Record<string, unknown>;
+                const dataRec = (j.data ?? {}) as Record<string, unknown>;
+                const dataKey = (dataRec.key ?? {}) as Record<string, unknown>;
+                evoId = String(key.id ?? j.messageId ?? j.id ?? dataKey.id ?? "") || null;
+                const evoStatus = String(j.status ?? dataRec.status ?? "sent").toLowerCase();
                 // HTTP 2xx da Evolution significa que o aparelho aceitou a
                 // mensagem para envio. O status "PENDING" é o estado interno
                 // inicial da Evolution, não deve ficar como pendente infinito
