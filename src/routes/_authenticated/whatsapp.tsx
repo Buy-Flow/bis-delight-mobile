@@ -541,16 +541,24 @@ function WhatsappPage() {
 
   const handleSavePhone = async () => {
     if (!selected || phoneSaving) return;
+    const trimmed = phoneDraft.trim();
+    if (trimmed.length < 8) {
+      toast.error("Digite DDD + telefone (mín. 8 dígitos).");
+      return;
+    }
     setPhoneSaving(true);
+    console.info("[whatsapp] salvando telefone", { id: selected.id, phone: trimmed });
     try {
-      const res = await updatePhoneFn({ data: { id: selected.id, phone: phoneDraft } });
+      const res = await updatePhoneFn({ data: { id: selected.id, phone: trimmed } });
+      console.info("[whatsapp] telefone salvo", res);
       setConversations((prev) =>
         prev.map((c) => (c.id === selected.id ? { ...c, phone: res.phone } : c)),
       );
       setPhoneDraft(res.phone);
       setEditingPhone(false);
-      toast.success("Telefone corrigido para próximos envios.");
+      toast.success(`Telefone corrigido: ${res.phone}`);
     } catch (e) {
+      console.error("[whatsapp] erro ao corrigir telefone", e);
       toast.error(e instanceof Error ? e.message : "Erro ao corrigir telefone");
     } finally {
       setPhoneSaving(false);
