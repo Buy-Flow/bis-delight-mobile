@@ -1,7 +1,10 @@
 type EvoKey = {
   remoteJid?: string;
+  remoteJidAlt?: string;
   fromMe?: boolean;
   id?: string;
+  participant?: string;
+  participantAlt?: string;
   senderPn?: string;
   previousRemoteJid?: string;
 };
@@ -11,21 +14,27 @@ type EvoMessage = {
   extendedTextMessage?: { text?: string };
   imageMessage?: { caption?: string; url?: string };
   videoMessage?: { caption?: string; url?: string };
-  audioMessage?: { url?: string };
+  audioMessage?: { url?: string; ptt?: boolean };
   documentMessage?: { fileName?: string; url?: string };
+  documentWithCaptionMessage?: { message?: { documentMessage?: { fileName?: string; url?: string; caption?: string } } };
   stickerMessage?: { url?: string };
   locationMessage?: { degreesLatitude?: number; degreesLongitude?: number; name?: string };
   contactMessage?: { displayName?: string };
+  reactionMessage?: { text?: string; key?: { id?: string } };
 };
 
 type EvoData = {
   id?: string;
   key?: EvoKey;
+  keyId?: string;
+  remoteJid?: string;
+  fromMe?: boolean;
+  participant?: string;
   pushName?: string;
   message?: EvoMessage;
   messageType?: string;
   messageTimestamp?: number | string;
-  status?: string;
+  status?: string | number;
 };
 
 type IngestResult = {
@@ -33,10 +42,29 @@ type IngestResult = {
   inserted: number;
   skipped: number;
   errors: number;
+  updated?: number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DbClient = any;
+
+// Mapa ack numérico → nome textual usado pelo Evolution v2.
+// Fonte: src/utils/renderStatus.ts (0..5).
+const ACK_MAP: Record<number, string> = {
+  0: "ERROR",
+  1: "PENDING",
+  2: "SERVER_ACK",
+  3: "DELIVERY_ACK",
+  4: "READ",
+  5: "PLAYED",
+};
+
+function normalizeStatus(raw: unknown): string | null {
+  if (raw == null) return null;
+  if (typeof raw === "number") return ACK_MAP[raw] ?? null;
+  const s = String(raw).trim().toUpperCase();
+  return s || null;
+}
 
 function normalizeEvent(raw?: string | null) {
   return (raw || "")
@@ -45,11 +73,22 @@ function normalizeEvent(raw?: string | null) {
     .replace(/-/g, ".");
 }
 
+// Escolhe o melhor JID "conversacional" priorizando remoteJidAlt quando
+// o principal é @lid (migração de identidade da WhatsApp).
+function pickConversationJid(key?: EvoKey, item?: EvoData): string | undefined {
+  const primary = key?.remoteJid ?? item?.remoteJid;
+  if (primary && !primary.endsWith("@lid")) return primary;
+  return key?.remoteJidAlt ?? primary;
+}
+
 function phoneFromJid(...jids: Array<string | undefined | null>): string | null {
   for (const jid of jids) {
     if (!jid) continue;
     if (jid.includes("@g.us") || jid.includes("status@broadcast")) continue;
     const first = jid.split("@")[0] ?? "";
+    // JIDs internos da WhatsApp podem ter sufixo :N (device id). Ignora só se
+    // for :0 (padrão antigo que aparecia em alguns eventos), mas ainda extrai
+    // dígitos de outros formatos.
     if (first.endsWith(":0")) continue;
     const digits = first.replace(/\D/g, "");
     if (digits.length >= 10) return digits;
@@ -63,14 +102,18 @@ function extractText(m?: EvoMessage): { text: string | null; type: string; media
   if (m.extendedTextMessage?.text) return { text: m.extendedTextMessage.text, type: "text", media: null };
   if (m.imageMessage) return { text: m.imageMessage.caption ?? "[imagem]", type: "image", media: m.imageMessage.url ?? null };
   if (m.videoMessage) return { text: m.videoMessage.caption ?? "[vídeo]", type: "video", media: m.videoMessage.url ?? null };
-  if (m.audioMessage) return { text: "[áudio]", type: "audio", media: m.audioMessage.url ?? null };
-  if (m.documentMessage) return { text: `[documento] ${m.documentMessage.fileName ?? ""}`.trim(), type: "document", media: m.documentMessage.url ?? null };
+  if (m.audioMessage) {
+    return { text: m.audioMessage.ptt ? "[áudio]" : "[áudio]", type: "audio", media: m.audioMessage.url ?? null };
+  }
+  const doc = m.documentMessage ?? m.documentWithCaptionMessage?.message?.documentMessage;
+  if (doc) return { text: `[documento] ${doc.fileName ?? ""}`.trim(), type: "document", media: doc.url ?? null };
   if (m.stickerMessage) return { text: "[figurinha]", type: "sticker", media: m.stickerMessage.url ?? null };
   if (m.locationMessage) {
     const label = m.locationMessage.name ? `[localização] ${m.locationMessage.name}` : "[localização]";
     return { text: label, type: "location", media: null };
   }
   if (m.contactMessage) return { text: `[contato] ${m.contactMessage.displayName ?? ""}`.trim(), type: "contact", media: null };
+  if (m.reactionMessage) return { text: `[reação] ${m.reactionMessage.text ?? ""}`.trim(), type: "reaction", media: null };
   return { text: null, type: "unknown", media: null };
 }
 
