@@ -429,10 +429,15 @@ function MotoboyPortal() {
                 {isOnline ? (courier.status === "busy" ? "Em rota" : "Online") : "Offline"}
               </span>
             </div>
-            <div className="text-[11px] text-white/50 flex items-center gap-2">
-              <Bike className="h-3 w-3" /> {courier.vehicle} {courier.plate && `• ${courier.plate}`}
+            <div className="text-[11px] text-white/50 flex items-center gap-2 flex-wrap">
+              <span className="flex items-center gap-1"><Bike className="h-3 w-3" /> {courier.vehicle} {courier.plate && `• ${courier.plate}`}</span>
               {gpsError && <span className="text-red-400">• GPS: {gpsError}</span>}
-              {gpsCoord && isOnline && <span className="text-emerald-400 flex items-center gap-1"><Wifi className="h-3 w-3"/> GPS ativo</span>}
+              {gpsCoord && isOnline && <span className="text-emerald-400 flex items-center gap-1"><Wifi className="h-3 w-3"/> GPS</span>}
+              {battery !== null && (
+                <span className={cn("flex items-center gap-1", battery < 20 ? "text-red-400" : "text-white/50")}>
+                  🔋 {battery}%
+                </span>
+              )}
             </div>
           </div>
           <button
