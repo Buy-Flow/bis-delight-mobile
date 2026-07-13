@@ -159,7 +159,7 @@ export function CommandPalette() {
             id: `product-${p.id}`,
             kind: "product",
             label: p.name as string,
-            hint: `R$ ${Number(p.price ?? 0).toFixed(2)}${p.active ? "" : " · inativo"}`,
+            hint: `R$ ${Number(p.base_price ?? 0).toFixed(2)}${p.active ? "" : " · inativo"}`,
             action: () => navigate({ to: "/admin", search: { tab: "products" } as never }),
           });
         });
