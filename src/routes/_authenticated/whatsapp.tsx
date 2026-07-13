@@ -554,12 +554,26 @@ function WhatsappPage() {
     try {
       const res = await updatePhoneFn({ data: { id: selected.id, phone: trimmed } });
       console.info("[whatsapp] telefone salvo", res);
-      setConversations((prev) =>
-        prev.map((c) => (c.id === selected.id ? { ...c, phone: res.phone } : c)),
-      );
+
+      if (res.merged) {
+        // Duplicata mesclada — remove a conversa atual e seleciona a existente.
+        setConversations((prev) => {
+          const filtered = prev.filter((c) => c.id !== selected.id);
+          return filtered.map((c) =>
+            c.id === res.id ? { ...c, phone: res.phone, updated_at: new Date().toISOString() } : c,
+          );
+        });
+        setSelectedId(res.id);
+        toast.success(`Conversa mesclada em ${res.phone}`);
+      } else {
+        setConversations((prev) =>
+          prev.map((c) => (c.id === res.id ? { ...c, phone: res.phone } : c)),
+        );
+        toast.success(`Telefone corrigido: ${res.phone}`);
+      }
+
       setPhoneDraft(res.phone);
       setEditingPhone(false);
-      toast.success(`Telefone corrigido: ${res.phone}`);
     } catch (e) {
       console.error("[whatsapp] erro ao corrigir telefone", e);
       toast.error(e instanceof Error ? e.message : "Erro ao corrigir telefone");
@@ -567,6 +581,7 @@ function WhatsappPage() {
       setPhoneSaving(false);
     }
   };
+
 
   const handleReconfigureWebhook = async () => {
     setWebhookSaving(true);
