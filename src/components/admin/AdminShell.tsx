@@ -391,6 +391,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           currentTab={searchTab}
           openGroups={openGroups}
           toggleGroup={toggleGroup}
+          groups={visibleGroups}
         />
         <div className="border-t border-white/10 p-2">
           <Link
