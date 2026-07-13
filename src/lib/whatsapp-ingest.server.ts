@@ -215,6 +215,13 @@ export async function ingestEvolutionPayload(
     }
 
     const evoId = key?.id ?? item.id ?? null;
+    const fromMe = !!key?.fromMe;
+    const direction: "in" | "out" = fromMe ? "out" : "in";
+    const nowIso = timestampIso(item, payload.date_time);
+
+    // Dedup #1: evolution_id match (fast path). The table has a UNIQUE index
+    // on evolution_id, but we still check first to skip cleanly without a
+    // wasted conversation lookup/insert.
     if (evoId) {
       const { data: dup } = await supabase
         .from("whatsapp_messages")
@@ -228,17 +235,13 @@ export async function ingestEvolutionPayload(
           error: "duplicate evolution_id",
           phone,
           evolution_id: evoId,
-          from_me: !!key?.fromMe,
+          from_me: fromMe,
           message_type: type,
           preview: text,
         });
         continue;
       }
     }
-
-    const fromMe = !!key?.fromMe;
-    const direction: "in" | "out" = fromMe ? "out" : "in";
-    const nowIso = timestampIso(item, payload.date_time);
 
     const { data: existing, error: existingErr } = await supabase
       .from("whatsapp_conversations")
@@ -264,18 +267,6 @@ export async function ingestEvolutionPayload(
     let convId: string;
     if (existing) {
       convId = existing.id as string;
-      const previousTime = existing.last_message_at ? new Date(existing.last_message_at as string).getTime() : 0;
-      const incomingTime = new Date(nowIso).getTime();
-      const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-
-      if (!existing.contact_name && item.pushName && !fromMe) patch.contact_name = item.pushName;
-      if (incomingTime >= previousTime) {
-        patch.last_message_at = nowIso;
-        patch.last_message_preview = (text ?? "").slice(0, 140) || `[${type}]`;
-        if (direction === "in") patch.unread_count = ((existing.unread_count as number | null) ?? 0) + 1;
-      }
-
-      await supabase.from("whatsapp_conversations").update(patch).eq("id", convId);
     } else {
       const { data: inserted, error: insErr } = await supabase
         .from("whatsapp_conversations")
@@ -306,6 +297,36 @@ export async function ingestEvolutionPayload(
       convId = inserted.id as string;
     }
 
+    // Dedup #2: content + time window fallback for events without evolution_id
+    // (Evolution may resend the same message via status updates without keys).
+    if (!evoId && text) {
+      const winStart = new Date(new Date(nowIso).getTime() - 10_000).toISOString();
+      const winEnd = new Date(new Date(nowIso).getTime() + 10_000).toISOString();
+      const { data: contentDup } = await supabase
+        .from("whatsapp_messages")
+        .select("id")
+        .eq("conversation_id", convId)
+        .eq("direction", direction)
+        .eq("content", text)
+        .gte("created_at", winStart)
+        .lte("created_at", winEnd)
+        .limit(1)
+        .maybeSingle();
+      if (contentDup) {
+        result.skipped += 1;
+        await logRow({
+          status: "skipped",
+          error: "duplicate content within 10s window",
+          phone,
+          evolution_id: null,
+          from_me: fromMe,
+          message_type: type,
+          preview: text,
+        });
+        continue;
+      }
+    }
+
     const { error: msgErr } = await supabase.from("whatsapp_messages").insert({
       conversation_id: convId,
       evolution_id: evoId,
@@ -320,10 +341,28 @@ export async function ingestEvolutionPayload(
     });
 
     if (msgErr) {
+      // Postgres unique_violation on evolution_id → race with a concurrent
+      // webhook delivery. Treat as duplicate, not error.
+      const code = (msgErr as { code?: string }).code;
+      const msg = (msgErr as { message?: string }).message ?? String(msgErr);
+      const isDup = code === "23505" || /duplicate key|unique/i.test(msg);
+      if (isDup) {
+        result.skipped += 1;
+        await logRow({
+          status: "skipped",
+          error: "duplicate on insert (unique violation)",
+          phone,
+          evolution_id: evoId,
+          from_me: fromMe,
+          message_type: type,
+          preview: text,
+        });
+        continue;
+      }
       result.errors += 1;
       await logRow({
         status: "error",
-        error: `message insert: ${msgErr.message ?? msgErr}`,
+        error: `message insert: ${msg}`,
         phone,
         evolution_id: evoId,
         from_me: fromMe,
@@ -331,17 +370,40 @@ export async function ingestEvolutionPayload(
         preview: text,
         payload: item,
       });
-    } else {
-      result.inserted += 1;
-      await logRow({
-        status: "ok",
-        phone,
-        evolution_id: evoId,
-        from_me: fromMe,
-        message_type: type,
-        preview: text,
-      });
+      continue;
     }
+
+    // Only update the conversation's last_message_* AFTER the message is
+    // committed, so a dedup skip doesn't inflate unread counts.
+    {
+      const previousTime = existing?.last_message_at
+        ? new Date(existing.last_message_at as string).getTime()
+        : 0;
+      const incomingTime = new Date(nowIso).getTime();
+      const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (existing && !existing.contact_name && item.pushName && !fromMe) {
+        patch.contact_name = item.pushName;
+      }
+      if (incomingTime >= previousTime) {
+        patch.last_message_at = nowIso;
+        patch.last_message_preview = (text ?? "").slice(0, 140) || `[${type}]`;
+        if (direction === "in") {
+          const prevUnread = (existing?.unread_count as number | null) ?? 0;
+          patch.unread_count = prevUnread + 1;
+        }
+      }
+      await supabase.from("whatsapp_conversations").update(patch).eq("id", convId);
+    }
+
+    result.inserted += 1;
+    await logRow({
+      status: "ok",
+      phone,
+      evolution_id: evoId,
+      from_me: fromMe,
+      message_type: type,
+      preview: text,
+    });
   }
 
   return result;
