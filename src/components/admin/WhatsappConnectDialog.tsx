@@ -108,12 +108,46 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
     }
   }
 
+  async function refreshDiagnostics() {
+    try {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const [okRes, skipRes, errRes, lastEvt, lastSync, lastErr] = await Promise.all([
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "ok").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "skipped").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "error").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("whatsapp_ingest_logs").select("created_at").eq("source", "sync").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("whatsapp_ingest_logs").select("created_at,error").eq("status", "error").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      const ok = okRes.count ?? 0;
+      const skipped = skipRes.count ?? 0;
+      const error = errRes.count ?? 0;
+      setDiag({
+        ok, skipped, error, total: ok + skipped + error,
+        lastEventAt: (lastEvt.data as { created_at: string } | null)?.created_at ?? null,
+        lastSyncAt: (lastSync.data as { created_at: string } | null)?.created_at ?? null,
+        lastErrorAt: (lastErr.data as { created_at: string; error: string | null } | null)?.created_at ?? null,
+        lastError: (lastErr.data as { created_at: string; error: string | null } | null)?.error ?? null,
+      });
+    } catch {
+      /* noop */
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
     refreshState();
     refreshWebhook();
-    // Auto-load QR se não estiver conectado
+    refreshDiagnostics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    diagRef.current = window.setInterval(refreshDiagnostics, 5000);
+    return () => {
+      if (diagRef.current) window.clearInterval(diagRef.current);
+    };
   }, [open]);
 
   useEffect(() => {
