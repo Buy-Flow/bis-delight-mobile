@@ -176,5 +176,106 @@ export const getWhatsappConfigStatus = createServerFn({ method: "POST" })
       hasBase: !!base,
       hasKey: !!key,
       hasInstance: !!instance,
+      instance,
     };
+  });
+
+async function evoFetch(path: string, init?: RequestInit) {
+  const { base, key } = evoConfig();
+  if (!base || !key) throw new Error("Evolution API não configurada (URL/KEY ausentes).");
+  const resp = await fetch(`${base}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      apikey: key,
+      ...(init?.headers || {}),
+    },
+  });
+  const txt = await resp.text();
+  let json: unknown = null;
+  try { json = txt ? JSON.parse(txt) : null; } catch { /* raw */ }
+  if (!resp.ok) {
+    const msg =
+      (json && typeof json === "object" && "message" in json
+        ? String((json as Record<string, unknown>).message)
+        : "") || txt.slice(0, 240);
+    throw new Error(`Evolution ${resp.status}: ${msg}`);
+  }
+  return json as Record<string, unknown> | null;
+}
+
+/** Estado atual da instância (open = conectado, connecting = aguardando QR, close = desconectado). */
+export const getWhatsappConnectionState = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { instance } = evoConfig();
+    if (!instance) return { state: "unconfigured", exists: false };
+    try {
+      const j = await evoFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
+      const state =
+        ((j?.instance as Record<string, unknown> | undefined)?.state as string | undefined) ??
+        (j?.state as string | undefined) ??
+        "unknown";
+      return { state, exists: true };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (/404/.test(msg)) return { state: "not_found", exists: false };
+      throw e;
+    }
+  });
+
+/** Cria a instância se necessário e retorna o QR code base64 para pareamento. */
+export const getWhatsappQrCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { instance } = evoConfig();
+    if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
+
+    let exists = true;
+    try {
+      await evoFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
+    } catch (e) {
+      if (/404/.test(e instanceof Error ? e.message : String(e))) exists = false;
+      else throw e;
+    }
+
+    if (!exists) {
+      await evoFetch(`/instance/create`, {
+        method: "POST",
+        body: JSON.stringify({
+          instanceName: instance,
+          qrcode: true,
+          integration: "WHATSAPP-BAILEYS",
+        }),
+      });
+    }
+
+    const j = await evoFetch(`/instance/connect/${encodeURIComponent(instance)}`);
+    const rec = (j ?? {}) as Record<string, unknown>;
+    const qrObj = (rec.qrcode as Record<string, unknown> | undefined) ?? rec;
+    let base64 =
+      (qrObj.base64 as string | undefined) ??
+      (rec.base64 as string | undefined) ??
+      null;
+    const code =
+      (qrObj.code as string | undefined) ?? (rec.code as string | undefined) ?? null;
+    const pairingCode =
+      (rec.pairingCode as string | undefined) ??
+      (qrObj.pairingCode as string | undefined) ??
+      null;
+    if (base64 && !base64.startsWith("data:")) base64 = `data:image/png;base64,${base64}`;
+    return { base64, code, pairingCode };
+  });
+
+/** Faz logout da sessão do WhatsApp (desconecta o telefone). */
+export const disconnectWhatsapp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { instance } = evoConfig();
+    if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
+    await evoFetch(`/instance/logout/${encodeURIComponent(instance)}`, { method: "DELETE" });
+    return { ok: true };
   });
