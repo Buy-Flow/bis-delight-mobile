@@ -1,0 +1,1 @@
+UPDATE public.whatsapp_messages SET status = 'received', error = NULL WHERE direction = 'in' AND status = 'failed';
