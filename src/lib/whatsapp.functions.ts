@@ -303,6 +303,45 @@ export const updateWhatsappConversationPhone = createServerFn({ method: "POST" }
     return { phone };
   });
 
+export const probeWhatsappNumber = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: { phone: string }) => z.object({ phone: z.string().min(6) }).parse(v))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { base, key, instance } = evoConfig();
+    const normalized = normalizePhone(data.phone);
+    const variants = new Set<string>([normalized]);
+    if (/^55\d{2}\d{8}$/.test(normalized)) variants.add(normalized.slice(0, 4) + "9" + normalized.slice(4));
+    if (/^55\d{2}9\d{8}$/.test(normalized)) variants.add(normalized.slice(0, 4) + normalized.slice(5));
+    const checkUrl = `${base}/chat/whatsappNumbers/${encodeURIComponent(instance)}`;
+    const results: Array<{ variant: string; status: number | string; body: string }> = [];
+    // Also try a batch call (all variants at once)
+    try {
+      const r = await fetch(checkUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: key },
+        body: JSON.stringify({ numbers: Array.from(variants) }),
+      });
+      results.push({ variant: `BATCH(${Array.from(variants).join(",")})`, status: r.status, body: (await r.text()).slice(0, 1500) });
+    } catch (e) {
+      results.push({ variant: "BATCH", status: "ex", body: String(e) });
+    }
+    for (const v of variants) {
+      try {
+        const r = await fetch(checkUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", apikey: key },
+          body: JSON.stringify({ numbers: [v] }),
+        });
+        results.push({ variant: v, status: r.status, body: (await r.text()).slice(0, 1500) });
+      } catch (e) {
+        results.push({ variant: v, status: "ex", body: String(e) });
+      }
+    }
+    return { normalized, variants: Array.from(variants), results, checkUrl };
+  });
+
+
 export const assignConversation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: { id: string; user_id: string | null }) =>
