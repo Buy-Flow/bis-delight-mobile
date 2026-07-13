@@ -330,6 +330,13 @@ export type Database = {
             foreignKeyName: "cash_movements_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -589,47 +596,245 @@ export type Database = {
         }
         Relationships: []
       }
+      courier_locations: {
+        Row: {
+          accuracy: number | null
+          battery: number | null
+          courier_id: string
+          heading: number | null
+          id: number
+          lat: number
+          lng: number
+          order_id: string | null
+          recorded_at: string
+          speed: number | null
+        }
+        Insert: {
+          accuracy?: number | null
+          battery?: number | null
+          courier_id: string
+          heading?: number | null
+          id?: number
+          lat: number
+          lng: number
+          order_id?: string | null
+          recorded_at?: string
+          speed?: number | null
+        }
+        Update: {
+          accuracy?: number | null
+          battery?: number | null
+          courier_id?: string
+          heading?: number | null
+          id?: number
+          lat?: number
+          lng?: number
+          order_id?: string | null
+          recorded_at?: string
+          speed?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_locations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_locations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers_live"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_locations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["courier_id"]
+          },
+          {
+            foreignKeyName: "courier_locations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_locations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couriers: {
         Row: {
+          accuracy: number | null
           active: boolean
           avatar_url: string | null
           created_at: string
+          current_lat: number | null
+          current_lng: number | null
           fee_per_delivery: number
+          heading: number | null
           id: string
+          last_seen_at: string | null
+          location_updated_at: string | null
+          max_concurrent: number
           name: string
           note: string | null
           phone: string | null
           plate: string | null
+          rating: number | null
+          rating_count: number
+          speed: number | null
+          status: string
+          total_deliveries: number
+          total_earnings: number
           updated_at: string
+          user_id: string | null
           vehicle: string
         }
         Insert: {
+          accuracy?: number | null
           active?: boolean
           avatar_url?: string | null
           created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
           fee_per_delivery?: number
+          heading?: number | null
           id?: string
+          last_seen_at?: string | null
+          location_updated_at?: string | null
+          max_concurrent?: number
           name: string
           note?: string | null
           phone?: string | null
           plate?: string | null
+          rating?: number | null
+          rating_count?: number
+          speed?: number | null
+          status?: string
+          total_deliveries?: number
+          total_earnings?: number
           updated_at?: string
+          user_id?: string | null
           vehicle?: string
         }
         Update: {
+          accuracy?: number | null
           active?: boolean
           avatar_url?: string | null
           created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
           fee_per_delivery?: number
+          heading?: number | null
           id?: string
+          last_seen_at?: string | null
+          location_updated_at?: string | null
+          max_concurrent?: number
           name?: string
           note?: string | null
           phone?: string | null
           plate?: string | null
+          rating?: number | null
+          rating_count?: number
+          speed?: number | null
+          status?: string
+          total_deliveries?: number
+          total_earnings?: number
           updated_at?: string
+          user_id?: string | null
           vehicle?: string
         }
         Relationships: []
+      }
+      delivery_offers: {
+        Row: {
+          broadcast: boolean
+          courier_id: string | null
+          created_at: string
+          distance_km: number | null
+          expires_at: string
+          fee: number | null
+          id: string
+          note: string | null
+          offered_at: string
+          order_id: string
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          broadcast?: boolean
+          courier_id?: string | null
+          created_at?: string
+          distance_km?: number | null
+          expires_at?: string
+          fee?: number | null
+          id?: string
+          note?: string | null
+          offered_at?: string
+          order_id: string
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          broadcast?: boolean
+          courier_id?: string | null
+          created_at?: string
+          distance_km?: number | null
+          expires_at?: string
+          fee?: number | null
+          id?: string
+          note?: string | null
+          offered_at?: string
+          order_id?: string
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_offers_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_offers_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers_live"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_offers_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["courier_id"]
+          },
+          {
+            foreignKeyName: "delivery_offers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_offers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       favorites: {
         Row: {
@@ -966,6 +1171,13 @@ export type Database = {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -977,8 +1189,10 @@ export type Database = {
           canceled_at: string | null
           coupon_code: string | null
           courier_id: string | null
+          courier_rating: number | null
           created_at: string
           customer_name: string
+          customer_rating: number | null
           delivered_at: string | null
           delivery_fee: number
           delivery_lat: number | null
@@ -986,12 +1200,16 @@ export type Database = {
           delivery_started_at: string | null
           dispatched_at: string | null
           distance_km: number | null
+          eta_minutes: number | null
           id: string
           mode: string
           note: string | null
+          origin_lat: number | null
+          origin_lng: number | null
           paid_at: string | null
           people_count: number | null
           phone: string
+          picked_up_at: string | null
           preparing_at: string | null
           reference: string | null
           service_fee: number | null
@@ -999,6 +1217,7 @@ export type Database = {
           subtotal: number
           table_id: string | null
           total: number
+          tracking_token: string | null
           user_id: string
           waiter_id: string | null
         }
@@ -1007,8 +1226,10 @@ export type Database = {
           canceled_at?: string | null
           coupon_code?: string | null
           courier_id?: string | null
+          courier_rating?: number | null
           created_at?: string
           customer_name: string
+          customer_rating?: number | null
           delivered_at?: string | null
           delivery_fee?: number
           delivery_lat?: number | null
@@ -1016,12 +1237,16 @@ export type Database = {
           delivery_started_at?: string | null
           dispatched_at?: string | null
           distance_km?: number | null
+          eta_minutes?: number | null
           id?: string
           mode: string
           note?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
           paid_at?: string | null
           people_count?: number | null
           phone: string
+          picked_up_at?: string | null
           preparing_at?: string | null
           reference?: string | null
           service_fee?: number | null
@@ -1029,6 +1254,7 @@ export type Database = {
           subtotal: number
           table_id?: string | null
           total: number
+          tracking_token?: string | null
           user_id: string
           waiter_id?: string | null
         }
@@ -1037,8 +1263,10 @@ export type Database = {
           canceled_at?: string | null
           coupon_code?: string | null
           courier_id?: string | null
+          courier_rating?: number | null
           created_at?: string
           customer_name?: string
+          customer_rating?: number | null
           delivered_at?: string | null
           delivery_fee?: number
           delivery_lat?: number | null
@@ -1046,12 +1274,16 @@ export type Database = {
           delivery_started_at?: string | null
           dispatched_at?: string | null
           distance_km?: number | null
+          eta_minutes?: number | null
           id?: string
           mode?: string
           note?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
           paid_at?: string | null
           people_count?: number | null
           phone?: string
+          picked_up_at?: string | null
           preparing_at?: string | null
           reference?: string | null
           service_fee?: number | null
@@ -1059,6 +1291,7 @@ export type Database = {
           subtotal?: number
           table_id?: string | null
           total?: number
+          tracking_token?: string | null
           user_id?: string
           waiter_id?: string | null
         }
@@ -1069,6 +1302,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "couriers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers_live"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["courier_id"]
           },
           {
             foreignKeyName: "orders_table_id_fkey"
@@ -1115,6 +1362,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "print_jobs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "print_jobs_order_id_fkey"
             columns: ["order_id"]
@@ -1901,6 +2155,13 @@ export type Database = {
             foreignKeyName: "reviews_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -2478,6 +2739,101 @@ export type Database = {
       }
     }
     Views: {
+      couriers_live: {
+        Row: {
+          accuracy: number | null
+          active: boolean | null
+          avatar_url: string | null
+          current_lat: number | null
+          current_lng: number | null
+          heading: number | null
+          id: string | null
+          last_seen_at: string | null
+          location_updated_at: string | null
+          name: string | null
+          phone: string | null
+          plate: string | null
+          rating: number | null
+          speed: number | null
+          status: string | null
+          total_deliveries: number | null
+          vehicle: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          active?: boolean | null
+          avatar_url?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
+          heading?: number | null
+          id?: string | null
+          last_seen_at?: string | null
+          location_updated_at?: string | null
+          name?: string | null
+          phone?: string | null
+          plate?: string | null
+          rating?: number | null
+          speed?: number | null
+          status?: string | null
+          total_deliveries?: number | null
+          vehicle?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          active?: boolean | null
+          avatar_url?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
+          heading?: number | null
+          id?: string | null
+          last_seen_at?: string | null
+          location_updated_at?: string | null
+          name?: string | null
+          phone?: string | null
+          plate?: string | null
+          rating?: number | null
+          speed?: number | null
+          status?: string | null
+          total_deliveries?: number | null
+          vehicle?: string | null
+        }
+        Relationships: []
+      }
+      order_tracking_public: {
+        Row: {
+          address: string | null
+          courier_avatar: string | null
+          courier_heading: number | null
+          courier_id: string | null
+          courier_lat: number | null
+          courier_lng: number | null
+          courier_location_at: string | null
+          courier_name: string | null
+          courier_phone: string | null
+          courier_rating: number | null
+          courier_vehicle: string | null
+          created_at: string | null
+          customer_name: string | null
+          delivered_at: string | null
+          delivery_lat: number | null
+          delivery_lng: number | null
+          dispatched_at: string | null
+          distance_km: number | null
+          eta_minutes: number | null
+          id: string | null
+          mode: string | null
+          origin_lat: number | null
+          origin_lng: number | null
+          paid_at: string | null
+          picked_up_at: string | null
+          preparing_at: string | null
+          reference: string | null
+          status: string | null
+          total: number | null
+          tracking_token: string | null
+        }
+        Relationships: []
+      }
       push_campaigns_public: {
         Row: {
           body: string | null
@@ -2798,6 +3154,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_delivery_offer: { Args: { _offer_id: string }; Returns: Json }
       admin_grant_role: {
         Args: {
           _note?: string
@@ -2873,6 +3230,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      broadcast_delivery_offer: {
+        Args: { _fee?: number; _order_id: string }
+        Returns: Json
+      }
       claim_birthday_gift: {
         Args: never
         Returns: {
@@ -2908,8 +3269,21 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      complete_delivery: { Args: { _order_id: string }; Returns: Json }
       compute_expected_cash: { Args: { _session_id: string }; Returns: number }
+      courier_heartbeat: {
+        Args: {
+          _accuracy?: number
+          _battery?: number
+          _heading?: number
+          _lat: number
+          _lng: number
+          _speed?: number
+        }
+        Returns: Json
+      }
       cpf_exists: { Args: { _cpf: string }; Returns: boolean }
+      current_courier_id: { Args: never; Returns: string }
       get_birthday_gift_status: {
         Args: never
         Returns: {
@@ -2968,6 +3342,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      link_courier_to_user: {
+        Args: { _courier_id: string; _user_id: string }
+        Returns: Json
+      }
       loyalty_min_order: { Args: { _tier: string }; Returns: number }
       loyalty_reward_value: { Args: { _tier: string }; Returns: number }
       loyalty_stamp_bonus: { Args: { _tier: string }; Returns: number }
@@ -2977,6 +3355,7 @@ export type Database = {
         Args: { _people?: number; _table_id: string; _waiter_id?: string }
         Returns: string
       }
+      pickup_delivery: { Args: { _order_id: string }; Returns: Json }
       redeem_loyalty_coupon: {
         Args: { _code: string }
         Returns: {
@@ -2992,6 +3371,8 @@ export type Database = {
           id: string
         }[]
       }
+      reject_delivery_offer: { Args: { _offer_id: string }; Returns: Json }
+      set_courier_status: { Args: { _status: string }; Returns: Json }
       set_pix_key: { Args: { _val: string }; Returns: undefined }
       transfer_table: {
         Args: { _from: string; _to: string }

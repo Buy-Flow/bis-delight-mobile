@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RecompensasRouteImport } from './routes/recompensas'
+import { Route as MotoboyRouteImport } from './routes/motoboy'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as BaixarAppRouteImport } from './routes/baixar-app'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -58,6 +59,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RecompensasRoute = RecompensasRouteImport.update({
   id: '/recompensas',
   path: '/recompensas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoboyRoute = MotoboyRouteImport.update({
+  id: '/motoboy',
+  path: '/motoboy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarrinhoRoute = CarrinhoRouteImport.update({
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
+  '/motoboy': typeof MotoboyRoute
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -304,6 +311,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
+  '/motoboy': typeof MotoboyRoute
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -347,6 +355,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
+  '/motoboy': typeof MotoboyRoute
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
+    | '/motoboy'
     | '/recompensas'
     | '/sitemap.xml'
     | '/admin'
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
+    | '/motoboy'
     | '/recompensas'
     | '/sitemap.xml'
     | '/admin'
@@ -473,6 +484,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
+    | '/motoboy'
     | '/recompensas'
     | '/sitemap.xml'
     | '/_authenticated/admin'
@@ -516,6 +528,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BaixarAppRoute: typeof BaixarAppRoute
   CarrinhoRoute: typeof CarrinhoRoute
+  MotoboyRoute: typeof MotoboyRoute
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
@@ -537,6 +550,13 @@ declare module '@tanstack/react-router' {
       path: '/recompensas'
       fullPath: '/recompensas'
       preLoaderRoute: typeof RecompensasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motoboy': {
+      id: '/motoboy'
+      path: '/motoboy'
+      fullPath: '/motoboy'
+      preLoaderRoute: typeof MotoboyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carrinho': {
@@ -895,6 +915,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BaixarAppRoute: BaixarAppRoute,
   CarrinhoRoute: CarrinhoRoute,
+  MotoboyRoute: MotoboyRoute,
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
