@@ -86,7 +86,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         }
 
         let sendNumber = normalized;
-        let existsChecked = false;
+        let checkDiag = "";
         try {
           const check = await fetch(
             `${base}/chat/whatsappNumbers/${encodeURIComponent(instance)}`,
@@ -96,13 +96,14 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               body: JSON.stringify({ numbers: Array.from(candidates) }),
             },
           );
+          const checkBody = await check.text();
+          checkDiag = `chk ${check.status} :: ${checkBody.slice(0, 200)}`;
           if (check.ok) {
-            existsChecked = true;
-            const arr = (await check.json()) as Array<{
-              exists?: boolean;
-              jid?: string;
-              number?: string;
-            }>;
+            let arr: Array<{ exists?: boolean; jid?: string; number?: string }> = [];
+            try {
+              const parsed = JSON.parse(checkBody);
+              arr = Array.isArray(parsed) ? parsed : parsed?.response ?? parsed?.data ?? [];
+            } catch { /* keep [] */ }
             const found = Array.isArray(arr)
               ? arr.find((x) => x?.exists === true)
               : null;
@@ -110,15 +111,17 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               sendNumber = found.jid.split("@")[0] ?? sendNumber;
             } else if (found?.number) {
               sendNumber = String(found.number).replace(/\D/g, "");
-            } else if (existsChecked) {
-              // Nenhuma variante existe — não adianta tentar mandar
-              evoError = `O número ${normalized} não está registrado no WhatsApp (verificado com WhatsApp). Confira o telefone da conversa.`;
+            } else if (Array.isArray(arr) && arr.length > 0) {
+              // Verificou e nenhuma variante existe no WhatsApp
+              evoError = `O número ${normalized} não está registrado no WhatsApp (nenhuma variante existe). Corrija o telefone da conversa.`;
               status = "failed";
             }
+            // Se arr veio vazio ou em shape desconhecido, seguimos com o normalizado
           }
-        } catch {
-          // Se o endpoint de verificação falhar, seguimos com o normalizado
+        } catch (err) {
+          checkDiag = `chk exception :: ${err instanceof Error ? err.message : String(err)}`;
         }
+
 
         if (status !== "failed") {
         const resp = await fetch(`${base}/message/sendText/${encodeURIComponent(instance)}`, {
