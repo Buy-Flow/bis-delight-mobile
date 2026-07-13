@@ -268,7 +268,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     }
   };
 
-  if (!isCheckoutOpen) return null;
+  if (!pageMode && !isCheckoutOpen) return null;
 
   const flatFee = settings?.deliveryFee ?? BRAND.deliveryFee;
   const freeThreshold = settings?.freeDeliveryThreshold ?? 0;
