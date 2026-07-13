@@ -85,16 +85,20 @@ function phoneFromJid(...jids: Array<string | undefined | null>): string | null 
   for (const jid of jids) {
     if (!jid) continue;
     if (jid.includes("@g.us") || jid.includes("status@broadcast")) continue;
+    // @lid é um identificador interno anônimo da WhatsApp — NÃO é telefone.
+    // Só extrai dígitos de JIDs reais (@s.whatsapp.net / @c.us) ou strings puras.
+    if (jid.includes("@lid")) continue;
     const first = jid.split("@")[0] ?? "";
-    // JIDs internos da WhatsApp podem ter sufixo :N (device id). Ignora só se
-    // for :0 (padrão antigo que aparecia em alguns eventos), mas ainda extrai
-    // dígitos de outros formatos.
     if (first.endsWith(":0")) continue;
     const digits = first.replace(/\D/g, "");
-    if (digits.length >= 10) return digits;
+    // Telefones válidos globais: 10 a 15 dígitos. LIDs costumam ter 14-15 dígitos
+    // aleatórios; então também rejeitamos qualquer coisa com mais de 15.
+    if (digits.length < 10 || digits.length > 15) continue;
+    return digits;
   }
   return null;
 }
+
 
 function extractText(m?: EvoMessage): { text: string | null; type: string; media: string | null } {
   if (!m) return { text: null, type: "unknown", media: null };
