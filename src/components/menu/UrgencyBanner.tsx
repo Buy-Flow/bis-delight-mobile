@@ -53,10 +53,12 @@ export function UrgencyBanner() {
             <div className="text-[10px] font-black uppercase tracking-[0.18em] text-neon-yellow">Promoção relâmpago</div>
             <div className="truncate font-display text-[15px] font-extrabold text-white">{u.text}</div>
           </div>
-          <div className="flex items-center gap-1 font-mono text-[13px] font-black text-white">
-            <Cell v={h} label="h" />
-            <Cell v={m} label="m" />
-            <Cell v={s} label="s" />
+          <div className="flex items-center gap-1.5">
+            <Cell v={h} label="horas" />
+            <Sep />
+            <Cell v={m} label="min" />
+            <Sep />
+            <Cell v={s} label="seg" />
           </div>
           {u.couponCode && (
             <button
@@ -75,9 +77,25 @@ export function UrgencyBanner() {
 
 function Cell({ v, label }: { v: string; label: string }) {
   return (
-    <div className="flex flex-col items-center rounded-md bg-black/40 px-1.5 py-0.5 leading-none">
-      <span className="text-[13px]">{v}</span>
-      <span className="text-[8px] text-white/60">{label}</span>
+    <div className="relative flex flex-col items-center">
+      <div className="relative overflow-hidden rounded-xl border border-white/15 bg-gradient-to-b from-white/15 to-black/60 px-2.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_12px_-4px_rgba(0,0,0,0.6)]">
+        <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-black/50" />
+        <span className="font-mono text-[18px] font-black leading-none tracking-tight text-white tabular-nums">
+          {v}
+        </span>
+      </div>
+      <span className="mt-1 text-[8px] font-bold uppercase tracking-[0.15em] text-white/50">
+        {label}
+      </span>
     </div>
+  );
+}
+
+function Sep() {
+  return (
+    <span className="mb-3 flex flex-col gap-0.5">
+      <span className="h-1 w-1 rounded-full bg-neon-pink/80" />
+      <span className="h-1 w-1 rounded-full bg-neon-pink/80" />
+    </span>
   );
 }
