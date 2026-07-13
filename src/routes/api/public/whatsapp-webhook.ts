@@ -154,7 +154,7 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
                 media_url: media,
                 sent_by: fromMe ? "external" : "customer",
                 status: item.status ?? "received",
-                raw: item as unknown as Record<string, unknown>,
+                raw: item as unknown as import("@/integrations/supabase/types").Json,
               });
             }
           }
