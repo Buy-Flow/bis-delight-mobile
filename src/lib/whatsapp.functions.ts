@@ -15,6 +15,20 @@ function evoConfig() {
   return { base, key, instance };
 }
 
+/** Normaliza número para o formato aceito pelo Evolution/WhatsApp (dígitos, com DDI). */
+function normalizePhone(raw: string): string {
+  let n = String(raw ?? "").replace(/@.*$/, "").replace(/\D+/g, "");
+  if (!n) return "";
+  n = n.replace(/^0+/, "");
+  // BR sem DDI → adiciona 55
+  if (n.length === 10 || n.length === 11) n = "55" + n;
+  // 55 duplicado (55 55 + numero)
+  while (n.length > 13 && n.startsWith("5555")) n = n.slice(2);
+  return n;
+}
+
+
+
 /**
  * Envia mensagem de texto pelo Evolution API e persiste em whatsapp_messages.
  * Também atualiza last_message_* na conversa.
@@ -52,6 +66,11 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
       status = "pending";
     } else {
       try {
+        const normalized = normalizePhone(conv.phone);
+        if (!normalized || normalized.length < 10) {
+          evoError = `Número inválido: "${conv.phone}". Corrija o telefone da conversa.`;
+          status = "failed";
+        } else {
         const resp = await fetch(`${base}/message/sendText/${encodeURIComponent(instance)}`, {
           method: "POST",
           headers: {
@@ -59,14 +78,23 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             apikey: key,
           },
           body: JSON.stringify({
-            number: conv.phone,
+            number: normalized,
             text: data.text,
             options: { delay: 0, presence: "composing" },
           }),
         });
         const body = await resp.text();
         if (!resp.ok) {
-          evoError = `Evolution ${resp.status}: ${body.slice(0, 200)}`;
+          // Detecta o caso específico "exists:false" e devolve mensagem clara
+          let friendly = `Evolution ${resp.status}: ${body.slice(0, 300)}`;
+          try {
+            const parsed = JSON.parse(body);
+            const arr = parsed?.response?.message;
+            if (Array.isArray(arr) && arr[0] && arr[0].exists === false) {
+              friendly = `O número ${arr[0].number ?? normalized} não está registrado no WhatsApp. Confira o telefone da conversa.`;
+            }
+          } catch { /* mantém friendly */ }
+          evoError = friendly;
           status = "failed";
         } else {
           try {
@@ -81,6 +109,8 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             evoId = null;
           }
         }
+        }
+
       } catch (e) {
         evoError = e instanceof Error ? e.message : String(e);
         status = "failed";
