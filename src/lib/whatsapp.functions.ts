@@ -279,3 +279,98 @@ export const disconnectWhatsapp = createServerFn({ method: "POST" })
     await evoFetch(`/instance/logout/${encodeURIComponent(instance)}`, { method: "DELETE" });
     return { ok: true };
   });
+
+function publicHostFromRequest(): string {
+  // Prefer explicit env; fallback to request headers via getRequest().
+  const envUrl = process.env.PUBLIC_APP_URL || process.env.APP_URL;
+  if (envUrl) return envUrl.replace(/\/+$/, "");
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getRequest } = require("@tanstack/react-start/server") as {
+      getRequest: () => Request;
+    };
+    const req = getRequest();
+    const url = new URL(req.url);
+    const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
+    const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
+    return `${proto}://${host}`;
+  } catch {
+    return "";
+  }
+}
+
+/** Retorna a URL pública do webhook (o operador pode colar manualmente se necessário). */
+export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const token = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
+    const host = publicHostFromRequest();
+    const url = host ? `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}` : "";
+    let currentUrl: string | null = null;
+    let configured = false;
+    try {
+      const { instance } = evoConfig();
+      if (instance) {
+        const j = await evoFetch(`/webhook/find/${encodeURIComponent(instance)}`);
+        const rec = (j ?? {}) as Record<string, unknown>;
+        const w = (rec.webhook as Record<string, unknown> | undefined) ?? rec;
+        currentUrl = (w.url as string | undefined) ?? null;
+        configured = !!currentUrl && currentUrl.includes("/api/public/whatsapp-webhook");
+      }
+    } catch {
+      /* webhook não configurado ainda */
+    }
+    return { url, currentUrl, configured, hasToken: !!token };
+  });
+
+/** Configura o webhook na instância Evolution para receber mensagens em tempo real. */
+export const configureWhatsappWebhook = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { instance } = evoConfig();
+    if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
+    const token = process.env.EVOLUTION_WEBHOOK_TOKEN;
+    if (!token) throw new Error("EVOLUTION_WEBHOOK_TOKEN não configurado.");
+    const host = publicHostFromRequest();
+    if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
+    const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
+    const events = [
+      "MESSAGES_UPSERT",
+      "MESSAGES_UPDATE",
+      "SEND_MESSAGE",
+      "CONNECTION_UPDATE",
+      "CONTACTS_UPDATE",
+    ];
+    // Evolution v2 shape
+    const bodyV2 = {
+      webhook: {
+        enabled: true,
+        url,
+        webhookByEvents: false,
+        webhookBase64: false,
+        events,
+      },
+    };
+    // Fallback shape (some builds accept flat body)
+    const bodyFlat = { enabled: true, url, webhook_by_events: false, events };
+
+    let lastErr: unknown = null;
+    for (const body of [bodyV2, bodyFlat]) {
+      try {
+        await evoFetch(`/webhook/set/${encodeURIComponent(instance)}`, {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+        return { ok: true, url };
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw new Error(
+      "Falha ao configurar webhook: " +
+        (lastErr instanceof Error ? lastErr.message : String(lastErr)),
+    );
+  });
+
