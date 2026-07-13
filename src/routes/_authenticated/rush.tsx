@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSiteSettings, useUpdateSettings } from "@/lib/menu-data";
+import { usePermissions } from "@/lib/permissions";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import {
@@ -239,6 +240,8 @@ function playChime() {
 function RushPage() {
   const navigate = useNavigate();
   const { data: isAdmin, isLoading } = useIsAdmin();
+  const { canAccess } = usePermissions();
+  const canOperate = canAccess("/rush");
   const { data: settings } = useSiteSettings();
   const updateSettings = useUpdateSettings();
   const sendTestPush = useServerFn(sendAdminTestPush);
@@ -302,7 +305,7 @@ function RushPage() {
 
   // fetch + subscribe
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin && !canOperate) return;
     let cancelled = false;
 
     const load = async () => {
@@ -376,7 +379,7 @@ function RushPage() {
       window.clearInterval(poll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin]);
+  }, [isAdmin, canOperate]);
 
   const todayList = useMemo(
     () => (orders ?? []).filter((o) => isToday(new Date(o.created_at))),
@@ -563,13 +566,13 @@ function RushPage() {
       </div>
     );
   }
-  if (!isAdmin) {
+  if (!isAdmin && !canOperate) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] px-4 text-white">
         <div className="max-w-sm text-center">
           <h1 className="font-display text-2xl font-black">Acesso negado</h1>
           <p className="mt-2 text-sm text-white/60">
-            Sua conta não tem permissão de administrador.
+            Sua conta não tem permissão para acessar a cozinha.
           </p>
           <button
             onClick={signOut}

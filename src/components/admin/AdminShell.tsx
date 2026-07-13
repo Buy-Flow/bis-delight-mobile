@@ -48,6 +48,7 @@ import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { markAdminShellMounted } from "@/lib/admin-shell-flag";
+import { usePermissions, labelForRole } from "@/lib/permissions";
 import { FloatingAssistant } from "@/components/admin/FloatingAssistant";
 
 type AdminTab =
@@ -185,6 +186,7 @@ function SidebarBody({
   onNavigate,
   openGroups,
   toggleGroup,
+  groups: visibleGroups,
 }: {
   collapsed: boolean;
   pathname: string;
@@ -192,10 +194,11 @@ function SidebarBody({
   onNavigate?: () => void;
   openGroups: Record<string, boolean>;
   toggleGroup: (id: string) => void;
+  groups: NavGroup[];
 }) {
   return (
     <nav className="flex-1 overflow-y-auto px-2 py-3">
-      {groups.map((g) => {
+      {visibleGroups.map((g) => {
         const isOpen = openGroups[g.id] ?? g.defaultOpen ?? false;
         return (
           <div key={g.id} className="mb-1.5">
@@ -334,6 +337,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const toggleGroup = (id: string) =>
     setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
 
+  // Filtra grupos/itens conforme papel do usuário.
+  const { canAccess, isAdmin: _isAdminRole, roles: _roles } = usePermissions();
+  const visibleGroups = groups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((it) => {
+        if (!it.to) return _isAdminRole; // itens sem rota são só de admin
+        // Itens que apontam a /admin com tab: só admin pode (edição real).
+        if (it.to === "/admin") return _isAdminRole;
+        return canAccess(it.to);
+      }),
+    }))
+    .filter((g) => g.items.length > 0);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
@@ -375,6 +392,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           currentTab={searchTab}
           openGroups={openGroups}
           toggleGroup={toggleGroup}
+          groups={visibleGroups}
         />
         <div className="border-t border-white/10 p-2">
           <Link
@@ -457,6 +475,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               onNavigate={() => setMobileOpen(false)}
               openGroups={openGroups}
               toggleGroup={toggleGroup}
+              groups={visibleGroups}
             />
             <div className="border-t border-white/10 p-2">
               <Link
@@ -500,10 +519,34 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Flame className="h-4 w-4 text-neon-yellow" />
             <span className="text-sm font-bold">Quero Bis</span>
             <span className="hidden text-xs text-white/40 sm:inline">
-              · Painel administrativo
+              · {_isAdminRole ? "Painel administrativo" : "Painel da equipe"}
             </span>
           </div>
-          <div className="ml-auto" />
+          <div className="ml-auto flex items-center gap-2">
+            {(() => {
+              const primary =
+                (["admin", "manager", "staff", "kitchen"] as const).find((r) =>
+                  _roles.includes(r),
+                ) ?? null;
+              if (!primary) return null;
+              return (
+                <span
+                  className={cn(
+                    "hidden rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider sm:inline-flex",
+                    primary === "admin"
+                      ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
+                      : primary === "manager"
+                      ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
+                      : primary === "staff"
+                      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                      : "border-white/20 bg-white/5 text-white/70",
+                  )}
+                >
+                  {labelForRole(primary)}
+                </span>
+              );
+            })()}
+          </div>
         </header>
         <main className="flex-1">{children}</main>
       </div>
