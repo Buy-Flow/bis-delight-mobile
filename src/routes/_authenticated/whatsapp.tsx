@@ -620,7 +620,7 @@ function groupByDay(items: Message[]) {
 }
 
 function MessageBubble({ m }: { m: Message }) {
-  const out = m.direction === "outbound";
+  const out = m.direction === "outbound" || m.direction === "out";
   const isAi = m.sent_by === "ai";
   const failed = m.status === "failed";
   const pending = m.status === "pending";
