@@ -204,10 +204,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 `[etapa 2: envio da mensagem]\n${sendReport}`;
               status = "failed";
             } else {
-              let parsed: Record<string, unknown> | null = null;
+              let parsed: Json | null = null;
               try {
                 const j = JSON.parse(sendBody) as Record<string, unknown>;
-                parsed = j;
+                parsed = j as Json;
                 const key = (j.key ?? {}) as Record<string, unknown>;
                 const dataRec = (j.data ?? {}) as Record<string, unknown>;
                 const dataKey = (dataRec.key ?? {}) as Record<string, unknown>;
