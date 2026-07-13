@@ -1,0 +1,2 @@
+DELETE FROM public.whatsapp_messages WHERE conversation_id IN (SELECT id FROM public.whatsapp_conversations WHERE length(phone) > 13);
+DELETE FROM public.whatsapp_conversations WHERE length(phone) > 13;
