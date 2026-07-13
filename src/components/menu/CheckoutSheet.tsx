@@ -465,19 +465,42 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     }
   };
 
-  const formEl = (
-    <form
-      className={pageMode
-        ? "mx-auto flex max-w-2xl flex-col space-y-5 px-4 pb-24 pt-4"
-        : "flex-1 space-y-5 overflow-y-auto px-4 pb-6 pt-6"}
-      autoComplete="on"
-      onSubmit={(e) => {
-        e.preventDefault();
-        send();
-      }}
-    >
-      {/* Header simples com detalhe */}
-      <div className={pageMode ? "pb-2" : "-mx-4 -mt-6 px-5 pb-4 pt-6 pr-16"}>
+  return (
+    <div className={pageMode ? "min-h-dvh card-acai" : "fixed inset-0 z-50"}>
+      {!pageMode && (
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={closeCheckout} />
+      )}
+      <div
+        className={
+          pageMode
+            ? "mx-auto flex min-h-dvh max-w-2xl flex-col"
+            : "absolute inset-x-0 bottom-0 top-[6vh] flex flex-col overflow-hidden rounded-t-[28px] card-acai animate-in slide-in-from-bottom duration-300"
+        }
+      >
+        {!pageMode && (
+          <button
+            onClick={closeCheckout}
+            className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white backdrop-blur"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
+
+        <form
+          className={
+            pageMode
+              ? "flex-1 space-y-5 px-4 pb-6 pt-4"
+              : "flex-1 space-y-5 overflow-y-auto px-4 pb-6 pt-6"
+          }
+          autoComplete="on"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send();
+          }}
+        >
+          {/* Header simples com detalhe */}
+          <div className={pageMode ? "pb-2" : "-mx-4 -mt-6 px-5 pb-4 pt-6 pr-16"}>
+
 
             <div className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-neon-cyan shadow-[0_0_8px_theme(colors.neon-cyan)]" />
