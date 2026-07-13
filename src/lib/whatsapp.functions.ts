@@ -209,25 +209,47 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         // aceita o número correto. Se o envio real falhar, aí sim mostramos o
         // erro técnico completo retornado pelo endpoint de envio.
         if (!sendNumber) sendNumber = candidates[0] ?? normalized;
-        const targetNumber = sendNumber;
+        const sendAttempts = Array.from(new Set([sendNumber, ...candidates]))
+          .map((candidate) => normalizeWhatsappPhone(candidate))
+          .filter((candidate) => candidate && !candidate.includes("@") && candidate.length >= 10);
+        const targetNumber = sendAttempts[0] ?? normalizeWhatsappPhone(sendNumber);
         {
           const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
-          const sendReq = {
+          let sendStatus: number | string = "n/a";
+          let sendBody = "";
+          let sendReq = {
             number: targetNumber,
             text: data.text,
             delay: 0,
             linkPreview: false,
           };
-          let sendStatus: number | string = "n/a";
-          let sendBody = "";
+          const sendReports: string[] = [];
           try {
-            const resp = await fetchEvolutionWithTimeout(sendUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", apikey: key },
-              body: JSON.stringify(sendReq),
-            });
+            let resp: Response | null = null;
+            for (const attemptNumber of sendAttempts) {
+              sendReq = {
+                number: attemptNumber,
+                text: data.text,
+                delay: 0,
+                linkPreview: false,
+              };
+              resp = await fetchEvolutionWithTimeout(sendUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", apikey: key },
+                body: JSON.stringify(sendReq),
+              });
+              sendStatus = resp.status;
+              sendBody = await resp.text();
+              sendReports.push(
+                `POST ${sendUrl}\n` +
+                  `→ payload: ${JSON.stringify(sendReq)}\n` +
+                  `← status: ${sendStatus}\n` +
+                  `← body: ${sendBody.slice(0, 600) || "(vazio)"}`,
+              );
+              if (resp.ok) break;
+            }
+            if (!resp) throw new Error("Nenhum número válido para envio.");
             sendStatus = resp.status;
-            sendBody = await resp.text();
             if (!resp.ok) {
               let friendly = `Evolution respondeu HTTP ${resp.status}`;
               try {
@@ -239,15 +261,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                   friendly = `Evolution ${resp.status}: ${Array.isArray(parsed.message) ? JSON.stringify(parsed.message) : parsed.message}`;
                 }
               } catch { /* mantém friendly */ }
-              const sendReport =
-                `POST ${sendUrl}\n` +
-                `→ payload: ${JSON.stringify(sendReq)}\n` +
-                `← status: ${sendStatus}\n` +
-                `← body: ${sendBody.slice(0, 600) || "(vazio)"}`;
               evoError =
                 `❌ ${friendly}\n\n` +
                 `[etapa 1: verificação de número]\n${checkReport}\n\n` +
-                `[etapa 2: envio da mensagem]\n${sendReport}`;
+                `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
               status = "failed";
             } else {
               let parsed: Json | null = null;
@@ -284,6 +301,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 verification: {
                   candidates,
                   selectedNumber: targetNumber,
+                  attemptedNumbers: sendAttempts,
                   verifiedJid: verifiedJid ?? undefined,
                   knownLid: knownLid ?? undefined,
                   knownPhoneJid: knownPhoneJid ?? undefined,
