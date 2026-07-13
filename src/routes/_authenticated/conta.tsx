@@ -26,6 +26,7 @@ import {
   IdCard,
   KeyRound,
   BadgeCheck,
+  ChevronLeft,
 } from "lucide-react";
 
 
@@ -106,9 +107,19 @@ function AccountPage() {
       {/* Cart-style sticky header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-[oklch(0.20_0.16_305)] via-[oklch(0.20_0.16_305)]/80 to-transparent pb-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3">
-          <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
-            <HeaderIcon className="h-5 w-5 text-neon-yellow" />
-          </div>
+          {tab === "pedidos" ? (
+            <button
+              onClick={() => navigate({ to: "/conta", search: { tab: "perfil" } })}
+              aria-label="Voltar"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/5 text-white ring-1 ring-white/15 transition hover:bg-white/10 active:scale-95"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          ) : (
+            <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
+              <HeaderIcon className="h-5 w-5 text-neon-yellow" />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow shadow-[0_0_8px_theme(colors.neon-yellow)]" />
