@@ -49,6 +49,22 @@ export const Route = createFileRoute("/api/public/probe-wa")({
             out[`single_${v}`] = { error: String(e) };
           }
         }
+        if (doSend) {
+          const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
+          for (const v of variants) {
+            try {
+              const r = await fetch(sendUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", apikey: key },
+                body: JSON.stringify({ number: v, text: `probe ${Date.now()}`, delay: 0, linkPreview: false }),
+              });
+              out[`send_${v}`] = { status: r.status, body: (await r.text()).slice(0, 2000) };
+            } catch (e) {
+              out[`send_${v}`] = { error: String(e) };
+            }
+          }
+        }
+
         return new Response(JSON.stringify(out, null, 2), {
           headers: { "Content-Type": "application/json" },
         });
