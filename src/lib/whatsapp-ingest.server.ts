@@ -462,7 +462,7 @@ export async function ingestEvolutionPayload(
       content: text,
       media_url: media,
       sent_by: fromMe ? "human" : "customer",
-      status: item.status ?? (fromMe ? "sent" : "received"),
+      status: (normalizeStatus(item.status)?.toLowerCase()) ?? (fromMe ? "sent" : "received"),
       created_at: nowIso,
       raw: item,
     });
