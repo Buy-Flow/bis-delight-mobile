@@ -55,7 +55,7 @@ type Message = {
   id: string;
   conversation_id: string;
   evolution_id: string | null;
-  direction: "inbound" | "outbound";
+  direction: "in" | "out" | "inbound" | "outbound";
   type: string;
   content: string | null;
   media_url: string | null;
@@ -175,11 +175,12 @@ function WhatsappPage() {
         { event: "INSERT", schema: "public", table: "whatsapp_messages" },
         (payload) => {
           const m = payload.new as Message;
-          setMessages((prev) =>
-            prev.some((x) => x.id === m.id) || m.conversation_id !== selectedId
-              ? prev
-              : [...prev, m],
-          );
+          setMessages((prev) => {
+            if (prev.some((x) => x.id === m.id)) return prev;
+            // só anexa se for da conversa aberta (usa a mensagem que já está no state)
+            if (prev.length > 0 && prev[0].conversation_id !== m.conversation_id) return prev;
+            return [...prev, m];
+          });
         },
       )
       .subscribe();
@@ -620,7 +621,7 @@ function groupByDay(items: Message[]) {
 }
 
 function MessageBubble({ m }: { m: Message }) {
-  const out = m.direction === "outbound";
+  const out = m.direction === "outbound" || m.direction === "out";
   const isAi = m.sent_by === "ai";
   const failed = m.status === "failed";
   const pending = m.status === "pending";

@@ -93,10 +93,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
       .insert({
         conversation_id: conv.id,
         evolution_id: evoId,
-        direction: "outbound",
+        direction: "out",
         type: "text",
         content: data.text,
-        sent_by: "operator",
+        sent_by: "human",
         operator_id: context.userId,
         status,
         error: evoError,
