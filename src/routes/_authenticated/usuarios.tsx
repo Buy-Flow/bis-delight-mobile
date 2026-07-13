@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { inviteTeamUser, resendUserInvite } from "@/lib/users.functions";
+import { assignUserRole } from "@/lib/users.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
