@@ -16,10 +16,12 @@ import {
   geocodeAddress,
   haversineKm,
   isWithinRadius,
+  reverseGeocode,
 } from "@/lib/delivery-zone";
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
 import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
-import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star } from "lucide-react";
+import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail } from "lucide-react";
+
 
 type Mode = "entrega" | "retirada";
 
