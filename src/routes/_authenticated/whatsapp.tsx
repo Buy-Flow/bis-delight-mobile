@@ -796,7 +796,7 @@ function MessageBubble({ m }: { m: Message }) {
 type StatusMeta = {
   kind: "sending" | "sent" | "delivered" | "read" | "failed";
   label: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   className: string;
 };
 
