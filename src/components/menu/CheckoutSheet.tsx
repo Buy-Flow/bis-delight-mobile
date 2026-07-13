@@ -465,9 +465,17 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         clear();
         closeCheckout();
       }, 400);
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao registrar o pedido. Tente novamente.");
+    } catch (err: any) {
+      console.error("[checkout] send failed", err);
+      const detail =
+        err?.message ||
+        err?.error_description ||
+        err?.details ||
+        (typeof err === "string" ? err : "");
+      toast.error("Erro ao enviar o pedido", {
+        description: detail || "Tente novamente em instantes. Se persistir, avise a loja.",
+        duration: 8000,
+      });
     } finally {
       setSending(false);
     }
