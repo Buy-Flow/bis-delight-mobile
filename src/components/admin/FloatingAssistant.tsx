@@ -335,6 +335,37 @@ export function FloatingAssistant() {
 
   const isLoading = status === "submitted" || status === "streaming";
 
+  // Respostas rápidas contextuais — baseadas na última resposta do assistente
+  const followups = useMemo<string[]>(() => {
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    const text = lastAssistant?.parts.map((p) => (p.type === "text" ? p.text : "")).join(" ").toLowerCase() ?? "";
+    const set: string[] = [];
+    const push = (s: string) => { if (!set.includes(s) && set.length < 8) set.push(s); };
+
+    if (!text) {
+      return ["Explica melhor", "Mostra exemplos", "Faz uma sugestão", "O que dá pra fazer aqui?"];
+    }
+    if (/\?\s*$/.test(text) || /confirma|deseja|quer que|posso/.test(text)) {
+      push("Sim, pode fazer");
+      push("Não, cancela");
+    }
+    if (/desconto|off|%/.test(text)) { push("Aplica só nos ativos"); push("Reverte último desconto"); push("Estende por mais 24h"); }
+    if (/push|notifica/.test(text)) { push("Envia agora"); push("Agenda pra 19h"); push("Só pros clientes ativos"); }
+    if (/cupom|coupon/.test(text)) { push("Cria mais um"); push("Limita a 50 usos"); push("Válido só hoje"); }
+    if (/produto|cardápio|preço|margem/.test(text)) { push("Aplica em todos"); push("Só nos ativos"); push("Mostra o antes e depois"); }
+    if (/estoque|ingrediente/.test(text)) { push("Marca como comprado"); push("Ajusta o mínimo"); }
+    if (/pedido|entrega|rush/.test(text)) { push("Marca como pronto"); push("Notifica o cliente"); }
+    if (/cliente|vip|fidelidade/.test(text)) { push("Manda push pra eles"); push("Gera cupom exclusivo"); }
+    if (/relatório|resumo|vendas|faturamento/.test(text)) { push("Compara com ontem"); push("Exporta em CSV"); push("Detalha por categoria"); }
+
+    push("Continua");
+    push("Explica melhor");
+    push("Mostra outras opções");
+    push("Desfaz");
+    return set;
+  }, [messages]);
+
+
   useEffect(() => {
     if (open && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
