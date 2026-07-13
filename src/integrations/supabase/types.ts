@@ -3191,6 +3191,7 @@ export type Database = {
     }
     Functions: {
       accept_delivery_offer: { Args: { _offer_id: string }; Returns: Json }
+      admin_cancel_pending_grant: { Args: { _id: string }; Returns: undefined }
       admin_grant_role: {
         Args: {
           _note?: string
@@ -3198,6 +3199,18 @@ export type Database = {
           _target: string
         }
         Returns: undefined
+      }
+      admin_list_pending_grants: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          granted_by_email: string
+          id: string
+          note: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
       }
       admin_list_push_campaigns: {
         Args: { _limit?: number }

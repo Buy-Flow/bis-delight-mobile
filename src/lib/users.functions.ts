@@ -36,11 +36,12 @@ export const assignUserRole = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const email = data.email.trim().toLowerCase();
+    if (!email) throw new Error("Email inválido");
 
-    // Look up existing auth user by email
+    // Look up existing auth user by email (paged listing)
     let userId: string | null = null;
     let page = 1;
-    while (page <= 10) {
+    while (page <= 20) {
       const { data: list, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
       if (error) break;
       const match = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
@@ -53,33 +54,45 @@ export const assignUserRole = createServerFn({ method: "POST" })
       if (data.fullName) {
         await supabaseAdmin.from("profiles").update({ full_name: data.fullName }).eq("id", userId);
       }
-      const { error: grantErr } = await context.supabase.rpc("admin_grant_role", {
-        _target: userId,
-        _role: data.role,
-        _note: data.note ?? "Papel atribuído diretamente",
+      // Grant via admin client (bypass RLS) and log audit manually so it still shows the actor
+      const { error: insErr } = await supabaseAdmin
+        .from("user_roles")
+        .insert({ user_id: userId, role: data.role });
+      if (insErr && !/(duplicate|unique)/i.test(insErr.message)) {
+        throw new Error(insErr.message);
+      }
+      await supabaseAdmin.from("user_role_audit").insert({
+        actor_id: context.userId,
+        target_user_id: userId,
+        action: "grant",
+        role: data.role,
+        note: data.note ?? "Papel atribuído diretamente",
       });
-      if (grantErr) throw new Error(grantErr.message);
       return { status: "granted" as const, userId };
     }
 
-    // No account yet — store as pending, applied on signup via trigger
-    const { error: pendErr } = await context.supabase
+    // No account yet — store as pending; trigger applies on signup.
+    // Use admin client to guarantee write regardless of RLS state.
+    const { data: existing } = await supabaseAdmin
       .from("pending_role_grants")
-      .upsert(
-        {
-          email,
-          role: data.role,
+      .select("id")
+      .eq("email", email)
+      .eq("role", data.role)
+      .is("applied_at", null)
+      .maybeSingle();
+
+    if (existing?.id) {
+      const { error: upErr } = await supabaseAdmin
+        .from("pending_role_grants")
+        .update({
           full_name: data.fullName ?? null,
           note: data.note ?? null,
           granted_by: context.userId,
-          applied_at: null,
-          applied_user_id: null,
-        },
-        { onConflict: "email,role", ignoreDuplicates: false },
-      );
-    if (pendErr) {
-      // fallback: plain insert if upsert conflict target isn't accepted
-      const { error: insErr } = await context.supabase.from("pending_role_grants").insert({
+        })
+        .eq("id", existing.id);
+      if (upErr) throw new Error(upErr.message);
+    } else {
+      const { error: insErr } = await supabaseAdmin.from("pending_role_grants").insert({
         email,
         role: data.role,
         full_name: data.fullName ?? null,
