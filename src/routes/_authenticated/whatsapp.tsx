@@ -880,11 +880,22 @@ function WhatsappPage() {
                           className="h-7 min-w-0 flex-1 rounded-full border border-white/10 bg-black/30 px-2.5 text-[11px] text-white outline-none focus:border-emerald-400"
                         />
                         <button
+                          type="button"
                           onClick={handleSavePhone}
                           disabled={phoneSaving}
                           className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-black text-black disabled:opacity-50"
                         >
                           {phoneSaving ? "..." : "Salvar"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPhone(false);
+                            setPhoneDraft(selected.phone);
+                          }}
+                          className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-bold text-white/60 hover:bg-white/10"
+                        >
+                          Cancelar
                         </button>
                       </div>
                     ) : (
