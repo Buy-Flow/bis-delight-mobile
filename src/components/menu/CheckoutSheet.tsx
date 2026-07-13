@@ -1081,12 +1081,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           </div>
 
 
-          <div className="h-20" />
+          <div className={pageMode ? "h-32" : "h-20"} />
 
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
-        <div className={pageMode ? "px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
+        <div className={pageMode ? "fixed inset-x-0 bottom-0 z-40 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-[#0a0118] via-[#0a0118]/95 to-transparent" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
           <button
             onClick={send}
             disabled={
@@ -1096,7 +1096,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               (mode === "entrega" && outsideRadius)
             }
             className={cn(
-              "flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white active:scale-[.98] disabled:opacity-60",
+              "flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
               storeStatus.isClosed || (mode === "entrega" && outsideRadius)
                 ? "bg-white/10 ring-1 ring-white/15"
                 : "bg-neon-pink",
