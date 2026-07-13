@@ -149,10 +149,10 @@ function MotoboyPortal() {
       await supabase.rpc("courier_heartbeat", {
         _lat: coord.lat,
         _lng: coord.lng,
-        _heading: coord.heading ?? null,
-        _speed: coord.speed ?? null,
-        _accuracy: coord.acc ?? null,
-        _battery: null,
+        _heading: coord.heading ?? undefined,
+        _speed: coord.speed ?? undefined,
+        _accuracy: coord.acc ?? undefined,
+        _battery: undefined,
       });
     } catch (e) {
       console.warn("heartbeat failed", e);
