@@ -533,14 +533,7 @@ function UsersPage() {
           onClose={() => setSelected(null)}
           onGrant={(r) => grant(selected.id, r)}
           onRevoke={(r) => revoke(selected.id, r)}
-          onResend={async () => {
-            try {
-              await resend({ data: { email: selected.email } });
-              toast.success("Convite reenviado para " + selected.email);
-            } catch (e: any) {
-              toast.error("Falha ao reenviar", { description: e?.message });
-            }
-          }}
+          onResend={null}
         />
       )}
 
@@ -551,13 +544,18 @@ function UsersPage() {
           onClose={() => setShowInvite(false)}
           onSubmit={async (payload) => {
             try {
-              const res = await invite({ data: payload });
-              toast.success(res.invited ? "Convite enviado por email" : "Papel atribuído ao usuário existente");
+              if (!payload.role) throw new Error("Selecione um papel");
+              const res = await assignRole({ data: { ...payload, role: payload.role } });
+              toast.success(
+                res.status === "granted"
+                  ? "Papel atribuído ao usuário"
+                  : "Papel reservado — será aplicado assim que essa pessoa criar a conta",
+              );
               setShowInvite(false);
               await loadUsers();
               await loadAudit();
             } catch (e: any) {
-              toast.error("Falha ao adicionar usuário", { description: e?.message });
+              toast.error("Falha ao atribuir papel", { description: e?.message });
             }
           }}
         />
