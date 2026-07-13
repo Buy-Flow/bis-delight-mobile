@@ -97,6 +97,10 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [addrCity, setAddrCity] = useState("");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
+  const [cep, setCep] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+
   const [sending, setSending] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
