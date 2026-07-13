@@ -84,7 +84,7 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
               if (key?.remoteJid?.includes("@g.us")) continue;
 
               const fromMe = !!key?.fromMe;
-              const direction: "inbound" | "outbound" = fromMe ? "outbound" : "inbound";
+              const direction: "in" | "out" = fromMe ? "out" : "in";
               const { text, type, media } = extractText(item.message);
               const evoId = key?.id ?? null;
 
@@ -114,7 +114,7 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
                   updated_at: nowIso,
                 };
                 if (!existing.contact_name && item.pushName) patch.contact_name = item.pushName;
-                if (direction === "inbound") patch.unread_count = ((existing.unread_count as number | null) ?? 0) + 1;
+                if (direction === "in") patch.unread_count = ((existing.unread_count as number | null) ?? 0) + 1;
                 await supabaseAdmin.from("whatsapp_conversations").update(patch).eq("id", convId);
               } else {
                 const { data: inserted, error: insErr } = await supabaseAdmin
@@ -124,7 +124,7 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
                     contact_name: item.pushName ?? null,
                     last_message_at: nowIso,
                     last_message_preview: (text ?? "").slice(0, 140) || `[${type}]`,
-                    unread_count: direction === "inbound" ? 1 : 0,
+                    unread_count: direction === "in" ? 1 : 0,
                   })
                   .select("id")
                   .single();
@@ -152,7 +152,7 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
                 type,
                 content: text,
                 media_url: media,
-                sent_by: fromMe ? "external" : "customer",
+                sent_by: fromMe ? "human" : "customer",
                 status: item.status ?? "received",
                 raw: item as unknown as import("@/integrations/supabase/types").Json,
               });
