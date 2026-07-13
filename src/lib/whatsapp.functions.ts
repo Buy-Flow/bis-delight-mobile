@@ -507,17 +507,63 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { instance } = evoConfig();
-    if (!instance) return { state: "unconfigured", exists: false };
+    if (!instance)
+      return {
+        state: "unconfigured",
+        exists: false,
+        ownerJid: null,
+        profileName: null,
+        disconnectionAt: null,
+        disconnectionCode: null,
+      };
     try {
       const j = await evoFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
-      const state =
+      let state =
         ((j?.instance as Record<string, unknown> | undefined)?.state as string | undefined) ??
         (j?.state as string | undefined) ??
         "unknown";
-      return { state, exists: true };
+
+      // /connectionState às vezes devolve "open" mesmo quando o WhatsApp
+      // fez logout (401). /instance/fetchInstances tem o campo real
+      // (disconnectionAt + disconnectionReasonCode + connectionStatus).
+      let ownerJid: string | null = null;
+      let profileName: string | null = null;
+      let disconnectionAt: string | null = null;
+      let disconnectionCode: number | null = null;
+      try {
+        const list = await evoFetch(
+          `/instance/fetchInstances?instanceName=${encodeURIComponent(instance)}`,
+        );
+        const arr = Array.isArray(list)
+          ? list
+          : Array.isArray((list as { data?: unknown })?.data)
+            ? ((list as { data: unknown[] }).data)
+            : [];
+        const inst = (arr as Array<Record<string, unknown>>)[0] ?? null;
+        if (inst) {
+          ownerJid = (inst.ownerJid as string | null) ?? null;
+          profileName = (inst.profileName as string | null) ?? null;
+          disconnectionAt = (inst.disconnectionAt as string | null) ?? null;
+          disconnectionCode = (inst.disconnectionReasonCode as number | null) ?? null;
+          const connStatus = (inst.connectionStatus as string | undefined) ?? null;
+          if (disconnectionAt && (connStatus === "close" || disconnectionCode === 401)) {
+            state = "close";
+          }
+        }
+      } catch { /* ignora, mantém state do connectionState */ }
+
+      return { state, exists: true, ownerJid, profileName, disconnectionAt, disconnectionCode };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (/404/.test(msg)) return { state: "not_found", exists: false };
+      if (/404/.test(msg))
+        return {
+          state: "not_found",
+          exists: false,
+          ownerJid: null,
+          profileName: null,
+          disconnectionAt: null,
+          disconnectionCode: null,
+        };
       throw e;
     }
   });
