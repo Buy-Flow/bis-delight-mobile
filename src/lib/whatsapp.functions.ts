@@ -81,15 +81,67 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           evoError = `Número inválido: "${conv.phone}". Corrija o telefone da conversa.`;
           status = "failed";
         } else {
-        // 1) Confirma o número no WhatsApp antes de enviar.
+        // 1) Resolve o melhor destino. Em contatos migrados pelo WhatsApp,
+        // a Evolution/Baileys pode receber mensagens com remoteJid @lid e
+        // remoteJidAlt com o telefone real. Nesses casos enviar pelo telefone
+        // pode ficar preso em PENDING; o destino confiável é o @lid já visto.
+        const { data: knownRows } = await context.supabase
+          .from("whatsapp_messages")
+          .select("raw")
+          .eq("conversation_id", conv.id)
+          .not("raw", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(60);
+
+        const rawJids: string[] = [];
+        for (const row of knownRows ?? []) {
+          const raw = (row as { raw?: unknown }).raw;
+          if (!raw || typeof raw !== "object") continue;
+          const rec = raw as Record<string, unknown>;
+          const key = rec.key && typeof rec.key === "object" ? (rec.key as Record<string, unknown>) : {};
+          const send = rec.send && typeof rec.send === "object" ? (rec.send as Record<string, unknown>) : {};
+          const response = send.response && typeof send.response === "object" ? (send.response as Record<string, unknown>) : {};
+          const responseKey = response.key && typeof response.key === "object" ? (response.key as Record<string, unknown>) : {};
+          const dataRec = response.data && typeof response.data === "object" ? (response.data as Record<string, unknown>) : {};
+          const dataKey = dataRec.key && typeof dataRec.key === "object" ? (dataRec.key as Record<string, unknown>) : {};
+          const verification = rec.verification && typeof rec.verification === "object" ? (rec.verification as Record<string, unknown>) : {};
+          for (const value of [
+            key.remoteJid,
+            key.remoteJidAlt,
+            key.senderPn,
+            key.previousRemoteJid,
+            key.participant,
+            responseKey.remoteJid,
+            responseKey.remoteJidAlt,
+            dataKey.remoteJid,
+            dataKey.remoteJidAlt,
+            verification.knownLid,
+            verification.knownPhoneJid,
+            rec.remoteJid,
+          ]) {
+            if (typeof value === "string" && value && !value.includes("@g.us") && !value.includes("status@broadcast")) {
+              rawJids.push(value.toLowerCase());
+            }
+          }
+        }
+        const knownLid = rawJids.find((jid) => jid.endsWith("@lid")) ?? null;
+        const knownPhoneJid = rawJids.find((jid) => /@s\.whatsapp\.net$|@c\.us$/.test(jid)) ?? null;
+        const knownPhoneDigits = knownPhoneJid ? normalizePhone(knownPhoneJid.split("@")[0] ?? "") : "";
+
+        // 2) Confirma o número no WhatsApp antes de enviar.
         // Importante: a Evolution pode responder 400 quando UM item do array
         // não existe. Por isso testamos cada variante separadamente; assim um
         // telefone salvo sem o 9 não bloqueia a tentativa correta com o 9.
-        const candidates = /^55\d{2}\d{8}$/.test(normalized)
+        const phoneCandidates = /^55\d{2}\d{8}$/.test(normalized)
           ? [normalized.slice(0, 4) + "9" + normalized.slice(4), normalized]
           : /^55\d{2}9\d{8}$/.test(normalized)
             ? [normalized, normalized.slice(0, 4) + normalized.slice(5)]
             : [normalized];
+        const candidates = Array.from(new Set([
+          ...(knownLid ? [knownLid] : []),
+          ...(knownPhoneDigits ? [knownPhoneDigits] : []),
+          ...phoneCandidates,
+        ]));
 
         let sendNumber: string | null = null;
         let verifiedJid: string | null = null;
@@ -114,7 +166,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           return [];
         };
 
-        for (const candidate of Array.from(new Set(candidates))) {
+        for (const candidate of candidates) {
           const checkReq = { numbers: [candidate] };
           let checkStatus: number | string = "n/a";
           let checkBody = "";
@@ -138,6 +190,11 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               const numberDigits = foundNumber.includes("@lid") ? "" : normalizePhone(foundNumber);
               const jid = String(found.jid ?? "");
               const jidDigits = jid.includes("@lid") ? "" : normalizePhone(jid.split("@")[0] ?? "");
+              if (candidate.endsWith("@lid")) {
+                sendNumber = candidate;
+                verifiedJid = jid || candidate;
+                break;
+              }
               // Para números BR a verificação da Evolution/Baileys às vezes
               // confirma a variante com 9º dígito, mas devolve o JID antigo
               // sem o 9. Enviar usando esse JID antigo fica preso em PENDING
@@ -168,7 +225,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         // números BR a Evolution confirma mal a existência, mas o sendText ainda
         // aceita o número correto. Se o envio real falhar, aí sim mostramos o
         // erro técnico completo retornado pelo endpoint de envio.
-        if (!sendNumber) sendNumber = Array.from(new Set(candidates))[0] ?? normalized;
+        if (!sendNumber) sendNumber = knownLid ?? candidates[0] ?? normalized;
         {
           const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
           const sendReq = {
@@ -238,9 +295,11 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               }
               rawPayload = {
                 verification: {
-                  candidates: Array.from(new Set(candidates)),
+                  candidates,
                   selectedNumber: sendNumber,
                   verifiedJid,
+                  knownLid,
+                  knownPhoneJid,
                 },
                 send: {
                   endpoint: sendUrl,
@@ -250,7 +309,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               };
               // Se a conversa estava salva sem o 9 e a Evolution confirmou a
               // variante correta, deixa o cadastro pronto para os próximos envios.
-              if (sendNumber !== normalized) {
+              if (!sendNumber.includes("@") && sendNumber !== normalized) {
                 await context.supabase
                   .from("whatsapp_conversations")
                   .update({ phone: sendNumber })
