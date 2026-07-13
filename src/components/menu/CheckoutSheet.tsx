@@ -20,6 +20,7 @@ import {
 } from "@/lib/delivery-zone";
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
 import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
+import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/AddressMapInline";
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail } from "lucide-react";
 
 
