@@ -129,6 +129,13 @@ function WhatsappPage() {
     hasKey: boolean;
     hasInstance: boolean;
   } | null>(null);
+  const [connState, setConnState] = useState<{
+    state: string;
+    ownerJid?: string | null;
+    profileName?: string | null;
+    disconnectionAt?: string | null;
+    disconnectionCode?: number | null;
+  } | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
   const [tab, setTab] = useState<"inbox" | "logs">("inbox");
   const [editingPhone, setEditingPhone] = useState(false);
