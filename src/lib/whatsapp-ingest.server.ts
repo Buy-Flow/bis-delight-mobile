@@ -240,7 +240,15 @@ export async function ingestEvolutionPayload(
         });
         continue;
       }
-      const patch: Record<string, unknown> = { status: statusName.toLowerCase() };
+      const appStatus =
+        statusName === "ERROR"
+          ? "failed"
+          : statusName === "DELIVERY_ACK"
+            ? "delivered"
+            : statusName === "READ" || statusName === "PLAYED"
+              ? "read"
+              : "sent";
+      const patch: Record<string, unknown> = { status: appStatus };
       if (statusName === "READ" || statusName === "PLAYED") {
         patch.read_at = new Date().toISOString();
       }
@@ -274,7 +282,7 @@ export async function ingestEvolutionPayload(
       await logRow({
         status: "ok",
         evolution_id: evoId,
-        preview: `status=${statusName}`,
+        preview: `status=${statusName}→${appStatus}`,
       });
     }
     return result;
