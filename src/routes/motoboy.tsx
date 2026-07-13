@@ -72,6 +72,8 @@ type Offer = {
   fee: number | null;
   distance_km: number | null;
   expires_at: string;
+  offered_at: string;
+  responded_at: string | null;
   order?: Order;
 };
 
