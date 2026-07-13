@@ -14,6 +14,8 @@ export const Route = createFileRoute("/api/public/probe-wa")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
+        const doSend = url.searchParams.get("send");
+
 
         const phone = url.searchParams.get("phone") ?? "";
         const base = (process.env.EVOLUTION_API_URL ?? "").replace(/\/+$/, "");
