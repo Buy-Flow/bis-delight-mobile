@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
+import { extractEvolutionMessageId, fetchEvolutionWithTimeout } from "./whatsapp-evolution.server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertAdmin(supabase: any, userId: string) {
@@ -14,40 +15,6 @@ function evoConfig() {
   const key = process.env.EVOLUTION_API_KEY ?? "";
   const instance = process.env.EVOLUTION_INSTANCE ?? process.env.EVOLUTION_INSTANCE_NAME ?? "";
   return { base, key, instance };
-}
-
-async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 15_000) {
-  const ctrl = new AbortController();
-  const timeout = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...init, signal: ctrl.signal });
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-function extractEvolutionMessageId(value: unknown): string | null {
-  if (!value || typeof value !== "object") return null;
-  const rec = value as Record<string, unknown>;
-  const key = rec.key && typeof rec.key === "object" ? (rec.key as Record<string, unknown>) : null;
-  const data = rec.data && typeof rec.data === "object" ? (rec.data as Record<string, unknown>) : null;
-  const dataKey = data?.key && typeof data.key === "object" ? (data.key as Record<string, unknown>) : null;
-  const response = rec.response && typeof rec.response === "object" ? (rec.response as Record<string, unknown>) : null;
-  const responseKey = response?.key && typeof response.key === "object" ? (response.key as Record<string, unknown>) : null;
-  for (const candidate of [
-    key?.id,
-    dataKey?.id,
-    responseKey?.id,
-    rec.messageId,
-    rec.id,
-    data?.messageId,
-    data?.id,
-    response?.messageId,
-    response?.id,
-  ]) {
-    if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
-  }
-  return null;
 }
 
 /** Normaliza número para o formato aceito pelo Evolution/WhatsApp (dígitos, com DDI). */
@@ -205,7 +172,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           let checkStatus: number | string = "n/a";
           let checkBody = "";
           try {
-            const check = await fetchWithTimeout(checkUrl, {
+            const check = await fetchEvolutionWithTimeout(checkUrl, {
               method: "POST",
               headers: { "Content-Type": "application/json", apikey: key },
               body: JSON.stringify(checkReq),
@@ -262,7 +229,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           let sendStatus: number | string = "n/a";
           let sendBody = "";
           try {
-            const resp = await fetchWithTimeout(sendUrl, {
+            const resp = await fetchEvolutionWithTimeout(sendUrl, {
               method: "POST",
               headers: { "Content-Type": "application/json", apikey: key },
               body: JSON.stringify(sendReq),
@@ -508,7 +475,7 @@ export const syncWhatsappRecentMessages = createServerFn({ method: "POST" })
 async function evoFetch(path: string, init?: RequestInit) {
   const { base, key } = evoConfig();
   if (!base || !key) throw new Error("Evolution API não configurada (URL/KEY ausentes).");
-  const resp = await fetchWithTimeout(`${base}${path}`, {
+  const resp = await fetchEvolutionWithTimeout(`${base}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",

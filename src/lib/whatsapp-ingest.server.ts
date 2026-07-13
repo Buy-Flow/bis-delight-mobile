@@ -288,18 +288,25 @@ export async function ingestEvolutionPayload(
             .eq("phone", jidPhone)
             .maybeSingle();
           if (conv?.id) {
-            const { data: fallbackUpd, error: fallbackErr } = await supabase
+            const { data: latest } = await supabase
               .from("whatsapp_messages")
-              .update({ ...patch, evolution_id: evoId })
+              .select("id")
               .eq("conversation_id", conv.id)
               .eq("direction", "out")
               .in("status", ["pending", "sending", "sent"])
               .order("created_at", { ascending: false })
               .limit(1)
-              .select("id")
               .maybeSingle();
-            upd = fallbackUpd;
-            updErr = fallbackErr;
+            if (latest?.id) {
+              const { data: fallbackUpd, error: fallbackErr } = await supabase
+                .from("whatsapp_messages")
+                .update({ ...patch, evolution_id: evoId })
+                .eq("id", latest.id)
+                .select("id")
+                .maybeSingle();
+              upd = fallbackUpd;
+              updErr = fallbackErr;
+            }
           }
         }
       }
