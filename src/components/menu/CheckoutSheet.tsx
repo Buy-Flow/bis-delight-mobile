@@ -474,7 +474,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   };
 
   return (
-    <div className={pageMode ? "min-h-dvh card-acai" : "fixed inset-0 z-50"}>
+    <div className={pageMode ? "min-h-dvh bg-[oklch(0.14_0.09_305)] text-white" : "fixed inset-0 z-50"}>
       {!pageMode && (
         <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={closeCheckout} />
       )}
@@ -1031,7 +1031,46 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 <span className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">{brl(total)}</span>
               </div>
             </div>
+
+            {pageMode && (
+              <button
+                type="button"
+                onClick={send}
+                disabled={
+                  sending ||
+                  authLoading ||
+                  storeStatus.isClosed ||
+                  (mode === "entrega" && outsideRadius)
+                }
+                className={cn(
+                  "mt-4 flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
+                  storeStatus.isClosed || (mode === "entrega" && outsideRadius)
+                    ? "bg-white/10 ring-1 ring-white/15"
+                    : "bg-neon-pink glow-pink",
+                )}
+              >
+                {sending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {storeStatus.isClosed ? (
+                  <>
+                    <MoonStar className="h-4 w-4 text-red-300" />
+                    {storeStatus.nextOpenLabel
+                      ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
+                      : "Loja fechada no momento"}
+                  </>
+                ) : mode === "entrega" && outsideRadius ? (
+                  <>
+                    <AlertTriangle className="h-4 w-4 text-red-300" />
+                    Endereço fora do raio de entrega
+                  </>
+                ) : isAuthenticated ? (
+                  `Enviar pedido no WhatsApp · ${brl(total)}`
+                ) : (
+                  `Entrar para finalizar · ${brl(total)}`
+                )}
+              </button>
+            )}
           </div>
+
 
           {/* Cupom Bis Recompensa */}
           {couponApplied ? (
@@ -1100,12 +1139,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           )}
 
 
-          <div className={pageMode ? "h-4" : "h-20"} />
+          <div className={pageMode ? "h-24" : "h-20"} />
 
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
-        <div className={pageMode ? "mx-auto max-w-2xl px-4 pb-[calc(96px+env(safe-area-inset-bottom))] md:pb-8" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
+        <div className={pageMode ? "hidden" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
           <button
             onClick={send}
             disabled={
