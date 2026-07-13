@@ -666,6 +666,7 @@ function WhatsappPage() {
             )}
           </section>
         </div>
+        )}
       </div>
     </div>
   );
