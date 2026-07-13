@@ -956,7 +956,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
-        <div className="border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className={pageMode ? "px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
           <button
             onClick={send}
             disabled={
