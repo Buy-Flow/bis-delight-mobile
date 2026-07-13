@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff, Radio, Copy, AlertTriangle } from "lucide-react";
+import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff, Radio, Copy, AlertTriangle, Activity, CheckCircle, MinusCircle, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getWhatsappConnectionState,
   getWhatsappQrCode,
@@ -29,7 +30,12 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   const [disconnecting, setDisconnecting] = useState(false);
   const [webhook, setWebhookState] = useState<{ url: string; currentUrl: string | null; configured: boolean; hasToken: boolean } | null>(null);
   const [wbSaving, setWbSaving] = useState(false);
+  const [diag, setDiag] = useState<{
+    ok: number; skipped: number; error: number; total: number;
+    lastEventAt: string | null; lastSyncAt: string | null; lastErrorAt: string | null; lastError: string | null;
+  } | null>(null);
   const pollRef = useRef<number | null>(null);
+  const diagRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
 
   async function refreshState() {
@@ -102,12 +108,46 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
     }
   }
 
+  async function refreshDiagnostics() {
+    try {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const [okRes, skipRes, errRes, lastEvt, lastSync, lastErr] = await Promise.all([
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "ok").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "skipped").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "error").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("whatsapp_ingest_logs").select("created_at").eq("source", "sync").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("whatsapp_ingest_logs").select("created_at,error").eq("status", "error").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      const ok = okRes.count ?? 0;
+      const skipped = skipRes.count ?? 0;
+      const error = errRes.count ?? 0;
+      setDiag({
+        ok, skipped, error, total: ok + skipped + error,
+        lastEventAt: (lastEvt.data as { created_at: string } | null)?.created_at ?? null,
+        lastSyncAt: (lastSync.data as { created_at: string } | null)?.created_at ?? null,
+        lastErrorAt: (lastErr.data as { created_at: string; error: string | null } | null)?.created_at ?? null,
+        lastError: (lastErr.data as { created_at: string; error: string | null } | null)?.error ?? null,
+      });
+    } catch {
+      /* noop */
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
     refreshState();
     refreshWebhook();
-    // Auto-load QR se não estiver conectado
+    refreshDiagnostics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    diagRef.current = window.setInterval(refreshDiagnostics, 5000);
+    return () => {
+      if (diagRef.current) window.clearInterval(diagRef.current);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -284,7 +324,91 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
             </div>
           )}
         </div>
+
+        {/* Diagnóstico */}
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-sky-300" />
+              <div className="text-xs font-bold text-white">Diagnóstico (últ. 24h)</div>
+            </div>
+            <button
+              onClick={refreshDiagnostics}
+              className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-white/60 hover:bg-white/10"
+            >
+              <RefreshCw className="h-2.5 w-2.5" /> Atualizar
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-2 text-center">
+              <CheckCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-emerald-300" />
+              <div className="text-base font-black leading-none text-emerald-200">{diag?.ok ?? "—"}</div>
+              <div className="mt-1 text-[9px] uppercase tracking-wider text-emerald-300/70">Salvos</div>
+            </div>
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-2 text-center">
+              <MinusCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-amber-300" />
+              <div className="text-base font-black leading-none text-amber-200">{diag?.skipped ?? "—"}</div>
+              <div className="mt-1 text-[9px] uppercase tracking-wider text-amber-300/70">Ignorados</div>
+            </div>
+            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-2 text-center">
+              <XCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-red-300" />
+              <div className="text-base font-black leading-none text-red-200">{diag?.error ?? "—"}</div>
+              <div className="mt-1 text-[9px] uppercase tracking-wider text-red-300/70">Erros</div>
+            </div>
+          </div>
+
+          <div className="mt-3 space-y-1.5 text-[10.5px]">
+            <DiagRow label="Último evento" value={fmtRelative(diag?.lastEventAt)} />
+            <DiagRow label="Última sincronização" value={fmtRelative(diag?.lastSyncAt)} />
+            <DiagRow
+              label="Status do webhook"
+              value={webhook?.configured ? "Ativo" : "Inativo"}
+              tone={webhook?.configured ? "ok" : "warn"}
+            />
+          </div>
+
+          {diag?.lastError && (
+            <div className="mt-2 rounded-lg border border-red-500/20 bg-red-500/10 p-2">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-200">
+                <AlertTriangle className="h-3 w-3" /> Último erro · {fmtRelative(diag.lastErrorAt)}
+              </div>
+              <div className="mt-1 line-clamp-2 text-[10px] text-red-100/80">{diag.lastError}</div>
+            </div>
+          )}
+
+          {(diag?.total ?? 0) === 0 && (
+            <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-white/5 bg-black/20 p-2 text-[10px] text-white/50">
+              <Clock className="mt-0.5 h-3 w-3 shrink-0" />
+              Nenhum evento nas últimas 24h. Envie ou receba uma mensagem para gerar tráfego.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+function DiagRow({ label, value, tone }: { label: string; value: string; tone?: "ok" | "warn" }) {
+  const color = tone === "ok" ? "text-emerald-300" : tone === "warn" ? "text-amber-300" : "text-white/80";
+  return (
+    <div className="flex items-center justify-between rounded-lg bg-black/20 px-2 py-1">
+      <span className="text-white/50">{label}</span>
+      <span className={`font-bold ${color}`}>{value}</span>
+    </div>
+  );
+}
+
+function fmtRelative(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 0 || Number.isNaN(diff)) return "—";
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `há ${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `há ${m}min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h / 24);
+  return `há ${d}d`;
 }
