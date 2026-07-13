@@ -319,9 +319,19 @@ function WhatsappPage() {
         }
         return withoutTemp;
       });
-      if (res.warning) toast.warning(res.warning);
+      if (persisted && (persisted.status === "failed" || persisted.status === "error")) {
+        // eslint-disable-next-line no-console
+        console.error("[whatsapp] envio falhou:\n" + (persisted.error ?? "(sem detalhes)"));
+        toast.error("Falha ao enviar. Veja o balão para detalhes técnicos.");
+      } else if (res.warning) {
+        // eslint-disable-next-line no-console
+        console.warn("[whatsapp] aviso:\n" + res.warning);
+        toast.warning(res.warning);
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Erro ao enviar";
+      // eslint-disable-next-line no-console
+      console.error("[whatsapp] exceção ao enviar:", e);
       // Keep the optimistic bubble visible and mark as failed so the user
       // sees exactly which message failed and why (e.g. DB write error).
       setMessages((prev) =>
@@ -332,6 +342,7 @@ function WhatsappPage() {
       setSending(false);
     }
   };
+
 
   const handleTogglePause = async () => {
     if (!selected) return;
