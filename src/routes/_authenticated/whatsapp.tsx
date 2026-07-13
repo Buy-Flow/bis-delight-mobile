@@ -677,7 +677,6 @@ function Avatar({
 }) {
   if (pic) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={pic}
         alt=""
