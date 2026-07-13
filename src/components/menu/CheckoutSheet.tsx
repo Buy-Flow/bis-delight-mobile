@@ -1139,7 +1139,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           )}
 
 
-          <div className={pageMode ? "h-4" : "h-20"} />
+          <div className={pageMode ? "h-24" : "h-20"} />
 
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
