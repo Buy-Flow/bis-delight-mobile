@@ -527,8 +527,18 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
           disconnectionAt = (inst.disconnectionAt as string | null) ?? null;
           disconnectionCode = (inst.disconnectionReasonCode as number | null) ?? null;
           const connStatus = (inst.connectionStatus as string | undefined) ?? null;
-          if (disconnectionAt && (connStatus === "close" || disconnectionCode === 401)) {
+          // Só considera desconectado quando o próprio Evolution reporta a instância como fechada.
+          // disconnectionAt/disconnectionReasonCode ficam preenchidos como histórico após um logout,
+          // mesmo depois do re-pareamento — não podem, sozinhos, sobrescrever o state.
+          if (connStatus === "open") {
+            state = "open";
+          } else if (connStatus === "close") {
             state = "close";
+          }
+          // Zera campos de disconnection quando está aberto para não confundir a UI.
+          if (state === "open") {
+            disconnectionAt = null;
+            disconnectionCode = null;
           }
         }
       } catch { /* ignora, mantém state do connectionState */ }
