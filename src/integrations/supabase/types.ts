@@ -1333,6 +1333,42 @@ export type Database = {
           },
         ]
       }
+      pending_role_grants: {
+        Row: {
+          applied_at: string | null
+          applied_user_id: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          granted_by: string | null
+          id: string
+          note: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          applied_at?: string | null
+          applied_user_id?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          applied_at?: string | null
+          applied_user_id?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       print_jobs: {
         Row: {
           created_at: string
