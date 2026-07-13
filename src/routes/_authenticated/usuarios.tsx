@@ -924,7 +924,7 @@ function InviteDialog({
           </div>
           <div className="flex-1">
             <h2 className="text-base font-bold text-white">Adicionar usuário</h2>
-            <p className="text-[11px] text-white/50">Envia convite por email e atribui o papel escolhido.</p>
+            <p className="text-[11px] text-white/50">Atribui o papel diretamente ao email — sem envio de convite.</p>
           </div>
           <button type="button" onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white hover:bg-white/10">
             <X className="h-4 w-4" />
