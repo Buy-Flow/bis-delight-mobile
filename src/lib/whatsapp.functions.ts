@@ -28,7 +28,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
       .parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
 
     // fetch conversation
     const { data: conv, error: convErr } = await context.supabase
@@ -39,7 +39,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
     if (convErr) throw new Error(convErr.message);
     if (!conv) throw new Error("Conversa não encontrada");
 
-    const { base, key, instance } = evoConfig();
+    const { base, key, instance } = evolutionConfig();
     let evoId: string | null = null;
     let evoError: string | null = null;
     let status = "pending";
@@ -51,7 +51,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
       status = "pending";
     } else {
       try {
-        const normalized = normalizePhone(conv.phone);
+        const normalized = normalizeWhatsappPhone(conv.phone);
         if (!normalized || normalized.length < 10) {
           evoError = `Número inválido: "${conv.phone}". Corrija o telefone da conversa.`;
           status = "failed";
@@ -117,7 +117,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         }
         const knownLid = rawJids.find((jid) => jid.endsWith("@lid")) ?? null;
         const knownPhoneJid = rawJids.find((jid) => /@s\.whatsapp\.net$|@c\.us$/.test(jid)) ?? null;
-        const knownPhoneDigits = knownPhoneJid ? normalizePhone(knownPhoneJid.split("@")[0] ?? "") : "";
+        const knownPhoneDigits = knownPhoneJid ? normalizeWhatsappPhone(knownPhoneJid.split("@")[0] ?? "") : "";
 
         // 2) Confirma o número no WhatsApp antes de enviar.
         // Importante: a Evolution pode responder 400 quando UM item do array
@@ -177,9 +177,9 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             const found = arr.find((x) => x?.exists === true);
             if (found) {
               const foundNumber = String(found.number ?? "");
-              const numberDigits = foundNumber.includes("@lid") ? "" : normalizePhone(foundNumber);
+              const numberDigits = foundNumber.includes("@lid") ? "" : normalizeWhatsappPhone(foundNumber);
               const jid = String(found.jid ?? "");
-              const jidDigits = jid.includes("@lid") ? "" : normalizePhone(jid.split("@")[0] ?? "");
+              const jidDigits = jid.includes("@lid") ? "" : normalizeWhatsappPhone(jid.split("@")[0] ?? "");
               // Mesmo quando a verificação devolve um JID @lid, o endpoint
               // sendText deve receber o telefone. Enviar para @lid deixa a
               // mensagem presa em PENDING/ERROR em várias versões da Evolution.
@@ -207,10 +207,11 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         // aceita o número correto. Se o envio real falhar, aí sim mostramos o
         // erro técnico completo retornado pelo endpoint de envio.
         if (!sendNumber) sendNumber = candidates[0] ?? normalized;
+        const targetNumber = sendNumber;
         {
           const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
           const sendReq = {
-            number: sendNumber,
+            number: targetNumber,
             text: data.text,
             delay: 0,
             linkPreview: false,
@@ -280,10 +281,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               rawPayload = {
                 verification: {
                   candidates,
-                  selectedNumber: sendNumber,
-                  verifiedJid,
-                  knownLid,
-                  knownPhoneJid,
+                  selectedNumber: targetNumber,
+                  verifiedJid: verifiedJid ?? undefined,
+                  knownLid: knownLid ?? undefined,
+                  knownPhoneJid: knownPhoneJid ?? undefined,
                 },
                 send: {
                   endpoint: sendUrl,
@@ -293,10 +294,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               };
               // Se a conversa estava salva sem o 9 e a Evolution confirmou a
               // variante correta, deixa o cadastro pronto para os próximos envios.
-              if (!sendNumber.includes("@") && sendNumber !== normalized) {
+              if (!targetNumber.includes("@") && targetNumber !== normalized) {
                 await context.supabase
                   .from("whatsapp_conversations")
-                  .update({ phone: sendNumber })
+                  .update({ phone: targetNumber })
                   .eq("id", conv.id);
               }
             }
