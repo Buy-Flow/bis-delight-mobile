@@ -1212,7 +1212,36 @@ function CourierDialog({
             />
             Ativo (disponível para receber entregas)
           </label>
+
+          {courier && (
+            <div className="mt-2 rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-2.5">
+              <div className="text-[11px] font-black uppercase text-fuchsia-300">Portal do Motoboy</div>
+              <div className="text-[11px] text-white/60 mt-1">
+                {currentUserId
+                  ? <span className="text-emerald-300">✓ Conta vinculada. Acesso em <code>/motoboy</code>.</span>
+                  : "Vincule uma conta para o motoboy acessar o app dele com GPS ao vivo."}
+              </div>
+              {!currentUserId && (
+                <div className="mt-2 flex gap-2">
+                  <input
+                    value={linkEmail}
+                    onChange={(e) => setLinkEmail(e.target.value)}
+                    placeholder="Telefone ou nome cadastrado"
+                    className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs focus:border-neon-pink/50 focus:outline-none"
+                  />
+                  <button
+                    onClick={() => void linkAccount()}
+                    disabled={linking}
+                    className="rounded-lg bg-fuchsia-500 px-3 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    {linking ? "..." : "Vincular"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
 
         <div className="mt-4 flex gap-2">
           <button
