@@ -776,6 +776,32 @@ function MapView({
           </div>`,
         );
     }
+
+    // Live courier markers
+    for (const c of couriers) {
+      const cx = (c as unknown as { current_lat?: number | null }).current_lat;
+      const cy = (c as unknown as { current_lng?: number | null }).current_lng;
+      const st = (c as unknown as { status?: string }).status ?? "offline";
+      if (cx == null || cy == null) continue;
+      const stale = ((c as unknown as { location_updated_at?: string | null }).location_updated_at)
+        ? Date.now() - new Date((c as unknown as { location_updated_at: string }).location_updated_at).getTime() > 3 * 60 * 1000
+        : true;
+      const color = st === "busy" ? "#f59e0b" : st === "online" ? "#10b981" : "#6b7280";
+      bounds.push([cx, cy]);
+      L.marker([cx, cy], {
+        icon: L.divIcon({
+          className: "",
+          html: `<div style="position:relative;width:34px;height:34px;">
+            ${!stale && st !== "offline" ? `<div style="position:absolute;inset:-6px;border-radius:9999px;background:${color};opacity:.25;animation:pulse 1.6s infinite"></div>` : ""}
+            <div style="background:${color};border:3px solid #0d0322;width:34px;height:34px;border-radius:9999px;display:grid;place-items:center;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.4)">🏍️</div>
+          </div>`,
+          iconSize: [34, 34], iconAnchor: [17, 17],
+        }),
+      }).addTo(lg).bindPopup(
+        `<div style="font-family:inherit;font-size:12px;color:#111"><b>${c.name}</b><br/>${st}${stale ? " · sinal antigo" : ""}</div>`
+      );
+    }
+
     if (bounds.length > 1) {
       map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
     }
