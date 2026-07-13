@@ -123,6 +123,7 @@ function WhatsappPage() {
     hasInstance: boolean;
   } | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
+  const [tab, setTab] = useState<"inbox" | "logs">("inbox");
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedIdRef = useRef<string | null>(null);
   const syncInFlightRef = useRef(false);
