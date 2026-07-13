@@ -24,6 +24,8 @@ import {
   Link2Off,
   Download,
   Calendar,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
