@@ -968,32 +968,86 @@ function WhatsappPage() {
                       IA está respondendo — envie manualmente ou pause a IA para assumir.
                     </div>
                   )}
-                  <div className="flex items-end gap-2">
-                    <textarea
-                      value={text}
-                      onChange={(e) => setText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                      rows={2}
-                      placeholder="Digite sua mensagem… (Enter envia, Shift+Enter quebra linha)"
-                      className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
-                    />
-                    <button
-                      onClick={handleSend}
-                      disabled={!text.trim() || sending}
-                      className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
-                    >
-                      {sending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
+                  {recording ? (
+                    <div className="flex items-center gap-2 rounded-2xl border border-red-400/40 bg-red-500/10 px-3 py-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                      </span>
+                      <span className="flex-1 text-sm font-bold text-red-100">
+                        Gravando… {String(Math.floor(recordSeconds / 60)).padStart(2, "0")}:
+                        {String(recordSeconds % 60).padStart(2, "0")}
+                      </span>
+                      <button
+                        onClick={() => stopRecording(true)}
+                        className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 text-white/80 hover:bg-black/50"
+                        title="Cancelar"
+                        type="button"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => stopRecording(false)}
+                        className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black hover:brightness-110"
+                        title="Enviar áudio"
+                        type="button"
+                      >
                         <Send className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-end gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,video/*,audio/*,application/pdf"
+                        onChange={handleFileSelected}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 disabled:opacity-40"
+                        title="Anexar imagem, vídeo, áudio ou PDF"
+                      >
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                      </button>
+                      <textarea
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        rows={2}
+                        placeholder="Digite sua mensagem… (Enter envia, Shift+Enter quebra linha)"
+                        className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
+                      />
+                      {text.trim() ? (
+                        <button
+                          onClick={handleSend}
+                          disabled={sending}
+                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          title="Enviar"
+                        >
+                          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={startRecording}
+                          disabled={uploading}
+                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          title="Gravar áudio"
+                          type="button"
+                        >
+                          <Mic className="h-4 w-4" />
+                        </button>
                       )}
-                    </button>
-                  </div>
+                    </div>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {QUICK_REPLIES.map((q) => (
                       <button
