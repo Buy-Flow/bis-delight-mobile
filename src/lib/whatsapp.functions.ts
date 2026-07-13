@@ -146,7 +146,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               friendly = `O número ${arr[0].number ?? sendNumber} não está registrado no WhatsApp. Confira o telefone da conversa.`;
             }
           } catch { /* mantém friendly */ }
-          evoError = friendly;
+          evoError = `${friendly}\n[diag] ${checkDiag} | send to: ${sendNumber}`;
           status = "failed";
         } else {
           try {
@@ -160,7 +160,12 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           } catch {
             evoId = null;
           }
+          // Guarda diagnóstico em warning mesmo em sucesso para depurar entregas
+          if (checkDiag && !checkDiag.startsWith("chk 2")) {
+            evoError = `[warn] verificação de número não conclusiva. ${checkDiag} | enviado para: ${sendNumber}`;
+          }
         }
+
         }
         }
 
