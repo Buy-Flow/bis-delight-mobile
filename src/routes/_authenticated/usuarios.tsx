@@ -677,14 +677,6 @@ function UserDrawer({
               label="Cadastro"
               value={new Date(user.created_at).toLocaleDateString("pt-BR")}
             />
-            {onResend && !user.email_confirmed_at && (
-              <button
-                onClick={onResend}
-                className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-indigo-400/30 bg-indigo-500/15 px-3 py-2 text-xs font-semibold text-indigo-200 hover:bg-indigo-500/25"
-              >
-                <Mail className="h-3.5 w-3.5" /> Reenviar convite por email
-              </button>
-            )}
           </Section>
 
           <Section title="Permissões" hint="Ative ou desative papéis para este usuário.">
