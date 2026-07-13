@@ -519,11 +519,34 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Flame className="h-4 w-4 text-neon-yellow" />
             <span className="text-sm font-bold">Quero Bis</span>
             <span className="hidden text-xs text-white/40 sm:inline">
-              · Painel administrativo
+              · {_isAdminRole ? "Painel administrativo" : "Painel da equipe"}
             </span>
           </div>
-          <div className="ml-auto" />
-        </header>
+          <div className="ml-auto flex items-center gap-2">
+            {(() => {
+              const primary =
+                (["admin", "manager", "staff", "kitchen"] as const).find((r) =>
+                  usePermissionsRoles.includes(r),
+                ) ?? null;
+              if (!primary) return null;
+              return (
+                <span
+                  className={cn(
+                    "hidden rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider sm:inline-flex",
+                    primary === "admin"
+                      ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
+                      : primary === "manager"
+                      ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
+                      : primary === "staff"
+                      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                      : "border-white/20 bg-white/5 text-white/70",
+                  )}
+                >
+                  {labelForRole(primary)}
+                </span>
+              );
+            })()}
+          </div>
         <main className="flex-1">{children}</main>
       </div>
       <FloatingAssistant />
