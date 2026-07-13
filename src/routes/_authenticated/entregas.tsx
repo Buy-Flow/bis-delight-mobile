@@ -1060,6 +1060,38 @@ function CourierDialog({
     avatar_url: courier?.avatar_url ?? "",
   });
   const [saving, setSaving] = useState(false);
+  const [linkEmail, setLinkEmail] = useState("");
+  const [linking, setLinking] = useState(false);
+  const currentUserId = (courier as unknown as { user_id?: string | null } | null)?.user_id ?? null;
+
+  const linkAccount = async () => {
+    if (!courier) { toast.error("Salve o motoboy primeiro"); return; }
+    if (!linkEmail.trim()) { toast.error("Digite o email"); return; }
+    setLinking(true);
+    try {
+      // find user id by email via profiles table
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", linkEmail.trim().toLowerCase())
+        .maybeSingle();
+      if (!prof?.id) {
+        toast.error("Nenhum usuário com esse email. Peça para criar conta em /auth primeiro.");
+        setLinking(false); return;
+      }
+      const { data, error } = await supabase.rpc("link_courier_to_user", {
+        _courier_id: courier.id, _user_id: prof.id,
+      });
+      if (error || !(data as { ok: boolean })?.ok) {
+        toast.error("Falha ao vincular conta");
+      } else {
+        toast.success("Conta vinculada! O motoboy já pode acessar /motoboy");
+        setLinkEmail("");
+        await onSaved();
+      }
+    } finally { setLinking(false); }
+  };
+
 
   const save = async () => {
     if (!form.name.trim()) {
