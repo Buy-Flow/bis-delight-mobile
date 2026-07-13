@@ -21,6 +21,12 @@ import {
   Users,
   TrendingUp,
   Smartphone,
+  ScrollText,
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
