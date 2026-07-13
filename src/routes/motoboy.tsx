@@ -90,11 +90,29 @@ function MotoboyPortal() {
   const load = useCallback(async () => {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { data: c } = await supabase
+    let { data: c } = await supabase
       .from("couriers")
       .select("*")
       .eq("user_id", u.user.id)
       .maybeSingle();
+    if (!c) {
+      // Auto-vincula/cria registro operacional se o usuário tem papel delivery.
+      try {
+        const { ensureCourierLink } = await import("@/lib/courier.functions");
+        const res = await ensureCourierLink();
+        if (res?.linked) {
+          const { data: refreshed } = await supabase
+            .from("couriers")
+            .select("*")
+            .eq("user_id", u.user.id)
+            .maybeSingle();
+          c = refreshed;
+          if (res.created) toast.success("Cadastro de motoboy criado automaticamente.");
+        }
+      } catch (err) {
+        console.warn("ensureCourierLink falhou", err);
+      }
+    }
     if (!c) {
       setCourier(null);
       setLoading(false);
