@@ -148,7 +148,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     return () => {
       cancelled = true;
     };
-  }, [isCheckoutOpen, user, subtotal]);
+  }, [isCheckoutOpen, pageMode, user, subtotal]);
 
   // Distance-based delivery quote
   const [quote, setQuote] = useState<{
