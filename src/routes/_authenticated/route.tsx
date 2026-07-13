@@ -14,7 +14,6 @@ import {
   usePermissions,
   canAccessRoute,
   landingForRoles,
-  type Role,
 } from "@/lib/permissions";
 
 function AuthenticatedLayout() {
