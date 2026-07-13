@@ -526,7 +526,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             {(() => {
               const primary =
                 (["admin", "manager", "staff", "kitchen"] as const).find((r) =>
-                  usePermissionsRoles.includes(r),
+                  _roles.includes(r),
                 ) ?? null;
               if (!primary) return null;
               return (
