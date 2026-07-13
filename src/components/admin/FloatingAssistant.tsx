@@ -528,27 +528,54 @@ export function FloatingAssistant() {
             )}
           </div>
 
-          {/* Sugestões rápidas — sempre visíveis quando há mensagens */}
+          {/* Sugestões rápidas — 2 fileiras: contexto da página + respostas à conversa */}
           {messages.length > 0 && (
-            <div className="border-t border-white/10 bg-black/10 px-2 py-1.5">
-              <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-                {page.suggestions.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    disabled={isLoading}
-                    onClick={() => {
-                      setInput("");
-                      sendMessage({ text: s });
-                    }}
-                    className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/75 hover:border-neon-pink/50 hover:bg-neon-pink/10 hover:text-white transition disabled:opacity-40"
-                  >
-                    {s}
-                  </button>
-                ))}
+            <div className="space-y-1 border-t border-white/10 bg-black/10 px-2 py-1.5">
+              <div>
+                <div className="mb-1 px-1 text-[9px] font-bold uppercase tracking-widest text-white/40">
+                  Ideias · {page.label}
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+                  {page.suggestions.map((s) => (
+                    <button
+                      key={`p-${s}`}
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => {
+                        setInput("");
+                        sendMessage({ text: s });
+                      }}
+                      className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/75 hover:border-neon-pink/50 hover:bg-neon-pink/10 hover:text-white transition disabled:opacity-40"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="mb-1 mt-1 px-1 text-[9px] font-bold uppercase tracking-widest text-neon-yellow/70">
+                  Respostas rápidas
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+                  {followups.map((s) => (
+                    <button
+                      key={`f-${s}`}
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => {
+                        setInput("");
+                        sendMessage({ text: s });
+                      }}
+                      className="shrink-0 rounded-full border border-neon-yellow/30 bg-neon-yellow/10 px-2.5 py-1 text-[11px] text-neon-yellow hover:bg-neon-yellow/20 transition disabled:opacity-40"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
+
 
           {/* Composer */}
           <div className="border-t border-white/10 bg-black/20 p-2">
