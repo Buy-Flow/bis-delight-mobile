@@ -78,13 +78,12 @@ export function UrgencyBanner() {
 function Cell({ v, label }: { v: string; label: string }) {
   return (
     <div className="relative flex flex-col items-center">
-      <div className="relative overflow-hidden rounded-xl border border-white/15 bg-gradient-to-b from-white/15 to-black/60 px-2.5 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_12px_-4px_rgba(0,0,0,0.6)]">
-        <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-black/50" />
-        <span className="font-mono text-[18px] font-black leading-none tracking-tight text-white tabular-nums">
+      <div className="relative overflow-hidden rounded-lg border border-white/15 bg-gradient-to-b from-white/15 to-black/60 px-1.5 py-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_2px_6px_-2px_rgba(0,0,0,0.5)]">
+        <span className="font-mono text-[13px] font-black leading-tight tracking-tight text-white tabular-nums">
           {v}
         </span>
       </div>
-      <span className="mt-1 text-[8px] font-bold uppercase tracking-[0.15em] text-white/50">
+      <span className="mt-0.5 text-[7px] font-bold uppercase tracking-[0.14em] text-white/50">
         {label}
       </span>
     </div>
