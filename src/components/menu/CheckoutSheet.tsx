@@ -1031,7 +1031,46 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 <span className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">{brl(total)}</span>
               </div>
             </div>
+
+            {pageMode && (
+              <button
+                type="button"
+                onClick={send}
+                disabled={
+                  sending ||
+                  authLoading ||
+                  storeStatus.isClosed ||
+                  (mode === "entrega" && outsideRadius)
+                }
+                className={cn(
+                  "mt-4 flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
+                  storeStatus.isClosed || (mode === "entrega" && outsideRadius)
+                    ? "bg-white/10 ring-1 ring-white/15"
+                    : "bg-neon-pink glow-pink",
+                )}
+              >
+                {sending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {storeStatus.isClosed ? (
+                  <>
+                    <MoonStar className="h-4 w-4 text-red-300" />
+                    {storeStatus.nextOpenLabel
+                      ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
+                      : "Loja fechada no momento"}
+                  </>
+                ) : mode === "entrega" && outsideRadius ? (
+                  <>
+                    <AlertTriangle className="h-4 w-4 text-red-300" />
+                    Endereço fora do raio de entrega
+                  </>
+                ) : isAuthenticated ? (
+                  `Enviar pedido no WhatsApp · ${brl(total)}`
+                ) : (
+                  `Entrar para finalizar · ${brl(total)}`
+                )}
+              </button>
+            )}
           </div>
+
 
           {/* Cupom Bis Recompensa */}
           {couponApplied ? (
