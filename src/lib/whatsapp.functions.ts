@@ -58,7 +58,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
     const { base, key, instance } = evoConfig();
     let evoId: string | null = null;
     let evoError: string | null = null;
-    let status = "sent";
+    let status = "pending";
 
     if (!base || !key || !instance) {
       evoError =
