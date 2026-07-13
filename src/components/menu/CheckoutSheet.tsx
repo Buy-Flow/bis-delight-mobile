@@ -1096,7 +1096,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               (mode === "entrega" && outsideRadius)
             }
             className={cn(
-              "flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white active:scale-[.98] disabled:opacity-60",
+              "flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
               storeStatus.isClosed || (mode === "entrega" && outsideRadius)
                 ? "bg-white/10 ring-1 ring-white/15"
                 : "bg-neon-pink",
