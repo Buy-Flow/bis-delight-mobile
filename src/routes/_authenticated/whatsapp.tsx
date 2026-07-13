@@ -1187,12 +1187,17 @@ function MediaPreview({ m, outbound }: { m: Message; outbound: boolean }) {
 
   const kind = m.type;
 
+  // Áudio tem player custom (estilo WhatsApp) que também dispara o download quando necessário.
+  if (kind === "audio") {
+    return <AudioBubble url={needsFetch ? null : url} loading={loading} error={err} outbound={outbound} onLoad={load} />;
+  }
+
   if (needsFetch) {
     const label =
-      kind === "audio" ? "áudio" : kind === "image" ? "imagem" : kind === "video" ? "vídeo" : "arquivo";
+      kind === "image" ? "imagem" : kind === "video" ? "vídeo" : "arquivo";
     return (
       <div className={cn("mb-1 flex items-center gap-2 rounded-xl border px-2.5 py-2 text-xs", outbound ? "border-black/15 bg-black/10 text-black/80" : "border-white/15 bg-black/20 text-white/80")}>
-        {kind === "audio" ? <Mic className="h-3.5 w-3.5" /> : kind === "image" ? <ImageIcon className="h-3.5 w-3.5" /> : kind === "video" ? <Play className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+        {kind === "image" ? <ImageIcon className="h-3.5 w-3.5" /> : kind === "video" ? <Play className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
         <button
           type="button"
           onClick={load}
@@ -1207,15 +1212,6 @@ function MediaPreview({ m, outbound }: { m: Message; outbound: boolean }) {
     );
   }
 
-  if (kind === "audio") {
-    return (
-      <div className="mb-1">
-        <audio controls preload="metadata" src={url!} className="w-full max-w-[260px]">
-          Seu navegador não suporta áudio.
-        </audio>
-      </div>
-    );
-  }
   if (kind === "image" || kind === "sticker") {
     return (
       <a href={url!} target="_blank" rel="noreferrer" className="mb-1 block">
