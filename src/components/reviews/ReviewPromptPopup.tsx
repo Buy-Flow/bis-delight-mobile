@@ -13,16 +13,20 @@ import { cn } from "@/lib/utils";
  * Regras:
  * - Só aparece se autenticado.
  * - Só considera pedidos entregues (status = 'entregue') OU pagos com > 30min.
- * - Ignora pedidos já dispensados localmente por 3 dias.
+ * - Considera apenas a compra elegível mais recente; pedidos antigos não ficam voltando.
  * - Ignora pedidos com avaliação existente no banco.
+ * - Se o cliente fechar 2 vezes, não aparece mais para aquele pedido.
  * - Aparece 8s após o mount para não atrapalhar a experiência inicial.
  * - Não aparece na própria página /avaliar.
  */
-const DISMISS_KEY = "review_prompt_dismissed";
+const PROMPT_STATE_KEY = "review_prompt_state_v2";
 const REVIEWED_KEY = "reviewed_orders";
 const APPEAR_DELAY = 8_000;
-// Só aparece 6h após o pedido; depois de mostrado/dispensado, não volta mais para o mesmo pedido.
+// Só aparece 6h após o pedido.
 const MIN_AGE_MS = 6 * 60 * 60 * 1000;
+// Se fechar uma vez, só tenta novamente depois de 6h; na segunda, para até novo pedido.
+const DISMISS_SNOOZE_MS = 6 * 60 * 60 * 1000;
+const MAX_DISMISSES_PER_ORDER = 2;
 
 type Candidate = {
   id: string;
@@ -33,6 +37,55 @@ type Candidate = {
   total: number;
   items_preview: string;
   items_images: string[];
+};
+
+type PromptState = {
+  orders: Record<
+    string,
+    {
+      dismissCount?: number;
+      lastDismissedAt?: number;
+      lastOpenedReviewAt?: number;
+      reviewedAt?: number;
+    }
+  >;
+};
+
+const readPromptState = (): PromptState => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PROMPT_STATE_KEY) ?? "{}");
+    return { orders: parsed.orders && typeof parsed.orders === "object" ? parsed.orders : {} };
+  } catch {
+    return { orders: {} };
+  }
+};
+
+const writePromptState = (state: PromptState) => {
+  try {
+    localStorage.setItem(PROMPT_STATE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore private mode / storage blocked
+  }
+};
+
+const markPromptDismissed = (orderId: string) => {
+  const state = readPromptState();
+  const current = state.orders[orderId] ?? {};
+  state.orders[orderId] = {
+    ...current,
+    dismissCount: Math.min((current.dismissCount ?? 0) + 1, MAX_DISMISSES_PER_ORDER),
+    lastDismissedAt: Date.now(),
+  };
+  writePromptState(state);
+};
+
+const markReviewOpened = (orderId: string) => {
+  const state = readPromptState();
+  state.orders[orderId] = {
+    ...(state.orders[orderId] ?? {}),
+    lastOpenedReviewAt: Date.now(),
+  };
+  writePromptState(state);
 };
 
 export function ReviewPromptPopup() {
@@ -68,10 +121,9 @@ export function ReviewPromptPopup() {
       if (!orders || cancelled) return;
 
       // filter out reviewed & dismissed
-      let dismissed: Record<string, number> = {};
+      const promptState = readPromptState();
       let reviewed: string[] = [];
       try {
-        dismissed = JSON.parse(localStorage.getItem(DISMISS_KEY) ?? "{}");
         reviewed = JSON.parse(localStorage.getItem(REVIEWED_KEY) ?? "[]");
       } catch { /* ignore */ }
       const now = Date.now();
@@ -88,13 +140,21 @@ export function ReviewPromptPopup() {
         ...((existingReviews ?? []) as { order_id: string }[]).map((r) => r.order_id).filter(Boolean),
       ]);
 
-      const found = orders.find((o: { id: string; status: string; created_at: string }) => {
-        if (reviewedIds.has(o.id)) return false;
-        // qualquer aparição anterior desse pedido invalida — só volta em novo pedido
-        if (dismissed[o.id]) return false;
+      const latestEligibleOrder = orders.find((o: { id: string; status: string; created_at: string }) => {
         const age = now - new Date(o.created_at).getTime();
         return age >= MIN_AGE_MS;
       });
+
+      if (!latestEligibleOrder) return;
+
+      const orderPrompt = promptState.orders[latestEligibleOrder.id] ?? {};
+      if (reviewedIds.has(latestEligibleOrder.id) || orderPrompt.reviewedAt) return;
+      if ((orderPrompt.dismissCount ?? 0) >= MAX_DISMISSES_PER_ORDER) return;
+
+      const lastPause = Math.max(orderPrompt.lastDismissedAt ?? 0, orderPrompt.lastOpenedReviewAt ?? 0);
+      if (lastPause > 0 && now - lastPause < DISMISS_SNOOZE_MS) return;
+
+      const found = latestEligibleOrder;
 
       if (!found) return;
 
@@ -117,13 +177,6 @@ export function ReviewPromptPopup() {
       });
       timer = setTimeout(() => {
         if (cancelled) return;
-        // Marca como visto imediatamente — não volta para o mesmo pedido
-        try {
-          const raw = localStorage.getItem(DISMISS_KEY) ?? "{}";
-          const map = JSON.parse(raw);
-          map[found.id] = Date.now();
-          localStorage.setItem(DISMISS_KEY, JSON.stringify(map));
-        } catch { /* ignore */ }
         setVisible(true);
       }, APPEAR_DELAY);
     };
@@ -137,17 +190,13 @@ export function ReviewPromptPopup() {
 
   const dismiss = () => {
     if (!candidate) return;
-    try {
-      const raw = localStorage.getItem(DISMISS_KEY) ?? "{}";
-      const map = JSON.parse(raw);
-      map[candidate.id] = Date.now();
-      localStorage.setItem(DISMISS_KEY, JSON.stringify(map));
-    } catch { /* ignore */ }
+    markPromptDismissed(candidate.id);
     setVisible(false);
   };
 
   const goToFullReview = () => {
     if (!candidate) return;
+    markReviewOpened(candidate.id);
     setVisible(false);
     router.navigate({
       to: "/avaliar/$orderId" as never,
@@ -228,6 +277,7 @@ export function ReviewPromptPopup() {
                     onMouseLeave={() => setHover(0)}
                     onClick={() => {
                       setRating(n);
+                        markReviewOpened(candidate.id);
                       // pequena espera para o usuário ver a estrela acender
                       setTimeout(() => {
                         setVisible(false);
