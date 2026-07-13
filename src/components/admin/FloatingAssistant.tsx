@@ -469,16 +469,44 @@ export function FloatingAssistant() {
                     )}
                   >
                     {toolCalls.length > 0 && m.role === "assistant" && (
-                      <div className="mb-1.5 flex flex-wrap gap-1">
-                        {toolCalls.map((tc, i) => (
-                          <span
-                            key={i}
-                            className="inline-flex items-center gap-1 rounded-full bg-neon-yellow/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-neon-yellow"
-                          >
-                            <Sparkles className="h-2.5 w-2.5" />
-                            {tc.type.replace("tool-", "")}
-                          </span>
-                        ))}
+                      <div className="mb-1.5 flex flex-col gap-1.5">
+                        <div className="flex flex-wrap gap-1">
+                          {toolCalls.map((tc, i) => (
+                            <span
+                              key={i}
+                              className="inline-flex items-center gap-1 rounded-full bg-neon-yellow/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-neon-yellow"
+                            >
+                              <Sparkles className="h-2.5 w-2.5" />
+                              {tc.type.replace("tool-", "")}
+                            </span>
+                          ))}
+                        </div>
+                        {toolCalls.map((tc, i) => {
+                          const p = tc as Record<string, unknown>;
+                          const out = (p.output ?? p.result) as Record<string, unknown> | undefined;
+                          const url =
+                            p.type === "tool-gerar_imagem_banner" && out && typeof out.image_url === "string"
+                              ? (out.image_url as string)
+                              : null;
+                          if (!url) return null;
+                          return (
+                            <a
+                              key={`img-${i}`}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block overflow-hidden rounded-lg border border-white/10 bg-black/40"
+                            >
+                              <img
+                                src={url}
+                                alt="Banner gerado"
+                                className="h-32 w-full object-cover"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                            </a>
+                          );
+                        })}
                       </div>
                     )}
                     {m.role === "assistant" ? (
