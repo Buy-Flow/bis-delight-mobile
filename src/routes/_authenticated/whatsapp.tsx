@@ -28,6 +28,7 @@ import {
   MinusCircle,
   ChevronDown,
   ChevronRight,
+  Radio,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -39,6 +40,7 @@ import {
   getWhatsappConfigStatus,
   syncWhatsappRecentMessages,
   updateWhatsappConversationPhone,
+  configureWhatsappWebhook,
 } from "@/lib/whatsapp.functions";
 import { WhatsappConnectDialog } from "@/components/admin/WhatsappConnectDialog";
 
@@ -119,6 +121,7 @@ function WhatsappPage() {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [webhookSaving, setWebhookSaving] = useState(false);
   const [config, setConfig] = useState<{
     configured: boolean;
     hasBase: boolean;
@@ -140,6 +143,7 @@ function WhatsappPage() {
   const cfgFn = useServerFn(getWhatsappConfigStatus);
   const syncFn = useServerFn(syncWhatsappRecentMessages);
   const updatePhoneFn = useServerFn(updateWhatsappConversationPhone);
+  const configureWebhookFn = useServerFn(configureWhatsappWebhook);
 
   const loadConversations = async () => {
     setLoadingList(true);
@@ -385,6 +389,19 @@ function WhatsappPage() {
     }
   };
 
+  const handleReconfigureWebhook = async () => {
+    setWebhookSaving(true);
+    try {
+      const res = await configureWebhookFn();
+      toast.success("Webhook reconfigurado para o site publicado.");
+      console.info("[whatsapp] webhook configurado:", res.url);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao reconfigurar webhook");
+    } finally {
+      setWebhookSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-full bg-[#0e0a1a] pb-24 text-white">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -405,6 +422,14 @@ function WhatsappPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleReconfigureWebhook}
+              disabled={webhookSaving}
+              className="inline-flex items-center gap-2 rounded-full border border-sky-400/35 bg-sky-500/12 px-4 py-2 text-xs font-bold text-sky-100 transition hover:bg-sky-500/20 disabled:opacity-50"
+            >
+              {webhookSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
+              Reconfigurar webhook
+            </button>
             <button
               onClick={() => setConnectOpen(true)}
               className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25"
