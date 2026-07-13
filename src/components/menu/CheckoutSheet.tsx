@@ -469,25 +469,17 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     return (
       <div className="min-h-dvh card-acai">
         <form
-          className="mx-auto max-w-2xl space-y-5 px-4 pb-24 pt-6"
+          className="mx-auto max-w-2xl flex flex-col space-y-5 px-4 pb-24 pt-6"
           autoComplete="on"
           onSubmit={(e) => {
             e.preventDefault();
             send();
           }}
         >
-          <div className="pb-2">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-neon-cyan shadow-[0_0_8px_theme(colors.neon-cyan)]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neon-cyan/90">Checkout</span>
-            </div>
-            <h1 className="mt-0.5 text-[26px] font-black leading-tight text-white">
-              Finalizar <span className="bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-transparent">pedido</span>
-            </h1>
-            <p className="mt-1 text-[12px] text-white/60">Falta pouco — confira seus dados abaixo.</p>
-            <div className="mt-3 h-px w-full bg-gradient-to-r from-neon-cyan/50 via-neon-pink/30 to-transparent" />
-          </div>
-          <CheckoutBody />
+          {renderCheckoutContent({
+            storeStatus,
+            // placeholder — actual body reused below
+          } as never)}
         </form>
       </div>
     );
@@ -504,6 +496,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         >
           <X className="h-5 w-5" />
         </button>
+
 
 
         <form
