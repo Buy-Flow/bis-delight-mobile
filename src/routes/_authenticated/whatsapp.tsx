@@ -38,6 +38,7 @@ import {
   setAiPaused,
   markConversationRead,
   getWhatsappConfigStatus,
+  getWhatsappConnectionState,
   syncWhatsappRecentMessages,
   updateWhatsappConversationPhone,
   configureWhatsappWebhook,
@@ -128,6 +129,13 @@ function WhatsappPage() {
     hasKey: boolean;
     hasInstance: boolean;
   } | null>(null);
+  const [connState, setConnState] = useState<{
+    state: string;
+    ownerJid?: string | null;
+    profileName?: string | null;
+    disconnectionAt?: string | null;
+    disconnectionCode?: number | null;
+  } | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
   const [tab, setTab] = useState<"inbox" | "logs">("inbox");
   const [editingPhone, setEditingPhone] = useState(false);
@@ -141,6 +149,7 @@ function WhatsappPage() {
   const pauseFn = useServerFn(setAiPaused);
   const readFn = useServerFn(markConversationRead);
   const cfgFn = useServerFn(getWhatsappConfigStatus);
+  const stateFn = useServerFn(getWhatsappConnectionState);
   const syncFn = useServerFn(syncWhatsappRecentMessages);
   const updatePhoneFn = useServerFn(updateWhatsappConversationPhone);
   const configureWebhookFn = useServerFn(configureWhatsappWebhook);
@@ -212,6 +221,9 @@ function WhatsappPage() {
   useEffect(() => {
     loadConversations();
     cfgFn().then(setConfig).catch(() => setConfig(null));
+    const loadState = () => stateFn().then(setConnState).catch(() => setConnState(null));
+    loadState();
+    const stateTimer = setInterval(loadState, 30_000);
     syncFromPhone(false);
 
     // realtime
@@ -241,6 +253,7 @@ function WhatsappPage() {
     return () => {
       supabase.removeChannel(ch);
       window.clearInterval(syncTimer);
+      clearInterval(stateTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -466,6 +479,56 @@ function WhatsappPage() {
                 nos secrets. O envio ficará indisponível até configurar; a leitura das
                 conversas continua funcionando.
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Connection warning: instance was logged out from WhatsApp */}
+        {connState &&
+          config?.configured &&
+          connState.state !== "open" &&
+          connState.state !== "connecting" && (
+            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/50 bg-red-500/10 p-4 text-sm text-red-100">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
+              <div className="flex-1">
+                <div className="font-bold text-red-100">
+                  WhatsApp desconectado — nenhuma mensagem está sendo entregue
+                </div>
+                <div className="mt-1 text-xs leading-relaxed text-red-100/85">
+                  A Evolution aceita os pedidos de envio (por isso as mensagens somem do painel
+                  como "enviadas"), mas o WhatsApp derrubou a sessão do telefone
+                  {connState.disconnectionCode === 401 ? " (logout 401 — o celular precisa parear de novo)" : ""}
+                  {connState.disconnectionAt
+                    ? ` em ${new Date(connState.disconnectionAt).toLocaleString("pt-BR")}`
+                    : ""}
+                  . Enquanto isso, só mensagens antigas (enviadas antes da queda) chegam ao destino.
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setConnectOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-full bg-red-500/80 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-500"
+                  >
+                    <Smartphone className="h-3.5 w-3.5" /> Reconectar telefone (QR code)
+                  </button>
+                  <button
+                    onClick={() => stateFn().then(setConnState)}
+                    className="inline-flex items-center gap-2 rounded-full border border-red-400/40 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-100 hover:bg-red-500/20"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" /> Verificar de novo
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        {/* Connection healthy indicator */}
+        {connState && connState.state === "open" && connState.profileName && (
+          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/8 px-3 py-2 text-xs text-emerald-100">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+            <div>
+              WhatsApp conectado como{" "}
+              <span className="font-bold">{connState.profileName}</span>
+              {connState.ownerJid ? ` (${connState.ownerJid.split("@")[0]})` : ""}
             </div>
           </div>
         )}
