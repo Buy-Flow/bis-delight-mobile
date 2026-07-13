@@ -38,6 +38,7 @@ import {
   setAiPaused,
   markConversationRead,
   getWhatsappConfigStatus,
+  getWhatsappConnectionState,
   syncWhatsappRecentMessages,
   updateWhatsappConversationPhone,
   configureWhatsappWebhook,
