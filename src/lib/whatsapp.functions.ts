@@ -5,9 +5,11 @@ import type { Json } from "@/integrations/supabase/types";
 import {
   assertAdminRole,
   evolutionConfig,
+  evolutionFetch,
   extractEvolutionMessageId,
   fetchEvolutionWithTimeout,
   normalizeWhatsappPhone,
+  publicWhatsappHostFromRequest,
   setEvolutionWebhook,
 } from "./whatsapp-evolution.server";
 
@@ -59,7 +61,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         const webhookToken = process.env.EVOLUTION_WEBHOOK_TOKEN;
         if (webhookToken) {
           try {
-            const host = await publicHostFromRequest();
+            const host = await publicWhatsappHostFromRequest();
             await setEvolutionWebhook({
               base,
               key,
@@ -462,30 +464,6 @@ export const syncWhatsappRecentMessages = createServerFn({ method: "POST" })
     });
   });
 
-async function evoFetch(path: string, init?: RequestInit) {
-  const { base, key } = evolutionConfig();
-  if (!base || !key) throw new Error("Evolution API não configurada (URL/KEY ausentes).");
-  const resp = await fetchEvolutionWithTimeout(`${base}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      apikey: key,
-      ...(init?.headers || {}),
-    },
-  });
-  const txt = await resp.text();
-  let json: unknown = null;
-  try { json = txt ? JSON.parse(txt) : null; } catch { /* raw */ }
-  if (!resp.ok) {
-    const msg =
-      (json && typeof json === "object" && "message" in json
-        ? String((json as Record<string, unknown>).message)
-        : "") || txt.slice(0, 240);
-    throw new Error(`Evolution ${resp.status}: ${msg}`);
-  }
-  return json as Record<string, unknown> | null;
-}
-
 /** Estado atual da instância (open = conectado, connecting = aguardando QR, close = desconectado). */
 export const getWhatsappConnectionState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -502,7 +480,7 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
         disconnectionCode: null,
       };
     try {
-      const j = await evoFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
+      const j = await evolutionFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
       let state =
         ((j?.instance as Record<string, unknown> | undefined)?.state as string | undefined) ??
         (j?.state as string | undefined) ??
@@ -516,7 +494,7 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
       let disconnectionAt: string | null = null;
       let disconnectionCode: number | null = null;
       try {
-        const list = await evoFetch(
+        const list = await evolutionFetch(
           `/instance/fetchInstances?instanceName=${encodeURIComponent(instance)}`,
         );
         const arr = Array.isArray(list)
@@ -563,14 +541,14 @@ export const getWhatsappQrCode = createServerFn({ method: "POST" })
 
     let exists = true;
     try {
-      await evoFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
+      await evolutionFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
     } catch (e) {
       if (/404/.test(e instanceof Error ? e.message : String(e))) exists = false;
       else throw e;
     }
 
     if (!exists) {
-      await evoFetch(`/instance/create`, {
+      await evolutionFetch(`/instance/create`, {
         method: "POST",
         body: JSON.stringify({
           instanceName: instance,
@@ -580,7 +558,7 @@ export const getWhatsappQrCode = createServerFn({ method: "POST" })
       });
     }
 
-    const j = await evoFetch(`/instance/connect/${encodeURIComponent(instance)}`);
+    const j = await evolutionFetch(`/instance/connect/${encodeURIComponent(instance)}`);
     const rec = (j ?? {}) as Record<string, unknown>;
     const qrObj = (rec.qrcode as Record<string, unknown> | undefined) ?? rec;
     let base64 =
@@ -604,30 +582,9 @@ export const disconnectWhatsapp = createServerFn({ method: "POST" })
     await assertAdminRole(context.supabase, context.userId);
     const { instance } = evolutionConfig();
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
-    await evoFetch(`/instance/logout/${encodeURIComponent(instance)}`, { method: "DELETE" });
+    await evolutionFetch(`/instance/logout/${encodeURIComponent(instance)}`, { method: "DELETE" });
     return { ok: true };
   });
-
-async function publicHostFromRequest(): Promise<string> {
-  const envUrl = process.env.PUBLIC_APP_URL || process.env.APP_URL;
-  if (envUrl) return envUrl.replace(/\/+$/, "");
-  // Webhooks de serviços externos precisam apontar para o app publicado,
-  // não para localhost/preview. Mantém o domínio público estável do projeto.
-  const publishedUrl = "https://querobis.lovable.app";
-  try {
-    const mod = await import("@tanstack/react-start/server");
-    const getRequest = (mod as unknown as { getRequest?: () => Request }).getRequest;
-    if (!getRequest) return publishedUrl;
-    const req = getRequest();
-    const url = new URL(req.url);
-    const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
-    const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
-    if (host.includes("localhost") || host.includes("id-preview--")) return publishedUrl;
-    return `${proto}://${host}`;
-  } catch {
-    return publishedUrl;
-  }
-}
 
 /** Retorna a URL pública do webhook (o operador pode colar manualmente se necessário). */
 export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
@@ -635,14 +592,14 @@ export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdminRole(context.supabase, context.userId);
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
-    const host = await publicHostFromRequest();
+    const host = await publicWhatsappHostFromRequest();
     const url = host ? `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}` : "";
     let currentUrl: string | null = null;
     let configured = false;
     try {
       const { instance } = evolutionConfig();
       if (instance) {
-        const j = await evoFetch(`/webhook/find/${encodeURIComponent(instance)}`);
+        const j = await evolutionFetch(`/webhook/find/${encodeURIComponent(instance)}`);
         const rec = (j ?? {}) as Record<string, unknown>;
         const w = (rec.webhook as Record<string, unknown> | undefined) ?? rec;
         currentUrl = (w.url as string | undefined) ?? null;
@@ -663,7 +620,7 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN;
     if (!token) throw new Error("EVOLUTION_WEBHOOK_TOKEN não configurado.");
-    const host = await publicHostFromRequest();
+    const host = await publicWhatsappHostFromRequest();
     if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
     const { base, key } = evolutionConfig();

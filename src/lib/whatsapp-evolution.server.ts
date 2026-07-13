@@ -21,6 +21,53 @@ export function evolutionConfig() {
   return { base, key, instance };
 }
 
+export async function evolutionFetch(path: string, init?: RequestInit) {
+  const { base, key } = evolutionConfig();
+  if (!base || !key) throw new Error("Evolution API não configurada (URL/KEY ausentes).");
+  const resp = await fetchEvolutionWithTimeout(`${base}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      apikey: key,
+      ...(init?.headers || {}),
+    },
+  });
+  const txt = await resp.text();
+  let json: unknown = null;
+  try {
+    json = txt ? JSON.parse(txt) : null;
+  } catch {
+    /* raw */
+  }
+  if (!resp.ok) {
+    const msg =
+      (json && typeof json === "object" && "message" in json
+        ? String((json as Record<string, unknown>).message)
+        : "") || txt.slice(0, 240);
+    throw new Error(`Evolution ${resp.status}: ${msg}`);
+  }
+  return json as Record<string, unknown> | null;
+}
+
+export async function publicWhatsappHostFromRequest(): Promise<string> {
+  const envUrl = process.env.PUBLIC_APP_URL || process.env.APP_URL;
+  if (envUrl) return envUrl.replace(/\/+$/, "");
+  const publishedUrl = "https://querobis.lovable.app";
+  try {
+    const mod = await import("@tanstack/react-start/server");
+    const getRequest = (mod as unknown as { getRequest?: () => Request }).getRequest;
+    if (!getRequest) return publishedUrl;
+    const req = getRequest();
+    const url = new URL(req.url);
+    const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
+    const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
+    if (host.includes("localhost") || host.includes("id-preview--")) return publishedUrl;
+    return `${proto}://${host}`;
+  } catch {
+    return publishedUrl;
+  }
+}
+
 /** Normaliza número para o formato aceito pelo Evolution/WhatsApp (dígitos, com DDI). */
 export function normalizeWhatsappPhone(raw: string): string {
   const original = String(raw ?? "").trim();
