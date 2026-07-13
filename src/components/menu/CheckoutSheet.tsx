@@ -474,7 +474,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   };
 
   return (
-    <div className={pageMode ? "min-h-dvh card-acai" : "fixed inset-0 z-50"}>
+    <div className={pageMode ? "min-h-dvh bg-[oklch(0.14_0.09_305)] text-white" : "fixed inset-0 z-50"}>
       {!pageMode && (
         <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={closeCheckout} />
       )}
