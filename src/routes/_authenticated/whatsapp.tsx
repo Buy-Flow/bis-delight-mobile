@@ -74,6 +74,7 @@ type Message = {
   read_at: string | null;
   error: string | null;
   created_at: string;
+  _optimistic?: boolean;
 };
 
 type FilterKey = "todas" | "nao_lidas" | "ia_pausada" | "hoje";
