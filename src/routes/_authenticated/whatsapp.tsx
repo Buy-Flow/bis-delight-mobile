@@ -55,7 +55,7 @@ type Message = {
   id: string;
   conversation_id: string;
   evolution_id: string | null;
-  direction: "inbound" | "outbound";
+  direction: "in" | "out" | "inbound" | "outbound";
   type: string;
   content: string | null;
   media_url: string | null;
