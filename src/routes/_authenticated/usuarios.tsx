@@ -533,7 +533,7 @@ function UsersPage() {
           onClose={() => setSelected(null)}
           onGrant={(r) => grant(selected.id, r)}
           onRevoke={(r) => revoke(selected.id, r)}
-          onResend={null}
+          
         />
       )}
 
