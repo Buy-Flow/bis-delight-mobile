@@ -199,12 +199,82 @@ export async function ingestEvolutionPayload(
     }
   };
 
+  const isStatusUpdate = event === "messages.update" || event === "send.message.update";
   const isMessageEvent =
     !event ||
     event === "messages.upsert" ||
     event === "send.message" ||
-    event === "messages.update" ||
+    event === "messages.edited" ||
     event === "messages.set";
+
+  // ---------- messages.update / send.message.update ----------
+  // Esses eventos NÃO carregam a mensagem completa; carregam apenas o par
+  // (keyId, remoteJid, fromMe, status) para atualizar ack/leitura de uma
+  // mensagem já persistida. Fonte: whatsapp.baileys.service.ts:1258-1350.
+  if (isStatusUpdate) {
+    if (items.length === 0) {
+      await logRow({ status: "skipped", error: "no items in status update", payload });
+      return result;
+    }
+    for (const item of items) {
+      result.processed += 1;
+      const rec = item as unknown as Record<string, unknown>;
+      const key = item.key;
+      const evoId =
+        key?.id ??
+        (rec.keyId as string | undefined) ??
+        (rec.id as string | undefined) ??
+        null;
+      const statusName = normalizeStatus(item.status ?? (rec.status as string | number | undefined));
+      if (!evoId || !statusName) {
+        result.skipped += 1;
+        await logRow({
+          status: "skipped",
+          error: "status update sem keyId ou status",
+          evolution_id: evoId,
+          payload: item,
+        });
+        continue;
+      }
+      const patch: Record<string, unknown> = { status: statusName.toLowerCase() };
+      if (statusName === "READ" || statusName === "PLAYED") {
+        patch.read_at = new Date().toISOString();
+      }
+      const { data: upd, error: updErr } = await supabase
+        .from("whatsapp_messages")
+        .update(patch)
+        .eq("evolution_id", evoId)
+        .select("id")
+        .maybeSingle();
+      if (updErr) {
+        result.errors += 1;
+        await logRow({
+          status: "error",
+          error: `status update: ${updErr.message ?? updErr}`,
+          evolution_id: evoId,
+          payload: item,
+        });
+        continue;
+      }
+      if (!upd) {
+        result.skipped += 1;
+        await logRow({
+          status: "skipped",
+          error: "mensagem alvo do status não encontrada",
+          evolution_id: evoId,
+          preview: statusName,
+        });
+        continue;
+      }
+      result.updated = (result.updated ?? 0) + 1;
+      await logRow({
+        status: "ok",
+        evolution_id: evoId,
+        preview: `status=${statusName}`,
+      });
+    }
+    return result;
+  }
 
   if (!isMessageEvent) {
     await logRow({ status: "skipped", error: `event ignored: ${event}`, payload });
@@ -219,7 +289,13 @@ export async function ingestEvolutionPayload(
   for (const item of items) {
     result.processed += 1;
     const key = item.key;
-    if (key?.remoteJid?.includes("@g.us") || key?.remoteJid?.includes("status@broadcast")) {
+    const conversationJid = pickConversationJid(key, item);
+    if (
+      conversationJid?.includes("@g.us") ||
+      conversationJid?.includes("status@broadcast") ||
+      key?.remoteJid?.includes("@g.us") ||
+      key?.remoteJid?.includes("status@broadcast")
+    ) {
       result.skipped += 1;
       await logRow({
         status: "skipped",
@@ -230,12 +306,20 @@ export async function ingestEvolutionPayload(
       continue;
     }
 
-    const phone = phoneFromJid(key?.remoteJid, key?.senderPn, key?.previousRemoteJid, payload.sender as string | undefined);
+    const phone = phoneFromJid(
+      conversationJid,
+      key?.remoteJid,
+      key?.remoteJidAlt,
+      key?.senderPn,
+      key?.previousRemoteJid,
+      key?.participant,
+      payload.sender as string | undefined,
+    );
     if (!phone) {
       result.skipped += 1;
       await logRow({
         status: "skipped",
-        error: `no phone from jid (${key?.remoteJid ?? "n/a"})`,
+        error: `no phone from jid (${conversationJid ?? key?.remoteJid ?? "n/a"})`,
         evolution_id: key?.id ?? item.id ?? null,
         payload: item,
       });
