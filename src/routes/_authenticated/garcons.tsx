@@ -59,7 +59,15 @@ type OrderRow = {
   customer_name: string | null;
   created_at: string;
   mode: string | null;
+  user_id: string | null;
+  table_id: string | null;
 };
+
+// Um pedido é considerado "venda pelo site" quando veio do app do cliente
+// (tem user_id autenticado) e não está vinculado a uma mesa do salão.
+const isSiteOrder = (o: OrderRow) =>
+  !!o.user_id && !o.table_id && (o.mode === "entrega" || o.mode === "retirada");
+
 
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
