@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { inviteTeamUser, resendUserInvite } from "@/lib/users.functions";
+import { assignUserRole } from "@/lib/users.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
@@ -177,8 +177,7 @@ function UsersPage() {
   const [showAudit, setShowAudit] = useState(false);
   const [meId, setMeId] = useState<string | null>(null);
   const [showInvite, setShowInvite] = useState(false);
-  const invite = useServerFn(inviteTeamUser);
-  const resend = useServerFn(resendUserInvite);
+  const assignRole = useServerFn(assignUserRole);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -534,14 +533,7 @@ function UsersPage() {
           onClose={() => setSelected(null)}
           onGrant={(r) => grant(selected.id, r)}
           onRevoke={(r) => revoke(selected.id, r)}
-          onResend={async () => {
-            try {
-              await resend({ data: { email: selected.email } });
-              toast.success("Convite reenviado para " + selected.email);
-            } catch (e: any) {
-              toast.error("Falha ao reenviar", { description: e?.message });
-            }
-          }}
+          
         />
       )}
 
@@ -552,13 +544,18 @@ function UsersPage() {
           onClose={() => setShowInvite(false)}
           onSubmit={async (payload) => {
             try {
-              const res = await invite({ data: payload });
-              toast.success(res.invited ? "Convite enviado por email" : "Papel atribuído ao usuário existente");
+              if (!payload.role) throw new Error("Selecione um papel");
+              const res = await assignRole({ data: { ...payload, role: payload.role } });
+              toast.success(
+                res.status === "granted"
+                  ? "Papel atribuído ao usuário"
+                  : "Papel reservado — será aplicado assim que essa pessoa criar a conta",
+              );
               setShowInvite(false);
               await loadUsers();
               await loadAudit();
             } catch (e: any) {
-              toast.error("Falha ao adicionar usuário", { description: e?.message });
+              toast.error("Falha ao atribuir papel", { description: e?.message });
             }
           }}
         />
@@ -595,14 +592,12 @@ function UserDrawer({
   onClose,
   onGrant,
   onRevoke,
-  onResend,
 }: {
   user: UserRow;
   isSelf: boolean;
   onClose: () => void;
   onGrant: (r: Role) => void;
   onRevoke: (r: Role) => void;
-  onResend?: () => void;
 }) {
   const topRole: Role = user.roles.includes("admin") ? "admin" : (user.roles[0] as Role) || "user";
   const meta = ROLE_META[topRole];
@@ -680,14 +675,6 @@ function UserDrawer({
               label="Cadastro"
               value={new Date(user.created_at).toLocaleDateString("pt-BR")}
             />
-            {onResend && !user.email_confirmed_at && (
-              <button
-                onClick={onResend}
-                className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-indigo-400/30 bg-indigo-500/15 px-3 py-2 text-xs font-semibold text-indigo-200 hover:bg-indigo-500/25"
-              >
-                <Mail className="h-3.5 w-3.5" /> Reenviar convite por email
-              </button>
-            )}
           </Section>
 
           <Section title="Permissões" hint="Ative ou desative papéis para este usuário.">
@@ -937,7 +924,7 @@ function InviteDialog({
           </div>
           <div className="flex-1">
             <h2 className="text-base font-bold text-white">Adicionar usuário</h2>
-            <p className="text-[11px] text-white/50">Envia convite por email e atribui o papel escolhido.</p>
+            <p className="text-[11px] text-white/50">Atribui o papel diretamente ao email — sem envio de convite.</p>
           </div>
           <button type="button" onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-white hover:bg-white/10">
             <X className="h-4 w-4" />
@@ -1019,7 +1006,7 @@ function InviteDialog({
             disabled={saving || !email.trim()}
             className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-400/40 bg-gradient-to-br from-indigo-500 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <UserPlus className="h-3.5 w-3.5" /> {saving ? "Enviando…" : "Enviar convite"}
+            <UserPlus className="h-3.5 w-3.5" /> {saving ? "Salvando…" : "Atribuir papel"}
           </button>
         </div>
       </form>
