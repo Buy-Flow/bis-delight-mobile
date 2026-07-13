@@ -729,8 +729,7 @@ function groupByDay(items: Message[]) {
 function MessageBubble({ m }: { m: Message }) {
   const out = m.direction === "outbound" || m.direction === "out";
   const isAi = m.sent_by === "ai";
-  const failed = m.status === "failed";
-  const pending = m.status === "pending";
+  const meta = messageStatusMeta(m);
   return (
     <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-1")}>
       <div
@@ -739,7 +738,9 @@ function MessageBubble({ m }: { m: Message }) {
           out
             ? isAi
               ? "bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 border border-purple-400/30 text-white"
-              : "bg-emerald-500/90 text-black"
+              : meta.kind === "failed"
+                ? "bg-red-500/15 border border-red-500/40 text-white"
+                : "bg-emerald-500/90 text-black"
             : "bg-white/10 text-white border border-white/10",
         )}
       >
@@ -764,25 +765,90 @@ function MessageBubble({ m }: { m: Message }) {
         <div
           className={cn(
             "mt-1 flex items-center justify-end gap-1 text-[10px]",
-            out && !isAi ? "text-black/60" : "text-white/50",
+            out && !isAi && meta.kind !== "failed" ? "text-black/60" : "text-white/60",
           )}
+          title={out ? meta.label : undefined}
+          aria-label={out ? `Status: ${meta.label}` : undefined}
         >
-          {failed && <AlertTriangle className="h-3 w-3 text-red-400" />}
-          {pending && <Clock className="h-3 w-3" />}
           <span>
             {new Date(m.created_at).toLocaleTimeString("pt-BR", {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </span>
-          {out && !failed && !pending && <CheckCheck className="h-3 w-3" />}
+          {out && (
+            <span className={cn("inline-flex items-center gap-0.5", meta.className)}>
+              {meta.icon}
+              <span className="hidden sm:inline">{meta.label}</span>
+            </span>
+          )}
         </div>
-        {failed && m.error && (
-          <div className="mt-1 text-[10px] text-red-300">{m.error.slice(0, 120)}</div>
+        {meta.kind === "failed" && (m.error || m._optimistic) && (
+          <div className="mt-1 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-1 text-[10px] text-red-200">
+            {m.error?.slice(0, 200) ?? "Não foi possível gravar a mensagem no banco de dados."}
+          </div>
         )}
       </div>
     </div>
   );
+}
+
+type StatusMeta = {
+  kind: "sending" | "sent" | "delivered" | "read" | "failed";
+  label: string;
+  icon: JSX.Element;
+  className: string;
+};
+
+function messageStatusMeta(m: Message): StatusMeta {
+  const s = (m.status ?? "").toLowerCase();
+  if (s === "sending" || m._optimistic) {
+    return {
+      kind: "sending",
+      label: "Enviando",
+      icon: <Loader2 className="h-3 w-3 animate-spin" />,
+      className: "text-white/70",
+    };
+  }
+  if (s === "failed" || s === "error") {
+    return {
+      kind: "failed",
+      label: "Falha",
+      icon: <AlertTriangle className="h-3 w-3" />,
+      className: "text-red-300",
+    };
+  }
+  if (s === "pending") {
+    return {
+      kind: "sending",
+      label: "Pendente",
+      icon: <Clock className="h-3 w-3" />,
+      className: "text-amber-300",
+    };
+  }
+  if (s === "read" || m.read_at) {
+    return {
+      kind: "read",
+      label: "Lida",
+      icon: <CheckCheck className="h-3 w-3" />,
+      className: "text-sky-400",
+    };
+  }
+  if (s === "delivered" || s === "delivery_ack" || s === "server_ack") {
+    return {
+      kind: "delivered",
+      label: "Entregue",
+      icon: <CheckCheck className="h-3 w-3" />,
+      className: "text-black/70",
+    };
+  }
+  // default: sent
+  return {
+    kind: "sent",
+    label: "Enviada",
+    icon: <Check className="h-3 w-3" />,
+    className: "text-black/70",
+  };
 }
 
 function Avatar({
