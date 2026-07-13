@@ -1033,34 +1033,43 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           </div>
 
           {/* Cupom Bis Recompensa */}
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
-            <div className="mb-2 flex items-center gap-2">
-              <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan">
-                <Ticket className="h-4 w-4" />
+          {couponApplied ? (
+            <div className="rounded-3xl border border-neon-cyan/40 bg-neon-cyan/10 p-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Check className="h-4 w-4 text-neon-cyan shrink-0" />
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-bold text-white">Cupom {couponApplied.code}</div>
+                  <div className="truncate text-[11px] text-neon-cyan">Desconto de {brl(couponApplied.discount)}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-sm font-extrabold text-white">Cupom de desconto</div>
-                <div className="text-[11px] text-white/60">Tem um código Bis Recompensa? Use aqui.</div>
-              </div>
+              <button
+                type="button"
+                onClick={removeCoupon}
+                className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white/80 active:scale-95"
+              >
+                Remover
+              </button>
             </div>
-            {couponApplied ? (
-              <div className="flex items-center justify-between gap-2 rounded-2xl border border-neon-cyan/40 bg-neon-cyan/10 px-3 py-2.5">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Check className="h-4 w-4 text-neon-cyan shrink-0" />
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-bold text-white">{couponApplied.code}</div>
-                    <div className="truncate text-[11px] text-neon-cyan">Desconto de {brl(couponApplied.discount)}</div>
+          ) : couponOpen ? (
+            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan">
+                    <Ticket className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-extrabold text-white">Cupom de desconto</div>
+                    <div className="text-[11px] text-white/60">Tem um código Bis Recompensa?</div>
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={removeCoupon}
-                  className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white/80 active:scale-95"
+                  onClick={() => setCouponOpen(false)}
+                  className="rounded-full bg-white/10 px-2 py-1 text-[11px] font-bold text-white/70 active:scale-95"
                 >
-                  Remover
+                  Fechar
                 </button>
               </div>
-            ) : (
               <div className="flex gap-2">
                 <input
                   value={couponInput}
@@ -1077,16 +1086,25 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                   {couponChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Aplicar"}
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCouponOpen(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-4 py-3 text-sm font-semibold text-white/70 hover:text-white hover:border-white/30 active:scale-[0.99]"
+            >
+              <Ticket className="h-4 w-4 text-neon-cyan" />
+              Tenho um cupom de desconto
+            </button>
+          )}
 
 
-          <div className={pageMode ? "h-32" : "h-20"} />
+          <div className={pageMode ? "h-4" : "h-20"} />
 
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
-        <div className={pageMode ? "fixed inset-x-0 bottom-0 z-40 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-[#0a0118] via-[#0a0118]/95 to-transparent" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
+        <div className={pageMode ? "sticky bottom-0 z-40 -mx-4 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-[#0a0118] via-[#0a0118]/95 to-transparent" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
           <button
             onClick={send}
             disabled={
