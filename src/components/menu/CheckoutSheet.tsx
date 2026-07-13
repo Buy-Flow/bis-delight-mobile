@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
+import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
 import { useStoreStatus } from "@/lib/store-status";
 import { useSiteSettings } from "@/lib/menu-data";
 import {
