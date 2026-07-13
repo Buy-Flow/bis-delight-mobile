@@ -303,11 +303,82 @@ function MotoboyPortal() {
 
   const activeOrders = orders.filter((o) => ["pago", "preparando", "saiu_para_entrega"].includes(o.status));
   const historyOrders = orders.filter((o) => o.status === "entregue" || o.status === "cancelado");
-  const todayDelivered = historyOrders.filter((o) => {
-    const d = new Date(o.created_at); const t = new Date(); t.setHours(0,0,0,0);
-    return d >= t;
-  });
-  const todayEarnings = todayDelivered.reduce((s, o) => s + (o.delivery_fee || 0), 0);
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
+    const startWeek = new Date(now); startWeek.setDate(now.getDate() - 6); startWeek.setHours(0, 0, 0, 0);
+    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const inRange = (d: string, start: Date) => new Date(d) >= start;
+    const delivered = historyOrders.filter((o) => o.status === "entregue");
+    const today = delivered.filter((o) => inRange(o.created_at, startToday));
+    const week = delivered.filter((o) => inRange(o.created_at, startWeek));
+    const month = delivered.filter((o) => inRange(o.created_at, startMonth));
+    const sumFee = (arr: Order[]) => arr.reduce((s, o) => s + (o.delivery_fee || 0), 0);
+    const sumKm = (arr: Order[]) => arr.reduce((s, o) => s + (o.distance_km || 0), 0);
+    const avgTime = (() => {
+      const times = delivered.filter((o) => o.dispatched_at && o.picked_up_at).map((o) => {
+        const start = new Date(o.picked_up_at!).getTime();
+        const end = new Date(o.dispatched_at!).getTime();
+        return Math.max(0, (end - start) / 60000);
+      });
+      if (!times.length) return null;
+      return times.reduce((a, b) => a + b, 0) / times.length;
+    })();
+    const totalMissed = missedOffers.filter((m) => inRange(m.offered_at, startToday)).length;
+    const totalOffered = today.length + totalMissed;
+    const acceptRate = totalOffered > 0 ? (today.length / totalOffered) * 100 : null;
+    return {
+      today: { count: today.length, earnings: sumFee(today), km: sumKm(today) },
+      week: { count: week.length, earnings: sumFee(week), km: sumKm(week) },
+      month: { count: month.length, earnings: sumFee(month), km: sumKm(month) },
+      avgTime,
+      acceptRate,
+      missedToday: totalMissed,
+    };
+  }, [historyOrders, missedOffers]);
+
+  // Battery indicator
+  useEffect(() => {
+    const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number; addEventListener: (e: string, cb: () => void) => void }> };
+    if (!nav.getBattery) return;
+    let cleanup: (() => void) | undefined;
+    nav.getBattery().then((bat) => {
+      const update = () => setBattery(Math.round(bat.level * 100));
+      update();
+      bat.addEventListener("levelchange", update);
+      cleanup = () => {};
+    }).catch(() => {});
+    return () => { cleanup?.(); };
+  }, []);
+
+  const filteredHistory = useMemo(() => {
+    const startOf = (p: typeof period): Date | null => {
+      const now = new Date();
+      if (p === "today") { const d = new Date(); d.setHours(0,0,0,0); return d; }
+      if (p === "week") { const d = new Date(now); d.setDate(now.getDate() - 6); d.setHours(0,0,0,0); return d; }
+      if (p === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
+      return null;
+    };
+    const s = startOf(period);
+    return historyOrders.filter((o) => !s || new Date(o.created_at) >= s);
+  }, [historyOrders, period]);
+
+  const filteredMissed = useMemo(() => {
+    const startOf = (p: typeof period): Date | null => {
+      const now = new Date();
+      if (p === "today") { const d = new Date(); d.setHours(0,0,0,0); return d; }
+      if (p === "week") { const d = new Date(now); d.setDate(now.getDate() - 6); d.setHours(0,0,0,0); return d; }
+      if (p === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
+      return null;
+    };
+    const s = startOf(period);
+    return missedOffers.filter((m) => !s || new Date(m.offered_at) >= s);
+  }, [missedOffers, period]);
+
+  // Motivational goal — R$ 100 per day
+  const dailyGoal = 100;
+  const goalPct = Math.min(100, (stats.today.earnings / dailyGoal) * 100);
 
   if (loading) {
     return (
