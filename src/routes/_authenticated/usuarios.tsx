@@ -1006,7 +1006,7 @@ function InviteDialog({
             disabled={saving || !email.trim()}
             className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-400/40 bg-gradient-to-br from-indigo-500 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <UserPlus className="h-3.5 w-3.5" /> {saving ? "Enviando…" : "Enviar convite"}
+            <UserPlus className="h-3.5 w-3.5" /> {saving ? "Salvando…" : "Atribuir papel"}
           </button>
         </div>
       </form>
