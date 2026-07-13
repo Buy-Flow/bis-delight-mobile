@@ -303,7 +303,7 @@ export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
-    const host = publicHostFromRequest();
+    const host = await publicHostFromRequest();
     const url = host ? `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}` : "";
     let currentUrl: string | null = null;
     let configured = false;
@@ -331,7 +331,7 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN;
     if (!token) throw new Error("EVOLUTION_WEBHOOK_TOKEN não configurado.");
-    const host = publicHostFromRequest();
+    const host = await publicHostFromRequest();
     if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
     const events = [
