@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   MessageCircle,
@@ -8,6 +8,7 @@ import {
   Bot,
   BotOff,
   CheckCheck,
+  Check,
   Clock,
   AlertTriangle,
   Loader2,
@@ -73,6 +74,7 @@ type Message = {
   read_at: string | null;
   error: string | null;
   created_at: string;
+  _optimistic?: boolean;
 };
 
 type FilterKey = "todas" | "nao_lidas" | "ia_pausada" | "hoje";
@@ -284,15 +286,48 @@ function WhatsappPage() {
 
   const handleSend = async () => {
     if (!selectedId || !text.trim() || sending) return;
+    const body = text.trim();
+    const tempId = `local-${crypto.randomUUID()}`;
+    const optimistic: Message = {
+      id: tempId,
+      conversation_id: selectedId,
+      evolution_id: null,
+      direction: "out",
+      type: "text",
+      content: body,
+      media_url: null,
+      transcript: null,
+      sent_by: "human",
+      operator_id: null,
+      status: "sending",
+      read_at: null,
+      error: null,
+      created_at: new Date().toISOString(),
+      _optimistic: true,
+    };
     setSending(true);
+    setText("");
+    setMessages((prev) => [...prev, optimistic]);
     try {
-      const res = await sendFn({ data: { conversation_id: selectedId, text: text.trim() } });
-      setText("");
+      const res = await sendFn({ data: { conversation_id: selectedId, text: body } });
+      // Replace optimistic with the persisted row from the server response
+      const persisted = (res.message ?? null) as Message | null;
+      setMessages((prev) => {
+        const withoutTemp = prev.filter((m) => m.id !== tempId);
+        if (persisted && !withoutTemp.some((m) => m.id === persisted.id)) {
+          return [...withoutTemp, persisted];
+        }
+        return withoutTemp;
+      });
       if (res.warning) toast.warning(res.warning);
-      else toast.success("Mensagem enviada");
-      await loadMessages(selectedId);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao enviar");
+      const msg = e instanceof Error ? e.message : "Erro ao enviar";
+      // Keep the optimistic bubble visible and mark as failed so the user
+      // sees exactly which message failed and why (e.g. DB write error).
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, status: "failed", error: msg } : m)),
+      );
+      toast.error(msg);
     } finally {
       setSending(false);
     }
@@ -694,8 +729,7 @@ function groupByDay(items: Message[]) {
 function MessageBubble({ m }: { m: Message }) {
   const out = m.direction === "outbound" || m.direction === "out";
   const isAi = m.sent_by === "ai";
-  const failed = m.status === "failed";
-  const pending = m.status === "pending";
+  const meta = messageStatusMeta(m);
   return (
     <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-1")}>
       <div
@@ -704,7 +738,9 @@ function MessageBubble({ m }: { m: Message }) {
           out
             ? isAi
               ? "bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 border border-purple-400/30 text-white"
-              : "bg-emerald-500/90 text-black"
+              : meta.kind === "failed"
+                ? "bg-red-500/15 border border-red-500/40 text-white"
+                : "bg-emerald-500/90 text-black"
             : "bg-white/10 text-white border border-white/10",
         )}
       >
@@ -729,25 +765,90 @@ function MessageBubble({ m }: { m: Message }) {
         <div
           className={cn(
             "mt-1 flex items-center justify-end gap-1 text-[10px]",
-            out && !isAi ? "text-black/60" : "text-white/50",
+            out && !isAi && meta.kind !== "failed" ? "text-black/60" : "text-white/60",
           )}
+          title={out ? meta.label : undefined}
+          aria-label={out ? `Status: ${meta.label}` : undefined}
         >
-          {failed && <AlertTriangle className="h-3 w-3 text-red-400" />}
-          {pending && <Clock className="h-3 w-3" />}
           <span>
             {new Date(m.created_at).toLocaleTimeString("pt-BR", {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </span>
-          {out && !failed && !pending && <CheckCheck className="h-3 w-3" />}
+          {out && (
+            <span className={cn("inline-flex items-center gap-0.5", meta.className)}>
+              {meta.icon}
+              <span className="hidden sm:inline">{meta.label}</span>
+            </span>
+          )}
         </div>
-        {failed && m.error && (
-          <div className="mt-1 text-[10px] text-red-300">{m.error.slice(0, 120)}</div>
+        {meta.kind === "failed" && (m.error || m._optimistic) && (
+          <div className="mt-1 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-1 text-[10px] text-red-200">
+            {m.error?.slice(0, 200) ?? "Não foi possível gravar a mensagem no banco de dados."}
+          </div>
         )}
       </div>
     </div>
   );
+}
+
+type StatusMeta = {
+  kind: "sending" | "sent" | "delivered" | "read" | "failed";
+  label: string;
+  icon: ReactNode;
+  className: string;
+};
+
+function messageStatusMeta(m: Message): StatusMeta {
+  const s = (m.status ?? "").toLowerCase();
+  if (s === "sending" || m._optimistic) {
+    return {
+      kind: "sending",
+      label: "Enviando",
+      icon: <Loader2 className="h-3 w-3 animate-spin" />,
+      className: "text-white/70",
+    };
+  }
+  if (s === "failed" || s === "error") {
+    return {
+      kind: "failed",
+      label: "Falha",
+      icon: <AlertTriangle className="h-3 w-3" />,
+      className: "text-red-300",
+    };
+  }
+  if (s === "pending") {
+    return {
+      kind: "sending",
+      label: "Pendente",
+      icon: <Clock className="h-3 w-3" />,
+      className: "text-amber-300",
+    };
+  }
+  if (s === "read" || m.read_at) {
+    return {
+      kind: "read",
+      label: "Lida",
+      icon: <CheckCheck className="h-3 w-3" />,
+      className: "text-sky-400",
+    };
+  }
+  if (s === "delivered" || s === "delivery_ack" || s === "server_ack") {
+    return {
+      kind: "delivered",
+      label: "Entregue",
+      icon: <CheckCheck className="h-3 w-3" />,
+      className: "text-black/70",
+    };
+  }
+  // default: sent
+  return {
+    kind: "sent",
+    label: "Enviada",
+    icon: <Check className="h-3 w-3" />,
+    className: "text-black/70",
+  };
 }
 
 function Avatar({
