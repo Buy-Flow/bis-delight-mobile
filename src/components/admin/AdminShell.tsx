@@ -185,6 +185,7 @@ function SidebarBody({
   onNavigate,
   openGroups,
   toggleGroup,
+  groups: visibleGroups,
 }: {
   collapsed: boolean;
   pathname: string;
@@ -192,10 +193,11 @@ function SidebarBody({
   onNavigate?: () => void;
   openGroups: Record<string, boolean>;
   toggleGroup: (id: string) => void;
+  groups: NavGroup[];
 }) {
   return (
     <nav className="flex-1 overflow-y-auto px-2 py-3">
-      {groups.map((g) => {
+      {visibleGroups.map((g) => {
         const isOpen = openGroups[g.id] ?? g.defaultOpen ?? false;
         return (
           <div key={g.id} className="mb-1.5">
