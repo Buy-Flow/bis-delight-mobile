@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff } from "lucide-react";
+import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff, Radio, Copy, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import {
   getWhatsappConnectionState,
   getWhatsappQrCode,
   disconnectWhatsapp,
+  getWhatsappWebhookInfo,
+  configureWhatsappWebhook,
 } from "@/lib/whatsapp.functions";
 
 type Props = {
