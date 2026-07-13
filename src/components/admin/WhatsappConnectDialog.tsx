@@ -20,11 +20,15 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   const getState = useServerFn(getWhatsappConnectionState);
   const getQr = useServerFn(getWhatsappQrCode);
   const logout = useServerFn(disconnectWhatsapp);
+  const getWebhook = useServerFn(getWhatsappWebhookInfo);
+  const setWebhook = useServerFn(configureWhatsappWebhook);
 
   const [state, setState] = useState<string>("loading");
   const [qr, setQr] = useState<{ base64: string | null; code: string | null; pairingCode: string | null } | null>(null);
   const [loadingQr, setLoadingQr] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [webhook, setWebhookState] = useState<{ url: string; currentUrl: string | null; configured: boolean; hasToken: boolean } | null>(null);
+  const [wbSaving, setWbSaving] = useState(false);
   const pollRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
 
