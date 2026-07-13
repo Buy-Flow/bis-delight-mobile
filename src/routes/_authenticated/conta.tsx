@@ -781,12 +781,18 @@ function ProfilePanel() {
           </span>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-bold text-white">
-              {isAdmin ? "Painel administrador" : "Painel da equipe"}
+              {isAdmin
+                ? "Painel administrador"
+                : primaryRole === "delivery"
+                  ? "Painel do motoboy"
+                  : "Painel da equipe"}
             </div>
             <div className="text-[11px] text-white/60">
               {isAdmin
                 ? "Pedidos, cardápio, clientes e mais"
-                : "Cozinha, PDV, mesas, WhatsApp e entregas"}
+                : primaryRole === "delivery"
+                  ? "Aceitar entregas, rota e localização"
+                  : "Cozinha, PDV, mesas, WhatsApp e entregas"}
             </div>
           </div>
           <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
