@@ -66,6 +66,18 @@ function normalizeStatus(raw: unknown): string | null {
   return s || null;
 }
 
+function appMessageStatus(raw: unknown, fromMe: boolean): string {
+  const statusName = normalizeStatus(raw);
+  if (!statusName) return fromMe ? "sent" : "received";
+  if (statusName === "ERROR") return "failed";
+  if (statusName === "DELIVERY_ACK") return "delivered";
+  if (statusName === "READ" || statusName === "PLAYED") return "read";
+  // PENDING/SERVER_ACK são estados internos iniciais da Evolution: o aparelho
+  // aceitou a mensagem. No painel isso deve aparecer como enviada, não como
+  // pendente infinito; webhooks posteriores elevam para entregue/lida.
+  return fromMe ? "sent" : "received";
+}
+
 function normalizeEvent(raw?: string | null) {
   return (raw || "")
     .toLowerCase()
@@ -240,14 +252,7 @@ export async function ingestEvolutionPayload(
         });
         continue;
       }
-      const appStatus =
-        statusName === "ERROR"
-          ? "failed"
-          : statusName === "DELIVERY_ACK"
-            ? "delivered"
-            : statusName === "READ" || statusName === "PLAYED"
-              ? "read"
-              : "sent";
+      const appStatus = appMessageStatus(statusName, true);
       const patch: Record<string, unknown> = { status: appStatus };
       if (statusName === "READ" || statusName === "PLAYED") {
         patch.read_at = new Date().toISOString();
@@ -474,7 +479,7 @@ export async function ingestEvolutionPayload(
       content: text,
       media_url: media,
       sent_by: fromMe ? "human" : "customer",
-      status: (normalizeStatus(item.status)?.toLowerCase()) ?? (fromMe ? "sent" : "received"),
+      status: appMessageStatus(item.status, fromMe),
       created_at: nowIso,
       raw: item,
     });
