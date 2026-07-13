@@ -24,6 +24,7 @@ import {
   Link2Off,
   Download,
   Calendar,
+  Globe,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -59,7 +60,15 @@ type OrderRow = {
   customer_name: string | null;
   created_at: string;
   mode: string | null;
+  user_id: string | null;
+  table_id: string | null;
 };
+
+// Um pedido é considerado "venda pelo site" quando veio do app do cliente
+// (tem user_id autenticado) e não está vinculado a uma mesa do salão.
+const isSiteOrder = (o: OrderRow) =>
+  !!o.user_id && !o.table_id && (o.mode === "entrega" || o.mode === "retirada");
+
 
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -115,7 +124,7 @@ function WaitersPage() {
       supabase.from("waiters").select("*").order("created_at", { ascending: false }),
       supabase
         .from("orders")
-        .select("id,waiter_id,total,status,customer_name,created_at,mode")
+        .select("id,waiter_id,total,status,customer_name,created_at,mode,user_id,table_id")
         .gte("created_at", from)
         .neq("status", "cancelado")
         .order("created_at", { ascending: false })
@@ -162,6 +171,13 @@ function WaitersPage() {
       0,
     );
     const avgTicket = attributed > 0 ? attributedRevenue / attributed : 0;
+    const siteList = periodOrders.filter(isSiteOrder);
+    const siteRevenue = siteList.reduce((a, o) => a + Number(o.total ?? 0), 0);
+    const siteAvg = siteList.length > 0 ? siteRevenue / siteList.length : 0;
+    // "Não atribuídos" só considera pedidos do salão (não são vendas do site)
+    const unassignedSalao = periodOrders.filter(
+      (o) => !o.waiter_id && !isSiteOrder(o),
+    ).length;
     return {
       map,
       activeCount,
@@ -170,7 +186,10 @@ function WaitersPage() {
       attributedRevenue,
       avgTicket,
       totalCommission,
-      unassigned: periodOrders.filter((o) => !o.waiter_id).length,
+      unassigned: unassignedSalao,
+      siteOrders: siteList.length,
+      siteRevenue,
+      siteAvg,
     };
   }, [waiters, periodOrders]);
 
@@ -346,7 +365,111 @@ function WaitersPage() {
           />
         </div>
 
+        {/* Vendas realizadas pelo site (não precisam de garçom) */}
+        <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-neon-yellow/5 via-white/[0.02] to-transparent p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow">
+                <Globe className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-sm font-black uppercase tracking-widest">
+                  Vendas pelo site
+                </h2>
+                <div className="text-[11px] text-white/45">
+                  Pedidos de entrega e retirada feitos pelo cliente no app — não entram no ranking dos garçons.
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/45">
+                  Pedidos
+                </div>
+                <div className="text-lg font-black tabular-nums">
+                  {stats.siteOrders}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/45">
+                  Faturamento
+                </div>
+                <div className="text-lg font-black tabular-nums text-neon-yellow">
+                  {BRL(stats.siteRevenue)}
+                </div>
+              </div>
+              <div className="hidden text-right md:block">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/45">
+                  Ticket médio
+                </div>
+                <div className="text-lg font-black tabular-nums">
+                  {BRL(stats.siteAvg)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {stats.siteOrders === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center text-sm text-white/50">
+              Nenhuma venda pelo site no período.
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-white/10">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 border-b border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-white/50">
+                <div>Cliente</div>
+                <div className="text-center">Canal</div>
+                <div className="text-right">Quando</div>
+                <div className="text-right">Total</div>
+              </div>
+              <div className="max-h-72 divide-y divide-white/5 overflow-y-auto">
+                {periodOrders
+                  .filter(isSiteOrder)
+                  .slice(0, 50)
+                  .map((o) => (
+                    <div
+                      key={o.id}
+                      className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 px-3 py-2 text-sm hover:bg-white/[0.03]"
+                    >
+                      <div className="min-w-0 truncate font-semibold">
+                        {o.customer_name || "Cliente"}
+                      </div>
+                      <div className="text-center">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                            o.mode === "entrega"
+                              ? "bg-neon-pink/15 text-neon-pink"
+                              : "bg-neon-yellow/15 text-neon-yellow",
+                          )}
+                        >
+                          {o.mode === "entrega" ? "Entrega" : "Retirada"}
+                        </span>
+                      </div>
+                      <div className="whitespace-nowrap text-right text-[11px] text-white/50">
+                        {new Date(o.created_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                      <div className="text-right font-black tabular-nums text-neon-yellow">
+                        {BRL(Number(o.total ?? 0))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              {periodOrders.filter(isSiteOrder).length > 50 && (
+                <div className="border-t border-white/10 bg-white/[0.03] px-3 py-2 text-center text-[11px] text-white/40">
+                  Mostrando as 50 mais recentes de {periodOrders.filter(isSiteOrder).length}.
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
         {/* Podium */}
+
         {podium.length > 0 && (
           <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-neon-pink/10 to-transparent p-5">
             <div className="mb-4 flex items-center gap-2">
@@ -612,7 +735,7 @@ function WaitersPage() {
       {assignOpen && (
         <AssignDialog
           waiters={waiters.filter((w) => w.active)}
-          orders={periodOrders.filter((o) => !o.waiter_id).slice(0, 100)}
+          orders={periodOrders.filter((o) => !o.waiter_id && !isSiteOrder(o)).slice(0, 100)}
           onClose={() => setAssignOpen(false)}
           onSaved={() => {
             setAssignOpen(false);
