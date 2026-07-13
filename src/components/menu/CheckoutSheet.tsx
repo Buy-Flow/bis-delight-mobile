@@ -1105,7 +1105,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
-        <div className={pageMode ? "sticky bottom-0 z-40 -mx-4 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-[#0a0118] via-[#0a0118]/95 to-transparent" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
+        <div className={pageMode ? "mx-auto max-w-2xl px-4 pb-[calc(96px+env(safe-area-inset-bottom))] md:pb-8" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
           <button
             onClick={send}
             disabled={
