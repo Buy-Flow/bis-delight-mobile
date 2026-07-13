@@ -672,9 +672,119 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     setSelectedAddressId(null);
                     setPreGeocoded(null);
                   };
+                  const lookupCep = async (raw: string) => {
+                    const digits = raw.replace(/\D/g, "").slice(0, 8);
+                    setCep(digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits);
+                    if (digits.length !== 8) return;
+                    setCepLoading(true);
+                    try {
+                      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+                      const data = await res.json();
+                      if (data?.erro) {
+                        toast.error("CEP não encontrado");
+                        return;
+                      }
+                      const patch: Partial<{ street: string; number: string; neighborhood: string; city: string }> = {};
+                      if (data.logradouro) patch.street = data.logradouro;
+                      if (data.bairro) patch.neighborhood = data.bairro;
+                      if (data.localidade) patch.city = data.localidade;
+                      updatePart(patch);
+                      toast.success("Endereço preenchido pelo CEP");
+                      setTimeout(() => {
+                        const el = document.querySelector<HTMLInputElement>('input[name="street-number"]');
+                        el?.focus();
+                      }, 50);
+                    } catch {
+                      toast.error("Não foi possível buscar o CEP");
+                    } finally {
+                      setCepLoading(false);
+                    }
+                  };
+                  const useCurrentLocation = () => {
+                    if (!("geolocation" in navigator)) {
+                      toast.error("Geolocalização não suportada");
+                      return;
+                    }
+                    setGeoLoading(true);
+                    navigator.geolocation.getCurrentPosition(
+                      async ({ coords }) => {
+                        try {
+                          const text = await reverseGeocode(coords.latitude, coords.longitude);
+                          if (!text) {
+                            toast.error("Não conseguimos identificar seu endereço");
+                            return;
+                          }
+                          const p = parseAddressParts(text);
+                          const patch: Partial<{ street: string; number: string; neighborhood: string; city: string }> = {};
+                          if (p.street) patch.street = p.street;
+                          if (p.number) patch.number = p.number;
+                          if (p.neighborhood) patch.neighborhood = p.neighborhood;
+                          if (p.city) patch.city = p.city;
+                          updatePart(patch);
+                          setPreGeocoded({ lat: coords.latitude, lng: coords.longitude, address: joinAddressParts({
+                            street: patch.street ?? addrStreet,
+                            number: patch.number ?? addrNumber,
+                            neighborhood: patch.neighborhood ?? addrNeighborhood,
+                            city: patch.city ?? addrCity,
+                          }) });
+                          setQuote({ lat: coords.latitude, lng: coords.longitude, km: 0, label: text });
+                          toast.success("Endereço detectado pela sua localização");
+                        } finally {
+                          setGeoLoading(false);
+                        }
+                      },
+                      (err) => {
+                        setGeoLoading(false);
+                        toast.error(err.code === 1 ? "Permita acesso à localização" : "Falha ao obter localização");
+                      },
+                      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+                    );
+                  };
                   return (
                     <>
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-2.5">
+                        <div className="mb-2 flex items-center gap-1.5 px-1">
+                          <Sparkles className="h-3 w-3 text-neon-cyan" />
+                          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-neon-cyan/90">
+                            Preenchimento rápido
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-[1fr_auto] gap-2">
+                          <div className="relative">
+                            <Mail className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/50" />
+                            <input
+                              value={cep}
+                              onChange={(e) => lookupCep(e.target.value)}
+                              placeholder="CEP (auto preenche)"
+                              inputMode="numeric"
+                              autoComplete="postal-code"
+                              className="w-full rounded-xl border border-white/10 bg-black/30 py-2.5 pl-8 pr-9 text-[13px] font-bold text-white placeholder:font-normal placeholder:text-white/40 focus:border-neon-cyan/50 focus:outline-none"
+                            />
+                            {cepLoading && (
+                              <Loader2 className="absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-neon-cyan" />
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={useCurrentLocation}
+                            disabled={geoLoading}
+                            className="flex items-center gap-1.5 rounded-xl bg-neon-cyan/15 px-3 py-2.5 text-[12px] font-black text-neon-cyan ring-1 ring-neon-cyan/30 transition hover:bg-neon-cyan/25 active:scale-[.97] disabled:opacity-60"
+                          >
+                            {geoLoading ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Navigation className="h-3.5 w-3.5" />
+                            )}
+                            <span className="hidden sm:inline">Minha localização</span>
+                            <span className="sm:hidden">GPS</span>
+                          </button>
+                        </div>
+                        <div className="mt-1.5 px-1 text-[10px] leading-tight text-white/45">
+                          Digite o CEP ou toque em GPS — completamos rua, bairro e cidade automaticamente.
+                        </div>
+                      </div>
                       <div className="grid grid-cols-[1fr_110px] gap-2">
+
                         <IconField
                           icon={MapPin}
                           label="Rua / Avenida"
