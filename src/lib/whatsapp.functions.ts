@@ -99,12 +99,24 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           if (!raw || typeof raw !== "object") continue;
           const rec = raw as Record<string, unknown>;
           const key = rec.key && typeof rec.key === "object" ? (rec.key as Record<string, unknown>) : {};
+          const send = rec.send && typeof rec.send === "object" ? (rec.send as Record<string, unknown>) : {};
+          const response = send.response && typeof send.response === "object" ? (send.response as Record<string, unknown>) : {};
+          const responseKey = response.key && typeof response.key === "object" ? (response.key as Record<string, unknown>) : {};
+          const dataRec = response.data && typeof response.data === "object" ? (response.data as Record<string, unknown>) : {};
+          const dataKey = dataRec.key && typeof dataRec.key === "object" ? (dataRec.key as Record<string, unknown>) : {};
+          const verification = rec.verification && typeof rec.verification === "object" ? (rec.verification as Record<string, unknown>) : {};
           for (const value of [
             key.remoteJid,
             key.remoteJidAlt,
             key.senderPn,
             key.previousRemoteJid,
             key.participant,
+            responseKey.remoteJid,
+            responseKey.remoteJidAlt,
+            dataKey.remoteJid,
+            dataKey.remoteJidAlt,
+            verification.knownLid,
+            verification.knownPhoneJid,
             rec.remoteJid,
           ]) {
             if (typeof value === "string" && value && !value.includes("@g.us") && !value.includes("status@broadcast")) {
