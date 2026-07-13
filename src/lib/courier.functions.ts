@@ -5,11 +5,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * Garante que o usuário logado tenha um registro em `couriers` vinculado ao
  * seu `user_id`. Fluxo:
  *  1. Se já existe courier com `user_id` = auth.uid → retorna.
- *  2. Se o usuário tem papel `delivery` e existe um courier sem `user_id`
- *     com o mesmo email do perfil → vincula.
+ *  2. Se o usuário tem papel `delivery` e existe um courier órfão
+ *     (user_id NULL) com o mesmo telefone do perfil → vincula.
  *  3. Se o usuário tem papel `delivery` e nenhum courier existente casa
- *     → cria um courier básico (nome do perfil, sem veículo definido) e
- *     vincula.
+ *     → cria um courier básico e vincula.
  *  4. Se o usuário NÃO tem papel `delivery` → retorna { linked: false }.
  */
 export const ensureCourierLink = createServerFn({ method: "POST" })
@@ -18,7 +17,6 @@ export const ensureCourierLink = createServerFn({ method: "POST" })
     const supabase = context.supabase;
     const userId = context.userId;
 
-    // 1) Já vinculado?
     const { data: existing } = await supabase
       .from("couriers")
       .select("id")
@@ -26,15 +24,11 @@ export const ensureCourierLink = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existing?.id) return { linked: true, courierId: existing.id, created: false };
 
-    // Confirma papel `delivery` antes de criar/vincular.
     const { data: hasDelivery } = await supabase.rpc("has_role", {
       _user_id: userId,
       _role: "delivery",
     });
-    if (!hasDelivery) return { linked: false, reason: "no_delivery_role" };
-
-    // Precisamos do email/nome. Perfil não expõe email; usamos claims + profiles.
-    const email = (context.claims?.email as string | undefined)?.toLowerCase() ?? null;
+    if (!hasDelivery) return { linked: false, reason: "no_delivery_role" as const };
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -44,38 +38,37 @@ export const ensureCourierLink = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 2) Tenta casar por email em couriers órfãos (user_id null).
-    if (email) {
-      const { data: byEmail } = await supabaseAdmin
+    // 2) Tenta casar por telefone em couriers órfãos (user_id null).
+    if (profile?.phone) {
+      const { data: byPhone } = await supabaseAdmin
         .from("couriers")
         .select("id, user_id")
-        .ilike("email", email)
+        .eq("phone", profile.phone)
         .is("user_id", null)
         .limit(1)
         .maybeSingle();
-      if (byEmail?.id) {
+      if (byPhone?.id) {
         const { error: linkErr } = await supabaseAdmin
           .from("couriers")
           .update({ user_id: userId })
-          .eq("id", byEmail.id);
+          .eq("id", byPhone.id);
         if (linkErr) throw new Error(linkErr.message);
-        return { linked: true, courierId: byEmail.id, created: false };
+        return { linked: true, courierId: byPhone.id, created: false };
       }
     }
 
     // 3) Cria um novo registro operacional mínimo.
-    const insertPayload: Record<string, unknown> = {
-      user_id: userId,
-      name: profile?.full_name || email?.split("@")[0] || "Motoboy",
-      phone: profile?.phone ?? null,
-      email: email,
-      vehicle: "moto",
-      active: true,
-      status: "offline",
-    };
+    const emailClaim = (context.claims?.email as string | undefined) ?? null;
     const { data: created, error: createErr } = await supabaseAdmin
       .from("couriers")
-      .insert(insertPayload)
+      .insert({
+        user_id: userId,
+        name: profile?.full_name || emailClaim?.split("@")[0] || "Motoboy",
+        phone: profile?.phone ?? null,
+        vehicle: "moto",
+        active: true,
+        status: "offline",
+      })
       .select("id")
       .single();
     if (createErr) throw new Error(createErr.message);
