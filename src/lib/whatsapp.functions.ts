@@ -399,18 +399,61 @@ export const updateWhatsappConversationPhone = createServerFn({ method: "POST" }
     if (phone.length < 10 || phone.length > 15) {
       throw new Error("Telefone inválido. Use DDD + número, com ou sem +55.");
     }
+
+    // Load current row
+    const { data: current, error: curErr } = await context.supabase
+      .from("whatsapp_conversations")
+      .select("id, phone")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (curErr) throw new Error(curErr.message);
+    if (!current) throw new Error("Conversa não encontrada.");
+
+    if (current.phone === phone) {
+      return { id: current.id, phone, merged: false as const };
+    }
+
+    // Check for existing conversation with the target phone
+    const { data: existing, error: existErr } = await context.supabase
+      .from("whatsapp_conversations")
+      .select("id")
+      .eq("phone", phone)
+      .neq("id", data.id)
+      .maybeSingle();
+    if (existErr) throw new Error(existErr.message);
+
+    if (existing) {
+      // Merge: move messages from current → existing, then delete current.
+      // Use admin client to bypass RLS on reassign/delete safely.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { error: moveErr } = await supabaseAdmin
+        .from("whatsapp_messages")
+        .update({ conversation_id: existing.id })
+        .eq("conversation_id", data.id);
+      if (moveErr) throw new Error(`Falha ao mesclar mensagens: ${moveErr.message}`);
+
+      const { error: delErr } = await supabaseAdmin
+        .from("whatsapp_conversations")
+        .delete()
+        .eq("id", data.id);
+      if (delErr) throw new Error(`Falha ao remover duplicata: ${delErr.message}`);
+
+      await supabaseAdmin
+        .from("whatsapp_conversations")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", existing.id);
+
+      return { id: existing.id, phone, merged: true as const };
+    }
+
     const { error } = await context.supabase
       .from("whatsapp_conversations")
       .update({ phone, updated_at: new Date().toISOString() })
       .eq("id", data.id);
-    if (error) {
-      if (/duplicate|unique|whatsapp_conversations_phone_key/i.test(error.message)) {
-        throw new Error("Já existe uma conversa com esse telefone.");
-      }
-      throw new Error(error.message);
-    }
-    return { phone };
+    if (error) throw new Error(error.message);
+    return { id: data.id, phone, merged: false as const };
   });
+
 
 
 
