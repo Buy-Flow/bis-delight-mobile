@@ -34,7 +34,6 @@ function CartPage() {
     update,
     remove,
     subtotal,
-    openCheckout,
     openEdit,
     isCheckoutOpen,
     editingItem,
