@@ -121,11 +121,40 @@ function sortByTimestamp(items: EvoData[]) {
 export async function ingestEvolutionPayload(
   payload: Record<string, unknown>,
   supabase: DbClient,
-  options: { eventHint?: string | null } = {},
+  options: { eventHint?: string | null; source?: string } = {},
 ): Promise<IngestResult> {
   const event = normalizeEvent(options.eventHint ?? (payload.event as string | undefined));
+  const source = options.source ?? "webhook";
   const items = sortByTimestamp(extractItems(payload));
   const result: IngestResult = { processed: 0, inserted: 0, skipped: 0, errors: 0 };
+
+  const logRow = async (row: {
+    status: "ok" | "skipped" | "error";
+    phone?: string | null;
+    evolution_id?: string | null;
+    from_me?: boolean | null;
+    message_type?: string | null;
+    preview?: string | null;
+    error?: string | null;
+    payload?: unknown;
+  }) => {
+    try {
+      await supabase.from("whatsapp_ingest_logs").insert({
+        source,
+        event: event || null,
+        status: row.status,
+        phone: row.phone ?? null,
+        evolution_id: row.evolution_id ?? null,
+        from_me: row.from_me ?? null,
+        message_type: row.message_type ?? null,
+        preview: row.preview ? row.preview.slice(0, 240) : null,
+        error: row.error ?? null,
+        payload: row.payload ?? null,
+      });
+    } catch {
+      // never let logging break ingestion
+    }
+  };
 
   const isMessageEvent =
     !event ||
@@ -134,25 +163,54 @@ export async function ingestEvolutionPayload(
     event === "messages.update" ||
     event === "messages.set";
 
-  if (!isMessageEvent) return result;
+  if (!isMessageEvent) {
+    await logRow({ status: "skipped", error: `event ignored: ${event}`, payload });
+    return result;
+  }
+
+  if (items.length === 0) {
+    await logRow({ status: "skipped", error: "no items extracted from payload", payload });
+    return result;
+  }
 
   for (const item of items) {
     result.processed += 1;
     const key = item.key;
     if (key?.remoteJid?.includes("@g.us") || key?.remoteJid?.includes("status@broadcast")) {
       result.skipped += 1;
+      await logRow({
+        status: "skipped",
+        error: "group or broadcast jid",
+        evolution_id: key?.id ?? item.id ?? null,
+        payload: item,
+      });
       continue;
     }
 
     const phone = phoneFromJid(key?.remoteJid, key?.senderPn, key?.previousRemoteJid, payload.sender as string | undefined);
     if (!phone) {
       result.skipped += 1;
+      await logRow({
+        status: "skipped",
+        error: `no phone from jid (${key?.remoteJid ?? "n/a"})`,
+        evolution_id: key?.id ?? item.id ?? null,
+        payload: item,
+      });
       continue;
     }
 
     const { text, type, media } = extractText(item.message);
     if (!text && !media) {
       result.skipped += 1;
+      await logRow({
+        status: "skipped",
+        error: `empty message (type=${type})`,
+        phone,
+        evolution_id: key?.id ?? item.id ?? null,
+        from_me: !!key?.fromMe,
+        message_type: type,
+        payload: item,
+      });
       continue;
     }
 
@@ -165,6 +223,15 @@ export async function ingestEvolutionPayload(
         .maybeSingle();
       if (dup) {
         result.skipped += 1;
+        await logRow({
+          status: "skipped",
+          error: "duplicate evolution_id",
+          phone,
+          evolution_id: evoId,
+          from_me: !!key?.fromMe,
+          message_type: type,
+          preview: text,
+        });
         continue;
       }
     }
@@ -181,6 +248,16 @@ export async function ingestEvolutionPayload(
 
     if (existingErr) {
       result.errors += 1;
+      await logRow({
+        status: "error",
+        error: `conversation lookup: ${existingErr.message ?? existingErr}`,
+        phone,
+        evolution_id: evoId,
+        from_me: fromMe,
+        message_type: type,
+        preview: text,
+        payload: item,
+      });
       continue;
     }
 
@@ -214,6 +291,16 @@ export async function ingestEvolutionPayload(
 
       if (insErr || !inserted) {
         result.errors += 1;
+        await logRow({
+          status: "error",
+          error: `conversation insert: ${insErr?.message ?? "unknown"}`,
+          phone,
+          evolution_id: evoId,
+          from_me: fromMe,
+          message_type: type,
+          preview: text,
+          payload: item,
+        });
         continue;
       }
       convId = inserted.id as string;
@@ -232,8 +319,29 @@ export async function ingestEvolutionPayload(
       raw: item,
     });
 
-    if (msgErr) result.errors += 1;
-    else result.inserted += 1;
+    if (msgErr) {
+      result.errors += 1;
+      await logRow({
+        status: "error",
+        error: `message insert: ${msgErr.message ?? msgErr}`,
+        phone,
+        evolution_id: evoId,
+        from_me: fromMe,
+        message_type: type,
+        preview: text,
+        payload: item,
+      });
+    } else {
+      result.inserted += 1;
+      await logRow({
+        status: "ok",
+        phone,
+        evolution_id: evoId,
+        from_me: fromMe,
+        message_type: type,
+        preview: text,
+      });
+    }
   }
 
   return result;

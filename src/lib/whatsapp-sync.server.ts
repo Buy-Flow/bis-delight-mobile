@@ -45,5 +45,5 @@ export async function syncWhatsappRecentMessagesFromEvolution({
     throw new Error(`Evolution ${resp.status}: ${message}`);
   }
 
-  return ingestEvolutionPayload({ event: "MESSAGES_UPSERT", data: payload }, supabase);
+  return ingestEvolutionPayload({ event: "MESSAGES_UPSERT", data: payload }, supabase, { source: "sync" });
 }

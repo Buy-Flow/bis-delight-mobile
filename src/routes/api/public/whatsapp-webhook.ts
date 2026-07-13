@@ -37,6 +37,18 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
           return Response.json({ ok: true, ...result });
         } catch (e) {
           console.error("[wa-webhook] processing error", e);
+          try {
+            await supabaseAdmin.from("whatsapp_ingest_logs").insert({
+              source: "webhook",
+              event: (payload.event as string | undefined) ?? null,
+              status: "error",
+              error: e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              payload: payload as any,
+            });
+          } catch {
+            /* noop */
+          }
           return new Response("Server error", { status: 500 });
         }
       },
