@@ -278,6 +278,30 @@ export const setAiPaused = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const updateWhatsappConversationPhone = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: { id: string; phone: string }) =>
+    z.object({ id: z.string().uuid(), phone: z.string().trim().min(8).max(32) }).parse(v),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const phone = normalizePhone(data.phone);
+    if (phone.length < 10 || phone.length > 15) {
+      throw new Error("Telefone inválido. Use DDD + número, com ou sem +55.");
+    }
+    const { error } = await context.supabase
+      .from("whatsapp_conversations")
+      .update({ phone, updated_at: new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) {
+      if (/duplicate|unique|whatsapp_conversations_phone_key/i.test(error.message)) {
+        throw new Error("Já existe uma conversa com esse telefone.");
+      }
+      throw new Error(error.message);
+    }
+    return { phone };
+  });
+
 export const assignConversation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: { id: string; user_id: string | null }) =>
