@@ -456,12 +456,43 @@ function MotoboyPortal() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-4 space-y-4">
+        {/* Daily earnings hero + goal */}
+        <div className="rounded-3xl border border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-600/20 via-purple-700/10 to-transparent p-4">
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="text-[11px] uppercase tracking-widest text-fuchsia-300/80 font-bold">Ganhos hoje</div>
+              <div className="text-3xl font-black text-white mt-1">R$ {stats.today.earnings.toFixed(2)}</div>
+              <div className="text-[11px] text-white/60 mt-0.5">
+                {stats.today.count} {stats.today.count === 1 ? "entrega" : "entregas"} • {stats.today.km.toFixed(1)} km
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-white/50 uppercase font-bold">Meta R$ {dailyGoal}</div>
+              <div className="text-lg font-black text-emerald-400">{goalPct.toFixed(0)}%</div>
+            </div>
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all"
+              style={{ width: `${goalPct}%` }}
+            />
+          </div>
+        </div>
+
         {/* KPIs */}
         <div className="grid grid-cols-3 gap-2">
-          <KpiCard icon={Package} label="Hoje" value={String(todayDelivered.length)} />
-          <KpiCard icon={DollarSign} label="Ganhos hoje" value={`R$ ${todayEarnings.toFixed(2)}`} />
-          <KpiCard icon={Star} label="Avaliação" value={courier.rating ? courier.rating.toFixed(1) : "—"} />
+          <KpiCard icon={Package} label="Semana" value={String(stats.week.count)} sub={`R$ ${stats.week.earnings.toFixed(0)}`} />
+          <KpiCard icon={DollarSign} label="Mês" value={`R$ ${stats.month.earnings.toFixed(0)}`} sub={`${stats.month.count} entregas`} />
+          <KpiCard icon={Star} label="Avaliação" value={courier.rating ? courier.rating.toFixed(1) : "—"} sub={`${courier.total_deliveries} totais`} />
         </div>
+
+        {(stats.acceptRate !== null || stats.avgTime !== null || stats.missedToday > 0) && (
+          <div className="grid grid-cols-3 gap-2">
+            <MiniStat label="Aceitação" value={stats.acceptRate !== null ? `${stats.acceptRate.toFixed(0)}%` : "—"} tone="emerald" />
+            <MiniStat label="Tempo médio" value={stats.avgTime !== null ? `${stats.avgTime.toFixed(0)} min` : "—"} tone="cyan" />
+            <MiniStat label="Perdidas hoje" value={String(stats.missedToday)} tone={stats.missedToday > 0 ? "red" : "white"} />
+          </div>
+        )}
 
         {tab === "home" && (
           <>
@@ -509,26 +540,96 @@ function MotoboyPortal() {
         {tab === "map" && <LiveMap orders={activeOrders} coord={gpsCoord} />}
 
         {tab === "history" && (
-          <section className="space-y-2">
-            <h2 className="text-sm font-black text-white/80 uppercase">Histórico</h2>
-            {historyOrders.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
-                Você ainda não tem entregas concluídas.
-              </div>
+          <section className="space-y-3">
+            {/* Sub-tabs: entregues x perdidas */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setHistoryTab("delivered")}
+                className={cn(
+                  "flex-1 rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wide transition",
+                  historyTab === "delivered"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                    : "bg-white/5 text-white/60 border border-white/10"
+                )}
+              >
+                Aceitas
+              </button>
+              <button
+                onClick={() => setHistoryTab("missed")}
+                className={cn(
+                  "flex-1 rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wide transition",
+                  historyTab === "missed"
+                    ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                    : "bg-white/5 text-white/60 border border-white/10"
+                )}
+              >
+                Perdidas
+              </button>
+            </div>
+
+            {/* Period filter */}
+            <div className="flex gap-1 overflow-x-auto">
+              {(["today", "week", "month", "all"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-[11px] font-bold whitespace-nowrap transition",
+                    period === p ? "bg-fuchsia-500 text-white" : "bg-white/5 text-white/60"
+                  )}
+                >
+                  {p === "today" ? "Hoje" : p === "week" ? "7 dias" : p === "month" ? "Mês" : "Tudo"}
+                </button>
+              ))}
+            </div>
+
+            {historyTab === "delivered" ? (
+              <>
+                {filteredHistory.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
+                    Nenhuma entrega no período.
+                  </div>
+                )}
+                {filteredHistory.slice(0, 60).map((o) => (
+                  <div key={o.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold">#{o.id.slice(0, 6)} — {o.customer_name ?? "Cliente"}</span>
+                      <span className={cn("text-[11px] font-bold", o.status === "entregue" ? "text-emerald-400" : "text-red-400")}>
+                        {o.status === "entregue" ? "Entregue" : "Cancelado"}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-white/50 mt-1 flex flex-wrap gap-x-2">
+                      <span>{new Date(o.created_at).toLocaleString("pt-BR")}</span>
+                      <span>• R$ {(o.delivery_fee || 0).toFixed(2)}</span>
+                      {o.distance_km ? <span>• {o.distance_km.toFixed(1)} km</span> : null}
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                {filteredMissed.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
+                    Nenhuma corrida perdida no período. Ótimo trabalho! 🎉
+                  </div>
+                )}
+                {filteredMissed.slice(0, 60).map((m) => (
+                  <div key={m.id} className="rounded-2xl border border-red-500/10 bg-red-500/[0.03] p-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold text-white/80">Corrida perdida</span>
+                      <span className="text-[11px] font-bold text-red-300 uppercase">
+                        {m.status === "expired" ? "Expirou" : m.status === "rejected" ? "Recusada" : m.status === "taken" ? "Outro pegou" : m.status}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-white/50 mt-1 flex flex-wrap gap-x-2">
+                      <span>{new Date(m.offered_at).toLocaleString("pt-BR")}</span>
+                      {m.delivery_fee ? <span>• R$ {m.delivery_fee.toFixed(2)}</span> : null}
+                      {m.distance_km ? <span>• {m.distance_km.toFixed(1)} km</span> : null}
+                    </div>
+                  </div>
+                ))}
+              </>
             )}
-            {historyOrders.slice(0, 30).map((o) => (
-              <div key={o.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold">#{o.id.slice(0, 6)} — {o.customer_name ?? "Cliente"}</span>
-                  <span className={cn("text-[11px] font-bold", o.status === "entregue" ? "text-emerald-400" : "text-red-400")}>
-                    {o.status === "entregue" ? "Entregue" : "Cancelado"}
-                  </span>
-                </div>
-                <div className="text-[11px] text-white/50 mt-1">
-                  {new Date(o.created_at).toLocaleString("pt-BR")} • Ganho: R$ {(o.delivery_fee || 0).toFixed(2)}
-                </div>
-              </div>
-            ))}
           </section>
         )}
 
@@ -541,6 +642,15 @@ function MotoboyPortal() {
               <div className="flex justify-between text-sm"><span className="text-white/60">Veículo</span><span className="font-bold">{courier.vehicle} {courier.plate}</span></div>
               <div className="flex justify-between text-sm"><span className="text-white/60">Telefone</span><span className="font-bold">{courier.phone ?? "—"}</span></div>
             </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
+              <div className="text-[11px] font-black uppercase tracking-wider text-fuchsia-300 mb-2">Desempenho</div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Aceitação (hoje)</span><span className="font-bold">{stats.acceptRate !== null ? `${stats.acceptRate.toFixed(0)}%` : "—"}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Tempo médio de entrega</span><span className="font-bold">{stats.avgTime !== null ? `${stats.avgTime.toFixed(0)} min` : "—"}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Km percorridos (semana)</span><span className="font-bold">{stats.week.km.toFixed(1)} km</span></div>
+              <div className="flex justify-between text-sm"><span className="text-white/60">Corridas perdidas (hoje)</span><span className={cn("font-bold", stats.missedToday > 0 ? "text-red-400" : "text-white")}>{stats.missedToday}</span></div>
+            </div>
+
             <button onClick={signOut} className="w-full rounded-2xl bg-red-500/20 border border-red-500/30 py-3 text-red-300 font-bold flex items-center justify-center gap-2">
               <LogOut className="h-4 w-4" /> Sair
             </button>
