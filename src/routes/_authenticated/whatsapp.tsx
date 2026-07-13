@@ -397,6 +397,133 @@ function WhatsappPage() {
     }
   };
 
+  const fileToBase64 = (file: Blob) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.readAsDataURL(file);
+    });
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !selectedId) return;
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error("Arquivo grande demais (máx. 16 MB pelo WhatsApp).");
+      return;
+    }
+    const mime = file.type || "application/octet-stream";
+    const kind: "image" | "video" | "audio" | "document" = mime.startsWith("image/")
+      ? "image"
+      : mime.startsWith("video/")
+        ? "video"
+        : mime.startsWith("audio/")
+          ? "audio"
+          : "document";
+    setUploading(true);
+    try {
+      const b64 = await fileToBase64(file);
+      const res = await sendMediaFn({
+        data: {
+          conversation_id: selectedId,
+          kind,
+          base64: b64,
+          mimetype: mime,
+          filename: file.name,
+          caption: text.trim() || undefined,
+        },
+      });
+      setText("");
+      const persisted = (res.message ?? null) as Message | null;
+      if (persisted) {
+        setMessages((prev) => (prev.some((m) => m.id === persisted.id) ? prev : [...prev, persisted]));
+      }
+      if (res.warning) toast.warning(res.warning);
+      else toast.success("Mídia enviada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar mídia");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const startRecording = async () => {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeCandidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
+      const mime = mimeCandidates.find((m) => (window.MediaRecorder as unknown as { isTypeSupported?: (m: string) => boolean }).isTypeSupported?.(m)) ?? "";
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      recordChunksRef.current = [];
+      rec.ondataavailable = (ev) => {
+        if (ev.data && ev.data.size > 0) recordChunksRef.current.push(ev.data);
+      };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setRecording(false);
+        const blob = new Blob(recordChunksRef.current, { type: rec.mimeType || "audio/webm" });
+        if (blob.size < 512) {
+          toast.error("Gravação muito curta.");
+          return;
+        }
+        if (!selectedId) return;
+        setUploading(true);
+        try {
+          const b64 = await fileToBase64(blob);
+          const res = await sendMediaFn({
+            data: {
+              conversation_id: selectedId,
+              kind: "audio",
+              base64: b64,
+              mimetype: blob.type || "audio/ogg",
+              filename: `audio-${Date.now()}.ogg`,
+            },
+          });
+          const persisted = (res.message ?? null) as Message | null;
+          if (persisted) {
+            setMessages((prev) => (prev.some((m) => m.id === persisted.id) ? prev : [...prev, persisted]));
+          }
+          if (res.warning) toast.warning(res.warning);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Erro ao enviar áudio");
+        } finally {
+          setUploading(false);
+        }
+      };
+      mediaRecorderRef.current = rec;
+      recordStartRef.current = Date.now();
+      setRecordSeconds(0);
+      rec.start();
+      setRecording(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sem permissão de microfone");
+    }
+  };
+
+  const stopRecording = (cancel = false) => {
+    const rec = mediaRecorderRef.current;
+    if (!rec) return;
+    if (cancel) {
+      recordChunksRef.current = [];
+      rec.onstop = () => {
+        rec.stream.getTracks().forEach((t) => t.stop());
+        setRecording(false);
+      };
+    }
+    if (rec.state !== "inactive") rec.stop();
+  };
+
+  useEffect(() => {
+    if (!recording) return;
+    const t = window.setInterval(() => {
+      setRecordSeconds(Math.floor((Date.now() - recordStartRef.current) / 1000));
+    }, 500);
+    return () => window.clearInterval(t);
+  }, [recording]);
+
+
+
 
   const handleTogglePause = async () => {
     if (!selected) return;
