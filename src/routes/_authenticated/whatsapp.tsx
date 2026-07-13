@@ -253,6 +253,7 @@ function WhatsappPage() {
     return () => {
       supabase.removeChannel(ch);
       window.clearInterval(syncTimer);
+      clearInterval(stateTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
