@@ -623,7 +623,7 @@ function MotoboyPortal() {
                     </div>
                     <div className="text-[11px] text-white/50 mt-1 flex flex-wrap gap-x-2">
                       <span>{new Date(m.offered_at).toLocaleString("pt-BR")}</span>
-                      {m.delivery_fee ? <span>• R$ {m.delivery_fee.toFixed(2)}</span> : null}
+                      {m.fee ? <span>• R$ {m.fee.toFixed(2)}</span> : null}
                       {m.distance_km ? <span>• {m.distance_km.toFixed(1)} km</span> : null}
                     </div>
                   </div>
