@@ -86,19 +86,19 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         }
 
         let sendNumber: string | null = null;
-        let checkDiag = "";
         let checkOk = false;
+        const checkUrl = `${base}/chat/whatsappNumbers/${encodeURIComponent(instance)}`;
+        const checkReq = { numbers: Array.from(candidates) };
+        let checkStatus: number | string = "n/a";
+        let checkBody = "";
         try {
-          const check = await fetch(
-            `${base}/chat/whatsappNumbers/${encodeURIComponent(instance)}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json", apikey: key },
-              body: JSON.stringify({ numbers: Array.from(candidates) }),
-            },
-          );
-          const checkBody = await check.text();
-          checkDiag = `chk ${check.status} :: ${checkBody.slice(0, 300)}`;
+          const check = await fetch(checkUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", apikey: key },
+            body: JSON.stringify(checkReq),
+          });
+          checkStatus = check.status;
+          checkBody = await check.text();
           if (check.ok) {
             checkOk = true;
             let arr: Array<{ exists?: boolean; jid?: string; number?: string }> = [];
@@ -114,57 +114,80 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             }
           }
         } catch (err) {
-          checkDiag = `chk exception :: ${err instanceof Error ? err.message : String(err)}`;
+          checkStatus = "exception";
+          checkBody = err instanceof Error ? err.message : String(err);
         }
 
+        const checkReport =
+          `POST ${checkUrl}\n` +
+          `→ payload: ${JSON.stringify(checkReq)}\n` +
+          `← status: ${checkStatus}\n` +
+          `← body: ${checkBody.slice(0, 600) || "(vazio)"}`;
+
         if (!sendNumber) {
-          // Fail-close: sem confirmação de que o número existe no WhatsApp, não envia.
           const variants = Array.from(candidates).join(", ");
-          evoError = checkOk
-            ? `O número ${normalized} não está registrado no WhatsApp (testadas variantes: ${variants}). Corrija o telefone da conversa.\n[diag] ${checkDiag}`
-            : `Não foi possível confirmar o número ${normalized} no WhatsApp. Verifique a conexão da instância.\n[diag] ${checkDiag}`;
+          const summary = checkOk
+            ? `❌ O número ${normalized} não está registrado no WhatsApp.\nVariantes testadas: ${variants}. Corrija o telefone da conversa.`
+            : `❌ Não foi possível confirmar o número ${normalized} no WhatsApp (verifique se a instância está conectada e se o endpoint /chat/whatsappNumbers está disponível).`;
+          evoError = `${summary}\n\n[etapa 1: verificação de número]\n${checkReport}`;
           status = "failed";
         } else {
-        const resp = await fetch(`${base}/message/sendText/${encodeURIComponent(instance)}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: key,
-          },
-          body: JSON.stringify({
+          const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
+          const sendReq = {
             number: sendNumber,
             text: data.text,
             options: { delay: 0, presence: "composing" },
-          }),
-        });
-        const body = await resp.text();
-        if (!resp.ok) {
-          let friendly = `Evolution ${resp.status}: ${body.slice(0, 300)}`;
+          };
+          let sendStatus: number | string = "n/a";
+          let sendBody = "";
           try {
-            const parsed = JSON.parse(body);
-            const arr = parsed?.response?.message;
-            if (Array.isArray(arr) && arr[0] && arr[0].exists === false) {
-              friendly = `O número ${arr[0].number ?? sendNumber} não está registrado no WhatsApp. Confira o telefone da conversa.`;
+            const resp = await fetch(sendUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", apikey: key },
+              body: JSON.stringify(sendReq),
+            });
+            sendStatus = resp.status;
+            sendBody = await resp.text();
+            if (!resp.ok) {
+              let friendly = `Evolution respondeu HTTP ${resp.status}`;
+              try {
+                const parsed = JSON.parse(sendBody);
+                const arr = parsed?.response?.message;
+                if (Array.isArray(arr) && arr[0] && arr[0].exists === false) {
+                  friendly = `O número ${arr[0].number ?? sendNumber} não está registrado no WhatsApp.`;
+                } else if (parsed?.message) {
+                  friendly = `Evolution ${resp.status}: ${Array.isArray(parsed.message) ? JSON.stringify(parsed.message) : parsed.message}`;
+                }
+              } catch { /* mantém friendly */ }
+              const sendReport =
+                `POST ${sendUrl}\n` +
+                `→ payload: ${JSON.stringify(sendReq)}\n` +
+                `← status: ${sendStatus}\n` +
+                `← body: ${sendBody.slice(0, 600) || "(vazio)"}`;
+              evoError =
+                `❌ ${friendly}\n\n` +
+                `[etapa 1: verificação de número]\n${checkReport}\n\n` +
+                `[etapa 2: envio da mensagem]\n${sendReport}`;
+              status = "failed";
+            } else {
+              try {
+                const j = JSON.parse(sendBody);
+                evoId = j?.key?.id ?? j?.messageId ?? j?.id ?? j?.data?.key?.id ?? null;
+              } catch {
+                evoId = null;
+              }
             }
-          } catch { /* mantém friendly */ }
-          evoError = `${friendly}\n[diag] ${checkDiag} | send to: ${sendNumber}`;
-          status = "failed";
-        } else {
-          try {
-            const j = JSON.parse(body);
-            evoId =
-              j?.key?.id ??
-              j?.messageId ??
-              j?.id ??
-              j?.data?.key?.id ??
-              null;
-          } catch {
-            evoId = null;
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            evoError =
+              `❌ Falha de rede ao chamar Evolution: ${msg}\n\n` +
+              `[etapa 1: verificação de número]\n${checkReport}\n\n` +
+              `[etapa 2: envio da mensagem]\nPOST ${sendUrl}\n→ payload: ${JSON.stringify(sendReq)}\n← exception: ${msg}`;
+            status = "failed";
           }
         }
+        }
 
-        }
-        }
 
 
 
