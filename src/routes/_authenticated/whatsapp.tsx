@@ -155,8 +155,16 @@ function WhatsappPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedIdRef = useRef<string | null>(null);
   const syncInFlightRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordChunksRef = useRef<BlobPart[]>([]);
+  const recordStartRef = useRef<number>(0);
+  const [uploading, setUploading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
 
   const sendFn = useServerFn(sendWhatsappMessage);
+  const sendMediaFn = useServerFn(sendWhatsappMediaMessage);
   const pauseFn = useServerFn(setAiPaused);
   const readFn = useServerFn(markConversationRead);
   const cfgFn = useServerFn(getWhatsappConfigStatus);
