@@ -18,6 +18,7 @@ import { Route as BaixarAppRouteImport } from './routes/baixar-app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RastrearTokenRouteImport } from './routes/rastrear.$token'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
@@ -94,6 +95,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RastrearTokenRoute = RastrearTokenRouteImport.update({
+  id: '/rastrear/$token',
+  path: '/rastrear/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
@@ -308,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -351,6 +358,7 @@ export interface FileRoutesByTo {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -396,6 +404,7 @@ export interface FileRoutesById {
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/rastrear/$token': typeof RastrearTokenRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -441,6 +450,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/api/copilot-chat'
     | '/produto/$id'
+    | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/whatsapp-webhook'
@@ -484,6 +494,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/api/copilot-chat'
     | '/produto/$id'
+    | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/whatsapp-webhook'
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whatsapp'
     | '/api/copilot-chat'
     | '/produto/$id'
+    | '/rastrear/$token'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
     | '/api/public/whatsapp-webhook'
@@ -546,6 +558,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
+  RastrearTokenRoute: typeof RastrearTokenRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
 }
 
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rastrear/$token': {
+      id: '/rastrear/$token'
+      path: '/rastrear/$token'
+      fullPath: '/rastrear/$token'
+      preLoaderRoute: typeof RastrearTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produto/$id': {
@@ -941,6 +961,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
   ProdutoIdRoute: ProdutoIdRoute,
+  RastrearTokenRoute: RastrearTokenRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
 }
 export const routeTree = rootRouteImport
