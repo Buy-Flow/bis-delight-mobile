@@ -120,40 +120,25 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     let cancelled = false;
     (async () => {
       try {
-        const [loyaltyRes, promoRes] = await Promise.all([
-          supabase
-            .from("loyalty_coupons")
-            .select("id, code, discount_value, used_at")
-            .eq("user_id", user.id)
-            .is("used_at", null)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("promo_coupons")
-            .select("id, code, discount_value, discount_type, min_order_value, active, expires_at")
-            .eq("active", true)
-            .order("created_at", { ascending: false })
-            .limit(20),
-        ]);
+        // Only loyalty coupons are user-owned; promo coupons are not listable by regular users (RLS).
+        const { data, error } = await supabase
+          .from("loyalty_coupons")
+          .select("id, code, discount_value, used_at, created_at")
+          .eq("user_id", user.id)
+          .is("used_at", null)
+          .order("created_at", { ascending: false });
         if (cancelled) return;
-        const list: Array<{ id: string; code: string; discount: number; kind: "loyalty" | "promo"; label?: string; minOrder?: number }> = [];
-        (loyaltyRes.data || []).forEach((c: any) => {
+        if (error) throw error;
+        const list = (data || []).map((c: any) => {
           const v = Number(c.discount_value) > 0 ? Number(c.discount_value) : 20;
-          list.push({ id: c.id, code: c.code, discount: v, kind: "loyalty", label: `Bis Recompensa · −${brl(v)}`, minOrder: v });
-        });
-        const now = Date.now();
-        (promoRes.data || []).forEach((c: any) => {
-          if (c.expires_at && new Date(c.expires_at).getTime() < now) return;
-          const raw = Number(c.discount_value) || 0;
-          const isPct = c.discount_type === "percent" || c.discount_type === "percentage";
-          const est = isPct ? (subtotal * raw) / 100 : raw;
-          list.push({
-            id: c.id,
-            code: c.code,
-            discount: est,
-            kind: "promo",
-            label: isPct ? `${raw}% de desconto` : `−${brl(raw)}`,
-            minOrder: c.min_order_value ? Number(c.min_order_value) : undefined,
-          });
+          return {
+            id: c.id as string,
+            code: c.code as string,
+            discount: v,
+            kind: "loyalty" as const,
+            label: `Bis Recompensa · −${brl(v)}`,
+            minOrder: v,
+          };
         });
         setAvailableCoupons(list);
       } catch (e) {
