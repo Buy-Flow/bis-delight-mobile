@@ -290,6 +290,16 @@ function AvaliarPage() {
         const arr: string[] = JSON.parse(raw);
         if (!arr.includes(orderId)) arr.push(orderId);
         localStorage.setItem("reviewed_orders", JSON.stringify(arr));
+
+        const promptRaw = localStorage.getItem("review_prompt_state_v2") ?? "{}";
+        const promptState = JSON.parse(promptRaw);
+        const orders = promptState.orders && typeof promptState.orders === "object" ? promptState.orders : {};
+        orders[orderId] = {
+          ...(orders[orderId] ?? {}),
+          reviewedAt: Date.now(),
+          dismissCount: 2,
+        };
+        localStorage.setItem("review_prompt_state_v2", JSON.stringify({ ...promptState, orders }));
       } catch { /* ignore */ }
       navigate({ to: "/recompensas" as never });
     } catch (e) {
