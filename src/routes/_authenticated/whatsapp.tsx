@@ -795,10 +795,9 @@ function MessageBubble({ m }: { m: Message }) {
           )}
         </div>
         {meta.kind === "failed" && (m.error || m._optimistic) && (
-          <div className="mt-1 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-1 text-[10px] text-red-200">
-            {m.error?.slice(0, 200) ?? "Não foi possível gravar a mensagem no banco de dados."}
-          </div>
+          <FailedDetail error={m.error ?? "Não foi possível gravar a mensagem no banco de dados."} />
         )}
+
       </div>
     </div>
   );
