@@ -156,15 +156,12 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
 
         const checkReport = checkReports.join("\n\n---\n\n");
 
-        if (!sendNumber) {
-          const variants = Array.from(new Set(candidates)).join(", ");
-          evoError =
-            `❌ A Evolution não confirmou esse contato no WhatsApp.\n` +
-            `Número salvo: ${conv.phone}. Normalizado: ${normalized}. Variantes testadas: ${variants}.\n` +
-            `Se esse contato existe, corrija o telefone no cadastro/conversa ou confira se a instância está conectada.\n\n` +
-            `[etapa 1: verificação de número]\n${checkReport}`;
-          status = "failed";
-        } else {
+        // Não bloqueia o envio só porque a verificação não confirmou: em alguns
+        // números BR a Evolution confirma mal a existência, mas o sendText ainda
+        // aceita o número correto. Se o envio real falhar, aí sim mostramos o
+        // erro técnico completo retornado pelo endpoint de envio.
+        if (!sendNumber) sendNumber = Array.from(new Set(candidates))[0] ?? normalized;
+        {
           const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
           const sendReq = {
             number: sendNumber,
