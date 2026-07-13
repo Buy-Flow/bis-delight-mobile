@@ -70,10 +70,11 @@ function joinAddressParts(p: { street: string; number: string; neighborhood: str
 }
 
 
-export function CheckoutSheet() {
+export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {}) {
   const { isCheckoutOpen, closeCheckout, items, update, subtotal, clear } = useCart();
-  useBackDismiss(isCheckoutOpen, closeCheckout);
+  useBackDismiss(pageMode ? false : isCheckoutOpen, closeCheckout);
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+
   const navigate = useNavigate();
   const storeStatus = useStoreStatus();
 
