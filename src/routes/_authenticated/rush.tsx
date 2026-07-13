@@ -379,7 +379,7 @@ function RushPage() {
       window.clearInterval(poll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin]);
+  }, [isAdmin, canOperate]);
 
   const todayList = useMemo(
     () => (orders ?? []).filter((o) => isToday(new Date(o.created_at))),
