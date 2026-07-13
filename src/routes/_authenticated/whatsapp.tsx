@@ -29,6 +29,13 @@ import {
   ChevronDown,
   ChevronRight,
   Radio,
+  Paperclip,
+  Mic,
+  Square,
+  Play,
+  Download,
+  FileText,
+  ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -43,6 +50,10 @@ import {
   updateWhatsappConversationPhone,
   configureWhatsappWebhook,
 } from "@/lib/whatsapp.functions";
+import {
+  sendWhatsappMediaMessage,
+  resolveWhatsappInboundMedia,
+} from "@/lib/whatsapp-media.functions";
 import { WhatsappConnectDialog } from "@/components/admin/WhatsappConnectDialog";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
@@ -144,8 +155,16 @@ function WhatsappPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedIdRef = useRef<string | null>(null);
   const syncInFlightRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordChunksRef = useRef<BlobPart[]>([]);
+  const recordStartRef = useRef<number>(0);
+  const [uploading, setUploading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
 
   const sendFn = useServerFn(sendWhatsappMessage);
+  const sendMediaFn = useServerFn(sendWhatsappMediaMessage);
   const pauseFn = useServerFn(setAiPaused);
   const readFn = useServerFn(markConversationRead);
   const cfgFn = useServerFn(getWhatsappConfigStatus);
@@ -377,6 +396,133 @@ function WhatsappPage() {
       setSending(false);
     }
   };
+
+  const fileToBase64 = (file: Blob) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error);
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.readAsDataURL(file);
+    });
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !selectedId) return;
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error("Arquivo grande demais (máx. 16 MB pelo WhatsApp).");
+      return;
+    }
+    const mime = file.type || "application/octet-stream";
+    const kind: "image" | "video" | "audio" | "document" = mime.startsWith("image/")
+      ? "image"
+      : mime.startsWith("video/")
+        ? "video"
+        : mime.startsWith("audio/")
+          ? "audio"
+          : "document";
+    setUploading(true);
+    try {
+      const b64 = await fileToBase64(file);
+      const res = await sendMediaFn({
+        data: {
+          conversation_id: selectedId,
+          kind,
+          base64: b64,
+          mimetype: mime,
+          filename: file.name,
+          caption: text.trim() || undefined,
+        },
+      });
+      setText("");
+      const persisted = (res.message ?? null) as Message | null;
+      if (persisted) {
+        setMessages((prev) => (prev.some((m) => m.id === persisted.id) ? prev : [...prev, persisted]));
+      }
+      if (res.warning) toast.warning(res.warning);
+      else toast.success("Mídia enviada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar mídia");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const startRecording = async () => {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeCandidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
+      const mime = mimeCandidates.find((m) => (window.MediaRecorder as unknown as { isTypeSupported?: (m: string) => boolean }).isTypeSupported?.(m)) ?? "";
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      recordChunksRef.current = [];
+      rec.ondataavailable = (ev) => {
+        if (ev.data && ev.data.size > 0) recordChunksRef.current.push(ev.data);
+      };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setRecording(false);
+        const blob = new Blob(recordChunksRef.current, { type: rec.mimeType || "audio/webm" });
+        if (blob.size < 512) {
+          toast.error("Gravação muito curta.");
+          return;
+        }
+        if (!selectedId) return;
+        setUploading(true);
+        try {
+          const b64 = await fileToBase64(blob);
+          const res = await sendMediaFn({
+            data: {
+              conversation_id: selectedId,
+              kind: "audio",
+              base64: b64,
+              mimetype: blob.type || "audio/ogg",
+              filename: `audio-${Date.now()}.ogg`,
+            },
+          });
+          const persisted = (res.message ?? null) as Message | null;
+          if (persisted) {
+            setMessages((prev) => (prev.some((m) => m.id === persisted.id) ? prev : [...prev, persisted]));
+          }
+          if (res.warning) toast.warning(res.warning);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Erro ao enviar áudio");
+        } finally {
+          setUploading(false);
+        }
+      };
+      mediaRecorderRef.current = rec;
+      recordStartRef.current = Date.now();
+      setRecordSeconds(0);
+      rec.start();
+      setRecording(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sem permissão de microfone");
+    }
+  };
+
+  const stopRecording = (cancel = false) => {
+    const rec = mediaRecorderRef.current;
+    if (!rec) return;
+    if (cancel) {
+      recordChunksRef.current = [];
+      rec.onstop = () => {
+        rec.stream.getTracks().forEach((t) => t.stop());
+        setRecording(false);
+      };
+    }
+    if (rec.state !== "inactive") rec.stop();
+  };
+
+  useEffect(() => {
+    if (!recording) return;
+    const t = window.setInterval(() => {
+      setRecordSeconds(Math.floor((Date.now() - recordStartRef.current) / 1000));
+    }, 500);
+    return () => window.clearInterval(t);
+  }, [recording]);
+
+
 
 
   const handleTogglePause = async () => {
@@ -822,32 +968,86 @@ function WhatsappPage() {
                       IA está respondendo — envie manualmente ou pause a IA para assumir.
                     </div>
                   )}
-                  <div className="flex items-end gap-2">
-                    <textarea
-                      value={text}
-                      onChange={(e) => setText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                      rows={2}
-                      placeholder="Digite sua mensagem… (Enter envia, Shift+Enter quebra linha)"
-                      className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
-                    />
-                    <button
-                      onClick={handleSend}
-                      disabled={!text.trim() || sending}
-                      className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
-                    >
-                      {sending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
+                  {recording ? (
+                    <div className="flex items-center gap-2 rounded-2xl border border-red-400/40 bg-red-500/10 px-3 py-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                      </span>
+                      <span className="flex-1 text-sm font-bold text-red-100">
+                        Gravando… {String(Math.floor(recordSeconds / 60)).padStart(2, "0")}:
+                        {String(recordSeconds % 60).padStart(2, "0")}
+                      </span>
+                      <button
+                        onClick={() => stopRecording(true)}
+                        className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 text-white/80 hover:bg-black/50"
+                        title="Cancelar"
+                        type="button"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => stopRecording(false)}
+                        className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black hover:brightness-110"
+                        title="Enviar áudio"
+                        type="button"
+                      >
                         <Send className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-end gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,video/*,audio/*,application/pdf"
+                        onChange={handleFileSelected}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 disabled:opacity-40"
+                        title="Anexar imagem, vídeo, áudio ou PDF"
+                      >
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                      </button>
+                      <textarea
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        rows={2}
+                        placeholder="Digite sua mensagem… (Enter envia, Shift+Enter quebra linha)"
+                        className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
+                      />
+                      {text.trim() ? (
+                        <button
+                          onClick={handleSend}
+                          disabled={sending}
+                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          title="Enviar"
+                        >
+                          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={startRecording}
+                          disabled={uploading}
+                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          title="Gravar áudio"
+                          type="button"
+                        >
+                          <Mic className="h-4 w-4" />
+                        </button>
                       )}
-                    </button>
-                  </div>
+                    </div>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {QUICK_REPLIES.map((q) => (
                       <button
@@ -893,11 +1093,12 @@ function MessageBubble({ m }: { m: Message }) {
   const out = m.direction === "outbound" || m.direction === "out";
   const isAi = m.sent_by === "ai";
   const meta = messageStatusMeta(m);
+  const hasMedia = !!m.media_url || ["audio", "image", "video", "document", "sticker"].includes(m.type);
   return (
     <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-1")}>
       <div
         className={cn(
-          "max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+          "max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm sm:max-w-[75%]",
           out
             ? isAi
               ? "bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 border border-purple-400/30 text-white"
@@ -914,18 +1115,12 @@ function MessageBubble({ m }: { m: Message }) {
             <Sparkles className="h-2.5 w-2.5" /> IA
           </div>
         )}
-        <div className="whitespace-pre-wrap break-words">
-          {m.content || (m.transcript ? `🎤 ${m.transcript}` : `[${m.type}]`)}
-        </div>
-        {m.media_url && (
-          <a
-            href={m.media_url}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-1 block text-[11px] underline opacity-80"
-          >
-            Ver mídia
-          </a>
+        {hasMedia && <MediaPreview m={m} outbound={out && !isAi} />}
+        {m.content && (
+          <div className="whitespace-pre-wrap break-words">{m.content}</div>
+        )}
+        {!m.content && !hasMedia && m.transcript && (
+          <div className="whitespace-pre-wrap break-words">🎤 {m.transcript}</div>
         )}
         <div
           className={cn(
@@ -954,6 +1149,102 @@ function MessageBubble({ m }: { m: Message }) {
 
       </div>
     </div>
+  );
+}
+
+/**
+ * Renderiza mídia inline (áudio/imagem/vídeo/documento).
+ * URLs do CDN criptografado do WhatsApp (mmg.whatsapp.net / .enc) precisam
+ * ser baixadas pela Evolution primeiro — mostra botão "Carregar mídia".
+ */
+function MediaPreview({ m, outbound }: { m: Message; outbound: boolean }) {
+  const resolveFn = useServerFn(resolveWhatsappInboundMedia);
+  const [url, setUrl] = useState<string | null>(m.media_url ?? null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUrl(m.media_url ?? null);
+  }, [m.media_url]);
+
+  const needsFetch =
+    !url || /mmg\.whatsapp\.net|\.enc($|\?)/i.test(url) || (!url.startsWith("http") && !url.startsWith("data:"));
+
+  const load = async () => {
+    if (loading) return;
+    setLoading(true);
+    setErr(null);
+    try {
+      const res = await resolveFn({ data: { message_id: m.id } });
+      setUrl(res.url);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Erro ao baixar mídia");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kind = m.type;
+
+  if (needsFetch) {
+    const label =
+      kind === "audio" ? "áudio" : kind === "image" ? "imagem" : kind === "video" ? "vídeo" : "arquivo";
+    return (
+      <div className={cn("mb-1 flex items-center gap-2 rounded-xl border px-2.5 py-2 text-xs", outbound ? "border-black/15 bg-black/10 text-black/80" : "border-white/15 bg-black/20 text-white/80")}>
+        {kind === "audio" ? <Mic className="h-3.5 w-3.5" /> : kind === "image" ? <ImageIcon className="h-3.5 w-3.5" /> : kind === "video" ? <Play className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold transition", outbound ? "bg-black/20 hover:bg-black/30" : "bg-white/10 hover:bg-white/20")}
+        >
+          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+          {loading ? "Carregando…" : `Carregar ${label}`}
+        </button>
+        {err && <span className="text-[10px] text-red-300">{err}</span>}
+      </div>
+    );
+  }
+
+  if (kind === "audio") {
+    return (
+      <div className="mb-1">
+        <audio controls preload="metadata" src={url!} className="w-full max-w-[260px]">
+          Seu navegador não suporta áudio.
+        </audio>
+      </div>
+    );
+  }
+  if (kind === "image" || kind === "sticker") {
+    return (
+      <a href={url!} target="_blank" rel="noreferrer" className="mb-1 block">
+        <img
+          src={url!}
+          alt="mídia"
+          className="max-h-72 w-auto max-w-full rounded-lg object-contain"
+          loading="lazy"
+        />
+      </a>
+    );
+  }
+  if (kind === "video") {
+    return (
+      <div className="mb-1">
+        <video controls preload="metadata" src={url!} className="max-h-72 w-full max-w-[320px] rounded-lg" />
+      </div>
+    );
+  }
+  // documento ou fallback
+  return (
+    <a
+      href={url!}
+      target="_blank"
+      rel="noreferrer"
+      className={cn("mb-1 inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 text-xs", outbound ? "border-black/15 bg-black/10 text-black/80" : "border-white/15 bg-black/20 text-white/80")}
+    >
+      <FileText className="h-3.5 w-3.5" />
+      Abrir arquivo
+    </a>
   );
 }
 
