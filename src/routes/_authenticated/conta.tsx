@@ -745,7 +745,7 @@ function ProfilePanel() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <div className="truncate text-base font-black text-white">{displayName}</div>
-              {primaryRole && primaryRole !== "user" && (
+              {primaryRole && (
                 <span
                   className={cn(
                     "inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
