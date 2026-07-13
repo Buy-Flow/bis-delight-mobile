@@ -29,7 +29,7 @@ export function FloatingActions() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const bottomStyle = { bottom: "calc(env(safe-area-inset-bottom) + 4.5rem)" } as const;
+  const bottomStyle = { bottom: "calc(env(safe-area-inset-bottom) + 7rem)" } as const;
 
   return (
     <>
