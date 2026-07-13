@@ -163,12 +163,12 @@ function extractItems(payload: Record<string, unknown>): EvoData[] {
       if (Array.isArray(records)) return records as EvoData[];
     }
     if (Array.isArray(rec.records)) return rec.records as EvoData[];
-    if (rec.key || rec.message || rec.messageTimestamp || rec.keyId || rec.id || rec.remoteJid || rec.status || rec.ack) {
+    if (rec.key || rec.message || rec.messageTimestamp || rec.keyId || rec.messageId || rec.id || rec.remoteJid || rec.status || rec.ack) {
       return [rec as EvoData];
     }
   }
 
-  if (payload.key || payload.message || payload.messageTimestamp || payload.keyId || payload.id || payload.remoteJid || payload.status || payload.ack) {
+  if (payload.key || payload.message || payload.messageTimestamp || payload.keyId || payload.messageId || payload.id || payload.remoteJid || payload.status || payload.ack) {
     return [payload as EvoData];
   }
   return [];
