@@ -1,7 +1,10 @@
 type EvoKey = {
   remoteJid?: string;
+  remoteJidAlt?: string;
   fromMe?: boolean;
   id?: string;
+  participant?: string;
+  participantAlt?: string;
   senderPn?: string;
   previousRemoteJid?: string;
 };
@@ -11,21 +14,27 @@ type EvoMessage = {
   extendedTextMessage?: { text?: string };
   imageMessage?: { caption?: string; url?: string };
   videoMessage?: { caption?: string; url?: string };
-  audioMessage?: { url?: string };
+  audioMessage?: { url?: string; ptt?: boolean };
   documentMessage?: { fileName?: string; url?: string };
+  documentWithCaptionMessage?: { message?: { documentMessage?: { fileName?: string; url?: string; caption?: string } } };
   stickerMessage?: { url?: string };
   locationMessage?: { degreesLatitude?: number; degreesLongitude?: number; name?: string };
   contactMessage?: { displayName?: string };
+  reactionMessage?: { text?: string; key?: { id?: string } };
 };
 
 type EvoData = {
   id?: string;
   key?: EvoKey;
+  keyId?: string;
+  remoteJid?: string;
+  fromMe?: boolean;
+  participant?: string;
   pushName?: string;
   message?: EvoMessage;
   messageType?: string;
   messageTimestamp?: number | string;
-  status?: string;
+  status?: string | number;
 };
 
 type IngestResult = {
@@ -33,10 +42,29 @@ type IngestResult = {
   inserted: number;
   skipped: number;
   errors: number;
+  updated?: number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DbClient = any;
+
+// Mapa ack numérico → nome textual usado pelo Evolution v2.
+// Fonte: src/utils/renderStatus.ts (0..5).
+const ACK_MAP: Record<number, string> = {
+  0: "ERROR",
+  1: "PENDING",
+  2: "SERVER_ACK",
+  3: "DELIVERY_ACK",
+  4: "READ",
+  5: "PLAYED",
+};
+
+function normalizeStatus(raw: unknown): string | null {
+  if (raw == null) return null;
+  if (typeof raw === "number") return ACK_MAP[raw] ?? null;
+  const s = String(raw).trim().toUpperCase();
+  return s || null;
+}
 
 function normalizeEvent(raw?: string | null) {
   return (raw || "")
@@ -45,11 +73,22 @@ function normalizeEvent(raw?: string | null) {
     .replace(/-/g, ".");
 }
 
+// Escolhe o melhor JID "conversacional" priorizando remoteJidAlt quando
+// o principal é @lid (migração de identidade da WhatsApp).
+function pickConversationJid(key?: EvoKey, item?: EvoData): string | undefined {
+  const primary = key?.remoteJid ?? item?.remoteJid;
+  if (primary && !primary.endsWith("@lid")) return primary;
+  return key?.remoteJidAlt ?? primary;
+}
+
 function phoneFromJid(...jids: Array<string | undefined | null>): string | null {
   for (const jid of jids) {
     if (!jid) continue;
     if (jid.includes("@g.us") || jid.includes("status@broadcast")) continue;
     const first = jid.split("@")[0] ?? "";
+    // JIDs internos da WhatsApp podem ter sufixo :N (device id). Ignora só se
+    // for :0 (padrão antigo que aparecia em alguns eventos), mas ainda extrai
+    // dígitos de outros formatos.
     if (first.endsWith(":0")) continue;
     const digits = first.replace(/\D/g, "");
     if (digits.length >= 10) return digits;
@@ -63,14 +102,18 @@ function extractText(m?: EvoMessage): { text: string | null; type: string; media
   if (m.extendedTextMessage?.text) return { text: m.extendedTextMessage.text, type: "text", media: null };
   if (m.imageMessage) return { text: m.imageMessage.caption ?? "[imagem]", type: "image", media: m.imageMessage.url ?? null };
   if (m.videoMessage) return { text: m.videoMessage.caption ?? "[vídeo]", type: "video", media: m.videoMessage.url ?? null };
-  if (m.audioMessage) return { text: "[áudio]", type: "audio", media: m.audioMessage.url ?? null };
-  if (m.documentMessage) return { text: `[documento] ${m.documentMessage.fileName ?? ""}`.trim(), type: "document", media: m.documentMessage.url ?? null };
+  if (m.audioMessage) {
+    return { text: m.audioMessage.ptt ? "[áudio]" : "[áudio]", type: "audio", media: m.audioMessage.url ?? null };
+  }
+  const doc = m.documentMessage ?? m.documentWithCaptionMessage?.message?.documentMessage;
+  if (doc) return { text: `[documento] ${doc.fileName ?? ""}`.trim(), type: "document", media: doc.url ?? null };
   if (m.stickerMessage) return { text: "[figurinha]", type: "sticker", media: m.stickerMessage.url ?? null };
   if (m.locationMessage) {
     const label = m.locationMessage.name ? `[localização] ${m.locationMessage.name}` : "[localização]";
     return { text: label, type: "location", media: null };
   }
   if (m.contactMessage) return { text: `[contato] ${m.contactMessage.displayName ?? ""}`.trim(), type: "contact", media: null };
+  if (m.reactionMessage) return { text: `[reação] ${m.reactionMessage.text ?? ""}`.trim(), type: "reaction", media: null };
   return { text: null, type: "unknown", media: null };
 }
 
@@ -156,12 +199,82 @@ export async function ingestEvolutionPayload(
     }
   };
 
+  const isStatusUpdate = event === "messages.update" || event === "send.message.update";
   const isMessageEvent =
     !event ||
     event === "messages.upsert" ||
     event === "send.message" ||
-    event === "messages.update" ||
+    event === "messages.edited" ||
     event === "messages.set";
+
+  // ---------- messages.update / send.message.update ----------
+  // Esses eventos NÃO carregam a mensagem completa; carregam apenas o par
+  // (keyId, remoteJid, fromMe, status) para atualizar ack/leitura de uma
+  // mensagem já persistida. Fonte: whatsapp.baileys.service.ts:1258-1350.
+  if (isStatusUpdate) {
+    if (items.length === 0) {
+      await logRow({ status: "skipped", error: "no items in status update", payload });
+      return result;
+    }
+    for (const item of items) {
+      result.processed += 1;
+      const rec = item as unknown as Record<string, unknown>;
+      const key = item.key;
+      const evoId =
+        key?.id ??
+        (rec.keyId as string | undefined) ??
+        (rec.id as string | undefined) ??
+        null;
+      const statusName = normalizeStatus(item.status ?? (rec.status as string | number | undefined));
+      if (!evoId || !statusName) {
+        result.skipped += 1;
+        await logRow({
+          status: "skipped",
+          error: "status update sem keyId ou status",
+          evolution_id: evoId,
+          payload: item,
+        });
+        continue;
+      }
+      const patch: Record<string, unknown> = { status: statusName.toLowerCase() };
+      if (statusName === "READ" || statusName === "PLAYED") {
+        patch.read_at = new Date().toISOString();
+      }
+      const { data: upd, error: updErr } = await supabase
+        .from("whatsapp_messages")
+        .update(patch)
+        .eq("evolution_id", evoId)
+        .select("id")
+        .maybeSingle();
+      if (updErr) {
+        result.errors += 1;
+        await logRow({
+          status: "error",
+          error: `status update: ${updErr.message ?? updErr}`,
+          evolution_id: evoId,
+          payload: item,
+        });
+        continue;
+      }
+      if (!upd) {
+        result.skipped += 1;
+        await logRow({
+          status: "skipped",
+          error: "mensagem alvo do status não encontrada",
+          evolution_id: evoId,
+          preview: statusName,
+        });
+        continue;
+      }
+      result.updated = (result.updated ?? 0) + 1;
+      await logRow({
+        status: "ok",
+        evolution_id: evoId,
+        preview: `status=${statusName}`,
+      });
+    }
+    return result;
+  }
 
   if (!isMessageEvent) {
     await logRow({ status: "skipped", error: `event ignored: ${event}`, payload });
@@ -176,7 +289,13 @@ export async function ingestEvolutionPayload(
   for (const item of items) {
     result.processed += 1;
     const key = item.key;
-    if (key?.remoteJid?.includes("@g.us") || key?.remoteJid?.includes("status@broadcast")) {
+    const conversationJid = pickConversationJid(key, item);
+    if (
+      conversationJid?.includes("@g.us") ||
+      conversationJid?.includes("status@broadcast") ||
+      key?.remoteJid?.includes("@g.us") ||
+      key?.remoteJid?.includes("status@broadcast")
+    ) {
       result.skipped += 1;
       await logRow({
         status: "skipped",
@@ -187,12 +306,20 @@ export async function ingestEvolutionPayload(
       continue;
     }
 
-    const phone = phoneFromJid(key?.remoteJid, key?.senderPn, key?.previousRemoteJid, payload.sender as string | undefined);
+    const phone = phoneFromJid(
+      conversationJid,
+      key?.remoteJid,
+      key?.remoteJidAlt,
+      key?.senderPn,
+      key?.previousRemoteJid,
+      key?.participant,
+      payload.sender as string | undefined,
+    );
     if (!phone) {
       result.skipped += 1;
       await logRow({
         status: "skipped",
-        error: `no phone from jid (${key?.remoteJid ?? "n/a"})`,
+        error: `no phone from jid (${conversationJid ?? key?.remoteJid ?? "n/a"})`,
         evolution_id: key?.id ?? item.id ?? null,
         payload: item,
       });
@@ -335,7 +462,7 @@ export async function ingestEvolutionPayload(
       content: text,
       media_url: media,
       sent_by: fromMe ? "human" : "customer",
-      status: item.status ?? (fromMe ? "sent" : "received"),
+      status: (normalizeStatus(item.status)?.toLowerCase()) ?? (fromMe ? "sent" : "received"),
       created_at: nowIso,
       raw: item,
     });

@@ -353,18 +353,37 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
     const host = await publicHostFromRequest();
     if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
+    // Lista de eventos — nomes SCREAMING_SNAKE aceitos pelo schema do Evolution v2.
+    // Fonte: EvolutionAPI/evolution-api src/api/integrations/event/webhook/webhook.schema.ts
     const events = [
       "MESSAGES_SET",
       "MESSAGES_UPSERT",
       "MESSAGES_UPDATE",
+      "MESSAGES_EDITED",
       "MESSAGES_DELETE",
       "SEND_MESSAGE",
       "SEND_MESSAGE_UPDATE",
       "CONNECTION_UPDATE",
+      "QRCODE_UPDATED",
+      "CONTACTS_UPSERT",
       "CONTACTS_UPDATE",
+      "CHATS_UPSERT",
     ];
-    // Evolution v2 shape
+
+    // Shape v2 canônico (source: webhook.schema.ts) — chaves camelCase `byEvents`/`base64`
+    // aninhadas em `webhook`. Este é o formato validado pelo mainline atual.
     const bodyV2 = {
+      webhook: {
+        enabled: true,
+        url,
+        byEvents: false,
+        base64: false,
+        events,
+      },
+    };
+    // Fallback 1: alguns builds ainda expõem as chaves com o prefixo `webhook*`
+    // (nomes das colunas no Prisma) — tentamos como segunda opção.
+    const bodyV2Prefixed = {
       webhook: {
         enabled: true,
         url,
@@ -373,11 +392,17 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
         events,
       },
     };
-    // Fallback shape (some builds accept flat body)
-    const bodyFlat = { enabled: true, url, webhook_by_events: false, events };
+    // Fallback 2: v1/forks legados aceitam o corpo achatado com snake_case.
+    const bodyFlat = {
+      enabled: true,
+      url,
+      webhook_by_events: false,
+      webhook_base64: false,
+      events,
+    };
 
     let lastErr: unknown = null;
-    for (const body of [bodyV2, bodyFlat]) {
+    for (const body of [bodyV2, bodyV2Prefixed, bodyFlat]) {
       try {
         await evoFetch(`/webhook/set/${encodeURIComponent(instance)}`, {
           method: "POST",
