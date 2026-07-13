@@ -802,6 +802,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                           placeholder="Nº"
                           inputMode="numeric"
                           autoComplete="off"
+                          name="street-number"
+
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
