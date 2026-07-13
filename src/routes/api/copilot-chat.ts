@@ -1,8 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
-import { buildCopilotSystemPrompt } from "@/lib/copilot-prompt.server";
+import { buildCopilotSystemPrompt, type CopilotMenuSnapshot } from "@/lib/copilot-prompt.server";
 import { buildCopilotTools } from "@/lib/copilot-tools.server";
+
+async function loadMenuSnapshot(sb: {
+  from: (t: string) => {
+    select: (c: string) => {
+      order?: (col: string, o?: { ascending?: boolean }) => { limit: (n: number) => Promise<{ data: unknown[] | null }> };
+      limit: (n: number) => Promise<{ data: unknown[] | null }>;
+    };
+  };
+}): Promise<CopilotMenuSnapshot> {
+  const [settingsRes, catsRes, prodsRes] = await Promise.all([
+    sb.from("site_settings").select("name,is_open").limit(1),
+    sb.from("categories").select("id,name,active").order?.("position", { ascending: true }).limit(200)
+      ?? sb.from("categories").select("id,name,active").limit(200),
+    sb.from("products").select("id,name,price,active,category_id,badge,is_hero,paused_until").limit(500),
+  ]);
+  const cats = (catsRes.data ?? []) as CopilotMenuSnapshot["categories"];
+  const catById = new Map(cats.map(c => [c.id, c.name]));
+  const products = ((prodsRes.data ?? []) as CopilotMenuSnapshot["products"]).map(p => ({
+    ...p,
+    category_name: p.category_id ? catById.get(p.category_id) ?? null : null,
+  }));
+  return {
+    settings: (settingsRes.data?.[0] as CopilotMenuSnapshot["settings"]) ?? null,
+    categories: cats,
+    products,
+  };
+}
+
 
 export const Route = createFileRoute("/api/copilot-chat")({
   server: {
