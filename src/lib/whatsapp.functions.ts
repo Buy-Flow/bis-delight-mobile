@@ -166,7 +166,7 @@ export const markConversationRead = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const getWhatsappConfigStatus = createServerFn({ method: "GET" })
+export const getWhatsappConfigStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
