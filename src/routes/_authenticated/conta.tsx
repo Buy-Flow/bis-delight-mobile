@@ -624,6 +624,11 @@ function FavoritesPanel() {
 function ProfilePanel() {
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
+  const { isTeam, roles, landing } = usePermissions();
+  const primaryRole: Role | null =
+    (["admin", "manager", "staff", "kitchen", "delivery"] as const).find((r) =>
+      roles.includes(r),
+    ) ?? null;
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
