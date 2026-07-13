@@ -102,13 +102,19 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
               let convId: string;
               if (existing) {
                 convId = existing.id as string;
-                const patch: Record<string, unknown> = {
+                const patch: {
+                  last_message_at: string;
+                  last_message_preview: string;
+                  updated_at: string;
+                  contact_name?: string;
+                  unread_count?: number;
+                } = {
                   last_message_at: nowIso,
                   last_message_preview: (text ?? "").slice(0, 140) || `[${type}]`,
                   updated_at: nowIso,
                 };
                 if (!existing.contact_name && item.pushName) patch.contact_name = item.pushName;
-                if (direction === "inbound") patch.unread_count = (existing.unread_count ?? 0) + 1;
+                if (direction === "inbound") patch.unread_count = ((existing.unread_count as number | null) ?? 0) + 1;
                 await supabaseAdmin.from("whatsapp_conversations").update(patch).eq("id", convId);
               } else {
                 const { data: inserted, error: insErr } = await supabaseAdmin
