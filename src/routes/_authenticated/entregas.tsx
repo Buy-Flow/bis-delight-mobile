@@ -1066,17 +1066,17 @@ function CourierDialog({
 
   const linkAccount = async () => {
     if (!courier) { toast.error("Salve o motoboy primeiro"); return; }
-    if (!linkEmail.trim()) { toast.error("Digite o email"); return; }
+    if (!linkEmail.trim()) { toast.error("Digite o email da conta"); return; }
     setLinking(true);
     try {
-      // find user id by email via profiles table
       const { data: prof } = await supabase
         .from("profiles")
-        .select("id")
-        .eq("email", linkEmail.trim().toLowerCase())
+        .select("id, full_name, phone")
+        .or(`phone.eq.${linkEmail.trim()},full_name.ilike.%${linkEmail.trim()}%`)
+        .limit(1)
         .maybeSingle();
       if (!prof?.id) {
-        toast.error("Nenhum usuário com esse email. Peça para criar conta em /auth primeiro.");
+        toast.error("Usuário não encontrado. Peça para criar conta em /auth e informe o telefone cadastrado.");
         setLinking(false); return;
       }
       const { data, error } = await supabase.rpc("link_courier_to_user", {
@@ -1085,12 +1085,13 @@ function CourierDialog({
       if (error || !(data as { ok: boolean })?.ok) {
         toast.error("Falha ao vincular conta");
       } else {
-        toast.success("Conta vinculada! O motoboy já pode acessar /motoboy");
+        toast.success(`Conta vinculada a ${prof.full_name ?? prof.id}! Ele já pode acessar /motoboy`);
         setLinkEmail("");
         await onSaved();
       }
     } finally { setLinking(false); }
   };
+
 
 
   const save = async () => {
