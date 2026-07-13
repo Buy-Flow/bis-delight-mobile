@@ -20,6 +20,7 @@ import {
   Inbox,
   Users,
   TrendingUp,
+  Smartphone,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ import {
   markConversationRead,
   getWhatsappConfigStatus,
 } from "@/lib/whatsapp.functions";
+import { WhatsappConnectDialog } from "@/components/admin/WhatsappConnectDialog";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
   component: WhatsappPage,
