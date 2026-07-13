@@ -28,6 +28,7 @@ const ADMIN_PREFIXES = [
   "/estoque",
   "/ficha-tecnica",
   "/usuarios",
+  "/whatsapp",
 ];
 
 function isAdminRoute(pathname: string) {

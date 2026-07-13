@@ -133,7 +133,7 @@ const groups: NavGroup[] = [
       { to: "/admin", tab: "announcement", label: "Anúncio", icon: Megaphone },
       { to: "/admin", tab: "popup", label: "Pop-up", icon: Sparkles },
       { to: "/admin", tab: "notifications", label: "Notificações", icon: BellRing },
-      { label: "WhatsApp", icon: MessageCircle, soon: true },
+      { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
     ],
   },
   {
