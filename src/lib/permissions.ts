@@ -119,10 +119,10 @@ export function canManage(roles: Role[]): boolean {
   return roles.includes("admin");
 }
 
-/** Qualquer papel de equipe (staff, kitchen, manager, admin). */
+/** Qualquer papel operacional (staff, kitchen, manager, admin, delivery). */
 export function isTeamMember(roles: Role[]): boolean {
   return roles.some((r) =>
-    ["admin", "manager", "staff", "kitchen"].includes(r),
+    ["admin", "manager", "staff", "kitchen", "delivery"].includes(r),
   );
 }
 
