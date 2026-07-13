@@ -30,6 +30,7 @@ import {
   setAiPaused,
   markConversationRead,
   getWhatsappConfigStatus,
+  syncWhatsappRecentMessages,
 } from "@/lib/whatsapp.functions";
 import { WhatsappConnectDialog } from "@/components/admin/WhatsappConnectDialog";
 
@@ -108,6 +109,7 @@ function WhatsappPage() {
   const [filter, setFilter] = useState<FilterKey>("todas");
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [config, setConfig] = useState<{
     configured: boolean;
     hasBase: boolean;
@@ -116,11 +118,14 @@ function WhatsappPage() {
   } | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const selectedIdRef = useRef<string | null>(null);
+  const syncInFlightRef = useRef(false);
 
   const sendFn = useServerFn(sendWhatsappMessage);
   const pauseFn = useServerFn(setAiPaused);
   const readFn = useServerFn(markConversationRead);
   const cfgFn = useServerFn(getWhatsappConfigStatus);
+  const syncFn = useServerFn(syncWhatsappRecentMessages);
 
   const loadConversations = async () => {
     setLoadingList(true);
@@ -158,9 +163,38 @@ function WhatsappPage() {
     }
   };
 
+  const syncFromPhone = async (showToast = false) => {
+    if (syncInFlightRef.current) return;
+    syncInFlightRef.current = true;
+    setSyncing(true);
+    try {
+      const res = await syncFn({ data: { limit: 80 } });
+      await loadConversations();
+      const openId = selectedIdRef.current;
+      if (openId) await loadMessages(openId);
+      if (showToast) {
+        toast.success(
+          res.inserted > 0
+            ? `${res.inserted} mensagem(ns) sincronizada(s) do telefone.`
+            : "Telefone sincronizado. Nenhuma mensagem nova.",
+        );
+      }
+    } catch (e) {
+      if (showToast) toast.error(e instanceof Error ? e.message : "Erro ao sincronizar telefone");
+    } finally {
+      syncInFlightRef.current = false;
+      setSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
   useEffect(() => {
     loadConversations();
     cfgFn().then(setConfig).catch(() => setConfig(null));
+    syncFromPhone(false);
 
     // realtime
     const ch = supabase
@@ -177,16 +211,18 @@ function WhatsappPage() {
           const m = payload.new as Message;
           setMessages((prev) => {
             if (prev.some((x) => x.id === m.id)) return prev;
-            // só anexa se for da conversa aberta (usa a mensagem que já está no state)
-            if (prev.length > 0 && prev[0].conversation_id !== m.conversation_id) return prev;
+            if (selectedIdRef.current !== m.conversation_id) return prev;
             return [...prev, m];
           });
         },
       )
       .subscribe();
 
+    const syncTimer = window.setInterval(() => syncFromPhone(false), 30000);
+
     return () => {
       supabase.removeChannel(ch);
+      window.clearInterval(syncTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -295,10 +331,12 @@ function WhatsappPage() {
               <Smartphone className="h-3.5 w-3.5" /> Conectar telefone
             </button>
             <button
-              onClick={loadConversations}
+              onClick={() => syncFromPhone(true)}
+              disabled={syncing}
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/80 transition hover:bg-white/10"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Atualizar
+              {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              Sincronizar telefone
             </button>
           </div>
         </header>

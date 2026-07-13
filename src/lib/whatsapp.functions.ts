@@ -161,7 +161,7 @@ export const markConversationRead = createServerFn({ method: "POST" })
       .from("whatsapp_messages")
       .update({ read_at: now })
       .eq("conversation_id", data.id)
-      .eq("direction", "inbound")
+      .eq("direction", "in")
       .is("read_at", null);
     return { ok: true };
   });
@@ -178,6 +178,25 @@ export const getWhatsappConfigStatus = createServerFn({ method: "POST" })
       hasInstance: !!instance,
       instance,
     };
+  });
+
+/** Sincroniza as mensagens recentes do telefone conectado, inclusive as enviadas direto pelo celular. */
+export const syncWhatsappRecentMessages = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v?: { limit?: number }) =>
+    z.object({ limit: z.number().int().min(10).max(200).default(80) }).parse(v ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { base, key, instance } = evoConfig();
+    const { syncWhatsappRecentMessagesFromEvolution } = await import("./whatsapp-sync.server");
+    return syncWhatsappRecentMessagesFromEvolution({
+      supabase: context.supabase,
+      base,
+      key,
+      instance,
+      limit: data.limit,
+    });
   });
 
 async function evoFetch(path: string, init?: RequestInit) {
@@ -335,9 +354,12 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
     if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
     const events = [
+      "MESSAGES_SET",
       "MESSAGES_UPSERT",
       "MESSAGES_UPDATE",
+      "MESSAGES_DELETE",
       "SEND_MESSAGE",
+      "SEND_MESSAGE_UPDATE",
       "CONNECTION_UPDATE",
       "CONTACTS_UPDATE",
     ];
