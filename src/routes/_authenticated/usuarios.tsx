@@ -26,7 +26,10 @@ import {
   CheckCircle2,
   Clock,
   UserPlus,
+  Trash2,
 } from "lucide-react";
+
+
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { assignUserRole } from "@/lib/users.functions";
@@ -146,6 +149,17 @@ type AuditRow = {
   created_at: string;
 };
 
+type PendingRow = {
+  id: string;
+  email: string;
+  role: Role;
+  full_name: string | null;
+  note: string | null;
+  granted_by_email: string | null;
+  created_at: string;
+};
+
+
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -170,12 +184,14 @@ function initials(name: string, email: string) {
 function UsersPage() {
   const [rows, setRows] = useState<UserRow[]>([]);
   const [audit, setAudit] = useState<AuditRow[]>([]);
+  const [pending, setPending] = useState<PendingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [roleFilter, setRoleFilter] = useState<Role | "all" | "team">("all");
   const [selected, setSelected] = useState<UserRow | null>(null);
   const [showAudit, setShowAudit] = useState(false);
   const [meId, setMeId] = useState<string | null>(null);
+  const [meIsAdmin, setMeIsAdmin] = useState<boolean | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const assignRole = useServerFn(assignUserRole);
 
@@ -183,7 +199,12 @@ function UsersPage() {
     setLoading(true);
     const { data, error } = await supabase.rpc("admin_list_users");
     if (error) {
-      toast.error("Erro ao carregar usuários", { description: error.message });
+      toast.error("Erro ao carregar usuários", {
+        description:
+          error.message?.includes("not_authorized") || error.code === "42501"
+            ? "Sua conta não tem permissão de administrador."
+            : error.message,
+      });
       setRows([]);
     } else {
       setRows((data || []) as UserRow[]);
@@ -196,11 +217,38 @@ function UsersPage() {
     if (!error) setAudit((data || []) as AuditRow[]);
   };
 
+  const loadPending = async () => {
+    const { data, error } = await supabase.rpc("admin_list_pending_grants");
+    if (!error) setPending((data || []) as PendingRow[]);
+  };
+
+  const cancelPending = async (id: string) => {
+    const { error } = await supabase.rpc("admin_cancel_pending_grant", { _id: id });
+    if (error) {
+      toast.error("Falha ao cancelar convite", { description: error.message });
+      return;
+    }
+    toast.success("Convite cancelado");
+    await loadPending();
+  };
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id ?? null));
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id ?? null;
+      setMeId(uid);
+      if (uid) {
+        const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" });
+        setMeIsAdmin(Boolean(isAdmin));
+      } else {
+        setMeIsAdmin(false);
+      }
+    })();
     loadUsers();
     loadAudit();
+    loadPending();
   }, []);
+
 
   const stats = useMemo(() => {
     const teamRoles: Role[] = ["admin", "manager", "staff", "kitchen", "delivery"];
@@ -335,6 +383,63 @@ function UsersPage() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {meIsAdmin === false && (
+          <div className="mb-4 rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm text-rose-200">
+            Sua conta não tem permissão de administrador. Apenas admins podem
+            gerenciar usuários. Peça a outro admin para conceder-lhe o papel
+            <span className="font-semibold"> admin</span>.
+          </div>
+        )}
+
+        {pending.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-amber-400/20 bg-amber-500/5 p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-amber-200">
+                <Clock className="h-4 w-4" />
+                Convites pendentes ({pending.length})
+              </div>
+              <span className="text-[11px] text-amber-200/70">
+                O papel é aplicado automaticamente quando a pessoa criar conta com o email.
+              </span>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {pending.map((p) => {
+                const meta = ROLE_META[p.role];
+                const Icon = meta.icon;
+                return (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-white">
+                        {p.full_name || p.email}
+                      </div>
+                      <div className="truncate text-xs text-white/50">{p.email}</div>
+                      {p.note && (
+                        <div className="mt-1 truncate text-[11px] text-white/40">{p.note}</div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold", meta.chip)}>
+                        <Icon className="h-3 w-3" /> {meta.label}
+                      </span>
+                      <button
+                        onClick={() => cancelPending(p.id)}
+                        className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-white/5 text-white/60 hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-200"
+                        title="Cancelar convite"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+
         {/* KPIs */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <Kpi icon={Users} label="Total" value={stats.total} tint="from-slate-500/20 to-slate-500/5" />
@@ -554,6 +659,8 @@ function UsersPage() {
               setShowInvite(false);
               await loadUsers();
               await loadAudit();
+              await loadPending();
+
             } catch (e: any) {
               toast.error("Falha ao atribuir papel", { description: e?.message });
             }
