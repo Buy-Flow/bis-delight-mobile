@@ -671,12 +671,28 @@ function MotoboyPortal() {
   );
 }
 
-function KpiCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string }) {
+function KpiCard({ icon: Icon, label, value, sub }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
       <Icon className="h-4 w-4 text-fuchsia-400" />
       <div className="mt-1 text-[10px] uppercase text-white/50">{label}</div>
-      <div className="text-lg font-black">{value}</div>
+      <div className="text-lg font-black leading-tight">{value}</div>
+      {sub && <div className="text-[10px] text-white/40 mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+function MiniStat({ label, value, tone }: { label: string; value: string; tone: "emerald" | "cyan" | "red" | "white" }) {
+  const toneCls = {
+    emerald: "text-emerald-400",
+    cyan: "text-cyan-400",
+    red: "text-red-400",
+    white: "text-white",
+  }[tone];
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+      <div className="text-[10px] uppercase text-white/50">{label}</div>
+      <div className={cn("text-sm font-black", toneCls)}>{value}</div>
     </div>
   );
 }
