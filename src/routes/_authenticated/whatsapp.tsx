@@ -8,6 +8,7 @@ import {
   Bot,
   BotOff,
   CheckCheck,
+  Check,
   Clock,
   AlertTriangle,
   Loader2,
