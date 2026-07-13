@@ -338,7 +338,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
 
   // Filtra grupos/itens conforme papel do usuário.
-  const { canAccess, isAdmin: _isAdminRole } = usePermissions();
+  const { canAccess, isAdmin: _isAdminRole, roles: _roles } = usePermissions();
   const visibleGroups = groups
     .map((g) => ({
       ...g,
