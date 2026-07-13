@@ -87,6 +87,9 @@ function TrackingPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const timerRef = useRef<number | null>(null);
+  const mapEl = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<{ courier?: L.Marker; delivery?: L.Marker; store?: L.Marker }>({});
 
   useEffect(() => {
     let alive = true;
@@ -118,6 +121,43 @@ function TrackingPage() {
     if (data.origin_lat && data.origin_lng) return [data.origin_lat, data.origin_lng];
     return null;
   }, [data]);
+
+  useEffect(() => {
+    if (!mapEl.current || !mapCenter || !data || data.mode === "retirada") return;
+    if (!mapRef.current) {
+      mapRef.current = L.map(mapEl.current, { center: mapCenter, zoom: 15, scrollWheelZoom: false });
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap &copy; CARTO",
+      }).addTo(mapRef.current);
+    }
+    const map = mapRef.current;
+    if (data.origin_lat && data.origin_lng) {
+      const p: [number, number] = [data.origin_lat, data.origin_lng];
+      if (markersRef.current.store) markersRef.current.store.setLatLng(p);
+      else markersRef.current.store = L.marker(p, { icon: storeIcon }).addTo(map).bindPopup("Loja");
+    }
+    if (data.delivery_lat && data.delivery_lng) {
+      const p: [number, number] = [data.delivery_lat, data.delivery_lng];
+      if (markersRef.current.delivery) markersRef.current.delivery.setLatLng(p);
+      else markersRef.current.delivery = L.marker(p, { icon: homeIcon }).addTo(map).bindPopup("Você");
+    }
+    if (data.courier_lat && data.courier_lng) {
+      const p: [number, number] = [data.courier_lat, data.courier_lng];
+      if (markersRef.current.courier) markersRef.current.courier.setLatLng(p);
+      else markersRef.current.courier = L.marker(p, { icon: bikeIcon }).addTo(map).bindPopup(data.courier_name ?? "Entregador");
+      map.panTo(p, { animate: true });
+    }
+  }, [data, mapCenter]);
+
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
 
   if (loading) {
     return (
