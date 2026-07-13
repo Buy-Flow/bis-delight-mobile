@@ -8,7 +8,7 @@ export async function fetchEvolutionWithTimeout(url: string, init: RequestInit =
   }
 }
 
-export async function assertAdminRole(supabase: { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown }> }, userId: string) {
+export async function assertAdminRole(supabase: { rpc: (...args: unknown[]) => Promise<{ data: unknown }> }, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
   if (!data) throw new Error("Acesso restrito a administradores.");
 }

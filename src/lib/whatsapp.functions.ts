@@ -359,7 +359,7 @@ export const setAiPaused = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), paused: z.boolean() }).parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("whatsapp_conversations")
       .update({ ai_paused: data.paused })
@@ -374,8 +374,8 @@ export const updateWhatsappConversationPhone = createServerFn({ method: "POST" }
     z.object({ id: z.string().uuid(), phone: z.string().trim().min(8).max(32) }).parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const phone = normalizePhone(data.phone);
+    await assertAdminRole(context.supabase, context.userId);
+    const phone = normalizeWhatsappPhone(data.phone);
     if (phone.length < 10 || phone.length > 15) {
       throw new Error("Telefone inválido. Use DDD + número, com ou sem +55.");
     }
@@ -401,7 +401,7 @@ export const assignConversation = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), user_id: z.string().uuid().nullable() }).parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("whatsapp_conversations")
       .update({ assigned_to: data.user_id })
@@ -414,7 +414,7 @@ export const markConversationRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: { id: string }) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const now = new Date().toISOString();
     await context.supabase
       .from("whatsapp_conversations")
@@ -432,8 +432,8 @@ export const markConversationRead = createServerFn({ method: "POST" })
 export const getWhatsappConfigStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { base, key, instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { base, key, instance } = evolutionConfig();
     return {
       configured: !!(base && key && instance),
       hasBase: !!base,
@@ -450,8 +450,8 @@ export const syncWhatsappRecentMessages = createServerFn({ method: "POST" })
     z.object({ limit: z.number().int().min(10).max(200).default(80) }).parse(v ?? {}),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { base, key, instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { base, key, instance } = evolutionConfig();
     const { syncWhatsappRecentMessagesFromEvolution } = await import("./whatsapp-sync.server");
     return syncWhatsappRecentMessagesFromEvolution({
       supabase: context.supabase,
@@ -463,7 +463,7 @@ export const syncWhatsappRecentMessages = createServerFn({ method: "POST" })
   });
 
 async function evoFetch(path: string, init?: RequestInit) {
-  const { base, key } = evoConfig();
+  const { base, key } = evolutionConfig();
   if (!base || !key) throw new Error("Evolution API não configurada (URL/KEY ausentes).");
   const resp = await fetchEvolutionWithTimeout(`${base}${path}`, {
     ...init,
@@ -490,8 +490,8 @@ async function evoFetch(path: string, init?: RequestInit) {
 export const getWhatsappConnectionState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance)
       return {
         state: "unconfigured",
@@ -557,8 +557,8 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
 export const getWhatsappQrCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
 
     let exists = true;
@@ -601,8 +601,8 @@ export const getWhatsappQrCode = createServerFn({ method: "POST" })
 export const disconnectWhatsapp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
     await evoFetch(`/instance/logout/${encodeURIComponent(instance)}`, { method: "DELETE" });
     return { ok: true };
@@ -633,14 +633,14 @@ async function publicHostFromRequest(): Promise<string> {
 export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
     const host = await publicHostFromRequest();
     const url = host ? `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}` : "";
     let currentUrl: string | null = null;
     let configured = false;
     try {
-      const { instance } = evoConfig();
+      const { instance } = evolutionConfig();
       if (instance) {
         const j = await evoFetch(`/webhook/find/${encodeURIComponent(instance)}`);
         const rec = (j ?? {}) as Record<string, unknown>;
@@ -658,15 +658,15 @@ export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
 export const configureWhatsappWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN;
     if (!token) throw new Error("EVOLUTION_WEBHOOK_TOKEN não configurado.");
     const host = await publicHostFromRequest();
     if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
-    const { base, key } = evoConfig();
+    const { base, key } = evolutionConfig();
     await setEvolutionWebhook({ base, key, instance, url });
     return { ok: true, url };
   });
