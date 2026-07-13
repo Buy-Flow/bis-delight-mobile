@@ -325,7 +325,10 @@ function WhatsappPage() {
   useEffect(() => {
     setPhoneDraft(selected?.phone ?? "");
     setEditingPhone(false);
-  }, [selected?.id, selected?.phone]);
+    // Reseta apenas ao trocar de conversa (id), não quando o telefone atualiza remotamente
+    // durante uma edição em andamento.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
 
   const kpis = useMemo(() => {
     const today = new Date();
