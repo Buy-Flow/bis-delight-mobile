@@ -59,6 +59,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
     let evoId: string | null = null;
     let evoError: string | null = null;
     let status = "pending";
+    let rawPayload: Record<string, unknown> | null = null;
 
     if (!base || !key || !instance) {
       evoError =
@@ -128,7 +129,14 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               const numberDigits = foundNumber.includes("@lid") ? "" : normalizePhone(foundNumber);
               const jid = String(found.jid ?? "");
               const jidDigits = jid.includes("@lid") ? "" : normalizePhone(jid.split("@")[0] ?? "");
-              sendNumber = numberDigits || jidDigits || candidate;
+              // Para números BR a verificação da Evolution/Baileys às vezes
+              // confirma a variante com 9º dígito, mas devolve o JID antigo
+              // sem o 9. Enviar usando esse JID antigo fica preso em PENDING
+              // em vários contatos. Se o candidato testado é mobile BR com 9,
+              // preservamos o próprio candidato como destino de envio.
+              sendNumber = /^55\d{2}9\d{8}$/.test(candidate)
+                ? candidate
+                : numberDigits || jidDigits || candidate;
               verifiedJid = jid || null;
               break;
             }
@@ -195,15 +203,42 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 `[etapa 2: envio da mensagem]\n${sendReport}`;
               status = "failed";
             } else {
+              let parsed: Record<string, unknown> | null = null;
               try {
-                const j = JSON.parse(sendBody);
+                const j = JSON.parse(sendBody) as Record<string, unknown>;
+                parsed = j;
                 evoId = j?.key?.id ?? j?.messageId ?? j?.id ?? j?.data?.key?.id ?? null;
-                status = String(j?.status ?? j?.data?.status ?? "pending").toLowerCase();
-                if (status === "sent") status = "pending";
+                const evoStatus = String(j?.status ?? j?.data?.status ?? "sent").toLowerCase();
+                // HTTP 2xx da Evolution significa que o aparelho aceitou a
+                // mensagem para envio. O status "PENDING" é o estado interno
+                // inicial da Evolution, não deve ficar como pendente infinito
+                // no painel. Webhooks de ack atualizam depois para entregue/lida.
+                status = evoStatus === "error" || evoStatus === "failed" ? "failed" : "sent";
+                if (status === "failed") {
+                  evoError =
+                    `❌ Evolution aceitou a chamada mas retornou status ${evoStatus}.\n\n` +
+                    `[etapa 1: verificação de número]\n${checkReport}\n\n` +
+                    `[etapa 2: envio da mensagem]\nPOST ${sendUrl}\n` +
+                    `→ payload: ${JSON.stringify(sendReq)}\n` +
+                    `← status: ${sendStatus}\n` +
+                    `← body: ${sendBody.slice(0, 900) || "(vazio)"}`;
+                }
               } catch {
                 evoId = null;
-                status = "pending";
+                status = "sent";
               }
+              rawPayload = {
+                verification: {
+                  candidates: Array.from(new Set(candidates)),
+                  selectedNumber: sendNumber,
+                  verifiedJid,
+                },
+                send: {
+                  endpoint: sendUrl,
+                  status: sendStatus,
+                  response: parsed ?? sendBody.slice(0, 2000),
+                },
+              };
               // Se a conversa estava salva sem o 9 e a Evolution confirmou a
               // variante correta, deixa o cadastro pronto para os próximos envios.
               if (sendNumber !== normalized) {
@@ -247,6 +282,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         operator_id: context.userId,
         status,
         error: evoError,
+        raw: rawPayload,
       })
       .select("*")
       .single();
