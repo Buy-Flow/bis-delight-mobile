@@ -3384,6 +3384,7 @@ export type Database = {
         }
       }
       get_pix_key: { Args: never; Returns: string }
+      get_tracking_by_token: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
