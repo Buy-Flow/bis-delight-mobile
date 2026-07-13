@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
-import { extractEvolutionMessageId, fetchEvolutionWithTimeout } from "./whatsapp-evolution.server";
+import { extractEvolutionMessageId, fetchEvolutionWithTimeout, setEvolutionWebhook } from "./whatsapp-evolution.server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertAdmin(supabase: any, userId: string) {
@@ -82,6 +82,21 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           evoError = `Número inválido: "${conv.phone}". Corrija o telefone da conversa.`;
           status = "failed";
         } else {
+        const webhookToken = process.env.EVOLUTION_WEBHOOK_TOKEN;
+        if (webhookToken) {
+          try {
+            const host = await publicHostFromRequest();
+            await setEvolutionWebhook({
+              base,
+              key,
+              instance,
+              url: `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(webhookToken)}`,
+            });
+          } catch {
+            // O envio não deve falhar só porque a Evolution recusou reconfigurar
+            // o webhook. A resposta de envio ainda será persistida/logada.
+          }
+        }
         // 1) Resolve o melhor destino. Em contatos migrados pelo WhatsApp,
         // a Evolution/Baileys pode receber mensagens com remoteJid @lid e
         // remoteJidAlt/senderPn com o telefone real. @lid é um identificador
@@ -676,69 +691,8 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
     const host = await publicHostFromRequest();
     if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
-    // Lista de eventos — nomes SCREAMING_SNAKE aceitos pelo schema do Evolution v2.
-    // Fonte: EvolutionAPI/evolution-api src/api/integrations/event/webhook/webhook.schema.ts
-    const events = [
-      "MESSAGES_SET",
-      "MESSAGES_UPSERT",
-      "MESSAGES_UPDATE",
-      "MESSAGES_EDITED",
-      "MESSAGES_DELETE",
-      "SEND_MESSAGE",
-      "SEND_MESSAGE_UPDATE",
-      "CONNECTION_UPDATE",
-      "QRCODE_UPDATED",
-      "CONTACTS_UPSERT",
-      "CONTACTS_UPDATE",
-      "CHATS_UPSERT",
-    ];
-
-    // Shape v2 canônico (source: webhook.schema.ts) — chaves camelCase `byEvents`/`base64`
-    // aninhadas em `webhook`. Este é o formato validado pelo mainline atual.
-    const bodyV2 = {
-      webhook: {
-        enabled: true,
-        url,
-        byEvents: false,
-        base64: false,
-        events,
-      },
-    };
-    // Fallback 1: alguns builds ainda expõem as chaves com o prefixo `webhook*`
-    // (nomes das colunas no Prisma) — tentamos como segunda opção.
-    const bodyV2Prefixed = {
-      webhook: {
-        enabled: true,
-        url,
-        webhookByEvents: false,
-        webhookBase64: false,
-        events,
-      },
-    };
-    // Fallback 2: v1/forks legados aceitam o corpo achatado com snake_case.
-    const bodyFlat = {
-      enabled: true,
-      url,
-      webhook_by_events: false,
-      webhook_base64: false,
-      events,
-    };
-
-    let lastErr: unknown = null;
-    for (const body of [bodyV2, bodyV2Prefixed, bodyFlat]) {
-      try {
-        await evoFetch(`/webhook/set/${encodeURIComponent(instance)}`, {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        return { ok: true, url };
-      } catch (e) {
-        lastErr = e;
-      }
-    }
-    throw new Error(
-      "Falha ao configurar webhook: " +
-        (lastErr instanceof Error ? lastErr.message : String(lastErr)),
-    );
+    const { base, key } = evoConfig();
+    await setEvolutionWebhook({ base, key, instance, url });
+    return { ok: true, url };
   });
 
