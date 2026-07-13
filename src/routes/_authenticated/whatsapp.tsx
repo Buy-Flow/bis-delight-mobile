@@ -38,6 +38,7 @@ import {
   markConversationRead,
   getWhatsappConfigStatus,
   syncWhatsappRecentMessages,
+  updateWhatsappConversationPhone,
 } from "@/lib/whatsapp.functions";
 import { WhatsappConnectDialog } from "@/components/admin/WhatsappConnectDialog";
 
@@ -126,6 +127,9 @@ function WhatsappPage() {
   } | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
   const [tab, setTab] = useState<"inbox" | "logs">("inbox");
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [phoneDraft, setPhoneDraft] = useState("");
+  const [phoneSaving, setPhoneSaving] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedIdRef = useRef<string | null>(null);
   const syncInFlightRef = useRef(false);
@@ -135,6 +139,7 @@ function WhatsappPage() {
   const readFn = useServerFn(markConversationRead);
   const cfgFn = useServerFn(getWhatsappConfigStatus);
   const syncFn = useServerFn(syncWhatsappRecentMessages);
+  const updatePhoneFn = useServerFn(updateWhatsappConversationPhone);
 
   const loadConversations = async () => {
     setLoadingList(true);
@@ -272,6 +277,11 @@ function WhatsappPage() {
     [conversations, selectedId],
   );
 
+  useEffect(() => {
+    setPhoneDraft(selected?.phone ?? "");
+    setEditingPhone(false);
+  }, [selected?.id, selected?.phone]);
+
   const kpis = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -354,6 +364,24 @@ function WhatsappPage() {
       toast.success(selected.ai_paused ? "IA reativada" : "IA pausada — atendimento humano");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
+    }
+  };
+
+  const handleSavePhone = async () => {
+    if (!selected || phoneSaving) return;
+    setPhoneSaving(true);
+    try {
+      const res = await updatePhoneFn({ data: { id: selected.id, phone: phoneDraft } });
+      setConversations((prev) =>
+        prev.map((c) => (c.id === selected.id ? { ...c, phone: res.phone } : c)),
+      );
+      setPhoneDraft(res.phone);
+      setEditingPhone(false);
+      toast.success("Telefone corrigido para próximos envios.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao corrigir telefone");
+    } finally {
+      setPhoneSaving(false);
     }
   };
 
@@ -588,10 +616,38 @@ function WhatsappPage() {
                     <div className="truncate text-sm font-bold text-white">
                       {selected.contact_name || formatPhone(selected.phone)}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-white/50">
-                      <Phone className="h-3 w-3" />
-                      {formatPhone(selected.phone)}
-                    </div>
+                    {editingPhone ? (
+                      <div className="mt-1 flex max-w-sm items-center gap-1.5">
+                        <input
+                          value={phoneDraft}
+                          onChange={(e) => setPhoneDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSavePhone();
+                            if (e.key === "Escape") setEditingPhone(false);
+                          }}
+                          placeholder="DDD + telefone"
+                          className="h-7 min-w-0 flex-1 rounded-full border border-white/10 bg-black/30 px-2.5 text-[11px] text-white outline-none focus:border-emerald-400"
+                        />
+                        <button
+                          onClick={handleSavePhone}
+                          disabled={phoneSaving}
+                          className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-black text-black disabled:opacity-50"
+                        >
+                          {phoneSaving ? "..." : "Salvar"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-[11px] text-white/50">
+                        <Phone className="h-3 w-3" />
+                        {formatPhone(selected.phone)}
+                        <button
+                          onClick={() => setEditingPhone(true)}
+                          className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-bold text-white/60 hover:bg-white/10 hover:text-white"
+                        >
+                          Corrigir
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={handleTogglePause}
@@ -751,7 +807,9 @@ function MessageBubble({ m }: { m: Message }) {
               ? "bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 border border-purple-400/30 text-white"
               : meta.kind === "failed"
                 ? "bg-red-500/15 border border-red-500/40 text-white"
-                : "bg-emerald-500/90 text-black"
+                : meta.kind === "sending"
+                  ? "border border-amber-400/40 bg-amber-500/15 text-white"
+                  : "bg-emerald-500/90 text-black"
             : "bg-white/10 text-white border border-white/10",
         )}
       >
@@ -776,7 +834,7 @@ function MessageBubble({ m }: { m: Message }) {
         <div
           className={cn(
             "mt-1 flex items-center justify-end gap-1 text-[10px]",
-            out && !isAi && meta.kind !== "failed" ? "text-black/60" : "text-white/60",
+            out && !isAi && meta.kind !== "failed" && meta.kind !== "sending" ? "text-black/60" : "text-white/60",
           )}
           title={out ? meta.label : undefined}
           aria-label={out ? `Status: ${meta.label}` : undefined}
