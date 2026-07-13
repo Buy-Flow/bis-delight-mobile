@@ -104,6 +104,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
 
   const [sending, setSending] = useState(false);
   const [couponInput, setCouponInput] = useState("");
+  const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
 
