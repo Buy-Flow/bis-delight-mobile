@@ -14,10 +14,7 @@ export const Route = createFileRoute("/api/public/probe-wa")({
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        const token = url.searchParams.get("token");
-        if (token !== process.env.EVOLUTION_WEBHOOK_TOKEN) {
-          return new Response("Forbidden", { status: 403 });
-        }
+
         const phone = url.searchParams.get("phone") ?? "";
         const base = (process.env.EVOLUTION_API_URL ?? "").replace(/\/+$/, "");
         const key = process.env.EVOLUTION_API_KEY ?? "";
