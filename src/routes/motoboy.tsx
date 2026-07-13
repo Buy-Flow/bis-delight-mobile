@@ -82,10 +82,14 @@ function MotoboyPortal() {
   const [courier, setCourier] = useState<Courier | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [missedOffers, setMissedOffers] = useState<Offer[]>([]);
   const [tab, setTab] = useState<"home" | "map" | "history" | "profile">("home");
+  const [historyTab, setHistoryTab] = useState<"delivered" | "missed">("delivered");
+  const [period, setPeriod] = useState<"today" | "week" | "month" | "all">("today");
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [gpsCoord, setGpsCoord] = useState<{ lat: number; lng: number; acc?: number } | null>(null);
   const [isOnline, setIsOnline] = useState(false);
+  const [battery, setBattery] = useState<number | null>(null);
   const gpsWatch = useRef<number | null>(null);
   const heartbeatTimer = useRef<number | null>(null);
 
