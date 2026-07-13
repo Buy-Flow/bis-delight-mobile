@@ -130,7 +130,7 @@ export function CommandPalette() {
             .limit(6),
           supabase
             .from("products")
-            .select("id, name, price, active")
+            .select("id, name, base_price, active")
             .ilike("name", `%${term}%`)
             .limit(6),
         ]);
