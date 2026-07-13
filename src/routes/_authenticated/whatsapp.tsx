@@ -246,6 +246,14 @@ function WhatsappPage() {
           });
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "whatsapp_messages" },
+        (payload) => {
+          const m = payload.new as Message;
+          setMessages((prev) => prev.map((item) => (item.id === m.id ? m : item)));
+        },
+      )
       .subscribe();
 
     const syncTimer = window.setInterval(() => syncFromPhone(false), 30000);

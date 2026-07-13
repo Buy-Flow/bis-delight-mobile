@@ -2,39 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertAdmin(supabase: any, userId: string) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (!data) throw new Error("Acesso restrito a administradores.");
-}
-
-function evoConfig() {
-  const base = (process.env.EVOLUTION_API_URL ?? "").replace(/\/+$/, "");
-  const key = process.env.EVOLUTION_API_KEY ?? "";
-  const instance = process.env.EVOLUTION_INSTANCE ?? process.env.EVOLUTION_INSTANCE_NAME ?? "";
-  return { base, key, instance };
-}
-
-/** Normaliza número para o formato aceito pelo Evolution/WhatsApp (dígitos, com DDI). */
-function normalizePhone(raw: string): string {
-  const original = String(raw ?? "").trim();
-  const hasExplicitCountryCode = /^\s*\+/.test(original);
-  let n = original.replace(/@.*$/, "").replace(/\D+/g, "");
-  if (!n) return "";
-  n = n.replace(/^0+/, "");
-
-  // Se veio com +DDI ou já começa com DDI internacional conhecido, não força Brasil.
-  // Ex.: +1 850 774 4710 / 18507744710 precisa continuar 18507744710, não 551850...
-  if (hasExplicitCountryCode || (n.length === 11 && n.startsWith("1"))) return n;
-
-  // BR sem DDI → adiciona 55 apenas quando o padrão parece brasileiro.
-  // Fixo BR: DDD + 8 dígitos. Celular BR: DDD + 9 + 8 dígitos.
-  if (n.length === 10 || (n.length === 11 && /^\d{2}9/.test(n))) n = "55" + n;
-  // 55 duplicado (55 55 + numero)
-  while (n.length > 13 && n.startsWith("5555")) n = n.slice(2);
-  return n;
-}
+import {
+  assertAdminRole,
+  evolutionConfig,
+  evolutionFetch,
+  extractEvolutionMessageId,
+  fetchEvolutionWithTimeout,
+  normalizeWhatsappPhone,
+  publicWhatsappHostFromRequest,
+  setEvolutionWebhook,
+} from "./whatsapp-evolution.server";
 
 
 
@@ -53,7 +30,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
       .parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
 
     // fetch conversation
     const { data: conv, error: convErr } = await context.supabase
@@ -64,7 +41,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
     if (convErr) throw new Error(convErr.message);
     if (!conv) throw new Error("Conversa não encontrada");
 
-    const { base, key, instance } = evoConfig();
+    const { base, key, instance } = evolutionConfig();
     let evoId: string | null = null;
     let evoError: string | null = null;
     let status = "pending";
@@ -76,15 +53,31 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
       status = "pending";
     } else {
       try {
-        const normalized = normalizePhone(conv.phone);
+        const normalized = normalizeWhatsappPhone(conv.phone);
         if (!normalized || normalized.length < 10) {
           evoError = `Número inválido: "${conv.phone}". Corrija o telefone da conversa.`;
           status = "failed";
         } else {
+        const webhookToken = process.env.EVOLUTION_WEBHOOK_TOKEN;
+        if (webhookToken) {
+          try {
+            const host = await publicWhatsappHostFromRequest();
+            await setEvolutionWebhook({
+              base,
+              key,
+              instance,
+              url: `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(webhookToken)}`,
+            });
+          } catch {
+            // O envio não deve falhar só porque a Evolution recusou reconfigurar
+            // o webhook. A resposta de envio ainda será persistida/logada.
+          }
+        }
         // 1) Resolve o melhor destino. Em contatos migrados pelo WhatsApp,
         // a Evolution/Baileys pode receber mensagens com remoteJid @lid e
-        // remoteJidAlt com o telefone real. Nesses casos enviar pelo telefone
-        // pode ficar preso em PENDING; o destino confiável é o @lid já visto.
+        // remoteJidAlt/senderPn com o telefone real. @lid é um identificador
+        // interno e não é um destino confiável para sendText; o envio deve
+        // priorizar número telefônico confirmado.
         const { data: knownRows } = await context.supabase
           .from("whatsapp_messages")
           .select("raw")
@@ -126,7 +119,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         }
         const knownLid = rawJids.find((jid) => jid.endsWith("@lid")) ?? null;
         const knownPhoneJid = rawJids.find((jid) => /@s\.whatsapp\.net$|@c\.us$/.test(jid)) ?? null;
-        const knownPhoneDigits = knownPhoneJid ? normalizePhone(knownPhoneJid.split("@")[0] ?? "") : "";
+        const knownPhoneDigits = knownPhoneJid ? normalizeWhatsappPhone(knownPhoneJid.split("@")[0] ?? "") : "";
 
         // 2) Confirma o número no WhatsApp antes de enviar.
         // Importante: a Evolution pode responder 400 quando UM item do array
@@ -138,10 +131,9 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             ? [normalized, normalized.slice(0, 4) + normalized.slice(5)]
             : [normalized];
         const candidates = Array.from(new Set([
-          ...(knownLid ? [knownLid] : []),
-          ...(knownPhoneDigits ? [knownPhoneDigits] : []),
           ...phoneCandidates,
-        ]));
+          ...(knownPhoneDigits ? [knownPhoneDigits] : []),
+        ])).filter((candidate) => !candidate.includes("@lid"));
 
         let sendNumber: string | null = null;
         let verifiedJid: string | null = null;
@@ -171,7 +163,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           let checkStatus: number | string = "n/a";
           let checkBody = "";
           try {
-            const check = await fetch(checkUrl, {
+            const check = await fetchEvolutionWithTimeout(checkUrl, {
               method: "POST",
               headers: { "Content-Type": "application/json", apikey: key },
               body: JSON.stringify(checkReq),
@@ -187,22 +179,13 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             const found = arr.find((x) => x?.exists === true);
             if (found) {
               const foundNumber = String(found.number ?? "");
-              const numberDigits = foundNumber.includes("@lid") ? "" : normalizePhone(foundNumber);
+              const numberDigits = foundNumber.includes("@lid") ? "" : normalizeWhatsappPhone(foundNumber);
               const jid = String(found.jid ?? "");
-              const jidDigits = jid.includes("@lid") ? "" : normalizePhone(jid.split("@")[0] ?? "");
-              if (candidate.endsWith("@lid")) {
-                sendNumber = candidate;
-                verifiedJid = jid || candidate;
-                break;
-              }
-              // Para números BR a verificação da Evolution/Baileys às vezes
-              // confirma a variante com 9º dígito, mas devolve o JID antigo
-              // sem o 9. Enviar usando esse JID antigo fica preso em PENDING
-              // em vários contatos. Se o candidato testado é mobile BR com 9,
-              // preservamos o próprio candidato como destino de envio.
-              sendNumber = /^55\d{2}9\d{8}$/.test(candidate)
-                ? candidate
-                : numberDigits || jidDigits || candidate;
+              const jidDigits = jid.includes("@lid") ? "" : normalizeWhatsappPhone(jid.split("@")[0] ?? "");
+              // Mesmo quando a verificação devolve um JID @lid, o endpoint
+              // sendText deve receber o telefone. Enviar para @lid deixa a
+              // mensagem presa em PENDING/ERROR em várias versões da Evolution.
+              sendNumber = numberDigits || jidDigits || candidate;
               verifiedJid = jid || null;
               break;
             }
@@ -225,25 +208,48 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         // números BR a Evolution confirma mal a existência, mas o sendText ainda
         // aceita o número correto. Se o envio real falhar, aí sim mostramos o
         // erro técnico completo retornado pelo endpoint de envio.
-        if (!sendNumber) sendNumber = knownLid ?? candidates[0] ?? normalized;
+        if (!sendNumber) sendNumber = candidates[0] ?? normalized;
+        const sendAttempts = Array.from(new Set([sendNumber, ...candidates]))
+          .map((candidate) => normalizeWhatsappPhone(candidate))
+          .filter((candidate) => candidate && !candidate.includes("@") && candidate.length >= 10);
+        const targetNumber = sendAttempts[0] ?? normalizeWhatsappPhone(sendNumber);
         {
           const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
-          const sendReq = {
-            number: sendNumber,
+          let sendStatus: number | string = "n/a";
+          let sendBody = "";
+          let sendReq = {
+            number: targetNumber,
             text: data.text,
             delay: 0,
             linkPreview: false,
           };
-          let sendStatus: number | string = "n/a";
-          let sendBody = "";
+          const sendReports: string[] = [];
           try {
-            const resp = await fetch(sendUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", apikey: key },
-              body: JSON.stringify(sendReq),
-            });
+            let resp: Response | null = null;
+            for (const attemptNumber of sendAttempts) {
+              sendReq = {
+                number: attemptNumber,
+                text: data.text,
+                delay: 0,
+                linkPreview: false,
+              };
+              resp = await fetchEvolutionWithTimeout(sendUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", apikey: key },
+                body: JSON.stringify(sendReq),
+              });
+              sendStatus = resp.status;
+              sendBody = await resp.text();
+              sendReports.push(
+                `POST ${sendUrl}\n` +
+                  `→ payload: ${JSON.stringify(sendReq)}\n` +
+                  `← status: ${sendStatus}\n` +
+                  `← body: ${sendBody.slice(0, 600) || "(vazio)"}`,
+              );
+              if (resp.ok) break;
+            }
+            if (!resp) throw new Error("Nenhum número válido para envio.");
             sendStatus = resp.status;
-            sendBody = await resp.text();
             if (!resp.ok) {
               let friendly = `Evolution respondeu HTTP ${resp.status}`;
               try {
@@ -255,25 +261,18 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                   friendly = `Evolution ${resp.status}: ${Array.isArray(parsed.message) ? JSON.stringify(parsed.message) : parsed.message}`;
                 }
               } catch { /* mantém friendly */ }
-              const sendReport =
-                `POST ${sendUrl}\n` +
-                `→ payload: ${JSON.stringify(sendReq)}\n` +
-                `← status: ${sendStatus}\n` +
-                `← body: ${sendBody.slice(0, 600) || "(vazio)"}`;
               evoError =
                 `❌ ${friendly}\n\n` +
                 `[etapa 1: verificação de número]\n${checkReport}\n\n` +
-                `[etapa 2: envio da mensagem]\n${sendReport}`;
+                `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
               status = "failed";
             } else {
               let parsed: Json | null = null;
               try {
                 const j = JSON.parse(sendBody) as Record<string, unknown>;
                 parsed = j as Json;
-                const key = (j.key ?? {}) as Record<string, unknown>;
                 const dataRec = (j.data ?? {}) as Record<string, unknown>;
-                const dataKey = (dataRec.key ?? {}) as Record<string, unknown>;
-                evoId = String(key.id ?? j.messageId ?? j.id ?? dataKey.id ?? "") || null;
+                evoId = extractEvolutionMessageId(j);
                 const evoStatus = String(j.status ?? dataRec.status ?? "sent").toLowerCase();
                 // HTTP 2xx da Evolution significa que o aparelho aceitou a
                 // mensagem para envio. O status "PENDING" é o estado interno
@@ -293,13 +292,19 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 evoId = null;
                 status = "sent";
               }
+              if (!evoId && !evoError) {
+                evoError =
+                  "⚠️ A Evolution aceitou a mensagem, mas não retornou o ID de rastreio. " +
+                  "O status pode não atualizar para entregue/lida automaticamente.";
+              }
               rawPayload = {
                 verification: {
                   candidates,
-                  selectedNumber: sendNumber,
-                  verifiedJid,
-                  knownLid,
-                  knownPhoneJid,
+                  selectedNumber: sendReq.number,
+                  attemptedNumbers: sendAttempts,
+                  verifiedJid: verifiedJid ?? undefined,
+                  knownLid: knownLid ?? undefined,
+                  knownPhoneJid: knownPhoneJid ?? undefined,
                 },
                 send: {
                   endpoint: sendUrl,
@@ -309,10 +314,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               };
               // Se a conversa estava salva sem o 9 e a Evolution confirmou a
               // variante correta, deixa o cadastro pronto para os próximos envios.
-              if (!sendNumber.includes("@") && sendNumber !== normalized) {
+              if (!sendReq.number.includes("@") && sendReq.number !== normalized) {
                 await context.supabase
                   .from("whatsapp_conversations")
-                  .update({ phone: sendNumber })
+                  .update({ phone: sendReq.number })
                   .eq("id", conv.id);
               }
             }
@@ -374,7 +379,7 @@ export const setAiPaused = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), paused: z.boolean() }).parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("whatsapp_conversations")
       .update({ ai_paused: data.paused })
@@ -389,8 +394,8 @@ export const updateWhatsappConversationPhone = createServerFn({ method: "POST" }
     z.object({ id: z.string().uuid(), phone: z.string().trim().min(8).max(32) }).parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const phone = normalizePhone(data.phone);
+    await assertAdminRole(context.supabase, context.userId);
+    const phone = normalizeWhatsappPhone(data.phone);
     if (phone.length < 10 || phone.length > 15) {
       throw new Error("Telefone inválido. Use DDD + número, com ou sem +55.");
     }
@@ -416,7 +421,7 @@ export const assignConversation = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), user_id: z.string().uuid().nullable() }).parse(v),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("whatsapp_conversations")
       .update({ assigned_to: data.user_id })
@@ -429,7 +434,7 @@ export const markConversationRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: { id: string }) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const now = new Date().toISOString();
     await context.supabase
       .from("whatsapp_conversations")
@@ -447,8 +452,8 @@ export const markConversationRead = createServerFn({ method: "POST" })
 export const getWhatsappConfigStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { base, key, instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { base, key, instance } = evolutionConfig();
     return {
       configured: !!(base && key && instance),
       hasBase: !!base,
@@ -465,8 +470,8 @@ export const syncWhatsappRecentMessages = createServerFn({ method: "POST" })
     z.object({ limit: z.number().int().min(10).max(200).default(80) }).parse(v ?? {}),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { base, key, instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { base, key, instance } = evolutionConfig();
     const { syncWhatsappRecentMessagesFromEvolution } = await import("./whatsapp-sync.server");
     return syncWhatsappRecentMessagesFromEvolution({
       supabase: context.supabase,
@@ -477,36 +482,12 @@ export const syncWhatsappRecentMessages = createServerFn({ method: "POST" })
     });
   });
 
-async function evoFetch(path: string, init?: RequestInit) {
-  const { base, key } = evoConfig();
-  if (!base || !key) throw new Error("Evolution API não configurada (URL/KEY ausentes).");
-  const resp = await fetch(`${base}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      apikey: key,
-      ...(init?.headers || {}),
-    },
-  });
-  const txt = await resp.text();
-  let json: unknown = null;
-  try { json = txt ? JSON.parse(txt) : null; } catch { /* raw */ }
-  if (!resp.ok) {
-    const msg =
-      (json && typeof json === "object" && "message" in json
-        ? String((json as Record<string, unknown>).message)
-        : "") || txt.slice(0, 240);
-    throw new Error(`Evolution ${resp.status}: ${msg}`);
-  }
-  return json as Record<string, unknown> | null;
-}
-
 /** Estado atual da instância (open = conectado, connecting = aguardando QR, close = desconectado). */
 export const getWhatsappConnectionState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance)
       return {
         state: "unconfigured",
@@ -517,7 +498,7 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
         disconnectionCode: null,
       };
     try {
-      const j = await evoFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
+      const j = await evolutionFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
       let state =
         ((j?.instance as Record<string, unknown> | undefined)?.state as string | undefined) ??
         (j?.state as string | undefined) ??
@@ -531,7 +512,7 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
       let disconnectionAt: string | null = null;
       let disconnectionCode: number | null = null;
       try {
-        const list = await evoFetch(
+        const list = await evolutionFetch(
           `/instance/fetchInstances?instanceName=${encodeURIComponent(instance)}`,
         );
         const arr = Array.isArray(list)
@@ -572,20 +553,20 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
 export const getWhatsappQrCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
 
     let exists = true;
     try {
-      await evoFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
+      await evolutionFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
     } catch (e) {
       if (/404/.test(e instanceof Error ? e.message : String(e))) exists = false;
       else throw e;
     }
 
     if (!exists) {
-      await evoFetch(`/instance/create`, {
+      await evolutionFetch(`/instance/create`, {
         method: "POST",
         body: JSON.stringify({
           instanceName: instance,
@@ -595,7 +576,7 @@ export const getWhatsappQrCode = createServerFn({ method: "POST" })
       });
     }
 
-    const j = await evoFetch(`/instance/connect/${encodeURIComponent(instance)}`);
+    const j = await evolutionFetch(`/instance/connect/${encodeURIComponent(instance)}`);
     const rec = (j ?? {}) as Record<string, unknown>;
     const qrObj = (rec.qrcode as Record<string, unknown> | undefined) ?? rec;
     let base64 =
@@ -616,48 +597,27 @@ export const getWhatsappQrCode = createServerFn({ method: "POST" })
 export const disconnectWhatsapp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
-    await evoFetch(`/instance/logout/${encodeURIComponent(instance)}`, { method: "DELETE" });
+    await evolutionFetch(`/instance/logout/${encodeURIComponent(instance)}`, { method: "DELETE" });
     return { ok: true };
   });
-
-async function publicHostFromRequest(): Promise<string> {
-  const envUrl = process.env.PUBLIC_APP_URL || process.env.APP_URL;
-  if (envUrl) return envUrl.replace(/\/+$/, "");
-  // Webhooks de serviços externos precisam apontar para o app publicado,
-  // não para localhost/preview. Mantém o domínio público estável do projeto.
-  const publishedUrl = "https://querobis.lovable.app";
-  try {
-    const mod = await import("@tanstack/react-start/server");
-    const getRequest = (mod as unknown as { getRequest?: () => Request }).getRequest;
-    if (!getRequest) return publishedUrl;
-    const req = getRequest();
-    const url = new URL(req.url);
-    const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
-    const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
-    if (host.includes("localhost") || host.includes("id-preview--")) return publishedUrl;
-    return `${proto}://${host}`;
-  } catch {
-    return publishedUrl;
-  }
-}
 
 /** Retorna a URL pública do webhook (o operador pode colar manualmente se necessário). */
 export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdminRole(context.supabase, context.userId);
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
-    const host = await publicHostFromRequest();
+    const host = await publicWhatsappHostFromRequest();
     const url = host ? `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}` : "";
     let currentUrl: string | null = null;
     let configured = false;
     try {
-      const { instance } = evoConfig();
+      const { instance } = evolutionConfig();
       if (instance) {
-        const j = await evoFetch(`/webhook/find/${encodeURIComponent(instance)}`);
+        const j = await evolutionFetch(`/webhook/find/${encodeURIComponent(instance)}`);
         const rec = (j ?? {}) as Record<string, unknown>;
         const w = (rec.webhook as Record<string, unknown> | undefined) ?? rec;
         currentUrl = (w.url as string | undefined) ?? null;
@@ -673,77 +633,16 @@ export const getWhatsappWebhookInfo = createServerFn({ method: "POST" })
 export const configureWhatsappWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { instance } = evoConfig();
+    await assertAdminRole(context.supabase, context.userId);
+    const { instance } = evolutionConfig();
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
     const token = process.env.EVOLUTION_WEBHOOK_TOKEN;
     if (!token) throw new Error("EVOLUTION_WEBHOOK_TOKEN não configurado.");
-    const host = await publicHostFromRequest();
+    const host = await publicWhatsappHostFromRequest();
     if (!host) throw new Error("Não foi possível determinar a URL pública do app.");
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
-    // Lista de eventos — nomes SCREAMING_SNAKE aceitos pelo schema do Evolution v2.
-    // Fonte: EvolutionAPI/evolution-api src/api/integrations/event/webhook/webhook.schema.ts
-    const events = [
-      "MESSAGES_SET",
-      "MESSAGES_UPSERT",
-      "MESSAGES_UPDATE",
-      "MESSAGES_EDITED",
-      "MESSAGES_DELETE",
-      "SEND_MESSAGE",
-      "SEND_MESSAGE_UPDATE",
-      "CONNECTION_UPDATE",
-      "QRCODE_UPDATED",
-      "CONTACTS_UPSERT",
-      "CONTACTS_UPDATE",
-      "CHATS_UPSERT",
-    ];
-
-    // Shape v2 canônico (source: webhook.schema.ts) — chaves camelCase `byEvents`/`base64`
-    // aninhadas em `webhook`. Este é o formato validado pelo mainline atual.
-    const bodyV2 = {
-      webhook: {
-        enabled: true,
-        url,
-        byEvents: false,
-        base64: false,
-        events,
-      },
-    };
-    // Fallback 1: alguns builds ainda expõem as chaves com o prefixo `webhook*`
-    // (nomes das colunas no Prisma) — tentamos como segunda opção.
-    const bodyV2Prefixed = {
-      webhook: {
-        enabled: true,
-        url,
-        webhookByEvents: false,
-        webhookBase64: false,
-        events,
-      },
-    };
-    // Fallback 2: v1/forks legados aceitam o corpo achatado com snake_case.
-    const bodyFlat = {
-      enabled: true,
-      url,
-      webhook_by_events: false,
-      webhook_base64: false,
-      events,
-    };
-
-    let lastErr: unknown = null;
-    for (const body of [bodyV2, bodyV2Prefixed, bodyFlat]) {
-      try {
-        await evoFetch(`/webhook/set/${encodeURIComponent(instance)}`, {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        return { ok: true, url };
-      } catch (e) {
-        lastErr = e;
-      }
-    }
-    throw new Error(
-      "Falha ao configurar webhook: " +
-        (lastErr instanceof Error ? lastErr.message : String(lastErr)),
-    );
+    const { base, key } = evolutionConfig();
+    await setEvolutionWebhook({ base, key, instance, url });
+    return { ok: true, url };
   });
 
