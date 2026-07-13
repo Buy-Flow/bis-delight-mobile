@@ -269,10 +269,13 @@ export async function ingestEvolutionPayload(
       if (statusName === "READ" || statusName === "PLAYED") {
         patch.read_at = new Date().toISOString();
       }
+      // Nunca sobrescreve o status de uma mensagem inbound com "failed":
+      // ack -1 vindo em update para mensagens recebidas é ruído da Evolution.
       let { data: upd, error: updErr } = await supabase
         .from("whatsapp_messages")
         .update(patch)
         .eq("evolution_id", evoId)
+        .neq("direction", "in")
         .select("id")
         .maybeSingle();
 
