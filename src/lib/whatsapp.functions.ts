@@ -300,7 +300,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               rawPayload = {
                 verification: {
                   candidates,
-                  selectedNumber: targetNumber,
+                  selectedNumber: sendReq.number,
                   attemptedNumbers: sendAttempts,
                   verifiedJid: verifiedJid ?? undefined,
                   knownLid: knownLid ?? undefined,
@@ -314,10 +314,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               };
               // Se a conversa estava salva sem o 9 e a Evolution confirmou a
               // variante correta, deixa o cadastro pronto para os próximos envios.
-              if (!targetNumber.includes("@") && targetNumber !== normalized) {
+              if (!sendReq.number.includes("@") && sendReq.number !== normalized) {
                 await context.supabase
                   .from("whatsapp_conversations")
-                  .update({ phone: targetNumber })
+                  .update({ phone: sendReq.number })
                   .eq("id", conv.id);
               }
             }
