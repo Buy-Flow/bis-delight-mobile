@@ -287,20 +287,14 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
                   : "Sem webhook — mensagens recebidas não aparecem na caixa."}
               </div>
             </div>
-            {webhook?.configured ? (
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-200">
-                Ativo
-              </span>
-            ) : (
-              <button
-                onClick={handleConfigureWebhook}
-                disabled={wbSaving || !webhook?.hasToken}
-                className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-[11px] font-bold text-black hover:brightness-110 disabled:opacity-50"
-              >
-                {wbSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Radio className="h-3 w-3" />}
-                Ativar webhook
-              </button>
-            )}
+            <button
+              onClick={handleConfigureWebhook}
+              disabled={wbSaving || !webhook?.hasToken}
+              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-[11px] font-bold text-black hover:brightness-110 disabled:opacity-50"
+            >
+              {wbSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Radio className="h-3 w-3" />}
+              {webhook?.configured ? "Reconfigurar" : "Ativar webhook"}
+            </button>
           </div>
           {webhook?.url && (
             <div className="mt-2 flex items-center gap-2 rounded-lg bg-black/30 px-2 py-1.5 text-[10px] text-white/60">

@@ -580,17 +580,21 @@ export const disconnectWhatsapp = createServerFn({ method: "POST" })
 async function publicHostFromRequest(): Promise<string> {
   const envUrl = process.env.PUBLIC_APP_URL || process.env.APP_URL;
   if (envUrl) return envUrl.replace(/\/+$/, "");
+  // Webhooks de serviços externos precisam apontar para o app publicado,
+  // não para localhost/preview. Mantém o domínio público estável do projeto.
+  const publishedUrl = "https://querobis.lovable.app";
   try {
     const mod = await import("@tanstack/react-start/server");
     const getRequest = (mod as unknown as { getRequest?: () => Request }).getRequest;
-    if (!getRequest) return "";
+    if (!getRequest) return publishedUrl;
     const req = getRequest();
     const url = new URL(req.url);
     const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
     const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? url.host;
+    if (host.includes("localhost") || host.includes("id-preview--")) return publishedUrl;
     return `${proto}://${host}`;
   } catch {
-    return "";
+    return publishedUrl;
   }
 }
 
