@@ -113,7 +113,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
 
   // Load coupons the user already owns (loyalty) + active public promo coupons
   useEffect(() => {
-    if (!isCheckoutOpen || !user) {
+    if ((!isCheckoutOpen && !pageMode) || !user) {
       setAvailableCoupons([]);
       return;
     }
