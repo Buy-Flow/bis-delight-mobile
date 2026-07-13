@@ -6,8 +6,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   Bike, Power, MapPin, Navigation, Check, X, Package, Clock, DollarSign,
-  Phone, MessageCircle, LogOut, Star, TrendingUp, Wifi, WifiOff, Battery,
-  Loader2, Home, User, Route as RouteIcon, PlayCircle, ChevronRight,
+  Phone, LogOut, Star, TrendingUp, Wifi, Target, Award, Flame, Timer,
+  Loader2, Home, User, Calendar, XCircle, CheckCircle2, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
