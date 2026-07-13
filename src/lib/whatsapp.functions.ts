@@ -71,72 +71,96 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           evoError = `Número inválido: "${conv.phone}". Corrija o telefone da conversa.`;
           status = "failed";
         } else {
-        // 1) Descobre o JID exato que a WhatsApp aceita para esse número.
-        //    Testa variantes (original, com "9" extra, sem "9" extra)
-        //    contra o endpoint /chat/whatsappNumbers. Fail-close: se
-        //    nenhuma variante existir no WhatsApp, NÃO envia.
-        const candidates = new Set<string>([normalized]);
-        if (/^55\d{2}\d{8}$/.test(normalized)) {
-          // 12 dígitos, sem o 9 → adiciona o 9
-          candidates.add(normalized.slice(0, 4) + "9" + normalized.slice(4));
-        }
-        if (/^55\d{2}9\d{8}$/.test(normalized)) {
-          // 13 dígitos, com o 9 → remove o 9
-          candidates.add(normalized.slice(0, 4) + normalized.slice(5));
-        }
+        // 1) Confirma o número no WhatsApp antes de enviar.
+        // Importante: a Evolution pode responder 400 quando UM item do array
+        // não existe. Por isso testamos cada variante separadamente; assim um
+        // telefone salvo sem o 9 não bloqueia a tentativa correta com o 9.
+        const candidates = /^55\d{2}\d{8}$/.test(normalized)
+          ? [normalized.slice(0, 4) + "9" + normalized.slice(4), normalized]
+          : /^55\d{2}9\d{8}$/.test(normalized)
+            ? [normalized, normalized.slice(0, 4) + normalized.slice(5)]
+            : [normalized];
 
         let sendNumber: string | null = null;
-        let checkOk = false;
+        let verifiedJid: string | null = null;
         const checkUrl = `${base}/chat/whatsappNumbers/${encodeURIComponent(instance)}`;
-        const checkReq = { numbers: Array.from(candidates) };
-        let checkStatus: number | string = "n/a";
-        let checkBody = "";
-        try {
-          const check = await fetch(checkUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", apikey: key },
-            body: JSON.stringify(checkReq),
-          });
-          checkStatus = check.status;
-          checkBody = await check.text();
-          if (check.ok) {
-            checkOk = true;
-            let arr: Array<{ exists?: boolean; jid?: string; number?: string }> = [];
-            try {
-              const parsed = JSON.parse(checkBody);
-              arr = Array.isArray(parsed) ? parsed : parsed?.response ?? parsed?.data ?? [];
-            } catch { /* keep [] */ }
-            const found = Array.isArray(arr) ? arr.find((x) => x?.exists === true) : null;
-            if (found?.jid) {
-              sendNumber = found.jid.split("@")[0] ?? null;
-            } else if (found?.number) {
-              sendNumber = String(found.number).replace(/\D/g, "");
+        const checkReports: string[] = [];
+
+        type NumberCheck = { exists?: boolean; jid?: string; number?: string | number };
+        const unwrapChecks = (parsed: unknown): NumberCheck[] => {
+          if (Array.isArray(parsed)) return parsed as NumberCheck[];
+          if (!parsed || typeof parsed !== "object") return [];
+          const rec = parsed as Record<string, unknown>;
+          const buckets = [rec.response, rec.data, rec.result, rec.message];
+          for (const bucket of buckets) {
+            if (Array.isArray(bucket)) return bucket as NumberCheck[];
+            if (bucket && typeof bucket === "object") {
+              const nested = bucket as Record<string, unknown>;
+              if (Array.isArray(nested.message)) return nested.message as NumberCheck[];
+              if (Array.isArray(nested.numbers)) return nested.numbers as NumberCheck[];
+              if (Array.isArray(nested.data)) return nested.data as NumberCheck[];
             }
           }
-        } catch (err) {
-          checkStatus = "exception";
-          checkBody = err instanceof Error ? err.message : String(err);
+          return [];
+        };
+
+        for (const candidate of Array.from(new Set(candidates))) {
+          const checkReq = { numbers: [candidate] };
+          let checkStatus: number | string = "n/a";
+          let checkBody = "";
+          try {
+            const check = await fetch(checkUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", apikey: key },
+              body: JSON.stringify(checkReq),
+            });
+            checkStatus = check.status;
+            checkBody = await check.text();
+            let arr: NumberCheck[] = [];
+            try {
+              arr = unwrapChecks(JSON.parse(checkBody));
+            } catch {
+              arr = [];
+            }
+            const found = arr.find((x) => x?.exists === true);
+            if (found) {
+              const numberDigits = normalizePhone(String(found.number ?? ""));
+              const jid = String(found.jid ?? "");
+              const jidDigits = jid.includes("@lid") ? "" : normalizePhone(jid.split("@")[0] ?? "");
+              sendNumber = numberDigits || jidDigits || candidate;
+              verifiedJid = jid || null;
+              break;
+            }
+          } catch (err) {
+            checkStatus = "exception";
+            checkBody = err instanceof Error ? err.message : String(err);
+          } finally {
+            checkReports.push(
+              `POST ${checkUrl}\n` +
+                `→ payload: ${JSON.stringify(checkReq)}\n` +
+                `← status: ${checkStatus}\n` +
+                `← body: ${checkBody.slice(0, 900) || "(vazio)"}`,
+            );
+          }
         }
 
-        const checkReport =
-          `POST ${checkUrl}\n` +
-          `→ payload: ${JSON.stringify(checkReq)}\n` +
-          `← status: ${checkStatus}\n` +
-          `← body: ${checkBody.slice(0, 600) || "(vazio)"}`;
+        const checkReport = checkReports.join("\n\n---\n\n");
 
         if (!sendNumber) {
-          const variants = Array.from(candidates).join(", ");
-          const summary = checkOk
-            ? `❌ O número ${normalized} não está registrado no WhatsApp.\nVariantes testadas: ${variants}. Corrija o telefone da conversa.`
-            : `❌ Não foi possível confirmar o número ${normalized} no WhatsApp (verifique se a instância está conectada e se o endpoint /chat/whatsappNumbers está disponível).`;
-          evoError = `${summary}\n\n[etapa 1: verificação de número]\n${checkReport}`;
+          const variants = Array.from(new Set(candidates)).join(", ");
+          evoError =
+            `❌ A Evolution não confirmou esse contato no WhatsApp.\n` +
+            `Número salvo: ${conv.phone}. Normalizado: ${normalized}. Variantes testadas: ${variants}.\n` +
+            `Se esse contato existe, corrija o telefone no cadastro/conversa ou confira se a instância está conectada.\n\n` +
+            `[etapa 1: verificação de número]\n${checkReport}`;
           status = "failed";
         } else {
           const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
           const sendReq = {
             number: sendNumber,
             text: data.text,
-            options: { delay: 0, presence: "composing" },
+            delay: 0,
+            linkPreview: false,
           };
           let sendStatus: number | string = "n/a";
           let sendBody = "";
@@ -173,8 +197,19 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               try {
                 const j = JSON.parse(sendBody);
                 evoId = j?.key?.id ?? j?.messageId ?? j?.id ?? j?.data?.key?.id ?? null;
+                status = String(j?.status ?? j?.data?.status ?? "pending").toLowerCase();
+                if (status === "sent") status = "pending";
               } catch {
                 evoId = null;
+                status = "pending";
+              }
+              // Se a conversa estava salva sem o 9 e a Evolution confirmou a
+              // variante correta, deixa o cadastro pronto para os próximos envios.
+              if (sendNumber !== normalized) {
+                await context.supabase
+                  .from("whatsapp_conversations")
+                  .update({ phone: sendNumber })
+                  .eq("id", conv.id);
               }
             }
           } catch (err) {
@@ -182,7 +217,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             evoError =
               `❌ Falha de rede ao chamar Evolution: ${msg}\n\n` +
               `[etapa 1: verificação de número]\n${checkReport}\n\n` +
-              `[etapa 2: envio da mensagem]\nPOST ${sendUrl}\n→ payload: ${JSON.stringify(sendReq)}\n← exception: ${msg}`;
+              `[etapa 2: envio da mensagem]\nPOST ${sendUrl}\n→ payload: ${JSON.stringify({ ...sendReq, verifiedJid })}\n← exception: ${msg}`;
             status = "failed";
           }
         }
