@@ -71,6 +71,56 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           evoError = `Número inválido: "${conv.phone}". Corrija o telefone da conversa.`;
           status = "failed";
         } else {
+        // 1) Descobre o JID exato que a WhatsApp aceita para esse número.
+        //    Testa 3 variantes (original, com "9" extra, sem "9" extra)
+        //    contra o endpoint /chat/whatsappNumbers.
+        const candidates = new Set<string>([normalized]);
+        // BR: 55 + DDD(2) + [9]? + 8 dígitos
+        if (/^55\d{2}\d{8}$/.test(normalized)) {
+          // 12 dígitos, sem o 9 → adiciona o 9
+          candidates.add(normalized.slice(0, 4) + "9" + normalized.slice(4));
+        }
+        if (/^55\d{2}9\d{8}$/.test(normalized)) {
+          // 13 dígitos, com o 9 → remove o 9
+          candidates.add(normalized.slice(0, 4) + normalized.slice(5));
+        }
+
+        let sendNumber = normalized;
+        let existsChecked = false;
+        try {
+          const check = await fetch(
+            `${base}/chat/whatsappNumbers/${encodeURIComponent(instance)}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", apikey: key },
+              body: JSON.stringify({ numbers: Array.from(candidates) }),
+            },
+          );
+          if (check.ok) {
+            existsChecked = true;
+            const arr = (await check.json()) as Array<{
+              exists?: boolean;
+              jid?: string;
+              number?: string;
+            }>;
+            const found = Array.isArray(arr)
+              ? arr.find((x) => x?.exists === true)
+              : null;
+            if (found?.jid) {
+              sendNumber = found.jid.split("@")[0] ?? sendNumber;
+            } else if (found?.number) {
+              sendNumber = String(found.number).replace(/\D/g, "");
+            } else if (existsChecked) {
+              // Nenhuma variante existe — não adianta tentar mandar
+              evoError = `O número ${normalized} não está registrado no WhatsApp (verificado com WhatsApp). Confira o telefone da conversa.`;
+              status = "failed";
+            }
+          }
+        } catch {
+          // Se o endpoint de verificação falhar, seguimos com o normalizado
+        }
+
+        if (status !== "failed") {
         const resp = await fetch(`${base}/message/sendText/${encodeURIComponent(instance)}`, {
           method: "POST",
           headers: {
@@ -78,20 +128,19 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             apikey: key,
           },
           body: JSON.stringify({
-            number: normalized,
+            number: sendNumber,
             text: data.text,
             options: { delay: 0, presence: "composing" },
           }),
         });
         const body = await resp.text();
         if (!resp.ok) {
-          // Detecta o caso específico "exists:false" e devolve mensagem clara
           let friendly = `Evolution ${resp.status}: ${body.slice(0, 300)}`;
           try {
             const parsed = JSON.parse(body);
             const arr = parsed?.response?.message;
             if (Array.isArray(arr) && arr[0] && arr[0].exists === false) {
-              friendly = `O número ${arr[0].number ?? normalized} não está registrado no WhatsApp. Confira o telefone da conversa.`;
+              friendly = `O número ${arr[0].number ?? sendNumber} não está registrado no WhatsApp. Confira o telefone da conversa.`;
             }
           } catch { /* mantém friendly */ }
           evoError = friendly;
@@ -110,6 +159,9 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           }
         }
         }
+        }
+
+
 
       } catch (e) {
         evoError = e instanceof Error ? e.message : String(e);
