@@ -46,7 +46,6 @@ import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
-import { Route as ApiPublicProbeWaRouteImport } from './routes/api/public/probe-wa'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 import { Route as ApiPublicWhatsappWebhookEventRouteImport } from './routes/api/public/whatsapp-webhook.$event'
@@ -240,11 +239,6 @@ const ApiPublicWhatsappWebhookRoute =
     path: '/api/public/whatsapp-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicProbeWaRoute = ApiPublicProbeWaRouteImport.update({
-  id: '/api/public/probe-wa',
-  path: '/api/public/probe-wa',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRastrearOrderIdRoute =
   AuthenticatedRastrearOrderIdRouteImport.update({
     id: '/rastrear/$orderId',
@@ -302,7 +296,6 @@ export interface FileRoutesByFullPath {
   '/produto/$id': typeof ProdutoIdRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
-  '/api/public/probe-wa': typeof ApiPublicProbeWaRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
@@ -344,7 +337,6 @@ export interface FileRoutesByTo {
   '/produto/$id': typeof ProdutoIdRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
-  '/api/public/probe-wa': typeof ApiPublicProbeWaRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
@@ -388,7 +380,6 @@ export interface FileRoutesById {
   '/produto/$id': typeof ProdutoIdRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
-  '/api/public/probe-wa': typeof ApiPublicProbeWaRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
@@ -432,7 +423,6 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
-    | '/api/public/probe-wa'
     | '/api/public/whatsapp-webhook'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesByTo: FileRoutesByTo
@@ -474,7 +464,6 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
-    | '/api/public/probe-wa'
     | '/api/public/whatsapp-webhook'
     | '/api/public/whatsapp-webhook/$event'
   id:
@@ -517,7 +506,6 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
-    | '/api/public/probe-wa'
     | '/api/public/whatsapp-webhook'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesById: FileRoutesById
@@ -532,7 +520,6 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
-  ApiPublicProbeWaRoute: typeof ApiPublicProbeWaRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
 }
 
@@ -797,13 +784,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/probe-wa': {
-      id: '/api/public/probe-wa'
-      path: '/api/public/probe-wa'
-      fullPath: '/api/public/probe-wa'
-      preLoaderRoute: typeof ApiPublicProbeWaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/rastrear/$orderId': {
       id: '/_authenticated/rastrear/$orderId'
       path: '/rastrear/$orderId'
@@ -919,7 +899,6 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
   ProdutoIdRoute: ProdutoIdRoute,
-  ApiPublicProbeWaRoute: ApiPublicProbeWaRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
 }
 export const routeTree = rootRouteImport
