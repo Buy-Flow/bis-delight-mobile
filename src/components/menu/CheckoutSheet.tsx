@@ -837,7 +837,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     lng: preGeocoded?.lng ?? quote?.lng ?? null,
                   }}
                   storeOrigin={{ lat: originLat, lng: originLng }}
-                  onChange={(loc) => {
+                  onChange={(loc: InlinePickedLocation) => {
                     const p = parseAddressParts(loc.address);
                     const nextAddress =
                       joinAddressParts({
