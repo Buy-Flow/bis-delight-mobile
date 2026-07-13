@@ -70,9 +70,12 @@ function normalizeStatus(raw: unknown): string | null {
 function appMessageStatus(raw: unknown, fromMe: boolean): string {
   const statusName = normalizeStatus(raw);
   if (!statusName) return fromMe ? "sent" : "received";
-  if (statusName === "ERROR") return "failed";
-  if (statusName === "DELIVERY_ACK") return "delivered";
-  if (statusName === "READ" || statusName === "PLAYED") return "read";
+  // ERROR/failed só faz sentido para mensagens enviadas por nós. Para uma
+  // mensagem recebida do cliente um ack -1 no payload não significa que
+  // a mensagem "falhou" — ela chegou. Nunca marcar inbound como failed.
+  if (statusName === "ERROR") return fromMe ? "failed" : "received";
+  if (statusName === "DELIVERY_ACK") return fromMe ? "delivered" : "received";
+  if (statusName === "READ" || statusName === "PLAYED") return fromMe ? "read" : "received";
   // PENDING/SERVER_ACK são estados internos iniciais da Evolution: o aparelho
   // aceitou a mensagem. No painel isso deve aparecer como enviada, não como
   // pendente infinito; webhooks posteriores elevam para entregue/lida.
@@ -266,10 +269,13 @@ export async function ingestEvolutionPayload(
       if (statusName === "READ" || statusName === "PLAYED") {
         patch.read_at = new Date().toISOString();
       }
+      // Nunca sobrescreve o status de uma mensagem inbound com "failed":
+      // ack -1 vindo em update para mensagens recebidas é ruído da Evolution.
       let { data: upd, error: updErr } = await supabase
         .from("whatsapp_messages")
         .update(patch)
         .eq("evolution_id", evoId)
+        .neq("direction", "in")
         .select("id")
         .maybeSingle();
 
