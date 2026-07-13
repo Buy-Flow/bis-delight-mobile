@@ -157,7 +157,7 @@ function WhatsappPage() {
 
   useEffect(() => {
     loadConversations();
-    cfgFn({}).then(setConfig).catch(() => setConfig(null));
+    cfgFn().then(setConfig).catch(() => setConfig(null));
 
     // realtime
     const ch = supabase
