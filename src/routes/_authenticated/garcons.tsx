@@ -123,7 +123,7 @@ function WaitersPage() {
       supabase.from("waiters").select("*").order("created_at", { ascending: false }),
       supabase
         .from("orders")
-        .select("id,waiter_id,total,status,customer_name,created_at,mode")
+        .select("id,waiter_id,total,status,customer_name,created_at,mode,user_id,table_id")
         .gte("created_at", from)
         .neq("status", "cancelado")
         .order("created_at", { ascending: false })
