@@ -15,6 +15,20 @@ function evoConfig() {
   return { base, key, instance };
 }
 
+/** Normaliza número para o formato aceito pelo Evolution/WhatsApp (dígitos, com DDI). */
+function normalizePhone(raw: string): string {
+  let n = String(raw ?? "").replace(/@.*$/, "").replace(/\D+/g, "");
+  if (!n) return "";
+  n = n.replace(/^0+/, "");
+  // BR sem DDI → adiciona 55
+  if (n.length === 10 || n.length === 11) n = "55" + n;
+  // 55 duplicado (55 55 + numero)
+  while (n.length > 13 && n.startsWith("5555")) n = n.slice(2);
+  return n;
+}
+
+
+
 /**
  * Envia mensagem de texto pelo Evolution API e persiste em whatsapp_messages.
  * Também atualiza last_message_* na conversa.
