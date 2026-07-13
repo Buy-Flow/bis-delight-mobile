@@ -229,27 +229,7 @@ function TrackingPage() {
       {/* Map */}
       {mapCenter && data.mode !== "retirada" && (
         <div className="mt-5 mx-5 rounded-2xl overflow-hidden border border-white/10 h-72">
-          <MapContainer center={mapCenter} zoom={15} className="h-full w-full" scrollWheelZoom={false}>
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap &copy; CARTO'
-            />
-            {data.origin_lat && data.origin_lng && (
-              <Marker position={[data.origin_lat, data.origin_lng]} icon={storeIcon}>
-                <Popup>Loja</Popup>
-              </Marker>
-            )}
-            {data.delivery_lat && data.delivery_lng && (
-              <Marker position={[data.delivery_lat, data.delivery_lng]} icon={homeIcon}>
-                <Popup>Você</Popup>
-              </Marker>
-            )}
-            {data.courier_lat && data.courier_lng && (
-              <Marker position={[data.courier_lat, data.courier_lng]} icon={bikeIcon}>
-                <Popup>{data.courier_name}</Popup>
-              </Marker>
-            )}
-          </MapContainer>
+          <div ref={mapEl} className="h-full w-full" />
         </div>
       )}
 
