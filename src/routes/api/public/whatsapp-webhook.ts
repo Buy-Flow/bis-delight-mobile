@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/public/whatsapp-webhook")({
               event: (payload.event as string | undefined) ?? null,
               status: "error",
               error: e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e),
-              payload,
+              payload: payload as unknown as Record<string, never>,
             });
           } catch {
             /* noop */
