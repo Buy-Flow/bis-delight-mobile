@@ -35,6 +35,7 @@ type EvoData = {
   messageType?: string;
   messageTimestamp?: number | string;
   status?: string | number;
+  ack?: string | number;
 };
 
 type IngestResult = {
@@ -48,15 +49,15 @@ type IngestResult = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DbClient = any;
 
-// Mapa ack numérico → nome textual usado pelo Evolution v2.
-// Fonte: src/utils/renderStatus.ts (0..5).
+// Mapa ack numérico → nome textual usado pelo Baileys/Evolution.
+// Versões/forks podem enviar string em `status` ou número em `ack/status`.
 const ACK_MAP: Record<number, string> = {
-  0: "ERROR",
-  1: "PENDING",
-  2: "SERVER_ACK",
-  3: "DELIVERY_ACK",
-  4: "READ",
-  5: "PLAYED",
+  [-1]: "ERROR",
+  0: "PENDING",
+  1: "SERVER_ACK",
+  2: "DELIVERY_ACK",
+  3: "READ",
+  4: "PLAYED",
 };
 
 function normalizeStatus(raw: unknown): string | null {
@@ -162,12 +163,12 @@ function extractItems(payload: Record<string, unknown>): EvoData[] {
       if (Array.isArray(records)) return records as EvoData[];
     }
     if (Array.isArray(rec.records)) return rec.records as EvoData[];
-    if (rec.key || rec.message || rec.messageTimestamp || rec.keyId || rec.id || rec.remoteJid || rec.status) {
+    if (rec.key || rec.message || rec.messageTimestamp || rec.keyId || rec.id || rec.remoteJid || rec.status || rec.ack) {
       return [rec as EvoData];
     }
   }
 
-  if (payload.key || payload.message || payload.messageTimestamp || payload.keyId || payload.id || payload.remoteJid || payload.status) {
+  if (payload.key || payload.message || payload.messageTimestamp || payload.keyId || payload.id || payload.remoteJid || payload.status || payload.ack) {
     return [payload as EvoData];
   }
   return [];
@@ -245,7 +246,7 @@ export async function ingestEvolutionPayload(
         (rec.keyId as string | undefined) ??
         (rec.id as string | undefined) ??
         null;
-      const statusName = normalizeStatus(item.status ?? (rec.status as string | number | undefined));
+      const statusName = normalizeStatus(item.status ?? item.ack ?? (rec.status as string | number | undefined) ?? (rec.ack as string | number | undefined));
       if (!evoId || !statusName) {
         result.skipped += 1;
         await logRow({
@@ -265,12 +266,43 @@ export async function ingestEvolutionPayload(
       if (statusName === "READ" || statusName === "PLAYED") {
         patch.read_at = new Date().toISOString();
       }
-      const { data: upd, error: updErr } = await supabase
+      let { data: upd, error: updErr } = await supabase
         .from("whatsapp_messages")
         .update(patch)
         .eq("evolution_id", evoId)
         .select("id")
         .maybeSingle();
+
+      if (!upd && !updErr) {
+        const jidPhone = phoneFromJid(
+          key?.remoteJid,
+          key?.remoteJidAlt,
+          (rec.remoteJid as string | undefined),
+          (rec.remoteJidAlt as string | undefined),
+          (rec.senderPn as string | undefined),
+        );
+        if (jidPhone) {
+          const { data: conv } = await supabase
+            .from("whatsapp_conversations")
+            .select("id")
+            .eq("phone", jidPhone)
+            .maybeSingle();
+          if (conv?.id) {
+            const { data: fallbackUpd, error: fallbackErr } = await supabase
+              .from("whatsapp_messages")
+              .update({ ...patch, evolution_id: evoId })
+              .eq("conversation_id", conv.id)
+              .eq("direction", "out")
+              .in("status", ["pending", "sending", "sent"])
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .select("id")
+              .maybeSingle();
+            upd = fallbackUpd;
+            updErr = fallbackErr;
+          }
+        }
+      }
       if (updErr) {
         result.errors += 1;
         await logRow({
@@ -487,7 +519,7 @@ export async function ingestEvolutionPayload(
       content: text,
       media_url: media,
       sent_by: fromMe ? "human" : "customer",
-      status: appMessageStatus(item.status, fromMe),
+      status: appMessageStatus(item.status ?? item.ack, fromMe),
       created_at: nowIso,
       raw: item,
     });
