@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useCart } from "@/lib/cart-context";
 
 const CheckoutSheet = lazy(() =>
@@ -18,31 +18,16 @@ export const Route = createFileRoute("/finalizar")({
 });
 
 function FinalizarPage() {
-  const { isCheckoutOpen, openCheckout, items } = useCart();
+  const { items } = useCart();
   const navigate = useNavigate();
-  const opened = useRef(false);
-
-  useEffect(() => {
-    openCheckout();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (items.length === 0) navigate({ to: "/" });
   }, [items.length, navigate]);
 
-  useEffect(() => {
-    if (isCheckoutOpen) {
-      opened.current = true;
-      return;
-    }
-    if (opened.current) navigate({ to: "/" });
-  }, [isCheckoutOpen, navigate]);
-
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0118]" />}>
-      <CheckoutSheet />
+    <Suspense fallback={<div className="min-h-dvh bg-[#0a0118]" />}>
+      <CheckoutSheet pageMode />
     </Suspense>
   );
 }
-
