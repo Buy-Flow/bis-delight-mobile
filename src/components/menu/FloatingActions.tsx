@@ -29,11 +29,11 @@ export function FloatingActions() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const bottomStyle = { bottom: "calc(env(safe-area-inset-bottom) + 7rem)" } as const;
+  const bottomStyle = { bottom: "calc(env(safe-area-inset-bottom) + 4.75rem)" } as const;
 
   return (
     <>
-      {/* WhatsApp — agora à esquerda */}
+      {/* WhatsApp — à esquerda, logo acima do menu inferior */}
       <div className="fixed left-4 z-[60] md:bottom-4" style={bottomStyle}>
         <a
           href={wa}
@@ -48,7 +48,7 @@ export function FloatingActions() {
         </a>
       </div>
 
-      {/* Ver Cardápio — à direita, some quando cardápio está em tela */}
+      {/* Ver Cardápio — à direita com rótulo, some quando cardápio está em tela */}
       <div
         className={`fixed right-4 z-[60] md:bottom-4 transition-all duration-300 ${
           showMenuBtn ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
@@ -59,9 +59,10 @@ export function FloatingActions() {
           type="button"
           onClick={scrollToMenu}
           aria-label="Ver cardápio"
-          className="grid h-11 w-11 place-items-center rounded-full bg-neon-pink text-white shadow-2xl touch-manipulation [-webkit-tap-highlight-color:transparent] transition-transform duration-100 ease-out active:scale-95"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-neon-pink pl-3 pr-4 text-white shadow-2xl touch-manipulation [-webkit-tap-highlight-color:transparent] transition-transform duration-100 ease-out active:scale-95"
         >
           <UtensilsCrossed className="h-5 w-5" />
+          <span className="text-sm font-black uppercase tracking-wide">Ver cardápio</span>
         </button>
       </div>
     </>
