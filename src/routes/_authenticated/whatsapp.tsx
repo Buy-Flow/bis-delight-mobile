@@ -286,15 +286,48 @@ function WhatsappPage() {
 
   const handleSend = async () => {
     if (!selectedId || !text.trim() || sending) return;
+    const body = text.trim();
+    const tempId = `local-${crypto.randomUUID()}`;
+    const optimistic: Message = {
+      id: tempId,
+      conversation_id: selectedId,
+      evolution_id: null,
+      direction: "out",
+      type: "text",
+      content: body,
+      media_url: null,
+      transcript: null,
+      sent_by: "human",
+      operator_id: null,
+      status: "sending",
+      read_at: null,
+      error: null,
+      created_at: new Date().toISOString(),
+      _optimistic: true,
+    };
     setSending(true);
+    setText("");
+    setMessages((prev) => [...prev, optimistic]);
     try {
-      const res = await sendFn({ data: { conversation_id: selectedId, text: text.trim() } });
-      setText("");
+      const res = await sendFn({ data: { conversation_id: selectedId, text: body } });
+      // Replace optimistic with the persisted row from the server response
+      const persisted = (res.message ?? null) as Message | null;
+      setMessages((prev) => {
+        const withoutTemp = prev.filter((m) => m.id !== tempId);
+        if (persisted && !withoutTemp.some((m) => m.id === persisted.id)) {
+          return [...withoutTemp, persisted];
+        }
+        return withoutTemp;
+      });
       if (res.warning) toast.warning(res.warning);
-      else toast.success("Mensagem enviada");
-      await loadMessages(selectedId);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao enviar");
+      const msg = e instanceof Error ? e.message : "Erro ao enviar";
+      // Keep the optimistic bubble visible and mark as failed so the user
+      // sees exactly which message failed and why (e.g. DB write error).
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, status: "failed", error: msg } : m)),
+      );
+      toast.error(msg);
     } finally {
       setSending(false);
     }
