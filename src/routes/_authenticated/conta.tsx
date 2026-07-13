@@ -36,6 +36,7 @@ import { useCart, brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { NotificationsInbox } from "@/components/menu/NotificationsInbox";
 import { useIsAdmin, useProducts } from "@/lib/menu-data";
+import { usePermissions, labelForRole, type Role } from "@/lib/permissions";
 import { ProductModal } from "@/components/menu/ProductModal";
 import type { Product } from "@/data/menu";
 import { Heart as HeartIcon } from "lucide-react";
