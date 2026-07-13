@@ -280,15 +280,13 @@ export const disconnectWhatsapp = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-function publicHostFromRequest(): string {
-  // Prefer explicit env; fallback to request headers via getRequest().
+async function publicHostFromRequest(): Promise<string> {
   const envUrl = process.env.PUBLIC_APP_URL || process.env.APP_URL;
   if (envUrl) return envUrl.replace(/\/+$/, "");
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getRequest } = require("@tanstack/react-start/server") as {
-      getRequest: () => Request;
-    };
+    const mod = await import("@tanstack/react-start/server");
+    const getRequest = (mod as unknown as { getRequest?: () => Request }).getRequest;
+    if (!getRequest) return "";
     const req = getRequest();
     const url = new URL(req.url);
     const proto = req.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
