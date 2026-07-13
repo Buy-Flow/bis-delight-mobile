@@ -830,26 +830,37 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                   );
                 })()}
 
-                <button
-                  type="button"
-                  onClick={() => setMapPickerOpen(true)}
-                  className={cn(
-                    "flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2.5 text-[12px] font-bold transition",
-                    preGeocoded
-                      ? "border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan"
-                      : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
-                  )}
-                >
-                  <span className="flex items-center gap-2">
-                    <Route className="h-4 w-4" />
-                    {preGeocoded ? "Pin ajustado no mapa" : "Ajustar pin no mapa"}
-                  </span>
-                  <span className="text-[10px] font-normal opacity-70">
-                    {preGeocoded
-                      ? `${preGeocoded.lat.toFixed(4)}, ${preGeocoded.lng.toFixed(4)}`
-                      : "endereço exato"}
-                  </span>
-                </button>
+                <AddressMapInline
+                  value={{
+                    lat: preGeocoded?.lat ?? quote?.lat ?? null,
+                    lng: preGeocoded?.lng ?? quote?.lng ?? null,
+                  }}
+                  storeOrigin={{ lat: originLat, lng: originLng }}
+                  onChange={(loc) => {
+                    const p = parseAddressParts(loc.address);
+                    const nextAddress =
+                      joinAddressParts({
+                        street: p.street || addrStreet,
+                        number: p.number || addrNumber,
+                        neighborhood: p.neighborhood || addrNeighborhood,
+                        city: p.city || addrCity,
+                      }) || loc.address;
+                    if (p.street) setAddrStreet(p.street);
+                    if (p.number) setAddrNumber(p.number);
+                    if (p.neighborhood) setAddrNeighborhood(p.neighborhood);
+                    if (p.city) setAddrCity(p.city);
+                    setAddress(nextAddress);
+                    setPreGeocoded({ lat: loc.lat, lng: loc.lng, address: nextAddress });
+                    if (originLat != null && originLng != null) {
+                      const km = haversineKm(
+                        { lat: originLat, lng: originLng },
+                        { lat: loc.lat, lng: loc.lng },
+                      );
+                      setQuote({ lat: loc.lat, lng: loc.lng, km, label: nextAddress });
+                    }
+                    setSelectedAddressId(null);
+                  }}
+                />
 
                 <IconField
                   icon={MapPin}
