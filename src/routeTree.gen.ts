@@ -48,6 +48,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
+import { Route as ApiPublicWhatsappWebhookEventRouteImport } from './routes/api/public/whatsapp-webhook.$event'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -250,6 +251,12 @@ const AuthenticatedAvaliarOrderIdRoute =
     path: '/avaliar/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicWhatsappWebhookEventRoute =
+  ApiPublicWhatsappWebhookEventRouteImport.update({
+    id: '/$event',
+    path: '/$event',
+    getParentRoute: () => ApiPublicWhatsappWebhookRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -289,7 +296,8 @@ export interface FileRoutesByFullPath {
   '/produto/$id': typeof ProdutoIdRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
-  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
+  '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -329,7 +337,8 @@ export interface FileRoutesByTo {
   '/produto/$id': typeof ProdutoIdRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
-  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
+  '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -371,7 +380,8 @@ export interface FileRoutesById {
   '/produto/$id': typeof ProdutoIdRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
-  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
+  '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/whatsapp-webhook'
+    | '/api/public/whatsapp-webhook/$event'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/whatsapp-webhook'
+    | '/api/public/whatsapp-webhook/$event'
   id:
     | '__root__'
     | '/'
@@ -495,6 +507,7 @@ export interface FileRouteTypes {
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
     | '/api/public/whatsapp-webhook'
+    | '/api/public/whatsapp-webhook/$event'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -507,7 +520,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
-  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
+  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -785,6 +798,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAvaliarOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/whatsapp-webhook/$event': {
+      id: '/api/public/whatsapp-webhook/$event'
+      path: '/$event'
+      fullPath: '/api/public/whatsapp-webhook/$event'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookEventRouteImport
+      parentRoute: typeof ApiPublicWhatsappWebhookRoute
+    }
   }
 }
 
@@ -855,6 +875,20 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApiPublicWhatsappWebhookRouteChildren {
+  ApiPublicWhatsappWebhookEventRoute: typeof ApiPublicWhatsappWebhookEventRoute
+}
+
+const ApiPublicWhatsappWebhookRouteChildren: ApiPublicWhatsappWebhookRouteChildren =
+  {
+    ApiPublicWhatsappWebhookEventRoute: ApiPublicWhatsappWebhookEventRoute,
+  }
+
+const ApiPublicWhatsappWebhookRouteWithChildren =
+  ApiPublicWhatsappWebhookRoute._addFileChildren(
+    ApiPublicWhatsappWebhookRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -865,18 +899,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
   ProdutoIdRoute: ProdutoIdRoute,
-  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
+  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
