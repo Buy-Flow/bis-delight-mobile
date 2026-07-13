@@ -904,11 +904,12 @@ function MessageBubble({ m }: { m: Message }) {
   const out = m.direction === "outbound" || m.direction === "out";
   const isAi = m.sent_by === "ai";
   const meta = messageStatusMeta(m);
+  const hasMedia = !!m.media_url || ["audio", "image", "video", "document", "sticker"].includes(m.type);
   return (
     <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-1")}>
       <div
         className={cn(
-          "max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+          "max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm sm:max-w-[75%]",
           out
             ? isAi
               ? "bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 border border-purple-400/30 text-white"
@@ -925,18 +926,12 @@ function MessageBubble({ m }: { m: Message }) {
             <Sparkles className="h-2.5 w-2.5" /> IA
           </div>
         )}
-        <div className="whitespace-pre-wrap break-words">
-          {m.content || (m.transcript ? `🎤 ${m.transcript}` : `[${m.type}]`)}
-        </div>
-        {m.media_url && (
-          <a
-            href={m.media_url}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-1 block text-[11px] underline opacity-80"
-          >
-            Ver mídia
-          </a>
+        {hasMedia && <MediaPreview m={m} outbound={out && !isAi} />}
+        {m.content && (
+          <div className="whitespace-pre-wrap break-words">{m.content}</div>
+        )}
+        {!m.content && !hasMedia && m.transcript && (
+          <div className="whitespace-pre-wrap break-words">🎤 {m.transcript}</div>
         )}
         <div
           className={cn(
@@ -965,6 +960,102 @@ function MessageBubble({ m }: { m: Message }) {
 
       </div>
     </div>
+  );
+}
+
+/**
+ * Renderiza mídia inline (áudio/imagem/vídeo/documento).
+ * URLs do CDN criptografado do WhatsApp (mmg.whatsapp.net / .enc) precisam
+ * ser baixadas pela Evolution primeiro — mostra botão "Carregar mídia".
+ */
+function MediaPreview({ m, outbound }: { m: Message; outbound: boolean }) {
+  const resolveFn = useServerFn(resolveWhatsappInboundMedia);
+  const [url, setUrl] = useState<string | null>(m.media_url ?? null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUrl(m.media_url ?? null);
+  }, [m.media_url]);
+
+  const needsFetch =
+    !url || /mmg\.whatsapp\.net|\.enc($|\?)/i.test(url) || (!url.startsWith("http") && !url.startsWith("data:"));
+
+  const load = async () => {
+    if (loading) return;
+    setLoading(true);
+    setErr(null);
+    try {
+      const res = await resolveFn({ data: { message_id: m.id } });
+      setUrl(res.url);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Erro ao baixar mídia");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kind = m.type;
+
+  if (needsFetch) {
+    const label =
+      kind === "audio" ? "áudio" : kind === "image" ? "imagem" : kind === "video" ? "vídeo" : "arquivo";
+    return (
+      <div className={cn("mb-1 flex items-center gap-2 rounded-xl border px-2.5 py-2 text-xs", outbound ? "border-black/15 bg-black/10 text-black/80" : "border-white/15 bg-black/20 text-white/80")}>
+        {kind === "audio" ? <Mic className="h-3.5 w-3.5" /> : kind === "image" ? <ImageIcon className="h-3.5 w-3.5" /> : kind === "video" ? <Play className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold transition", outbound ? "bg-black/20 hover:bg-black/30" : "bg-white/10 hover:bg-white/20")}
+        >
+          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+          {loading ? "Carregando…" : `Carregar ${label}`}
+        </button>
+        {err && <span className="text-[10px] text-red-300">{err}</span>}
+      </div>
+    );
+  }
+
+  if (kind === "audio") {
+    return (
+      <div className="mb-1">
+        <audio controls preload="metadata" src={url!} className="w-full max-w-[260px]">
+          Seu navegador não suporta áudio.
+        </audio>
+      </div>
+    );
+  }
+  if (kind === "image" || kind === "sticker") {
+    return (
+      <a href={url!} target="_blank" rel="noreferrer" className="mb-1 block">
+        <img
+          src={url!}
+          alt="mídia"
+          className="max-h-72 w-auto max-w-full rounded-lg object-contain"
+          loading="lazy"
+        />
+      </a>
+    );
+  }
+  if (kind === "video") {
+    return (
+      <div className="mb-1">
+        <video controls preload="metadata" src={url!} className="max-h-72 w-full max-w-[320px] rounded-lg" />
+      </div>
+    );
+  }
+  // documento ou fallback
+  return (
+    <a
+      href={url!}
+      target="_blank"
+      rel="noreferrer"
+      className={cn("mb-1 inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 text-xs", outbound ? "border-black/15 bg-black/10 text-black/80" : "border-white/15 bg-black/20 text-white/80")}
+    >
+      <FileText className="h-3.5 w-3.5" />
+      Abrir arquivo
+    </a>
   );
 }
 
