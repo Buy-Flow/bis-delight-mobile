@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff, Radio, Copy, AlertTriangle } from "lucide-react";
+import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff, Radio, Copy, AlertTriangle, Activity, CheckCircle, MinusCircle, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getWhatsappConnectionState,
   getWhatsappQrCode,
