@@ -325,7 +325,10 @@ function WhatsappPage() {
   useEffect(() => {
     setPhoneDraft(selected?.phone ?? "");
     setEditingPhone(false);
-  }, [selected?.id, selected?.phone]);
+    // Reseta apenas ao trocar de conversa (id), não quando o telefone atualiza remotamente
+    // durante uma edição em andamento.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
 
   const kpis = useMemo(() => {
     const today = new Date();
@@ -541,16 +544,24 @@ function WhatsappPage() {
 
   const handleSavePhone = async () => {
     if (!selected || phoneSaving) return;
+    const trimmed = phoneDraft.trim();
+    if (trimmed.length < 8) {
+      toast.error("Digite DDD + telefone (mín. 8 dígitos).");
+      return;
+    }
     setPhoneSaving(true);
+    console.info("[whatsapp] salvando telefone", { id: selected.id, phone: trimmed });
     try {
-      const res = await updatePhoneFn({ data: { id: selected.id, phone: phoneDraft } });
+      const res = await updatePhoneFn({ data: { id: selected.id, phone: trimmed } });
+      console.info("[whatsapp] telefone salvo", res);
       setConversations((prev) =>
         prev.map((c) => (c.id === selected.id ? { ...c, phone: res.phone } : c)),
       );
       setPhoneDraft(res.phone);
       setEditingPhone(false);
-      toast.success("Telefone corrigido para próximos envios.");
+      toast.success(`Telefone corrigido: ${res.phone}`);
     } catch (e) {
+      console.error("[whatsapp] erro ao corrigir telefone", e);
       toast.error(e instanceof Error ? e.message : "Erro ao corrigir telefone");
     } finally {
       setPhoneSaving(false);
@@ -872,11 +883,22 @@ function WhatsappPage() {
                           className="h-7 min-w-0 flex-1 rounded-full border border-white/10 bg-black/30 px-2.5 text-[11px] text-white outline-none focus:border-emerald-400"
                         />
                         <button
+                          type="button"
                           onClick={handleSavePhone}
                           disabled={phoneSaving}
                           className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-black text-black disabled:opacity-50"
                         >
                           {phoneSaving ? "..." : "Salvar"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPhone(false);
+                            setPhoneDraft(selected.phone);
+                          }}
+                          className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-bold text-white/60 hover:bg-white/10"
+                        >
+                          Cancelar
                         </button>
                       </div>
                     ) : (
