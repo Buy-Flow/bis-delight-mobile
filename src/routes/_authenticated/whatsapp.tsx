@@ -828,3 +828,190 @@ function Kpi({
     </div>
   );
 }
+
+type IngestLog = {
+  id: string;
+  created_at: string;
+  source: string | null;
+  event: string | null;
+  status: "ok" | "skipped" | "error" | string;
+  phone: string | null;
+  evolution_id: string | null;
+  from_me: boolean | null;
+  message_type: string | null;
+  preview: string | null;
+  error: string | null;
+  payload: unknown;
+};
+
+function LogsPanel() {
+  const [logs, setLogs] = useState<IngestLog[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "ok" | "skipped" | "error">("all");
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let q = (supabase as any)
+      .from("whatsapp_ingest_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (statusFilter !== "all") q = q.eq("status", statusFilter);
+    const { data, error } = await q;
+    if (error) toast.error("Erro ao carregar logs: " + error.message);
+    setLogs((data ?? []) as IngestLog[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    const ch = supabase
+      .channel("wa-ingest-logs")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "whatsapp_ingest_logs" },
+        () => load(),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
+
+  const counts = useMemo(() => {
+    const c = { ok: 0, skipped: 0, error: 0 };
+    for (const l of logs) {
+      if (l.status === "ok") c.ok += 1;
+      else if (l.status === "skipped") c.skipped += 1;
+      else if (l.status === "error") c.error += 1;
+    }
+    return c;
+  }, [logs]);
+
+  return (
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/10 p-3">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-white/80">
+          <ScrollText className="h-4 w-4" /> Últimos 200 eventos
+        </div>
+        <div className="ml-auto flex flex-wrap items-center gap-1.5">
+          <Chip active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>
+            Tudo · {logs.length}
+          </Chip>
+          <Chip active={statusFilter === "ok"} onClick={() => setStatusFilter("ok")}>
+            <CheckCircle2 className="h-3 w-3 text-emerald-300" /> OK · {counts.ok}
+          </Chip>
+          <Chip active={statusFilter === "skipped"} onClick={() => setStatusFilter("skipped")}>
+            <MinusCircle className="h-3 w-3 text-amber-300" /> Ignorados · {counts.skipped}
+          </Chip>
+          <Chip active={statusFilter === "error"} onClick={() => setStatusFilter("error")}>
+            <XCircle className="h-3 w-3 text-red-300" /> Erros · {counts.error}
+          </Chip>
+          <button
+            onClick={load}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold text-white/70 hover:bg-white/10"
+          >
+            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+      <div className="max-h-[70vh] overflow-y-auto">
+        {logs.length === 0 && !loading && (
+          <div className="p-8 text-center text-sm text-white/50">
+            Nenhum log ainda. Assim que a Evolution API disparar eventos, tudo aparece aqui — inclusive o motivo de mensagens serem ignoradas.
+          </div>
+        )}
+        {logs.map((l) => {
+          const isOpen = expanded === l.id;
+          const statusColor =
+            l.status === "ok"
+              ? "text-emerald-300"
+              : l.status === "error"
+                ? "text-red-300"
+                : "text-amber-300";
+          const StatusIcon =
+            l.status === "ok" ? CheckCircle2 : l.status === "error" ? XCircle : MinusCircle;
+          return (
+            <div key={l.id} className="border-b border-white/5">
+              <button
+                onClick={() => setExpanded(isOpen ? null : l.id)}
+                className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition hover:bg-white/[0.04]"
+              >
+                <StatusIcon className={cn("mt-0.5 h-4 w-4 shrink-0", statusColor)} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/50">
+                    <span className="tabular-nums text-white/70">
+                      {new Date(l.created_at).toLocaleString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </span>
+                    {l.event && (
+                      <span className="rounded-full border border-white/10 bg-black/30 px-1.5 py-0.5 font-mono">
+                        {l.event}
+                      </span>
+                    )}
+                    {l.source && (
+                      <span className="rounded-full border border-white/10 bg-black/30 px-1.5 py-0.5">
+                        {l.source}
+                      </span>
+                    )}
+                    {l.phone && <span className="text-white/70">📱 {l.phone}</span>}
+                    {l.from_me != null && (
+                      <span className="text-white/40">{l.from_me ? "enviada" : "recebida"}</span>
+                    )}
+                    {l.message_type && <span className="text-white/40">{l.message_type}</span>}
+                  </div>
+                  <div className="mt-0.5 truncate text-xs text-white">
+                    {l.error ? (
+                      <span className="text-red-200">{l.error}</span>
+                    ) : (
+                      <span className="text-white/80">{l.preview ?? "—"}</span>
+                    )}
+                  </div>
+                </div>
+                {isOpen ? (
+                  <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-white/40" />
+                ) : (
+                  <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-white/40" />
+                )}
+              </button>
+              {isOpen && (
+                <div className="space-y-2 border-t border-white/5 bg-black/40 px-4 py-3 text-[11px]">
+                  {l.evolution_id && (
+                    <div>
+                      <span className="text-white/40">evolution_id:</span>{" "}
+                      <span className="font-mono text-white/80">{l.evolution_id}</span>
+                    </div>
+                  )}
+                  {l.error && (
+                    <div>
+                      <div className="mb-1 font-bold uppercase tracking-wider text-red-300">Erro</div>
+                      <pre className="whitespace-pre-wrap break-words rounded-lg border border-red-500/30 bg-red-500/10 p-2 font-mono text-red-100">
+                        {l.error}
+                      </pre>
+                    </div>
+                  )}
+                  <div>
+                    <div className="mb-1 font-bold uppercase tracking-wider text-white/50">Payload</div>
+                    <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-white/10 bg-black/60 p-2 font-mono text-white/70">
+                      {l.payload ? JSON.stringify(l.payload, null, 2) : "—"}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
