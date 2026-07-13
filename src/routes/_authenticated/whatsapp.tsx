@@ -1245,6 +1245,162 @@ function MediaPreview({ m, outbound }: { m: Message; outbound: boolean }) {
   );
 }
 
+/**
+ * Player de áudio estilo WhatsApp: botão grande de play/pause, barra de progresso
+ * clicável (seek) e duração. Carrega a mídia sob demanda quando `url` é null.
+ */
+function AudioBubble({
+  url,
+  loading,
+  error,
+  outbound,
+  onLoad,
+}: {
+  url: string | null;
+  loading: boolean;
+  error: string | null;
+  outbound: boolean;
+  onLoad: () => void | Promise<void>;
+}) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [current, setCurrent] = useState(0);
+  const shouldAutoplayRef = useRef(false);
+
+  // Quando a URL fica disponível após um clique de load, começa a tocar automaticamente.
+  useEffect(() => {
+    if (url && shouldAutoplayRef.current && audioRef.current) {
+      shouldAutoplayRef.current = false;
+      audioRef.current.play().catch(() => {});
+    }
+  }, [url]);
+
+  const fmt = (s: number) => {
+    if (!Number.isFinite(s) || s < 0) return "0:00";
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  const handleToggle = async () => {
+    if (!url) {
+      shouldAutoplayRef.current = true;
+      await onLoad();
+      return;
+    }
+    const el = audioRef.current;
+    if (!el) return;
+    if (el.paused) {
+      await el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
+  };
+
+  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = audioRef.current;
+    if (!el || !duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    el.currentTime = pct * duration;
+    setCurrent(el.currentTime);
+  };
+
+  const progress = duration ? Math.min(100, (current / duration) * 100) : 0;
+
+  // Waveform decorativa (barras estáticas com alturas variadas)
+  const bars = useMemo(
+    () => Array.from({ length: 32 }, (_, i) => 30 + Math.abs(Math.sin(i * 1.7)) * 55 + (i % 3) * 6),
+    [],
+  );
+
+  const surface = outbound
+    ? "bg-black/10 border-black/15"
+    : "bg-black/25 border-white/10";
+  const btnBg = outbound ? "bg-black text-white" : "bg-white text-black";
+  const inactiveBar = outbound ? "bg-black/25" : "bg-white/30";
+  const activeBar = outbound ? "bg-black" : "bg-white";
+  const timeTone = outbound ? "text-black/60" : "text-white/60";
+
+  return (
+    <div className={cn("mb-1 flex w-[260px] max-w-full items-center gap-3 rounded-2xl border px-2.5 py-2", surface)}>
+      <button
+        type="button"
+        onClick={handleToggle}
+        disabled={loading}
+        aria-label={playing ? "Pausar áudio" : "Reproduzir áudio"}
+        className={cn(
+          "grid h-10 w-10 shrink-0 place-items-center rounded-full shadow-md transition active:scale-95 disabled:opacity-70",
+          btnBg,
+        )}
+      >
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : playing ? (
+          <Pause className="h-4 w-4" fill="currentColor" />
+        ) : (
+          <Play className="h-4 w-4" fill="currentColor" />
+        )}
+      </button>
+
+      <div className="min-w-0 flex-1">
+        <div
+          className="relative flex h-8 cursor-pointer items-center gap-[2px]"
+          onClick={seek}
+          role="slider"
+          aria-valuemin={0}
+          aria-valuemax={duration ?? 0}
+          aria-valuenow={current}
+        >
+          {bars.map((h, i) => {
+            const pct = (i / bars.length) * 100;
+            const active = pct <= progress;
+            return (
+              <span
+                key={i}
+                className={cn("w-[3px] rounded-full transition-colors", active ? activeBar : inactiveBar)}
+                style={{ height: `${Math.min(100, h)}%` }}
+              />
+            );
+          })}
+        </div>
+        <div className={cn("mt-0.5 flex items-center justify-between text-[10px] tabular-nums", timeTone)}>
+          <span>{fmt(current || 0)}</span>
+          <span>{duration ? fmt(duration) : url ? "–:––" : "toque para carregar"}</span>
+        </div>
+        {error && <div className="mt-0.5 text-[10px] text-red-300">{error}</div>}
+      </div>
+
+      {url && (
+        <audio
+          ref={audioRef}
+          src={url}
+          preload="metadata"
+          onLoadedMetadata={(e) => {
+            const d = e.currentTarget.duration;
+            if (Number.isFinite(d)) setDuration(d);
+          }}
+          onDurationChange={(e) => {
+            const d = e.currentTarget.duration;
+            if (Number.isFinite(d)) setDuration(d);
+          }}
+          onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => {
+            setPlaying(false);
+            setCurrent(0);
+          }}
+          className="hidden"
+        />
+      )}
+    </div>
+  );
+}
+
+
+
 function FailedDetail({ error }: { error: string }) {
   const [open, setOpen] = useState(false);
   const firstLine = error.split("\n")[0] ?? error;
