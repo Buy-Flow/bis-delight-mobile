@@ -162,10 +162,14 @@ function extractItems(payload: Record<string, unknown>): EvoData[] {
       if (Array.isArray(records)) return records as EvoData[];
     }
     if (Array.isArray(rec.records)) return rec.records as EvoData[];
-    if (rec.key || rec.message || rec.messageTimestamp) return [rec as EvoData];
+    if (rec.key || rec.message || rec.messageTimestamp || rec.keyId || rec.id || rec.remoteJid || rec.status) {
+      return [rec as EvoData];
+    }
   }
 
-  if (payload.key || payload.message || payload.messageTimestamp) return [payload as EvoData];
+  if (payload.key || payload.message || payload.messageTimestamp || payload.keyId || payload.id || payload.remoteJid || payload.status) {
+    return [payload as EvoData];
+  }
   return [];
 }
 
@@ -252,8 +256,12 @@ export async function ingestEvolutionPayload(
         });
         continue;
       }
-      const appStatus = appMessageStatus(statusName, true);
+      const fromMe = typeof item.fromMe === "boolean" ? item.fromMe : true;
+      const appStatus = appMessageStatus(statusName, fromMe);
       const patch: Record<string, unknown> = { status: appStatus };
+      if (appStatus === "failed") {
+        patch.error = "Evolution retornou ERROR para esta mensagem. O WhatsApp não confirmou a entrega.";
+      }
       if (statusName === "READ" || statusName === "PLAYED") {
         patch.read_at = new Date().toISOString();
       }

@@ -83,8 +83,9 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         } else {
         // 1) Resolve o melhor destino. Em contatos migrados pelo WhatsApp,
         // a Evolution/Baileys pode receber mensagens com remoteJid @lid e
-        // remoteJidAlt com o telefone real. Nesses casos enviar pelo telefone
-        // pode ficar preso em PENDING; o destino confiável é o @lid já visto.
+        // remoteJidAlt/senderPn com o telefone real. @lid é um identificador
+        // interno e não é um destino confiável para sendText; o envio deve
+        // priorizar número telefônico confirmado.
         const { data: knownRows } = await context.supabase
           .from("whatsapp_messages")
           .select("raw")
@@ -138,10 +139,9 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             ? [normalized, normalized.slice(0, 4) + normalized.slice(5)]
             : [normalized];
         const candidates = Array.from(new Set([
-          ...(knownLid ? [knownLid] : []),
-          ...(knownPhoneDigits ? [knownPhoneDigits] : []),
           ...phoneCandidates,
-        ]));
+          ...(knownPhoneDigits ? [knownPhoneDigits] : []),
+        ])).filter((candidate) => !candidate.includes("@lid"));
 
         let sendNumber: string | null = null;
         let verifiedJid: string | null = null;
@@ -190,19 +190,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               const numberDigits = foundNumber.includes("@lid") ? "" : normalizePhone(foundNumber);
               const jid = String(found.jid ?? "");
               const jidDigits = jid.includes("@lid") ? "" : normalizePhone(jid.split("@")[0] ?? "");
-              if (candidate.endsWith("@lid")) {
-                sendNumber = candidate;
-                verifiedJid = jid || candidate;
-                break;
-              }
-              // Para números BR a verificação da Evolution/Baileys às vezes
-              // confirma a variante com 9º dígito, mas devolve o JID antigo
-              // sem o 9. Enviar usando esse JID antigo fica preso em PENDING
-              // em vários contatos. Se o candidato testado é mobile BR com 9,
-              // preservamos o próprio candidato como destino de envio.
-              sendNumber = /^55\d{2}9\d{8}$/.test(candidate)
-                ? candidate
-                : numberDigits || jidDigits || candidate;
+              // Mesmo quando a verificação devolve um JID @lid, o endpoint
+              // sendText deve receber o telefone. Enviar para @lid deixa a
+              // mensagem presa em PENDING/ERROR em várias versões da Evolution.
+              sendNumber = candidate;
               verifiedJid = jid || null;
               break;
             }
@@ -225,7 +216,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         // números BR a Evolution confirma mal a existência, mas o sendText ainda
         // aceita o número correto. Se o envio real falhar, aí sim mostramos o
         // erro técnico completo retornado pelo endpoint de envio.
-        if (!sendNumber) sendNumber = knownLid ?? candidates[0] ?? normalized;
+        if (!sendNumber) sendNumber = candidates[0] ?? normalized;
         {
           const sendUrl = `${base}/message/sendText/${encodeURIComponent(instance)}`;
           const sendReq = {
