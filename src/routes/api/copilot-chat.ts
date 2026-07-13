@@ -1,29 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
-import { buildCopilotSystemPrompt, type CopilotMenuSnapshot } from "@/lib/copilot-prompt.server";
+import { buildCopilotSystemPrompt } from "@/lib/copilot-prompt.server";
 import { buildCopilotTools } from "@/lib/copilot-tools.server";
+import { loadMenuSnapshot, loadOpsSnapshot, loadMemory, loadRecentActions } from "@/lib/copilot-context.server";
 
-async function loadMenuSnapshot(sb: unknown): Promise<CopilotMenuSnapshot> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const s = sb as any;
-  const [settingsRes, catsRes, prodsRes] = await Promise.all([
-    s.from("site_settings").select("name,is_open").limit(1),
-    s.from("categories").select("id,name,active").order("position", { ascending: true }).limit(200),
-    s.from("products").select("id,name,price,active,category_id,badge,is_hero,paused_until").limit(500),
-  ]);
-  const cats = (catsRes.data ?? []) as CopilotMenuSnapshot["categories"];
-  const catById = new Map(cats.map((c) => [c.id, c.name]));
-  const products = ((prodsRes.data ?? []) as CopilotMenuSnapshot["products"]).map((p) => ({
-    ...p,
-    category_name: p.category_id ? catById.get(p.category_id) ?? null : null,
-  }));
-  return {
-    settings: (settingsRes.data?.[0] as CopilotMenuSnapshot["settings"]) ?? null,
-    categories: cats,
-    products,
-  };
-}
 
 
 
@@ -75,23 +56,29 @@ export const Route = createFileRoute("/api/copilot-chat")({
             threadId: body.threadId ?? null,
           });
 
-          // Live menu snapshot injected into the system prompt so the AI has
-          // real context and never asks about products/categories that are
-          // already listed (or missing).
-          let menuSnapshot: Awaited<ReturnType<typeof loadMenuSnapshot>> | null = null;
-          try {
-            menuSnapshot = await loadMenuSnapshot(supabaseAdmin);
-          } catch (e) {
-            console.error("[copilot-chat] menu snapshot failed", e);
-          }
+          // Load rich context in parallel: menu + ops + memory + recent actions
+          const [menuSnapshot, opsSnapshot, memory, recentActions] = await Promise.all([
+            loadMenuSnapshot(supabaseAdmin).catch((e) => { console.error("[copilot] menu", e); return null; }),
+            loadOpsSnapshot(supabaseAdmin).catch((e) => { console.error("[copilot] ops", e); return null; }),
+            loadMemory(supabaseAdmin, user.id).catch((e) => { console.error("[copilot] memory", e); return []; }),
+            loadRecentActions(supabaseAdmin, user.id).catch((e) => { console.error("[copilot] actions", e); return []; }),
+          ]);
 
           const result = streamText({
             model: gateway("google/gemini-2.5-flash"),
-            system: buildCopilotSystemPrompt(new Date(), body.pageContext ?? undefined, menuSnapshot),
+            system: buildCopilotSystemPrompt(
+              new Date(),
+              body.pageContext ?? undefined,
+              menuSnapshot,
+              opsSnapshot,
+              memory,
+              recentActions,
+            ),
             messages: await convertToModelMessages(body.messages),
             tools,
             stopWhen: stepCountIs(50),
           });
+
 
 
           return result.toUIMessageStreamResponse({

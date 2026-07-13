@@ -507,5 +507,251 @@ export function buildCopilotTools(ctx: Ctx) {
         return { ok: true, categoria: data };
       },
     }),
+
+    salvar_preferencia: tool({
+      description:
+        "Persiste uma preferência declarada pelo admin (tom de voz, público-alvo, cores preferidas, restrições, horários, qualquer coisa estável que ele NÃO quer repetir). Chame UMA vez quando o admin declara algo que você deve lembrar em todas as conversas futuras.",
+      inputSchema: z.object({
+        summary: z.string().min(4).max(240).describe("Frase curta em 1a pessoa do admin, ex: 'prefere tom informal e emoji leve', 'não usa desconto acima de 20%', 'público-alvo: famílias com filhos'"),
+      }),
+      execute: async ({ summary }) => {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sb = ctx.supabaseAdmin as any;
+          await sb.from("ai_conversation_memory").insert({
+            conversation_id: ctx.userId,
+            summary,
+            turns_since_summary: 0,
+          });
+          await logAction(ctx, { action_type: "salvar_preferencia", params: { summary }, result: { ok: true } });
+          return { ok: true, saved: summary };
+        } catch (e) {
+          return { ok: false, error: String(e) };
+        }
+      },
+    }),
+
+    sugestoes_do_dia: tool({
+      description:
+        "Analisa o estado atual da loja (pedidos, top produtos, clima, dia da semana, cupons ativos) e devolve 3 ações concretas que o admin poderia executar AGORA. Use quando o admin abre o chat com 'e aí?', 'o que fazer hoje?', 'me dá ideias' ou sem contexto.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sb = ctx.supabaseAdmin as any;
+        const dayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+        const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+        const [ordersRes, cartsRes, subsRes, itemsRes, reviewsRes] = await Promise.all([
+          sb.from("orders").select("id,total,created_at,status").gte("created_at", dayAgo).limit(500),
+          sb.from("abandoned_carts").select("user_id,subtotal").is("recovered_at", null).gte("updated_at", dayAgo).limit(200),
+          sb.from("push_subscriptions").select("id", { count: "exact", head: true }),
+          sb.from("order_items").select("name,quantity,created_at").gte("created_at", weekAgo).limit(2000),
+          sb.from("reviews").select("rating,created_at").gte("created_at", weekAgo).limit(200),
+        ]);
+        const orders = (ordersRes.data ?? []) as Array<{ total: number; status: string }>;
+        const revenue = orders.reduce((s, o) => s + Number(o.total || 0), 0);
+        const carts = (cartsRes.data ?? []) as Array<{ subtotal: number }>;
+        const cartsValue = carts.reduce((s, c) => s + Number(c.subtotal || 0), 0);
+        const qtyMap = new Map<string, number>();
+        for (const it of (itemsRes.data ?? []) as Array<{ name: string; quantity: number }>) {
+          qtyMap.set(it.name, (qtyMap.get(it.name) ?? 0) + Number(it.quantity || 1));
+        }
+        const top = [...qtyMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, q]) => ({ name: n, qty: q }));
+        const reviews = (reviewsRes.data ?? []) as Array<{ rating: number }>;
+        const badReviews = reviews.filter((r) => r.rating <= 2).length;
+        const hour = new Date().getHours();
+        return {
+          resumo: {
+            pedidos_24h: orders.length,
+            faturamento_24h: revenue,
+            carrinhos_abandonados: carts.length,
+            valor_perdido_carrinhos: cartsValue,
+            push_subs: (subsRes as { count?: number }).count ?? 0,
+            top_3_semana: top,
+            reviews_ruins_7d: badReviews,
+            hora_atual: hour,
+          },
+          dica: "Combine esses números com o cardápio no system prompt para propor 3 ações concretas (com números reais) — ex: promoção nos top 3, recuperar N carrinhos, boost em produto que caiu.",
+        };
+      },
+    }),
+
+    pacote_promocao_relampago: tool({
+      description:
+        "PACOTE COMPLETO: cria promoção relâmpago em UMA chamada. Faz: (1) gera imagem, (2) cria cupom, (3) cria popup, (4) ativa banner urgência, (5) opcionalmente dispara push. Use quando o admin diz 'promoção relâmpago', 'flash sale', 'promoção rápida agora'. ⚠️ Se dispara_push=true, CONFIRME antes com o admin.",
+      inputSchema: z.object({
+        titulo: z.string().max(40).describe("Título curto ex: 'Shakes 20% OFF até 22h'"),
+        percent_off: z.number().min(5).max(50).describe("% de desconto do cupom"),
+        cupom_code: z.string().max(15).describe("Código do cupom (ex: FLASH20)"),
+        categoria: z.string().nullable().describe("Categoria alvo (ex: 'shakes'). null = geral."),
+        ends_at: z.string().describe("ISO 8601 fim (ex: hoje 22h)"),
+        prompt_imagem: z.string().describe("Descrição visual (ex: 'copo de milkshake derretendo neon 20% OFF')"),
+        disparar_push: z.boolean().default(false).describe("Se true, também dispara push"),
+        push_audience: z.enum(["all", "vip", "abandoned", "category"]).default("all"),
+      }),
+      execute: async (input) => {
+        const results: Record<string, unknown> = {};
+        try {
+          // 1. Image
+          const img = await generateAndUploadBanner({
+            prompt: input.prompt_imagem,
+            apiKey: ctx.apiKey,
+            supabaseAdmin: ctx.supabaseAdmin as unknown as Parameters<typeof generateAndUploadBanner>[0]["supabaseAdmin"],
+          });
+          results.imagem = img.image_url;
+
+          // 2. Coupon
+          const code = input.cupom_code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+          const { data: coupon } = await ctx.supabaseAdmin
+            .from("promo_coupons")
+            .insert({
+              code,
+              discount_type: "percent",
+              discount_value: input.percent_off,
+              min_order: 0,
+              max_uses: null,
+              per_user_limit: 1,
+              expires_at: input.ends_at,
+              active: true,
+              note: `Pacote relâmpago: ${input.titulo}`,
+            })
+            .select("id,code")
+            .single();
+          results.cupom = coupon;
+
+          // 3. Popup
+          const { data: popup } = await ctx.supabaseAdmin
+            .from("site_popups")
+            .insert({
+              name: `Relâmpago ${code}`,
+              title: input.titulo,
+              body: `Use o cupom ${code} — ${input.percent_off}% OFF`,
+              image_url: img.image_url,
+              cta: "Aproveitar",
+              link: "/cardapio",
+              priority: 100,
+              active: true,
+              frequency: "once_per_session",
+              audience: "all",
+              days_of_week: [0, 1, 2, 3, 4, 5, 6],
+              starts_at: new Date().toISOString(),
+              ends_at: input.ends_at,
+              image_pos_x: 0,
+              image_pos_y: 0,
+              image_scale: 1,
+            })
+            .select("id,name")
+            .single();
+          results.popup = popup;
+
+          // 4. Urgency banner
+          const { data: settingsRows } = await ctx.supabaseAdmin.from("site_settings").select("id").limit(1);
+          const settingsId = (settingsRows as Array<{ id: string }>)?.[0]?.id;
+          if (settingsId) {
+            await ctx.supabaseAdmin
+              .from("site_settings")
+              .update({
+                urgency_active: true,
+                urgency_text: input.titulo,
+                urgency_ends_at: input.ends_at,
+              })
+              .eq("id", settingsId);
+            results.urgency = { active: true };
+          }
+
+          // 5. Push (optional)
+          if (input.disparar_push) {
+            const { data: campaign } = await ctx.supabaseAdmin
+              .from("push_campaigns")
+              .insert({
+                title: input.titulo,
+                body: `Cupom ${code} — ${input.percent_off}% OFF, corre!`,
+                url: "/cardapio",
+                audience: input.push_audience,
+                audience_category: input.categoria,
+                image: img.image_url,
+                status: "sending",
+                created_by: ctx.userId,
+              })
+              .select("id")
+              .single();
+            const camp = campaign as { id: string } | null;
+            if (camp) {
+              try {
+                await fetch(`${process.env.SUPABASE_URL}/functions/v1/send-push`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` },
+                  body: JSON.stringify({ campaignId: camp.id }),
+                });
+              } catch { /* logged separately */ }
+            }
+            results.push = campaign;
+          }
+
+          await logAction(ctx, { action_type: "pacote_promocao_relampago", params: input, result: results });
+          return { ok: true, ...results };
+        } catch (e) {
+          await logAction(ctx, { action_type: "pacote_promocao_relampago", params: input, status: "failed", result: { error: String(e), partial: results } });
+          throw e;
+        }
+      },
+    }),
+
+    pacote_recuperar_carrinho_hoje: tool({
+      description:
+        "PACOTE: recupera carrinhos abandonados nas últimas 24h. Cria cupom curto, dispara push segmentado para audience='abandoned' com o código. ⚠️ Confirme antes com o admin (mostre quantas pessoas serão atingidas).",
+      inputSchema: z.object({
+        percent_off: z.number().min(5).max(30).default(10),
+        cupom_code: z.string().max(15).default("VOLTA10"),
+        expira_horas: z.number().int().min(1).max(72).default(24),
+      }),
+      execute: async (input) => {
+        const expiresAt = new Date(Date.now() + input.expira_horas * 3600 * 1000).toISOString();
+        const code = input.cupom_code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        const { data: coupon } = await ctx.supabaseAdmin
+          .from("promo_coupons")
+          .insert({
+            code,
+            discount_type: "percent",
+            discount_value: input.percent_off,
+            min_order: 0,
+            max_uses: null,
+            per_user_limit: 1,
+            expires_at: expiresAt,
+            active: true,
+            note: "Recuperação de carrinho",
+          })
+          .select("id,code")
+          .single();
+
+        const { data: campaign } = await ctx.supabaseAdmin
+          .from("push_campaigns")
+          .insert({
+            title: "Tá esperando o quê? 🛒",
+            body: `Seu pedido continua aí — use ${code} e ganhe ${input.percent_off}% OFF!`,
+            url: "/carrinho",
+            audience: "abandoned",
+            audience_category: null,
+            image: null,
+            status: "sending",
+            created_by: ctx.userId,
+          })
+          .select("id")
+          .single();
+
+        const camp = campaign as { id: string } | null;
+        if (camp) {
+          try {
+            await fetch(`${process.env.SUPABASE_URL}/functions/v1/send-push`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` },
+              body: JSON.stringify({ campaignId: camp.id }),
+            });
+          } catch { /* ignore */ }
+        }
+        await logAction(ctx, { action_type: "pacote_recuperar_carrinho_hoje", params: input, result: { coupon, campaign } });
+        return { ok: true, cupom: coupon, campanha: campaign, expira_em: expiresAt };
+      },
+    }),
   };
 }
+
