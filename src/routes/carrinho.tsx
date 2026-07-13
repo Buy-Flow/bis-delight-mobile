@@ -34,7 +34,6 @@ function CartPage() {
     update,
     remove,
     subtotal,
-    openCheckout,
     openEdit,
     isCheckoutOpen,
     editingItem,
@@ -290,7 +289,7 @@ function CartPage() {
               </div>
             </div>
             <button
-              onClick={openCheckout}
+              onClick={() => navigate({ to: "/finalizar" })}
               className="w-full rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
               Continuar para finalização
