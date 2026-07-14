@@ -1,0 +1,16 @@
+# Quero Bis Sorveteria & Açaí
+
+> Sorveteria e açaíteria em Ouro Preto do Oeste (RO). Cardápio digital para pedir sorvetes, açaí, milk shakes e taças com entrega local pelo WhatsApp.
+
+A Quero Bis é uma sorveteria artesanal em Ouro Preto do Oeste — RO. Os clientes montam o próprio açaí (frutas, cremes e complementos), acompanham pedidos em tempo real, resgatam selos no Programa Bis Recompensa (Bronze, Prata, Ouro) e recebem em casa.
+
+## Pages
+
+- [Cardápio digital](/): Sorvetes, açaí, taças, milk shakes e como pedir.
+- [Bis Recompensa](/recompensas): Programa de fidelidade com selos e cupons por nível.
+- [Baixar app](/baixar-app): Como instalar o Quero Bis como PWA no celular.
+- [Gelato vs Sorvete](/blog/gelato-vs-sorvete): Guia comparando gelato artesanal e sorvete tradicional.
+
+## Optional
+
+- [sitemap.xml](/sitemap.xml): Lista completa de páginas indexáveis.
