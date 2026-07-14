@@ -456,7 +456,7 @@ function AvaliacoesPage() {
 
         {/* Bulk bar */}
         {selected.size > 0 && (
-          <div className="sticky top-2 z-20 mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-neon-pink/40 bg-[#1a0b2e]/95 p-3 shadow-lg shadow-neon-pink/20 backdrop-blur">
+          <div className="sticky top-2 z-20 mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-neon-pink/40 bg-card/95 p-3 shadow-lg shadow-neon-pink/20 backdrop-blur">
             <div className="text-xs font-bold text-white">
               {selected.size} selecionadas
             </div>

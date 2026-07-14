@@ -275,8 +275,8 @@ export function RecompensasSkeleton() {
 /** Página /rastrear/$orderId. */
 export function TrackingPageSkeleton() {
   return (
-    <main className="min-h-screen bg-[#1a0b2e] pb-24 text-white">
-      <div className="sticky top-0 z-20 border-b border-white/5 bg-[#1a0b2e]/95 backdrop-blur">
+    <main className="min-h-screen bg-card pb-24 text-white">
+      <div className="sticky top-0 z-20 border-b border-white/5 bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <SkelBox className="h-9 w-9 rounded-xl" />
           <div className="flex-1 space-y-2">
@@ -454,7 +454,7 @@ export function FinanceDashboardSkeleton() {
 /** Full-page spinner substituto para bloqueadores admin. */
 export function AdminGateSkeleton() {
   return (
-    <main className="min-h-screen bg-[#1a0b2e] px-4 py-8 text-white">
+    <main className="min-h-screen bg-card px-4 py-8 text-white">
       <div className="mx-auto max-w-6xl space-y-4">
         <SkelLine w={200} h={22} />
         <SkelLine w={280} h={10} delay={80} />

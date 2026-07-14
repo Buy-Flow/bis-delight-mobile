@@ -161,14 +161,14 @@ function TrackingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0c031f] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-background text-white flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
   if (notFound || !data) {
     return (
-      <div className="min-h-screen bg-[#0c031f] text-white flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-background text-white flex items-center justify-center p-6 text-center">
         <div>
           <div className="text-5xl mb-4">🔎</div>
           <h1 className="text-xl font-bold">Pedido não encontrado</h1>
@@ -182,7 +182,7 @@ function TrackingPage() {
   const delivered = step === 3;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0c031f] via-[#160636] to-[#0c031f] text-white pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-background text-white pb-24">
       <header className="p-5">
         <p className="text-xs uppercase tracking-widest text-white/50">Pedido #{data.id.slice(0, 8)}</p>
         <h1 className="text-2xl font-bold mt-1">
@@ -211,7 +211,7 @@ function TrackingPage() {
                       "h-10 w-10 rounded-full flex items-center justify-center border-2 transition-all",
                       done
                         ? "bg-gradient-to-br from-purple-500 to-pink-500 border-transparent"
-                        : "bg-[#0c031f] border-white/20 text-white/40"
+                        : "bg-background border-white/20 text-white/40"
                     )}
                   >
                     <Icon className="h-5 w-5" />

@@ -186,7 +186,7 @@ export function CommandPalette() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#170a2e] shadow-2xl"
+        className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <Command label="Busca global" shouldFilter={false}>

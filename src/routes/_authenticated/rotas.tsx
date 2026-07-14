@@ -673,7 +673,7 @@ function Select({ label, value, onChange, options, hint }: any) {
         className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:border-fuchsia-500 focus:outline-none"
       >
         {options.map((o: any) => (
-          <option key={o.value} value={o.value} className="bg-[#0c031f]">{o.label}</option>
+          <option key={o.value} value={o.value} className="bg-background">{o.label}</option>
         ))}
       </select>
     </label>

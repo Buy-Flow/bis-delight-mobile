@@ -554,7 +554,7 @@ function MotoboyPortal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center bg-[#0a0118] text-white">
+      <div className="min-h-screen grid place-items-center bg-background text-white">
         <Loader2 className="h-8 w-8 animate-spin text-fuchsia-400" />
       </div>
     );
@@ -562,7 +562,7 @@ function MotoboyPortal() {
 
   if (!courier) {
     return (
-      <div className="min-h-screen bg-[#0a0118] text-white grid place-items-center p-6">
+      <div className="min-h-screen bg-background text-white grid place-items-center p-6">
         <div className="max-w-md text-center space-y-4">
           <Bike className="mx-auto h-12 w-12 text-fuchsia-400" />
           <h1 className="text-2xl font-black">Portal do Motoboy</h1>
@@ -579,9 +579,9 @@ function MotoboyPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0118] via-[#0c031f] to-[#0a0118] text-white pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-background text-white pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0a0118]/80 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-background/80 backdrop-blur">
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white font-black">
             {courier.avatar_url ? (
@@ -840,7 +840,7 @@ function MotoboyPortal() {
       </main>
 
       {/* Bottom nav */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-white/10 bg-[#0a0118]/95 backdrop-blur">
+      <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-white/10 bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-2xl grid grid-cols-4">
           <NavBtn active={tab === "home"} onClick={() => setTab("home")} icon={Home} label="Corridas" />
           <NavBtn active={tab === "map"} onClick={() => setTab("map")} icon={MapPin} label="Mapa" />

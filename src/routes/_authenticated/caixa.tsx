@@ -223,9 +223,9 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
   };
 
   return (
-    <div className="min-h-screen bg-[#0c031f] text-white pb-24">
+    <div className="min-h-screen bg-background text-white pb-24">
       {/* Header */}
-      <div className="border-b bg-[#170a2e]/80 backdrop-blur-md border-white/10 sticky top-0 z-20">
+      <div className="border-b bg-card/80 backdrop-blur-md border-white/10 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-wrap items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-11 w-11 rounded-xl grid place-items-center text-white",
@@ -483,7 +483,7 @@ function DialogShell({ title, icon: Icon, onClose, children, footer, tone = "sla
   };
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-lg bg-[#170a2e] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-lg bg-card text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("h-9 w-9 rounded-lg bg-gradient-to-br text-white grid place-items-center", tones[tone])}>
@@ -700,7 +700,7 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
   { session: SessionRow; movs: MovementRow[]; onClose: () => void; onPrint: () => void; onCsv: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-[#170a2e] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-2xl bg-card text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-white">Sessão de {formatDateSP(session.opened_at)}</h3>

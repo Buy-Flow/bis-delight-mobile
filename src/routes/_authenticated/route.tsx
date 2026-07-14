@@ -35,7 +35,7 @@ function AuthenticatedLayout() {
     // Enquanto papéis carregam, evita flash da UI admin para não-times.
     if (isLoading) {
       return (
-        <div className="min-h-screen bg-[#0c031f] text-white grid place-items-center">
+        <div className="min-h-screen bg-background text-white grid place-items-center">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" />
         </div>
       );
@@ -43,7 +43,7 @@ function AuthenticatedLayout() {
     if (!canAccessRoute(pathname, roles)) {
       // Fallback visual enquanto o effect redireciona.
       return (
-        <div className="min-h-screen bg-[#0c031f] text-white grid place-items-center px-4">
+        <div className="min-h-screen bg-background text-white grid place-items-center px-4">
           <div className="max-w-sm text-center">
             <h1 className="font-display text-2xl font-black">Acesso restrito</h1>
             <p className="mt-2 text-sm text-white/60">

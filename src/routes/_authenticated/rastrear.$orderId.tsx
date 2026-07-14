@@ -235,7 +235,7 @@ function RastrearPage() {
 
   if (!order) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#1a0b2e] px-6 text-center text-white">
+      <main className="grid min-h-screen place-items-center bg-card px-6 text-center text-white">
         <div>
           <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-white/5">
             <X className="h-7 w-7 text-white/50" />
@@ -296,7 +296,7 @@ function RastrearPage() {
   )}`;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
+    <main className="relative min-h-screen overflow-hidden bg-card pb-24 text-white">
       {/* Ambient */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[560px] overflow-hidden">
         <div className="absolute -top-40 left-1/2 h-[540px] w-[540px] -translate-x-1/2 rounded-full bg-neon-cyan/20 blur-[120px]" />
@@ -305,7 +305,7 @@ function RastrearPage() {
       </div>
 
       {/* Top nav */}
-      <div className="sticky top-0 z-30 bg-gradient-to-b from-[#1a0b2e] via-[#1a0b2e]/85 to-transparent pb-3 backdrop-blur-xl">
+      <div className="sticky top-0 z-30 bg-gradient-to-b from-card via-card/85 to-transparent pb-3 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <button
             onClick={() => navigate({ to: "/conta" })}
@@ -590,7 +590,7 @@ function RastrearPage() {
                 <Link
                   to={"/avaliar/$orderId" as never}
                   params={{ orderId } as never}
-                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-yellow to-amber-400 px-4 py-2 text-xs font-black text-[#1a0b2e] shadow-lg shadow-neon-yellow/30 transition hover:brightness-110"
+                  className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-yellow to-amber-400 px-4 py-2 text-xs font-black text-card shadow-lg shadow-neon-yellow/30 transition hover:brightness-110"
                 >
                   <Star className="h-3.5 w-3.5 fill-current" />
                   {existingReview ? "Editar avaliação" : "Avaliar agora"}

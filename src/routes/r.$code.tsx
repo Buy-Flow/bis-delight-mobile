@@ -48,7 +48,7 @@ function ReferralCapture() {
   }, [code, navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0c031f] text-white p-6">
+    <div className="min-h-screen flex items-center justify-center bg-background text-white p-6">
       <div className="max-w-md w-full text-center space-y-4">
         <div className="mx-auto h-16 w-16 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
           <Gift className="h-8 w-8 text-fuchsia-300" />

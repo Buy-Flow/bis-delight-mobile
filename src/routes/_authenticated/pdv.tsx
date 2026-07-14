@@ -450,7 +450,7 @@ function PDVPage() {
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setShowMobileCart(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-[#170a2e] p-4">
+          <div className="absolute inset-x-0 bottom-0 max-h-[92vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-card p-4">
             <div className="mb-2 flex items-center justify-between">
               <div className="text-sm font-bold text-white">Venda atual</div>
               <button
