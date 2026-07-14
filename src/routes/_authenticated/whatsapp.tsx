@@ -613,214 +613,116 @@ function WhatsappPage() {
   };
 
   return (
-    <div className="min-h-full bg-[#0e0a1a] pb-24 text-white">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] text-emerald-400/80">
-              <Sparkles className="h-3 w-3" /> Central de atendimento
-            </div>
-            <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">
-              WhatsApp{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-                dos clientes
-              </span>
-            </h1>
-            <p className="mt-1 text-sm text-white/60">
-              Converse em tempo real, pause a IA quando quiser assumir e transforme
-              conversas em vendas.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleReconfigureWebhook}
-              disabled={webhookSaving}
-              className="inline-flex items-center gap-2 rounded-full border border-sky-400/35 bg-sky-500/12 px-4 py-2 text-xs font-bold text-sky-100 transition hover:bg-sky-500/20 disabled:opacity-50"
-            >
-              {webhookSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
-              Reconfigurar webhook
-            </button>
-            <button
-              onClick={() => setConnectOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25"
-            >
-              <Smartphone className="h-3.5 w-3.5" /> Conectar telefone
-            </button>
-            <button
-              onClick={() => syncFromPhone(true)}
-              disabled={syncing}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/80 transition hover:bg-white/10"
-            >
-              {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-              Sincronizar telefone
-            </button>
-          </div>
-        </header>
-
-        <WhatsappConnectDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
-
-
-        {/* Config warning */}
-        {config && !config.configured && (
-          <div className="mb-4 flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-            <div>
-              <div className="font-bold">Evolution API não configurada</div>
-              <div className="mt-0.5 text-amber-100/80">
-                Defina{" "}
-                {!config.hasBase && <code className="rounded bg-black/30 px-1">EVOLUTION_API_URL</code>}{" "}
-                {!config.hasKey && <code className="rounded bg-black/30 px-1">EVOLUTION_API_KEY</code>}{" "}
-                {!config.hasInstance && (
-                  <code className="rounded bg-black/30 px-1">EVOLUTION_INSTANCE</code>
-                )}{" "}
-                nos secrets. O envio ficará indisponível até configurar; a leitura das
-                conversas continua funcionando.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Connection warning: instance was logged out from WhatsApp */}
-        {connState &&
-          config?.configured &&
-          connState.state !== "open" &&
-          connState.state !== "connecting" && (
-            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/50 bg-red-500/10 p-4 text-sm text-red-100">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
-              <div className="flex-1">
-                <div className="font-bold text-red-100">
-                  WhatsApp desconectado — nenhuma mensagem está sendo entregue
-                </div>
-                <div className="mt-1 text-xs leading-relaxed text-red-100/85">
-                  A Evolution aceita os pedidos de envio (por isso as mensagens somem do painel
-                  como "enviadas"), mas o WhatsApp derrubou a sessão do telefone
-                  {connState.disconnectionCode === 401 ? " (logout 401 — o celular precisa parear de novo)" : ""}
-                  {connState.disconnectionAt
-                    ? ` em ${new Date(connState.disconnectionAt).toLocaleString("pt-BR")}`
-                    : ""}
-                  . Enquanto isso, só mensagens antigas (enviadas antes da queda) chegam ao destino.
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setConnectOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-full bg-red-500/80 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-500"
-                  >
-                    <Smartphone className="h-3.5 w-3.5" /> Reconectar telefone (QR code)
-                  </button>
-                  <button
-                    onClick={() => stateFn().then(setConnState)}
-                    className="inline-flex items-center gap-2 rounded-full border border-red-400/40 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-100 hover:bg-red-500/20"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" /> Verificar de novo
-                  </button>
-                </div>
-              </div>
-            </div>
+    <div className="flex h-[100dvh] w-full flex-col bg-[#0b141a] text-[#e9edef]">
+      {/* Top bar estilo WhatsApp Web */}
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-black/40 bg-[#202c33] px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <MessageCircle className="h-5 w-5 text-[#00a884]" />
+          <span className="text-sm font-semibold text-[#e9edef]">WhatsApp</span>
+          {connState && connState.state === "open" && (
+            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#00a884]/15 px-2 py-0.5 text-[10px] font-semibold text-[#00a884]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00a884]" />
+              {connState.profileName || "conectado"}
+            </span>
           )}
-
-        {/* Connection healthy indicator */}
-        {connState && connState.state === "open" && connState.profileName && (
-          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/8 px-3 py-2 text-xs text-emerald-100">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-            <div>
-              WhatsApp conectado como{" "}
-              <span className="font-bold">{connState.profileName}</span>
-              {connState.ownerJid ? ` (${connState.ownerJid.split("@")[0]})` : ""}
-            </div>
-          </div>
-        )}
-
-        {/* KPIs */}
-        <section className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Kpi
-            icon={<Inbox className="h-4 w-4" />}
-            label="Conversas"
-            value={String(kpis.total)}
-            accent="from-emerald-400/30 to-emerald-500/10"
-            iconColor="text-emerald-300"
-          />
-          <Kpi
-            icon={<TrendingUp className="h-4 w-4" />}
-            label="Ativas hoje"
-            value={String(kpis.active)}
-            accent="from-cyan-400/30 to-cyan-500/10"
-            iconColor="text-cyan-300"
-          />
-          <Kpi
-            icon={<MessageCircle className="h-4 w-4" />}
-            label="Não lidas"
-            value={String(kpis.unread)}
-            accent="from-neon-pink/30 to-fuchsia-500/10"
-            iconColor="text-neon-pink"
-          />
-          <Kpi
-            icon={<Users className="h-4 w-4" />}
-            label="Humano no comando"
-            value={String(kpis.paused)}
-            accent="from-yellow-400/30 to-yellow-500/10"
-            iconColor="text-yellow-300"
-          />
-        </section>
-
-        {/* Tabs */}
-        <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 p-1 text-xs font-bold">
+        </div>
+        <div className="flex items-center gap-1">
           <button
-            onClick={() => setTab("inbox")}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition",
-              tab === "inbox" ? "bg-emerald-500/20 text-emerald-100" : "text-white/60 hover:text-white",
-            )}
+            onClick={() => setTab(tab === "inbox" ? "logs" : "inbox")}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-[#aebac1] transition hover:bg-white/5"
+            title={tab === "inbox" ? "Ver logs" : "Voltar às conversas"}
           >
-            <Inbox className="h-3.5 w-3.5" /> Caixa de entrada
+            {tab === "inbox" ? <ScrollText className="h-3.5 w-3.5" /> : <Inbox className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">{tab === "inbox" ? "Logs" : "Conversas"}</span>
           </button>
           <button
-            onClick={() => setTab("logs")}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition",
-              tab === "logs" ? "bg-emerald-500/20 text-emerald-100" : "text-white/60 hover:text-white",
-            )}
+            onClick={handleReconfigureWebhook}
+            disabled={webhookSaving}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-[#aebac1] transition hover:bg-white/5 disabled:opacity-50"
+            title="Reconfigurar webhook"
           >
-            <ScrollText className="h-3.5 w-3.5" /> Logs de ingestão
+            {webhookSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            onClick={() => syncFromPhone(true)}
+            disabled={syncing}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-[#aebac1] transition hover:bg-white/5 disabled:opacity-50"
+            title="Sincronizar com o telefone"
+          >
+            {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            onClick={() => setConnectOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[#00a884] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#06cf9c]"
+          >
+            <Smartphone className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Conectar</span>
           </button>
         </div>
+      </header>
+
+      <WhatsappConnectDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
+
+      {/* Alertas de configuração/conexão (compactos) */}
+      {config && !config.configured && (
+        <div className="flex shrink-0 items-start gap-2 border-b border-black/30 bg-amber-500/15 px-4 py-2 text-xs text-amber-100">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <div>
+            Evolution API não configurada. Envio ficará indisponível até definir os
+            secrets EVOLUTION_API_URL, EVOLUTION_API_KEY e EVOLUTION_INSTANCE.
+          </div>
+        </div>
+      )}
+      {connState &&
+        config?.configured &&
+        connState.state !== "open" &&
+        connState.state !== "connecting" && (
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-black/30 bg-red-500/15 px-4 py-2 text-xs text-red-100">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              WhatsApp desconectado — mensagens não estão sendo entregues.
+            </div>
+            <button
+              onClick={() => setConnectOpen(true)}
+              className="inline-flex items-center gap-1 rounded-md bg-red-500/80 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-500"
+            >
+              <Smartphone className="h-3 w-3" /> Reconectar
+            </button>
+          </div>
+        )}
 
         {tab === "logs" ? (
-          <LogsPanel />
+          <div className="flex-1 overflow-y-auto p-4"><LogsPanel /></div>
         ) : (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_1fr]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[380px_1fr]">
           {/* Conversations list */}
-          <aside className="flex h-[70vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
-            <div className="border-b border-white/10 p-3">
+          <aside className="flex min-h-0 flex-col overflow-hidden border-r border-black/40 bg-[#111b21]">
+            <div className="border-b border-black/30 bg-[#111b21] p-2">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8696a0]" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Buscar por nome, telefone…"
-                  className="w-full rounded-full border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
+                  placeholder="Pesquisar ou começar nova conversa"
+                  className="w-full rounded-lg bg-[#202c33] py-2 pl-9 pr-3 text-sm text-[#e9edef] placeholder:text-[#8696a0] focus:outline-none"
                 />
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <Chip active={filter === "todas"} onClick={() => setFilter("todas")}>
-                  <Filter className="h-3 w-3" /> Todas
+                  Todas
                 </Chip>
-                <Chip
-                  active={filter === "nao_lidas"}
-                  onClick={() => setFilter("nao_lidas")}
-                >
+                <Chip active={filter === "nao_lidas"} onClick={() => setFilter("nao_lidas")}>
                   Não lidas
                 </Chip>
                 <Chip active={filter === "hoje"} onClick={() => setFilter("hoje")}>
                   Hoje
                 </Chip>
-                <Chip
-                  active={filter === "ia_pausada"}
-                  onClick={() => setFilter("ia_pausada")}
-                >
+                <Chip active={filter === "ia_pausada"} onClick={() => setFilter("ia_pausada")}>
                   <BotOff className="h-3 w-3" /> IA pausada
                 </Chip>
               </div>
             </div>
+
             <div className="flex-1 overflow-y-auto">
               {loadingList ? (
                 <div className="flex h-full items-center justify-center text-white/40">
