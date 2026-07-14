@@ -264,7 +264,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                   ? (parsedHistory.messages as Record<string, unknown>)
                   : {};
                 const records = Array.isArray(messages.records) ? messages.records : [];
-                const first = records[0] && typeof records[0] === "object" ? firstRecord(records[0]) : null;
+                const first = records[0] && typeof records[0] === "object" ? records[0] as Record<string, unknown> : null;
                 const updates = first && Array.isArray(first.MessageUpdate) ? first.MessageUpdate : [];
                 const latest = updates[updates.length - 1] as Record<string, unknown> | undefined;
                 const statusText = typeof latest?.status === "string" ? latest.status.toUpperCase() : null;
