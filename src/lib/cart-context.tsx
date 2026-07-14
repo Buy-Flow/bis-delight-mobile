@@ -65,6 +65,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isAcaiOpen, setAcaiOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
+  const [shareMode, setShareModeState] = useState<ShareMode>(null);
+
+  useEffect(() => {
+    setShareModeState(readShareMode());
+    const onChange = () => setShareModeState(readShareMode());
+    window.addEventListener("querobis:share_mode", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("querobis:share_mode", onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
 
   // hydrate from localStorage on mount
   useEffect(() => {
