@@ -1,6 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Copy, Check, Ticket, Power, PowerOff } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  Copy,
+  Check,
+  Ticket,
+  Power,
+  PowerOff,
+  Search,
+  Pencil,
+  CalendarClock,
+  X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { confirmDialog } from "@/lib/confirm";
@@ -14,22 +27,67 @@ type Coupon = {
   max_uses: number | null;
   uses: number;
   per_user_limit: number;
+  starts_at: string | null;
   expires_at: string | null;
   active: boolean;
   note: string | null;
   created_at: string;
 };
 
-const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+type TabKey = "active" | "scheduled" | "expired" | "inactive" | "all";
+
+const brl = (n: number) =>
+  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function randomCode(prefix = "BIS") {
-  const s = Math.random().toString(36).replace(/[^a-z0-9]/gi, "").slice(0, 6).toUpperCase();
+  const s = Math.random()
+    .toString(36)
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(0, 6)
+    .toUpperCase();
   return `${prefix}-${s}`;
 }
+
+function getStatus(c: Coupon): {
+  key: TabKey;
+  label: string;
+  tone: string;
+} {
+  const now = new Date();
+  const starts = c.starts_at ? new Date(c.starts_at) : null;
+  const expires = c.expires_at ? new Date(c.expires_at) : null;
+  const exhausted = c.max_uses != null && c.uses >= c.max_uses;
+
+  if (!c.active)
+    return { key: "inactive", label: "Inativo", tone: "bg-white/10 text-white/60" };
+  if (expires && expires < now)
+    return { key: "expired", label: "Expirado", tone: "bg-red-500/20 text-red-300" };
+  if (exhausted)
+    return { key: "expired", label: "Esgotado", tone: "bg-red-500/20 text-red-300" };
+  if (starts && starts > now)
+    return {
+      key: "scheduled",
+      label: "Agendado",
+      tone: "bg-amber-500/20 text-amber-300",
+    };
+  return { key: "active", label: "Ativo", tone: "bg-emerald-500/20 text-emerald-300" };
+}
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "active", label: "Ativos" },
+  { key: "scheduled", label: "Agendados" },
+  { key: "expired", label: "Expirados" },
+  { key: "inactive", label: "Inativos" },
+  { key: "all", label: "Todos" },
+];
 
 export function CouponsSection() {
   const [items, setItems] = useState<Coupon[] | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Coupon | null>(null);
+  const [tab, setTab] = useState<TabKey>("active");
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "fixed" | "percent">("all");
 
   const load = async () => {
     const { data, error } = await supabase
@@ -48,9 +106,41 @@ export function CouponsSection() {
     load();
   }, []);
 
+  const counts = useMemo(() => {
+    const c: Record<TabKey, number> = {
+      active: 0,
+      scheduled: 0,
+      expired: 0,
+      inactive: 0,
+      all: items?.length ?? 0,
+    };
+    (items ?? []).forEach((x) => {
+      c[getStatus(x).key]++;
+    });
+    return c;
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    if (!items) return [];
+    const q = search.trim().toLowerCase();
+    return items.filter((c) => {
+      const st = getStatus(c).key;
+      if (tab !== "all" && st !== tab) return false;
+      if (typeFilter !== "all" && c.discount_type !== typeFilter) return false;
+      if (
+        q &&
+        !c.code.toLowerCase().includes(q) &&
+        !(c.note ?? "").toLowerCase().includes(q)
+      )
+        return false;
+      return true;
+    });
+  }, [items, tab, search, typeFilter]);
+
   const copy = async (code: string) => {
     try {
-      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(code);
+      if (navigator.clipboard?.writeText)
+        await navigator.clipboard.writeText(code);
       else {
         const ta = document.createElement("textarea");
         ta.value = code;
@@ -68,7 +158,10 @@ export function CouponsSection() {
   };
 
   const toggleActive = async (c: Coupon) => {
-    const { error } = await supabase.from("promo_coupons").update({ active: !c.active }).eq("id", c.id);
+    const { error } = await supabase
+      .from("promo_coupons")
+      .update({ active: !c.active })
+      .eq("id", c.id);
     if (error) return toast.error("Erro ao atualizar");
     load();
   };
@@ -89,19 +182,72 @@ export function CouponsSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="font-display text-xl font-black">Cupons de desconto</h3>
           <p className="text-xs text-white/50">
-            Crie códigos promocionais para seus clientes usarem no checkout.
+            Crie códigos promocionais, agende lançamentos e acompanhe o uso.
           </p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            setEditing(null);
+            setShowForm(true);
+          }}
           className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-3 py-1.5 text-xs font-bold text-white glow-pink"
         >
           <Plus className="h-3.5 w-3.5" /> Novo cupom
         </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-1.5 rounded-2xl border border-white/10 bg-white/5 p-1">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={cn(
+              "flex-1 min-w-[90px] rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider transition",
+              tab === t.key
+                ? "bg-neon-pink text-white shadow-lg shadow-neon-pink/30"
+                : "text-white/60 hover:bg-white/5 hover:text-white/90",
+            )}
+          >
+            {t.label}
+            <span
+              className={cn(
+                "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px]",
+                tab === t.key ? "bg-white/20" : "bg-white/10",
+              )}
+            >
+              {counts[t.key]}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar código ou observação…"
+            className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none focus:border-neon-pink"
+          />
+        </div>
+        <select
+          value={typeFilter}
+          onChange={(e) =>
+            setTypeFilter(e.target.value as "all" | "fixed" | "percent")
+          }
+          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+        >
+          <option value="all">Todos os tipos</option>
+          <option value="fixed">Valor fixo (R$)</option>
+          <option value="percent">Percentual (%)</option>
+        </select>
       </div>
 
       {items === null && (
@@ -110,29 +256,27 @@ export function CouponsSection() {
         </div>
       )}
 
-      {items && items.length === 0 && (
+      {items && filtered.length === 0 && (
         <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
           <Ticket className="mx-auto mb-2 h-8 w-8 text-white/30" />
-          Nenhum cupom criado ainda. Clique em "Novo cupom" pra começar.
+          {items.length === 0
+            ? 'Nenhum cupom criado ainda. Clique em "Novo cupom" pra começar.'
+            : "Nenhum cupom encontrado com os filtros atuais."}
         </div>
       )}
 
-      {items && items.length > 0 && (
+      {items && filtered.length > 0 && (
         <div className="space-y-2">
-          {items.map((c) => {
-            const expired = c.expires_at && new Date(c.expires_at) < new Date();
-            const exhausted = c.max_uses != null && c.uses >= c.max_uses;
-            const status = !c.active
-              ? { label: "Inativo", tone: "bg-white/10 text-white/60" }
-              : expired
-                ? { label: "Expirado", tone: "bg-red-500/20 text-red-300" }
-                : exhausted
-                  ? { label: "Esgotado", tone: "bg-red-500/20 text-red-300" }
-                  : { label: "Ativo", tone: "bg-emerald-500/20 text-emerald-300" };
+          {filtered.map((c) => {
+            const status = getStatus(c);
+            const usagePct =
+              c.max_uses != null && c.max_uses > 0
+                ? Math.min(100, (c.uses / c.max_uses) * 100)
+                : null;
             return (
               <div
                 key={c.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-3"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition hover:border-white/20"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -144,36 +288,81 @@ export function CouponsSection() {
                       {c.code}
                       <Copy className="h-3 w-3" />
                     </button>
-                    <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold uppercase", status.tone)}>
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                        status.tone,
+                      )}
+                    >
                       {status.label}
+                    </span>
+                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/70">
+                      {c.discount_type === "fixed"
+                        ? brl(c.discount_value)
+                        : `${c.discount_value}% OFF`}
                     </span>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-white/60">
-                    <span>
-                      Desconto:{" "}
-                      <b className="text-white/90">
-                        {c.discount_type === "fixed" ? brl(c.discount_value) : `${c.discount_value}%`}
-                      </b>
-                    </span>
-                    {c.min_order > 0 && <span>Mínimo: {brl(c.min_order)}</span>}
+                    {c.min_order > 0 && (
+                      <span>Mínimo: {brl(c.min_order)}</span>
+                    )}
                     <span>
                       Usos: <b className="text-white/90">{c.uses}</b>
                       {c.max_uses != null ? ` / ${c.max_uses}` : " (ilimitado)"}
                     </span>
                     <span>Por cliente: {c.per_user_limit}x</span>
+                    {c.starts_at && (
+                      <span className="inline-flex items-center gap-1 text-amber-300/80">
+                        <CalendarClock className="h-3 w-3" />
+                        Inicia:{" "}
+                        {new Date(c.starts_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    )}
                     {c.expires_at && (
-                      <span>Expira: {new Date(c.expires_at).toLocaleDateString("pt-BR")}</span>
+                      <span>
+                        Expira:{" "}
+                        {new Date(c.expires_at).toLocaleDateString("pt-BR")}
+                      </span>
                     )}
                   </div>
-                  {c.note && <div className="mt-1 text-[11px] text-white/40">{c.note}</div>}
+                  {usagePct != null && (
+                    <div className="mt-1.5 h-1 w-full max-w-[240px] overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full bg-gradient-to-r from-neon-pink to-neon-yellow"
+                        style={{ width: `${usagePct}%` }}
+                      />
+                    </div>
+                  )}
+                  {c.note && (
+                    <div className="mt-1 text-[11px] text-white/40">{c.note}</div>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    onClick={() => {
+                      setEditing(c);
+                      setShowForm(true);
+                    }}
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
+                    title="Editar"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
                   <button
                     onClick={() => toggleActive(c)}
                     className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
                     title={c.active ? "Desativar" : "Ativar"}
                   >
-                    {c.active ? <Power className="h-3.5 w-3.5" /> : <PowerOff className="h-3.5 w-3.5" />}
+                    {c.active ? (
+                      <Power className="h-3.5 w-3.5" />
+                    ) : (
+                      <PowerOff className="h-3.5 w-3.5" />
+                    )}
                   </button>
                   <button
                     onClick={() => remove(c)}
@@ -191,9 +380,14 @@ export function CouponsSection() {
 
       {showForm && (
         <CouponForm
-          onClose={() => setShowForm(false)}
+          initial={editing}
+          onClose={() => {
+            setShowForm(false);
+            setEditing(null);
+          }}
           onSaved={() => {
             setShowForm(false);
+            setEditing(null);
             load();
           }}
         />
@@ -202,15 +396,44 @@ export function CouponsSection() {
   );
 }
 
-function CouponForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
-  const [code, setCode] = useState(randomCode());
-  const [discountType, setDiscountType] = useState<"fixed" | "percent">("fixed");
-  const [discountValue, setDiscountValue] = useState("10");
-  const [minOrder, setMinOrder] = useState("0");
-  const [maxUses, setMaxUses] = useState("");
-  const [perUserLimit, setPerUserLimit] = useState("1");
-  const [expiresAt, setExpiresAt] = useState("");
-  const [note, setNote] = useState("");
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function CouponForm({
+  initial,
+  onClose,
+  onSaved,
+}: {
+  initial: Coupon | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const isEdit = !!initial;
+  const [code, setCode] = useState(initial?.code ?? randomCode());
+  const [discountType, setDiscountType] = useState<"fixed" | "percent">(
+    initial?.discount_type ?? "fixed",
+  );
+  const [discountValue, setDiscountValue] = useState(
+    initial ? String(initial.discount_value) : "10",
+  );
+  const [minOrder, setMinOrder] = useState(
+    initial ? String(initial.min_order) : "0",
+  );
+  const [maxUses, setMaxUses] = useState(
+    initial?.max_uses != null ? String(initial.max_uses) : "",
+  );
+  const [perUserLimit, setPerUserLimit] = useState(
+    initial ? String(initial.per_user_limit) : "1",
+  );
+  const [startsAt, setStartsAt] = useState(toLocalInput(initial?.starts_at ?? null));
+  const [expiresAt, setExpiresAt] = useState(
+    toLocalInput(initial?.expires_at ?? null),
+  );
+  const [note, setNote] = useState(initial?.note ?? "");
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -218,37 +441,50 @@ function CouponForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
     if (!cleanCode) return toast.error("Informe um código");
     const val = parseFloat(discountValue.replace(",", "."));
     if (!val || val <= 0) return toast.error("Informe o valor do desconto");
-    if (discountType === "percent" && val > 100) return toast.error("Percentual máximo 100%");
+    if (discountType === "percent" && val > 100)
+      return toast.error("Percentual máximo 100%");
+    if (startsAt && expiresAt && new Date(startsAt) >= new Date(expiresAt))
+      return toast.error("A data de início deve ser antes da expiração");
 
-    setSaving(true);
-    const { error } = await supabase.from("promo_coupons").insert({
+    const payload = {
       code: cleanCode,
       discount_type: discountType,
       discount_value: val,
       min_order: parseFloat(minOrder.replace(",", ".")) || 0,
       max_uses: maxUses.trim() ? parseInt(maxUses, 10) : null,
       per_user_limit: parseInt(perUserLimit, 10) || 1,
+      starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       note: note.trim() || null,
-      active: true,
-    });
+    };
+
+    setSaving(true);
+    const { error } = isEdit
+      ? await supabase.from("promo_coupons").update(payload).eq("id", initial!.id)
+      : await supabase.from("promo_coupons").insert({ ...payload, active: true });
     setSaving(false);
     if (error) {
-      if (error.code === "23505") toast.error("Já existe um cupom com esse código");
+      if (error.code === "23505")
+        toast.error("Já existe um cupom com esse código");
       else toast.error("Erro ao salvar: " + error.message);
       return;
     }
-    toast.success("Cupom criado!");
+    toast.success(isEdit ? "Cupom atualizado!" : "Cupom criado!");
     onSaved();
   };
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[oklch(0.14_0.09_305)] p-5 shadow-2xl">
+      <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[oklch(0.14_0.09_305)] p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="font-display text-lg font-black">Novo cupom</h4>
-          <button onClick={onClose} className="text-white/50 hover:text-white">
-            ✕
+          <h4 className="font-display text-lg font-black">
+            {isEdit ? `Editar ${initial!.code}` : "Novo cupom"}
+          </h4>
+          <button
+            onClick={onClose}
+            className="grid h-8 w-8 place-items-center rounded-full text-white/50 hover:bg-white/10 hover:text-white"
+          >
+            <X className="h-4 w-4" />
           </button>
         </div>
 
@@ -263,14 +499,17 @@ function CouponForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-white outline-none focus:border-neon-pink"
                 placeholder="EX: PROMO10"
+                disabled={isEdit}
               />
-              <button
-                onClick={() => setCode(randomCode())}
-                className="rounded-xl border border-white/10 px-3 text-xs text-white/70 hover:bg-white/5"
-                type="button"
-              >
-                Gerar
-              </button>
+              {!isEdit && (
+                <button
+                  onClick={() => setCode(randomCode())}
+                  className="rounded-xl border border-white/10 px-3 text-xs text-white/70 hover:bg-white/5"
+                  type="button"
+                >
+                  Gerar
+                </button>
+              )}
             </div>
           </label>
 
@@ -281,7 +520,9 @@ function CouponForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
               </span>
               <select
                 value={discountType}
-                onChange={(e) => setDiscountType(e.target.value as "fixed" | "percent")}
+                onChange={(e) =>
+                  setDiscountType(e.target.value as "fixed" | "percent")
+                }
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
               >
                 <option value="fixed">Valor fixo (R$)</option>
@@ -303,26 +544,41 @@ function CouponForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
             </label>
           </div>
 
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-bold uppercase tracking-widest text-white/60">
+              Pedido mínimo (R$)
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={minOrder}
+              onChange={(e) => setMinOrder(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+            />
+          </label>
+
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
               <span className="mb-1 block text-[11px] font-bold uppercase tracking-widest text-white/60">
-                Pedido mínimo (R$)
+                Agendar início
               </span>
               <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={minOrder}
-                onChange={(e) => setMinOrder(e.target.value)}
+                type="datetime-local"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
               />
+              <span className="mt-1 block text-[10px] text-white/40">
+                Deixe vazio para ativar imediatamente.
+              </span>
             </label>
             <label className="block">
               <span className="mb-1 block text-[11px] font-bold uppercase tracking-widest text-white/60">
                 Expira em
               </span>
               <input
-                type="date"
+                type="datetime-local"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
@@ -383,8 +639,12 @@ function CouponForm({ onClose, onSaved }: { onClose: () => void; onSaved: () => 
             disabled={saving}
             className="inline-flex items-center gap-1.5 rounded-xl bg-neon-pink px-4 py-2 text-sm font-bold text-white glow-pink disabled:opacity-50"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-            Criar cupom
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+            {isEdit ? "Salvar" : "Criar cupom"}
           </button>
         </div>
       </div>
