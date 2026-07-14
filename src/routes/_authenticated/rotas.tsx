@@ -628,15 +628,17 @@ function Toggle({ label, checked, onChange, hint }: { label: string; checked: bo
       </div>
       <button
         type="button"
+        role="switch"
+        aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative h-6 w-11 shrink-0 rounded-full transition",
+          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
           checked ? "bg-fuchsia-500" : "bg-white/15",
         )}
       >
         <span className={cn(
-          "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform",
-          checked ? "translate-x-5" : "translate-x-0.5",
+          "inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+          checked ? "translate-x-[22px]" : "translate-x-0.5",
         )} />
       </button>
     </label>
