@@ -30,6 +30,7 @@ import {
   Ticket,
   Megaphone,
   MessageCircle,
+  Gift,
   BarChart3,
   Star,
   Archive,
