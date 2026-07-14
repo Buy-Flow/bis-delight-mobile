@@ -48,6 +48,7 @@ import {
   Volume2,
   Gauge,
   Route,
+  Camera,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
