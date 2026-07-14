@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, RefreshCw, Smartphone, X, CheckCircle2, PowerOff, Radio, Copy, AlertTriangle, Activity, CheckCircle, MinusCircle, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -99,7 +100,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   }
 
   async function handleDisconnect() {
-    if (!confirm("Desconectar o WhatsApp? Você precisará escanear o QR novamente.")) return;
+    if (!(await confirmDialog({ message: "Desconectar o WhatsApp? Você precisará escanear o QR novamente." }))) return;
     setDisconnecting(true);
     try {
       await logout();

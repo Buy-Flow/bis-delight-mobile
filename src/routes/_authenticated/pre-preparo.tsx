@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -139,7 +140,7 @@ function PrePreparoPage() {
   };
 
   const bulkEnable = async (enabled: boolean) => {
-    if (!confirm(enabled ? "Ativar pré-preparo em todos os produtos filtrados?" : "Desativar todos filtrados?")) return;
+    if (!(await confirmDialog({ message: enabled ? "Ativar pré-preparo em todos os produtos filtrados?" : "Desativar todos filtrados?" }))) return;
     const ids = filteredProducts.map((p) => p.id);
     setProducts((ps) => ps.map((p) => (ids.includes(p.id) ? { ...p, prep_enabled: enabled } : p)));
     await supabase.from("products").update({ prep_enabled: enabled } as any).in("id", ids);

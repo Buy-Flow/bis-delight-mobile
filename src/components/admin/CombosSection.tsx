@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { toast } from "sonner";
 import { Loader2, Plus, Save, Trash2 } from "lucide-react";
 import {
@@ -53,7 +54,7 @@ export function CombosSection() {
   };
 
   const del = async (id: string) => {
-    if (!confirm("Remover este combo?")) return;
+    if (!(await confirmDialog({ message: "Remover este combo?" }))) return;
     try {
       await remove.mutateAsync(id);
       toast.success("Combo removido");

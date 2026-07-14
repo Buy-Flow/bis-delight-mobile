@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -156,7 +157,7 @@ function SharedCartPage() {
   }
 
   async function handleClose() {
-    if (!confirm("Fechar o carrinho? Ninguém mais poderá adicionar itens.")) return;
+    if (!(await confirmDialog({ message: "Fechar o carrinho? Ninguém mais poderá adicionar itens." }))) return;
     try {
       await closeSharedCart(token);
       toast.success("Carrinho fechado");

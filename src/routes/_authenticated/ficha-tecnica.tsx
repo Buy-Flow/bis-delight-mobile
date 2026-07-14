@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -294,7 +295,7 @@ function FichaTecnicaPage() {
   };
 
   const recalcAll = async () => {
-    if (!confirm("Recalcular CMV de todos os produtos com ficha técnica?")) return;
+    if (!(await confirmDialog({ message: "Recalcular CMV de todos os produtos com ficha técnica?" }))) return;
     let updated = 0;
     for (const p of products) {
       const rs = recipesByProduct[p.id];

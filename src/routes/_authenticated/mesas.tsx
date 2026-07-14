@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -626,7 +627,7 @@ function ManageView({
     else onReload();
   }
   async function remove(t: RestaurantTable) {
-    if (!confirm(`Remover mesa ${t.number}?`)) return;
+    if (!(await confirmDialog({ message: `Remover mesa ${t.number}?` }))) return;
     const { error } = await supabase.from("restaurant_tables").delete().eq("id", t.id);
     if (error) toast.error(error.message);
     else {
@@ -1291,7 +1292,7 @@ function ManageZonesDialog({
       count > 0
         ? `Remover a zona "${z}"? ${count} mesa(s) ficarão sem zona.`
         : `Remover a zona "${z}"?`;
-    if (!confirm(msg)) return;
+    if (!(await confirmDialog({ message: msg }))) return;
     setBusy(z);
     const { error } = await supabase
       .from("restaurant_tables")

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -137,7 +138,7 @@ function InsightsPage() {
     catch (e) { toast.error((e as Error).message); }
   };
   const remove = async (id: string) => {
-    if (!confirm("Remover este insight?")) return;
+    if (!(await confirmDialog({ message: "Remover este insight?" }))) return;
     try { await _del({ data: { id } }); await refresh(); } catch (e) { toast.error((e as Error).message); }
   };
 

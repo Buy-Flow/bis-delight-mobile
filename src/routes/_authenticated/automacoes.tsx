@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -292,7 +293,7 @@ function AutomacoesPage() {
   };
 
   const pauseAll = async () => {
-    if (!confirm("Pausar TODAS as automações? Nenhum disparo automático acontecerá até você reativar.")) return;
+    if (!(await confirmDialog({ message: "Pausar TODAS as automações? Nenhum disparo automático acontecerá até você reativar." }))) return;
     const { error } = await supabase.from("push_automations").update({ active: false }).eq("active", true);
     if (error) return toast.error("Erro: " + error.message);
     toast.success("Todas as automações foram pausadas");

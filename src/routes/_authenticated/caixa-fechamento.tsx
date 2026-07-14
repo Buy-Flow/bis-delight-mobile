@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -138,7 +139,7 @@ function GerarTab() {
   useEffect(() => { void load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   const run = async () => {
-    if (!confirm(`Gerar fechamento para ${date} e enviar via WhatsApp agora?`)) return;
+    if (!(await confirmDialog({ message: `Gerar fechamento para ${date} e enviar via WhatsApp agora?` }))) return;
     setRunning(true);
     try {
       const r: any = await runFn({ data: { date } });
@@ -295,7 +296,7 @@ function HistoricoTab() {
     }
   };
   const resend = async (id: string) => {
-    if (!confirm("Reenviar este relatório para os números configurados?")) return;
+    if (!(await confirmDialog({ message: "Reenviar este relatório para os números configurados?" }))) return;
     try {
       const r: any = await resendFn({ data: { report_id: id } });
       if (r.failed.length) toast.warning(`Falhou: ${r.failed.join(", ")}`);

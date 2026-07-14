@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -380,7 +381,7 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
   };
 
   const runAll = async () => {
-    if (!confirm(`Disparar para até ${settings?.max_per_run ?? 50} clientes agora?`)) return;
+    if (!(await confirmDialog({ message: `Disparar para até ${settings?.max_per_run ?? 50} clientes agora?` }))) return;
     setRunning(true);
     try {
       const out = await run({ data: {} });

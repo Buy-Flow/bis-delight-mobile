@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useState } from "react";
 import {
   Layers,
@@ -176,7 +177,7 @@ function ModelosPage() {
   }, [items, userId]);
 
   const onDelete = async (t: Template) => {
-    if (!confirm(`Remover modelo "${t.name}"? Essa ação não pode ser desfeita.`)) return;
+    if (!(await confirmDialog({ message: `Remover modelo "${t.name}"? Essa ação não pode ser desfeita.` }))) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = supabase as any;
     const { error } = await client.from("product_templates").delete().eq("id", t.id);

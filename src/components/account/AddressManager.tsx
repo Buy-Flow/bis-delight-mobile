@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { MapPin, Home, Briefcase, Star, Trash2, Plus, Check, Loader2, Pencil, X, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/use-auth";
@@ -136,7 +137,7 @@ export function AddressManager({ embedded = false }: { embedded?: boolean } = {}
                   <button
                     type="button"
                     onClick={async () => {
-                      if (!confirm(`Remover "${a.label}"?`)) return;
+                      if (!(await confirmDialog({ message: `Remover "${a.label}"?` }))) return;
                       await remove(a.id);
                       toast.success("Endereço removido");
                     }}

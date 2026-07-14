@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -397,7 +398,7 @@ function MotoboyPortal() {
       setProofOrder(order);
       return;
     }
-    if (!confirm("Confirmar entrega deste pedido?")) return;
+    if (!(await confirmDialog({ message: "Confirmar entrega deste pedido?" }))) return;
     const { data } = await supabase.rpc("complete_delivery", { _order_id: orderId } as any);
     if ((data as { ok: boolean })?.ok) toast.success("Entrega concluída! 🎉");
     await load();

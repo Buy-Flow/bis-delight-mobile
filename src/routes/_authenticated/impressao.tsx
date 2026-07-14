@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -404,7 +405,7 @@ function PrintCenterPage() {
   };
 
   const deletePrinter = async (id: string) => {
-    if (!confirm("Remover impressora?")) return;
+    if (!(await confirmDialog({ message: "Remover impressora?" }))) return;
     const { error } = await supabase.from("print_printers").delete().eq("id", id);
     if (error) return toast.error(error.message);
     setPrinters((prev) => prev.filter((p) => p.id !== id));

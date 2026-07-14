@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useState } from "react";
 import {
   Star,
@@ -203,7 +204,7 @@ function AvaliacoesPage() {
   };
 
   const removeOne = async (id: string) => {
-    if (!confirm("Apagar esta avaliação? Esta ação não pode ser desfeita.")) return;
+    if (!(await confirmDialog({ message: "Apagar esta avaliação? Esta ação não pode ser desfeita." }))) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any).from("reviews").delete().eq("id", id);
     if (error) toast.error("Erro: " + error.message);
@@ -224,7 +225,7 @@ function AvaliacoesPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = supabase as any;
     if (action === "delete") {
-      if (!confirm(`Apagar ${ids.length} avaliações? Ação irreversível.`)) return;
+      if (!(await confirmDialog({ message: `Apagar ${ids.length} avaliações? Ação irreversível.` }))) return;
       const { error } = await client.from("reviews").delete().in("id", ids);
       if (error) return toast.error(error.message);
     } else {

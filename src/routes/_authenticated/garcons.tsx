@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -232,7 +233,7 @@ function WaitersPage() {
   };
 
   const remove = async (w: WaiterRow) => {
-    if (!confirm(`Remover ${w.name}? As vendas atribuídas continuam nos relatórios sem vínculo.`))
+    if (!(await confirmDialog({ message: `Remover ${w.name}? As vendas atribuídas continuam nos relatórios sem vínculo.` })))
       return;
     const { error } = await supabase.from("waiters").delete().eq("id", w.id);
     if (error) return toast.error("Não foi possível remover");
@@ -1132,7 +1133,7 @@ function AssignDialog({
 
   const unassignAll = async () => {
     if (selectedIds.length === 0) return toast.error("Nenhum pedido selecionado");
-    if (!confirm(`Remover atribuição de ${selectedIds.length} pedido(s)?`)) return;
+    if (!(await confirmDialog({ message: `Remover atribuição de ${selectedIds.length} pedido(s)?` }))) return;
     const { error } = await supabase.from("orders").update({ waiter_id: null }).in("id", selectedIds);
     if (error) return toast.error(error.message);
     toast.success("Atribuição removida");
