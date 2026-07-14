@@ -27,6 +27,7 @@ import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
+import { Route as AuthenticatedRotasRouteImport } from './routes/_authenticated/rotas'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authenticated/precificacao'
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
@@ -147,6 +148,11 @@ const AuthenticatedSlaRoute = AuthenticatedSlaRouteImport.update({
 const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
   id: '/rush',
   path: '/rush',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRotasRoute = AuthenticatedRotasRouteImport.update({
+  id: '/rotas',
+  path: '/rotas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPrevisaoRoute = AuthenticatedPrevisaoRouteImport.update({
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/pdv': typeof AuthenticatedPdvRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
+  '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -408,6 +415,7 @@ export interface FileRoutesByTo {
   '/pdv': typeof AuthenticatedPdvRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
+  '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -461,6 +469,7 @@ export interface FileRoutesById {
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
   '/_authenticated/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
+  '/_authenticated/rotas': typeof AuthenticatedRotasRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
   '/_authenticated/sla': typeof AuthenticatedSlaRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/pdv'
     | '/precificacao'
     | '/previsao'
+    | '/rotas'
     | '/rush'
     | '/sla'
     | '/usuarios'
@@ -565,6 +575,7 @@ export interface FileRouteTypes {
     | '/pdv'
     | '/precificacao'
     | '/previsao'
+    | '/rotas'
     | '/rush'
     | '/sla'
     | '/usuarios'
@@ -617,6 +628,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pdv'
     | '/_authenticated/precificacao'
     | '/_authenticated/previsao'
+    | '/_authenticated/rotas'
     | '/_authenticated/rush'
     | '/_authenticated/sla'
     | '/_authenticated/usuarios'
@@ -776,6 +788,13 @@ declare module '@tanstack/react-router' {
       path: '/rush'
       fullPath: '/rush'
       preLoaderRoute: typeof AuthenticatedRushRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rotas': {
+      id: '/_authenticated/rotas'
+      path: '/rotas'
+      fullPath: '/rotas'
+      preLoaderRoute: typeof AuthenticatedRotasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/previsao': {
@@ -1034,6 +1053,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
   AuthenticatedPrecificacaoRoute: typeof AuthenticatedPrecificacaoRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
+  AuthenticatedRotasRoute: typeof AuthenticatedRotasRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
   AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
@@ -1071,6 +1091,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
   AuthenticatedPrecificacaoRoute: AuthenticatedPrecificacaoRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
+  AuthenticatedRotasRoute: AuthenticatedRotasRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
   AuthenticatedSlaRoute: AuthenticatedSlaRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,

@@ -181,7 +181,7 @@ function RotasPage() {
 
   if (loading) {
     return (
-      <AdminShell active="settings">
+      <AdminShell>
         <div className="grid place-items-center py-24">
           <Loader2 className="h-10 w-10 animate-spin text-fuchsia-400" />
         </div>
@@ -190,7 +190,7 @@ function RotasPage() {
   }
 
   return (
-    <AdminShell active="settings">
+    <AdminShell>
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -326,30 +326,30 @@ function RotasPage() {
             <Toggle
               label="Sistema habilitado"
               checked={settings.enabled}
-              onChange={(v) => setSettings({ ...settings, enabled: v })}
+              onChange={(v: boolean) => setSettings({ ...settings, enabled: v })}
               hint="Quando desligado, o motoboy não vê o botão 'Otimizar rota'."
             />
             <Toggle
               label="Otimização automática"
               checked={settings.auto_optimize}
-              onChange={(v) => setSettings({ ...settings, auto_optimize: v })}
+              onChange={(v: boolean) => setSettings({ ...settings, auto_optimize: v })}
               hint="Ao aceitar a 2ª corrida, sugere a rota sem clique."
             />
             <Toggle
               label="Voltar à loja no final"
               checked={settings.return_to_store}
-              onChange={(v) => setSettings({ ...settings, return_to_store: v })}
+              onChange={(v: boolean) => setSettings({ ...settings, return_to_store: v })}
               hint="Considera o retorno à loja no cálculo do total."
             />
             <Toggle
               label="Notificar o motoboy quando otimizar"
               checked={settings.notify_courier}
-              onChange={(v) => setSettings({ ...settings, notify_courier: v })}
+              onChange={(v: boolean) => setSettings({ ...settings, notify_courier: v })}
             />
 
-            <NumberField label="Mín. paradas para otimizar" value={settings.min_stops} min={2} max={10} onChange={(v) => setSettings({ ...settings, min_stops: v })} />
-            <NumberField label="Máx. paradas por rota" value={settings.max_stops} min={2} max={20} onChange={(v) => setSettings({ ...settings, max_stops: v })} />
-            <NumberField label="Tempo extra por parada (min)" value={settings.extra_time_per_stop_min} min={0} max={30} onChange={(v) => setSettings({ ...settings, extra_time_per_stop_min: v })} hint="Retirada, entrega física ao cliente etc." />
+            <NumberField label="Mín. paradas para otimizar" value={settings.min_stops} min={2} max={10} onChange={(v: boolean) => setSettings({ ...settings, min_stops: v })} />
+            <NumberField label="Máx. paradas por rota" value={settings.max_stops} min={2} max={20} onChange={(v: boolean) => setSettings({ ...settings, max_stops: v })} />
+            <NumberField label="Tempo extra por parada (min)" value={settings.extra_time_per_stop_min} min={0} max={30} onChange={(v: boolean) => setSettings({ ...settings, extra_time_per_stop_min: v })} hint="Retirada, entrega física ao cliente etc." />
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
@@ -360,7 +360,7 @@ function RotasPage() {
             <Select
               label="Provedor de rotas"
               value={settings.provider}
-              onChange={(v) => setSettings({ ...settings, provider: v as Settings["provider"] })}
+              onChange={(v: boolean) => setSettings({ ...settings, provider: v as Settings["provider"] })}
               options={[
                 { value: "google_directions", label: "Google Directions API (recomendado)" },
                 { value: "nearest_neighbor", label: "Vizinho mais próximo (offline)" },
@@ -370,7 +370,7 @@ function RotasPage() {
             <Select
               label="Modo de viagem"
               value={settings.travel_mode}
-              onChange={(v) => setSettings({ ...settings, travel_mode: v as Settings["travel_mode"] })}
+              onChange={(v: boolean) => setSettings({ ...settings, travel_mode: v as Settings["travel_mode"] })}
               options={[
                 { value: "TWO_WHEELER", label: "Moto (2 rodas)" },
                 { value: "DRIVE", label: "Carro" },
@@ -382,7 +382,7 @@ function RotasPage() {
               <Select
                 label="Trânsito"
                 value={settings.traffic_mode}
-                onChange={(v) => setSettings({ ...settings, traffic_mode: v as Settings["traffic_mode"] })}
+                onChange={(v: boolean) => setSettings({ ...settings, traffic_mode: v as Settings["traffic_mode"] })}
                 options={[
                   { value: "TRAFFIC_AWARE", label: "Ciente do trânsito (padrão)" },
                   { value: "TRAFFIC_AWARE_OPTIMAL", label: "Otimizado com trânsito (mais lento)" },
@@ -392,9 +392,9 @@ function RotasPage() {
               />
             )}
 
-            <Toggle label="Evitar pedágios" checked={settings.avoid_tolls} onChange={(v) => setSettings({ ...settings, avoid_tolls: v })} />
-            <Toggle label="Evitar rodovias" checked={settings.avoid_highways} onChange={(v) => setSettings({ ...settings, avoid_highways: v })} />
-            <Toggle label="Evitar balsas" checked={settings.avoid_ferries} onChange={(v) => setSettings({ ...settings, avoid_ferries: v })} />
+            <Toggle label="Evitar pedágios" checked={settings.avoid_tolls} onChange={(v: boolean) => setSettings({ ...settings, avoid_tolls: v })} />
+            <Toggle label="Evitar rodovias" checked={settings.avoid_highways} onChange={(v: boolean) => setSettings({ ...settings, avoid_highways: v })} />
+            <Toggle label="Evitar balsas" checked={settings.avoid_ferries} onChange={(v: boolean) => setSettings({ ...settings, avoid_ferries: v })} />
 
             <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3 text-[11px] text-cyan-200 flex gap-2">
               <Info className="h-4 w-4 shrink-0 mt-0.5" />
