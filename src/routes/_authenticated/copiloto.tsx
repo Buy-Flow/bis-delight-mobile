@@ -25,6 +25,8 @@ import {
   X,
 } from "lucide-react";
 import { VoiceMicButton } from "@/components/VoiceMicButton";
+import { getVoiceSettings, speakText } from "@/lib/voice-copilot.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   listCopilotThreads,
