@@ -97,6 +97,8 @@ function MotoboyPortal() {
   const [battery, setBattery] = useState<number | null>(null);
   const gpsWatch = useRef<number | null>(null);
   const heartbeatTimer = useRef<number | null>(null);
+  const latestCoordRef = useRef<{ lat: number; lng: number; heading?: number; speed?: number; acc?: number } | null>(null);
+  const lastSentAtRef = useRef<number>(0);
 
   const load = useCallback(async () => {
     const { data: u } = await supabase.auth.getUser();
@@ -220,6 +222,11 @@ function MotoboyPortal() {
       return;
     }
     setGpsError(null);
+    // Clear any pre-existing watch/timer to avoid duplicates on re-invocation
+    if (gpsWatch.current != null) navigator.geolocation.clearWatch(gpsWatch.current);
+    if (heartbeatTimer.current != null) window.clearInterval(heartbeatTimer.current);
+    lastSentAtRef.current = 0;
+
     gpsWatch.current = navigator.geolocation.watchPosition(
       (pos) => {
         const coord = {
@@ -229,28 +236,37 @@ function MotoboyPortal() {
           speed: pos.coords.speed ?? undefined,
           acc: pos.coords.accuracy,
         };
+        latestCoordRef.current = coord;
         setGpsCoord(coord);
+        // Send immediately on first fix, then throttle to at most every 10s
+        const now = Date.now();
+        if (now - lastSentAtRef.current >= 10000) {
+          lastSentAtRef.current = now;
+          sendHeartbeat(coord);
+        }
       },
       (err) => setGpsError(err.message),
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
     );
-    // Send heartbeat every 10s
+    // Fallback heartbeat every 10s using the LATEST coord from ref (never stale)
     heartbeatTimer.current = window.setInterval(() => {
-      if (gpsCoord) sendHeartbeat(gpsCoord);
+      const c = latestCoordRef.current;
+      if (!c) return;
+      lastSentAtRef.current = Date.now();
+      sendHeartbeat(c);
     }, 10000);
-  }, [gpsCoord, sendHeartbeat]);
+  }, [sendHeartbeat]);
 
   const stopGps = useCallback(() => {
     if (gpsWatch.current != null) navigator.geolocation.clearWatch(gpsWatch.current);
     if (heartbeatTimer.current != null) window.clearInterval(heartbeatTimer.current);
     gpsWatch.current = null;
     heartbeatTimer.current = null;
+    latestCoordRef.current = null;
+    lastSentAtRef.current = 0;
   }, []);
 
   useEffect(() => () => stopGps(), [stopGps]);
-  useEffect(() => {
-    if (gpsCoord && isOnline) sendHeartbeat(gpsCoord);
-  }, [gpsCoord?.lat, gpsCoord?.lng, isOnline, sendHeartbeat]);
 
   const toggleOnline = async () => {
     if (!courier) return;
