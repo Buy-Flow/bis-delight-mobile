@@ -221,6 +221,57 @@ export type Database = {
         }
         Relationships: []
       }
+      asaas_webhook_events: {
+        Row: {
+          created_at: string
+          error: string | null
+          event: string | null
+          id: string
+          order_id: string | null
+          payload: Json | null
+          payment_id: string | null
+          processed: boolean
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          event?: string | null
+          id?: string
+          order_id?: string | null
+          payload?: Json | null
+          payment_id?: string | null
+          processed?: boolean
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          event?: string | null
+          id?: string
+          order_id?: string | null
+          payload?: Json | null
+          payment_id?: string | null
+          processed?: boolean
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asaas_webhook_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asaas_webhook_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_runs: {
         Row: {
           automation_id: string
@@ -1594,7 +1645,11 @@ export type Database = {
       orders: {
         Row: {
           address: string | null
+          asaas_payment_id: string | null
+          asaas_status: string | null
           canceled_at: string | null
+          card_brand: string | null
+          card_last4: string | null
           coupon_code: string | null
           courier_id: string | null
           courier_rating: number | null
@@ -1618,14 +1673,19 @@ export type Database = {
           distance_km: number | null
           eta_minutes: number | null
           id: string
+          invoice_url: string | null
           mode: string
           note: string | null
           origin_lat: number | null
           origin_lng: number | null
           paid_at: string | null
+          payment_method: string | null
           people_count: number | null
           phone: string
           picked_up_at: string | null
+          pix_copy_paste: string | null
+          pix_expires_at: string | null
+          pix_qr_code_base64: string | null
           preparing_at: string | null
           reference: string | null
           service_fee: number | null
@@ -1639,7 +1699,11 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          asaas_payment_id?: string | null
+          asaas_status?: string | null
           canceled_at?: string | null
+          card_brand?: string | null
+          card_last4?: string | null
           coupon_code?: string | null
           courier_id?: string | null
           courier_rating?: number | null
@@ -1663,14 +1727,19 @@ export type Database = {
           distance_km?: number | null
           eta_minutes?: number | null
           id?: string
+          invoice_url?: string | null
           mode: string
           note?: string | null
           origin_lat?: number | null
           origin_lng?: number | null
           paid_at?: string | null
+          payment_method?: string | null
           people_count?: number | null
           phone: string
           picked_up_at?: string | null
+          pix_copy_paste?: string | null
+          pix_expires_at?: string | null
+          pix_qr_code_base64?: string | null
           preparing_at?: string | null
           reference?: string | null
           service_fee?: number | null
@@ -1684,7 +1753,11 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          asaas_payment_id?: string | null
+          asaas_status?: string | null
           canceled_at?: string | null
+          card_brand?: string | null
+          card_last4?: string | null
           coupon_code?: string | null
           courier_id?: string | null
           courier_rating?: number | null
@@ -1708,14 +1781,19 @@ export type Database = {
           distance_km?: number | null
           eta_minutes?: number | null
           id?: string
+          invoice_url?: string | null
           mode?: string
           note?: string | null
           origin_lat?: number | null
           origin_lng?: number | null
           paid_at?: string | null
+          payment_method?: string | null
           people_count?: number | null
           phone?: string
           picked_up_at?: string | null
+          pix_copy_paste?: string | null
+          pix_expires_at?: string | null
+          pix_qr_code_base64?: string | null
           preparing_at?: string | null
           reference?: string | null
           service_fee?: number | null
