@@ -267,10 +267,45 @@ function formatNextOpen(now: Date, next: Date, tz: string): string {
 export function useStoreStatus(): StoreStatus {
   const { data: settings } = useSiteSettings();
   const [now, setNow] = useState<Date>(() => new Date());
+
   useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 60_000);
-    return () => window.clearInterval(id);
+    let timeoutId: number | null = null;
+    let cancelled = false;
+
+    // Reagenda o próximo tick alinhado à borda do próximo minuto do
+    // relógio de parede. Assim, a reabertura acontece em ~0-1 s do
+    // horário oficial, e não com até 60 s de atraso.
+    const scheduleNext = () => {
+      if (cancelled) return;
+      const d = new Date();
+      // ms restantes até o próximo :00 de segundo do próximo minuto
+      // (+ 20ms de folga para evitar disparar no minuto anterior).
+      const msToNextMinute =
+        1000 - d.getMilliseconds() + (59 - d.getSeconds()) * 1000 + 20;
+      timeoutId = window.setTimeout(() => {
+        if (cancelled) return;
+        setNow(new Date());
+        scheduleNext();
+      }, msToNextMinute);
+    };
+    scheduleNext();
+
+    // Recalcula imediatamente ao voltar o foco/aba — cobre casos em que
+    // o timer foi throttled em background (móvel/aba oculta).
+    const onWake = () => {
+      if (document.visibilityState === "visible") setNow(new Date());
+    };
+    window.addEventListener("focus", onWake);
+    document.addEventListener("visibilitychange", onWake);
+
+    return () => {
+      cancelled = true;
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+      window.removeEventListener("focus", onWake);
+      document.removeEventListener("visibilitychange", onWake);
+    };
   }, []);
+
   const hours = settings?.hoursJson?.length ? settings.hoursJson : DEFAULT_HOURS;
   const override = settings?.openOverride ?? "auto";
   const tz = (settings as { timezone?: string } | undefined)?.timezone || STORE_TIMEZONE;
