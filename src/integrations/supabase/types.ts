@@ -2428,6 +2428,7 @@ export type Database = {
           min_order: number
           note: string | null
           per_user_limit: number
+          starts_at: string | null
           updated_at: string
           uses: number
         }
@@ -2443,6 +2444,7 @@ export type Database = {
           min_order?: number
           note?: string | null
           per_user_limit?: number
+          starts_at?: string | null
           updated_at?: string
           uses?: number
         }
@@ -2458,6 +2460,7 @@ export type Database = {
           min_order?: number
           note?: string | null
           per_user_limit?: number
+          starts_at?: string | null
           updated_at?: string
           uses?: number
         }

@@ -1,0 +1,1 @@
+ALTER TABLE public.promo_coupons ADD COLUMN IF NOT EXISTS starts_at timestamptz;
