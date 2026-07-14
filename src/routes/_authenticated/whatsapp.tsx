@@ -431,37 +431,40 @@ function WhatsappPage() {
             "flex min-w-0 flex-col border-r border-white/10 bg-[#111b21]",
             selected ? "hidden md:flex md:w-[340px] md:shrink-0 lg:w-[360px]" : "flex w-full md:w-[340px] md:shrink-0 lg:w-[360px]"
           )}>
-            <div className="border-b border-white/10 bg-[#202c33] px-3 py-3">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 text-lg font-bold">
-                    <MessageCircle className="h-5 w-5 text-emerald-400" />
-                    WhatsApp
+            <div className="border-b border-white/10 bg-[#202c33] px-3 py-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-500/15 text-emerald-400">
+                    <MessageCircle className="h-4.5 w-4.5" />
                   </div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-white/55">
-                    {connected ? <Wifi className="h-3.5 w-3.5 text-emerald-400" /> : <WifiOff className="h-3.5 w-3.5 text-red-300" />}
-                    <span>{connected ? "Conectado" : `Estado: ${connection?.state ?? "carregando"}`}</span>
-                    {config?.instance && <span>· {config.instance}</span>}
+                  <div className="min-w-0 leading-tight">
+                    <div className="truncate text-[15px] font-bold">WhatsApp</div>
+                    <div className="flex items-center gap-1.5 text-[11px] text-white/55">
+                      {connected ? (
+                        <>
+                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          <span>Conectado</span>
+                        </>
+                      ) : (
+                        <>
+                          <WifiOff className="h-3 w-3 text-red-300" />
+                          <span>{connection?.state ?? "carregando"}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button type="button" onClick={() => setNewOpen(true)} className="grid h-9 w-9 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Nova conversa">
+                <div className="flex shrink-0 items-center gap-1">
+                  <button type="button" onClick={() => setNewOpen(true)} className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Nova conversa">
                     <Plus className="h-4 w-4" />
                   </button>
-                  <button type="button" onClick={() => setConnectOpen(true)} className="grid h-9 w-9 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Configurar conexão">
+                  <button type="button" onClick={() => setConnectOpen(true)} className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Configurar conexão">
                     <Settings className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                <Kpi label="Conversas" value={kpis.total} />
-                <Kpi label="Não lidas" value={kpis.unread} accent={kpis.unread > 0} />
-                <Kpi label="Hoje" value={kpis.today} />
-                <Kpi label="IA pausa" value={kpis.paused} />
-              </div>
-
-              <div className="mt-3 flex items-center gap-2 rounded-lg bg-[#0b141a] px-3 py-2">
+              <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-[#0b141a] px-3 py-2">
                 <Search className="h-4 w-4 text-white/45" />
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pesquisar conversa" className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35" />
                 {query && (
@@ -471,19 +474,24 @@ function WhatsappPage() {
                 )}
               </div>
 
-              <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px]">
                 {[
-                  ["todas", "Todas"],
-                  ["nao_lidas", "Não lidas"],
-                  ["hoje", "Hoje"],
-                  ["ia_pausada", "IA pausada"],
-                ].map(([key, label]) => (
-                  <button key={key} type="button" onClick={() => setFilter(key as FilterKey)} className={cn("shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition", filter === key ? "bg-emerald-500 text-[#06140f]" : "bg-white/5 text-white/65 hover:bg-white/10 hover:text-white")}>
-                    {label}
-                  </button>
-                ))}
+                  ["todas", "Todas", kpis.total],
+                  ["nao_lidas", "Não lidas", kpis.unread],
+                  ["hoje", "Hoje", kpis.today],
+                  ["ia_pausada", "IA pausada", kpis.paused],
+                ].map(([key, label, count]) => {
+                  const active = filter === key;
+                  return (
+                    <button key={key as string} type="button" onClick={() => setFilter(key as FilterKey)} className={cn("inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold transition", active ? "bg-emerald-500 text-[#06140f]" : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white")}>
+                      <span>{label as string}</span>
+                      <span className={cn("min-w-4 rounded-full px-1 text-[10px] font-black", active ? "bg-[#06140f]/25 text-[#06140f]" : "bg-white/10 text-white/80")}>{count as number}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
 
             {!connected && (
               <div className="border-b border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
