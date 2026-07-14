@@ -24,6 +24,9 @@ import {
   Undo2,
   X,
 } from "lucide-react";
+import { VoiceMicButton } from "@/components/VoiceMicButton";
+import { getVoiceSettings, speakText } from "@/lib/voice-copilot.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
   listCopilotThreads,
@@ -556,8 +559,33 @@ function ChatWindow({
       console.error(err);
       toast.error("Erro no Copiloto", { description: err.message.slice(0, 200) });
     },
-    onFinish: () => onActionMaybeExecuted(),
+    onFinish: (m) => {
+      onActionMaybeExecuted();
+      maybeSpeakAssistant(m);
+    },
   });
+
+  const _getVoice = useServerFn(getVoiceSettings);
+  const _speak = useServerFn(speakText);
+  const voiceSettingsQuery = useQuery({ queryKey: ["voice-copilot-settings"], queryFn: () => _getVoice({}), staleTime: 60_000 });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const maybeSpeakAssistant = async (msg: any) => {
+    const s = voiceSettingsQuery.data;
+    if (!s?.tts_reply) return;
+    const parts = (msg?.message?.parts ?? msg?.parts ?? []) as Array<any>;
+    const text = parts.filter((p) => p?.type === "text").map((p) => p.text).join(" ").trim();
+    if (!text) return;
+    try {
+      const { audio_base64, mime_type } = await _speak({ data: { text: text.slice(0, 1500), voice: s.tts_voice, speed: s.tts_speed } });
+      audioRef.current?.pause();
+      const audio = new Audio(`data:${mime_type};base64,${audio_base64}`);
+      audioRef.current = audio;
+      await audio.play().catch(() => {});
+    } catch (e) {
+      console.warn("TTS failed", e);
+    }
+  };
+
 
   useEffect(() => {
     if (initialMessages.length && messages.length === 0) setMessages(initialMessages);
@@ -637,6 +665,10 @@ function ChatWindow({
             rows={2}
             placeholder="Peça algo pro Copiloto..."
             className="flex-1 resize-none rounded-xl border border-purple-500/30 bg-black/60 px-3 py-2.5 text-base text-white placeholder:text-white/30 focus:border-neon-yellow/60 focus:outline-none md:text-sm"
+          />
+          <VoiceMicButton
+            onTranscript={(t) => setInput((prev) => (prev ? prev + " " + t : t))}
+            autoSubmit={(t) => { if (token && !isLoading) sendMessage({ text: t }); }}
           />
           <button
             type="button"

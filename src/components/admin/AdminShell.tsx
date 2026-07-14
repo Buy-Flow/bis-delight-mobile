@@ -51,6 +51,7 @@ import {
   Camera,
   HeartHandshake,
   ScanSearch,
+  Mic,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -164,6 +165,7 @@ const groups: NavGroup[] = [
       { to: "/previsao", label: "Previsão de demanda", icon: BarChart3 },
       { to: "/pre-preparo", label: "Pré-preparo IA", icon: ChefHat },
       { to: "/analise-concorrentes", label: "Análise concorrentes", icon: ScanSearch },
+      { to: "/voz-copiloto", label: "Voz no Copiloto", icon: Mic },
     ],
   },
   {

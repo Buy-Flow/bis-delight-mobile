@@ -24,6 +24,7 @@ import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
+import { Route as AuthenticatedVozCopilotoRouteImport } from './routes/_authenticated/voz-copiloto'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
@@ -145,6 +146,12 @@ const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVozCopilotoRoute =
+  AuthenticatedVozCopilotoRouteImport.update({
+    id: '/voz-copiloto',
+    path: '/voz-copiloto',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
@@ -440,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/rush': typeof AuthenticatedRushRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
@@ -502,6 +510,7 @@ export interface FileRoutesByTo {
   '/rush': typeof AuthenticatedRushRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
@@ -566,6 +575,7 @@ export interface FileRoutesById {
   '/_authenticated/rush': typeof AuthenticatedRushRoute
   '/_authenticated/sla': typeof AuthenticatedSlaRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
+  '/_authenticated/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
@@ -630,6 +640,7 @@ export interface FileRouteTypes {
     | '/rush'
     | '/sla'
     | '/usuarios'
+    | '/voz-copiloto'
     | '/whatsapp'
     | '/api/copilot-chat'
     | '/c/$token'
@@ -692,6 +703,7 @@ export interface FileRouteTypes {
     | '/rush'
     | '/sla'
     | '/usuarios'
+    | '/voz-copiloto'
     | '/whatsapp'
     | '/api/copilot-chat'
     | '/c/$token'
@@ -755,6 +767,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rush'
     | '/_authenticated/sla'
     | '/_authenticated/usuarios'
+    | '/_authenticated/voz-copiloto'
     | '/_authenticated/whatsapp'
     | '/api/copilot-chat'
     | '/c/$token'
@@ -896,6 +909,13 @@ declare module '@tanstack/react-router' {
       path: '/whatsapp'
       fullPath: '/whatsapp'
       preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/voz-copiloto': {
+      id: '/_authenticated/voz-copiloto'
+      path: '/voz-copiloto'
+      fullPath: '/voz-copiloto'
+      preLoaderRoute: typeof AuthenticatedVozCopilotoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/usuarios': {
@@ -1263,6 +1283,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
   AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
+  AuthenticatedVozCopilotoRoute: typeof AuthenticatedVozCopilotoRoute
   AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
   AuthenticatedAvaliarOrderIdRoute: typeof AuthenticatedAvaliarOrderIdRoute
   AuthenticatedRastrearOrderIdRoute: typeof AuthenticatedRastrearOrderIdRoute
@@ -1308,6 +1329,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRushRoute: AuthenticatedRushRoute,
   AuthenticatedSlaRoute: AuthenticatedSlaRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
+  AuthenticatedVozCopilotoRoute: AuthenticatedVozCopilotoRoute,
   AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
   AuthenticatedAvaliarOrderIdRoute: AuthenticatedAvaliarOrderIdRoute,
   AuthenticatedRastrearOrderIdRoute: AuthenticatedRastrearOrderIdRoute,
