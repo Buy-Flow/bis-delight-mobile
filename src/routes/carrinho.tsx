@@ -2,8 +2,10 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles, Gift, Copy, MessageCircle, X, Users } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
-import { BRAND } from "@/data/menu";
-import { useProducts } from "@/lib/menu-data";
+import { useProducts, useSiteSettings } from "@/lib/menu-data";
+import { useAuth } from "@/lib/use-auth";
+import { useUserAddresses } from "@/lib/user-addresses";
+import { computeDeliveryPreview } from "@/lib/delivery-preview";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
 import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, type RecentShare } from "@/lib/shared-cart";
@@ -13,6 +15,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useComboDiscounts } from "@/lib/use-combo-discounts";
+
 
 const ProductModal = lazy(() =>
   import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
