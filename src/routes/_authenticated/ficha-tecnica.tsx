@@ -360,9 +360,9 @@ function FichaTecnicaPage() {
   }).length;
 
   return (
-    <div className="min-h-screen bg-[#0c031f] text-white">
+    <div className="min-h-screen bg-background text-white">
       {/* Header */}
-      <div className="border-b border-white/10 bg-gradient-to-br from-[#1e0f3d] to-[#0c031f] px-4 py-6 md:px-8">
+      <div className="border-b border-white/10 bg-gradient-to-br from-card to-background px-4 py-6 md:px-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neon-yellow">
@@ -776,7 +776,7 @@ function FichaTecnicaPage() {
       {/* Copy dialog */}
       {copyOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1e0f3d] p-5">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-card p-5">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-black">Copiar ficha técnica</h3>
               <button

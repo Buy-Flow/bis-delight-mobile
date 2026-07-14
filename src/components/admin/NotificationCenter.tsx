@@ -82,7 +82,7 @@ export function NotificationCenter() {
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[360px] border-white/10 bg-[#170a2e] p-0 text-white shadow-2xl"
+        className="w-[360px] border-white/10 bg-card p-0 text-white shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
           <div className="flex items-center gap-2">

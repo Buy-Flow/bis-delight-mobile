@@ -319,9 +319,9 @@ function AutomacoesPage() {
   const kindOptions: Array<AutoKind> = Object.keys(KIND_META) as AutoKind[];
 
   return (
-    <div className="min-h-screen bg-[#0c031f] pb-16">
+    <div className="min-h-screen bg-background pb-16">
       {/* Header */}
-      <div className="border-b border-white/5 bg-[#0c031f]/70 backdrop-blur">
+      <div className="border-b border-white/5 bg-background/70 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-violet-600 shadow-lg shadow-fuchsia-500/20">
@@ -379,7 +379,7 @@ function AutomacoesPage() {
         </div>
 
         {/* Cron badge */}
-        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-white/5 bg-[#170a2e] p-3 text-xs text-white/60">
+        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-white/5 bg-card p-3 text-xs text-white/60">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 font-medium text-emerald-300">
             <Radio className="h-3 w-3 animate-pulse" /> Cron ativo
           </span>
@@ -419,11 +419,11 @@ function AutomacoesPage() {
         <section className="mt-6">
           <SectionTitle icon={Bell} title="Automações de notificação" subtitle="Push disparados por comportamento" />
           {loading ? (
-            <div className="mt-4 rounded-xl border border-white/5 bg-[#170a2e] p-8 text-center text-sm text-white/50">
+            <div className="mt-4 rounded-xl border border-white/5 bg-card p-8 text-center text-sm text-white/50">
               Carregando…
             </div>
           ) : filtered.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-[#170a2e]/40 p-10 text-center">
+            <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-card/40 p-10 text-center">
               <Zap className="mx-auto h-8 w-8 text-white/30" />
               <p className="mt-3 text-sm text-white/60">Nenhuma automação {statusFilter !== "all" ? statusFilter === "active" ? "ativa" : "pausada" : ""} por aqui.</p>
               <Link to="/notificacoes" className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-fuchsia-500 px-3 py-2 text-xs font-semibold text-white hover:bg-fuchsia-400">
@@ -440,7 +440,7 @@ function AutomacoesPage() {
                   <div
                     key={a.id}
                     className={cn(
-                      "group relative overflow-hidden rounded-2xl border bg-[#170a2e] p-4 transition",
+                      "group relative overflow-hidden rounded-2xl border bg-card p-4 transition",
                       a.active ? "border-white/10" : "border-white/5 opacity-60",
                     )}
                   >
@@ -529,7 +529,7 @@ function AutomacoesPage() {
               {SYSTEM_AUTOMATIONS.map((s) => (
                 <div
                   key={s.id}
-                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#170a2e] p-4"
+                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-card p-4"
                 >
                   <div className={cn("pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b", s.tint)} />
                   <div className="relative flex items-start gap-3">
@@ -561,7 +561,7 @@ function AutomacoesPage() {
               title="Últimos disparos"
               subtitle={`${runs.length} eventos recentes`}
             />
-            <div className="mt-4 max-h-[520px] overflow-y-auto rounded-2xl border border-white/10 bg-[#170a2e]">
+            <div className="mt-4 max-h-[520px] overflow-y-auto rounded-2xl border border-white/10 bg-card">
               {runs.length === 0 ? (
                 <div className="p-6 text-center text-xs text-white/40">Nenhum disparo registrado ainda.</div>
               ) : (
@@ -604,7 +604,7 @@ function AutomacoesPage() {
 
 function Kpi({ icon: Icon, label, value, tint }: { icon: typeof Zap; label: string; value: number; tint: string }) {
   return (
-    <div className={cn("relative overflow-hidden rounded-xl border border-white/10 bg-[#170a2e] p-3")}>
+    <div className={cn("relative overflow-hidden rounded-xl border border-white/10 bg-card p-3")}>
       <div className={cn("pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b", tint)} />
       <div className="relative flex items-center gap-2">
         <Icon className="h-3.5 w-3.5 text-white/70" />

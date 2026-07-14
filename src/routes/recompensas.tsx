@@ -123,8 +123,8 @@ function RecompensasPage() {
   const rewardValue = status?.reward ?? tiers?.[currentTier]?.coupon_value ?? 10;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#1a0b2e] pb-24 text-white">
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#1a0b2e] via-[#1a0b2e]/85 to-transparent pb-4 backdrop-blur-xl">
+    <main className="relative min-h-screen overflow-hidden bg-card pb-24 text-white">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-card via-card/85 to-transparent pb-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
             <Award className="h-5 w-5 text-neon-yellow" />
@@ -232,7 +232,7 @@ function RecompensasPage() {
                     className={cn(
                       "relative flex aspect-square items-center justify-center rounded-full border transition-all duration-500",
                       filled
-                        ? "border-neon-yellow bg-gradient-to-br from-neon-yellow to-neon-pink text-[#1a0b2e] shadow-[0_0_16px_rgba(255,220,120,0.55)]"
+                        ? "border-neon-yellow bg-gradient-to-br from-neon-yellow to-neon-pink text-card shadow-[0_0_16px_rgba(255,220,120,0.55)]"
                         : "border-white/15 bg-white/[0.04] text-white/30",
                     )}
                   >
@@ -349,7 +349,7 @@ function RecompensasPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <h4 className={cn("text-2xl font-black leading-none", info.text)}>{info.label}</h4>
                           {isCurrent && (
-                            <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.15em] text-[#1a0b2e] shadow-[0_0_16px_rgba(255,220,120,0.6)]">
+                            <span className="rounded-full bg-neon-yellow px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.15em] text-card shadow-[0_0_16px_rgba(255,220,120,0.6)]">
                               ★ Você está aqui
                             </span>
                           )}
@@ -393,7 +393,7 @@ function RecompensasPage() {
                       {info.benefits.map((b, i) => (
                         <li key={i} className="flex items-start gap-2 text-[12.5px] leading-snug text-white/85">
                           <span className={cn("mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-gradient-to-br", info.gradient)}>
-                            <Check className="h-2.5 w-2.5 text-[#1a0b2e]" strokeWidth={4} />
+                            <Check className="h-2.5 w-2.5 text-card" strokeWidth={4} />
                           </span>
                           <span>{b}</span>
                         </li>
@@ -539,7 +539,7 @@ function RecompensasPage() {
               const Icon = step.icon;
               return (
                 <li key={idx} className="relative flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                  <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-[#1a0b2e] shadow-lg", step.color)}>
+                  <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-card shadow-lg", step.color)}>
                     <Icon className="h-5 w-5" strokeWidth={2.5} />
                   </div>
                   <div className="min-w-0">

@@ -29,7 +29,7 @@ function FinalizarPage() {
   }, [hydrated, items.length, navigate]);
 
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-[#0a0118]" />}>
+    <Suspense fallback={<div className="min-h-dvh bg-background" />}>
       <CheckoutSheet pageMode />
     </Suspense>
   );

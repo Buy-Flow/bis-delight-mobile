@@ -395,11 +395,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const sidebarWidth = collapsed ? "md:w-[68px]" : "md:w-[248px]";
 
   return (
-    <div data-scope="admin" className="min-h-screen bg-[#0c031f] text-white">
+    <div data-scope="admin" className="min-h-screen bg-background text-white">
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/10 bg-[#170a2e] md:flex",
+          "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/10 bg-card md:flex",
           sidebarWidth,
           "transition-[width] duration-200",
         )}
@@ -483,7 +483,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-[280px] max-w-[85vw] flex-col border-r border-white/10 bg-[#170a2e] shadow-2xl">
+          <aside className="absolute left-0 top-0 flex h-full w-[280px] max-w-[85vw] flex-col border-r border-white/10 bg-card shadow-2xl">
             <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
               <div className="flex items-center gap-2">
                 <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-neon-yellow to-amber-400 text-black">
@@ -542,7 +542,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           collapsed ? "md:pl-[68px]" : "md:pl-[248px]",
         )}
       >
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-white/10 bg-[#0c031f]/80 px-3 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-white/10 bg-background/80 px-3 backdrop-blur md:px-6">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}

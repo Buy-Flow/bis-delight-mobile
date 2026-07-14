@@ -405,7 +405,7 @@ export function FloatingAssistant() {
 
       {/* Chat popover — compacto, ancorado no canto inferior direito, sem backdrop */}
       {open && (
-        <aside className="fixed bottom-4 right-4 z-[60] flex h-[520px] max-h-[75vh] w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#170a2e] shadow-2xl shadow-black/50">
+        <aside className="fixed bottom-4 right-4 z-[60] flex h-[520px] max-h-[75vh] w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl shadow-black/50">
 
           {/* Header */}
           <div className="flex items-center gap-2 border-b border-white/10 bg-gradient-to-r from-neon-pink/20 to-purple-600/20 px-3 py-2.5">

@@ -154,7 +154,7 @@ function PrePreparoPage() {
 
   return (
     <AdminShell>
-      <div className="min-h-screen bg-[#0c031f] p-4 lg:p-6">
+      <div className="min-h-screen bg-background p-4 lg:p-6">
         <div className="mx-auto max-w-7xl space-y-6">
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-3">

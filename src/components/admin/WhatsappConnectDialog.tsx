@@ -244,7 +244,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-gradient-to-b from-[#1a0b2e] to-[#0c031f] p-6 shadow-2xl">
+      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-gradient-to-b from-card to-background p-6 shadow-2xl">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 p-1.5 text-white/70 hover:bg-white/10"
