@@ -161,3 +161,35 @@ export function useStoreStatus(): StoreStatus {
   const override = settings?.openOverride ?? "auto";
   return computeStoreStatus(hours, override, now);
 }
+
+/**
+ * Textos oficiais de status da loja — fonte única de verdade.
+ * Não recriar variações fora deste módulo.
+ */
+export const STORE_COPY = {
+  /** Título grande de banner/modal quando a loja está fechada. */
+  closedHeadline(status: Pick<StoreStatus, "reason">): string {
+    return status.reason === "override-closed"
+      ? "Estamos temporariamente fechados"
+      : "Loja fechada no momento";
+  },
+  /** Frase curta para toasts / mensagens inline. */
+  closedShort(status: Pick<StoreStatus, "nextOpenLabel">): string {
+    return status.nextOpenLabel
+      ? `Loja fechada. Reabrimos ${status.nextOpenLabel}.`
+      : "Loja fechada no momento.";
+  },
+  /** Label de botão desabilitado no checkout. */
+  closedButtonLabel(status: Pick<StoreStatus, "nextOpenLabel">): string {
+    return status.nextOpenLabel
+      ? `Fechado · reabrimos ${status.nextOpenLabel}`
+      : "Loja fechada no momento";
+  },
+  /** Chip curto no admin/painel: "Aberto agora" / "Fechado agora". */
+  nowPill(isOpen: boolean): string {
+    return isOpen ? "Aberto agora" : "Fechado agora";
+  },
+  /** Label do horário do dia quando o dia está marcado como fechado. */
+  dayScheduleClosed: "Fechado hoje",
+} as const;
+
