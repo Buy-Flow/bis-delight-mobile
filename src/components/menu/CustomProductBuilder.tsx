@@ -76,11 +76,16 @@ export function CustomProductBuilder({
   const [sel, setSel] = useState<Selection>(seededSelection);
   const [qty, setQty] = useState(editItem?.quantity ?? 1);
   const [collapsed, setCollapsed] = useState(false);
+  const [bump, setBump] = useState(0);
 
   const unit = useMemo(() => computeUnit(groups, sel), [groups, sel]);
   const total = unit * qty;
 
   const toggle = (g: OptionGroup, optId: string) => {
+    setBump((b) => b + 1);
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate?.(8); } catch {}
+    }
     setSel((prev) => {
       const cur = prev[g.id] ?? [];
       if (g.type === "single") {
