@@ -1008,6 +1008,7 @@ function RushOrderCard({
           <Timer className="h-3 w-3" />
           {formatAge(order.created_at, tick)}
         </span>
+        {slaSettings.enabled && sla.status !== "done" && <SlaBadge sla={sla} />}
         <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/80">
           {order.mode === "entrega" ? (
             <Bike className="h-3 w-3" />
