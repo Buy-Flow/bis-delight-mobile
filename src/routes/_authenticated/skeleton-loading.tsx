@@ -19,7 +19,7 @@ import {
   FormSkeleton,
   AdminPageSkeleton,
 } from "@/components/skeleton";
-import { Sk } from "@/components/skeleton/Sk";
+import { Sk } from "@/components/skeleton";
 import {
   Save,
   RotateCcw,
