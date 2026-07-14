@@ -2731,6 +2731,113 @@ export type Database = {
           },
         ]
       }
+      review_helpful_votes: {
+        Row: {
+          created_at: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_helpful_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_settings: {
+        Row: {
+          auto_approve_min_rating: number
+          auto_hide_below_rating: number
+          cta_subtitle: string | null
+          cta_title: string | null
+          default_sort: string
+          empty_state_text: string | null
+          enabled: boolean
+          gallery_style: string
+          id: boolean
+          incentive_enabled: boolean
+          mask_reviewer_name: boolean
+          min_photos_for_featured: number
+          min_reviews_to_display: number
+          photo_required_for_reward: boolean
+          photos_per_review_limit: number
+          require_purchase: boolean
+          reward_coupon_code: string | null
+          reward_message: string | null
+          show_on_product_page: boolean
+          show_reply: boolean
+          show_reviewer_name: boolean
+          show_verified_badge: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_approve_min_rating?: number
+          auto_hide_below_rating?: number
+          cta_subtitle?: string | null
+          cta_title?: string | null
+          default_sort?: string
+          empty_state_text?: string | null
+          enabled?: boolean
+          gallery_style?: string
+          id?: boolean
+          incentive_enabled?: boolean
+          mask_reviewer_name?: boolean
+          min_photos_for_featured?: number
+          min_reviews_to_display?: number
+          photo_required_for_reward?: boolean
+          photos_per_review_limit?: number
+          require_purchase?: boolean
+          reward_coupon_code?: string | null
+          reward_message?: string | null
+          show_on_product_page?: boolean
+          show_reply?: boolean
+          show_reviewer_name?: boolean
+          show_verified_badge?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_approve_min_rating?: number
+          auto_hide_below_rating?: number
+          cta_subtitle?: string | null
+          cta_title?: string | null
+          default_sort?: string
+          empty_state_text?: string | null
+          enabled?: boolean
+          gallery_style?: string
+          id?: boolean
+          incentive_enabled?: boolean
+          mask_reviewer_name?: boolean
+          min_photos_for_featured?: number
+          min_reviews_to_display?: number
+          photo_required_for_reward?: boolean
+          photos_per_review_limit?: number
+          require_purchase?: boolean
+          reward_coupon_code?: string | null
+          reward_message?: string | null
+          show_on_product_page?: boolean
+          show_reply?: boolean
+          show_reviewer_name?: boolean
+          show_verified_badge?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
@@ -4817,6 +4924,37 @@ export type Database = {
       }
       get_or_create_my_referral_code: { Args: never; Returns: string }
       get_pix_key: { Args: never; Returns: string }
+      get_product_review_stats: {
+        Args: { _product_id: string }
+        Returns: {
+          avg: number
+          d1: number
+          d2: number
+          d3: number
+          d4: number
+          d5: number
+          total: number
+          with_photos: number
+        }[]
+      }
+      get_product_reviews: {
+        Args: { _limit?: number; _product_id: string }
+        Returns: {
+          comment: string
+          created_at: string
+          featured: boolean
+          helpful_count: number
+          id: string
+          photos: string[]
+          rating: number
+          replied_at: string
+          reply: string
+          reviewer_name: string
+          tags: string[]
+          title: string
+          verified: boolean
+        }[]
+      }
       get_proof_of_delivery_stats: { Args: { _days?: number }; Returns: Json }
       get_shared_cart: { Args: { _token: string }; Returns: Json }
       get_sla_history: {
