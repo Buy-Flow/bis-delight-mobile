@@ -10,6 +10,8 @@ import {
   Cake, Save, Gift, Users, CalendarDays, BellRing, Sparkles,
   Search, Send, CheckCircle2, Clock,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 
 export const Route = createFileRoute("/_authenticated/aniversariantes")({
   head: () => ({ meta: [{ title: "Aniversariantes — Admin" }] }),
@@ -442,8 +444,16 @@ function BirthdayAdmin() {
                     </tr>
                   ))}
                   {filteredUpcoming.length === 0 && (
-                    <tr><td colSpan={6} className="px-3 py-8 text-center text-sm text-white/40">Nenhum aniversariante nesse período.</td></tr>
+                    <EmptyState
+                      variant="table"
+                      colSpan={6}
+                      icon={Cake}
+                      title="Nenhum aniversariante nesse período"
+                      description="Ajuste a janela de datas ou aguarde novos cadastros."
+                      size="sm"
+                    />
                   )}
+
                 </tbody>
               </table>
             </div>
@@ -482,8 +492,16 @@ function BirthdayAdmin() {
                   </tr>
                 ))}
                 {history.length === 0 && (
-                  <tr><td colSpan={6} className="px-3 py-8 text-center text-sm text-white/40">Nenhum brinde emitido ainda.</td></tr>
+                  <EmptyState
+                    variant="table"
+                    colSpan={6}
+                    icon={Gift}
+                    title="Nenhum brinde emitido ainda"
+                    description="Assim que um aniversariante ganhar cupom, ele aparece aqui."
+                    size="sm"
+                  />
                 )}
+
               </tbody>
             </table>
           </div>

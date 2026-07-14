@@ -11,8 +11,10 @@ import { toast } from "sonner";
 import {
   Camera, Upload, Sparkles, X, Trash2, Play, TrendingUp, TrendingDown,
   Minus, ScanSearch, Store, Lightbulb, DollarSign, Image as ImgIcon,
-  Check, RefreshCw, AlertTriangle, Loader2,
+  Check, RefreshCw, AlertTriangle, Loader2, Inbox,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 import {
   runCompetitorAnalysis, listCompetitorAnalyses, getCompetitorAnalysis,
   deleteCompetitorAnalysis, applyCompetitorPrice,
@@ -117,10 +119,14 @@ function Page() {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_1fr]">
           <div className="space-y-2">
             {rows.length === 0 && (
-              <div className="rounded-xl border bg-white p-6 text-center text-sm text-slate-500">
-                Nenhuma análise ainda.
-              </div>
+              <EmptyState
+                icon={ScanSearch}
+                title="Nenhuma análise ainda"
+                description="Envie uma foto do cardápio do concorrente para gerar a primeira análise."
+                size="sm"
+              />
             )}
+
             {rows.map((r) => {
               const s = r.summary as AnalysisSummary;
               const active = selected?.id === r.id;
@@ -414,8 +420,9 @@ function AnalysisDetail({ a, onDelete, onRefresh }: { a: FullAnalysis; onDelete:
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="py-8 text-center text-slate-400">Nenhum item.</td></tr>
+                <EmptyState variant="table" colSpan={7} icon={Inbox} title="Nenhum item" size="sm" />
               )}
+
               {filtered.map((it, idx) => (
                 <tr key={idx} className="border-b last:border-b-0">
                   <td className="py-2 pr-2 align-top">
