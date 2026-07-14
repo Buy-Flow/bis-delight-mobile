@@ -358,9 +358,8 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               // não marcamos como enviada de verdade.
               status = acceptedStatus === "error" || acceptedStatus === "failed"
                   ? "failed"
-                  : acceptedStatus === "pending"
-                    ? "pending"
-                    : "sent";
+                  : "sent";
+
               if (status === "failed") {
                 evoError =
                   `❌ Evolution aceitou a chamada mas retornou status ${acceptedStatus}.\n\n` +
