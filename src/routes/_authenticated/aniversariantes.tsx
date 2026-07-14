@@ -151,7 +151,7 @@ function BirthdayAdmin() {
     setSendingGift(userId);
     const { data, error } = await sb.rpc("admin_send_birthday_gift", { _user_id: userId });
     setSendingGift(null);
-    if (error) return toast.error("Erro", { description: error.message });
+    if (error) return toast.error("Erro ao enviar cupom de aniversário", { description: error.message });
     const row = Array.isArray(data) ? (data as Array<{ code: string }>)[0] : null;
     toast.success(`Cupom criado: ${row?.code ?? ""}`);
     load();
