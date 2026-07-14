@@ -84,7 +84,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // hydrate from localStorage on mount
   useEffect(() => {
-    setItems(loadCart());
+    const loaded = loadCart();
+    setItems(loaded);
+    lastPersistedRef.current = loaded;
     setHydrated(true);
     // auto-resume checkout after login
     if (sessionStorage.getItem("querobis:resume_checkout") === "1") {
