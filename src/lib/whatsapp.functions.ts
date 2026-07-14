@@ -311,9 +311,8 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 const historyStatus = await getHistoryStatus(attemptEvoId);
                 if (historyStatus === "ERROR") {
                   sendReports.push(
-                    `checagem pós-envio: mensagem ${attemptEvoId ?? "sem-id"} já voltou ERROR no histórico da Evolution; tentando próxima variante do número.`,
+                    `checagem pós-envio: mensagem ${attemptEvoId ?? "sem-id"} voltou ERROR no histórico da Evolution, mas o endpoint de envio aceitou HTTP ${sendStatus}. Mantendo como pendente para confirmação por webhook/sincronização, sem marcar como número rejeitado.`,
                   );
-                  continue;
                 }
                 evoId = attemptEvoId;
                 acceptedParsed = j as Json;
