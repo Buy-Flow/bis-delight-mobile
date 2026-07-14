@@ -110,6 +110,8 @@ export function isAdminRoute(pathname: string) {
 export function canAccessRoute(pathname: string, roles: Role[]): boolean {
   // Cliente pode navegar por rotas não-admin livremente.
   if (!isAdminRoute(pathname)) return true;
+  // Rotas admin-only: apenas admin entra.
+  if (isAdminOnlyRoute(pathname)) return roles.includes("admin");
   for (const r of roles) {
     if (r === "user") continue;
     const allowed = ROLE_ROUTES[r as Exclude<Role, "user">];
