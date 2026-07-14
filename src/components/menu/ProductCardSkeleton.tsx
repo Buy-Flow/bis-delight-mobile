@@ -1,9 +1,19 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Skeleton with the same silhouette as <ProductCard /> so the layout
- * doesn't shift when real data arrives. Uses a soft shimmer instead of
- * the default fade for a snappier perceived load.
+ * Skeleton com a MESMA silhueta de <ProductCard /> para zerar o CLS entre
+ * o placeholder e o card real.
+ *
+ * Espelho fiel de ProductCard.tsx:
+ *  - Container: `rounded-[22px]`, flex-col, altura conduzida pelo conteúdo.
+ *  - Imagem: bloco fixo `h-[175px]` no topo (idêntico ao card real).
+ *  - Conteúdo: `px-3 pt-3 pb-3`, título (~2 linhas 13.5px), linha de
+ *    ingredientes, e rodapé com stack de preço + botão redondo `h-10 w-10`.
+ *
+ * Não usa `aspect-*` porque o card real NÃO tem aspect fixo — a altura
+ * total varia conforme o número de linhas do título/ingredientes. Reservar
+ * um aspect-ratio arbitrário faria o layout "pular" quando o card real
+ * renderizasse com altura diferente.
  */
 export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
   return (
@@ -21,9 +31,9 @@ export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
         animationDelay: `${delay}ms`,
       }}
     >
-      {/* Shimmer sweep */}
+      {/* Shimmer sweep sobre o card inteiro */}
       <div
-        className="pointer-events-none absolute inset-0 -translate-x-full"
+        className="pointer-events-none absolute inset-0"
         style={{
           background:
             "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)",
@@ -32,18 +42,30 @@ export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
         }}
       />
 
-      {/* Image area */}
-      <div className="relative aspect-square w-full p-3">
-        <div className="h-full w-full rounded-2xl bg-white/[0.06]" />
+      {/* Imagem — mesmo bloco `h-[175px]` do ProductCard real */}
+      <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px] bg-white/[0.05]">
+        {/* placeholder do círculo do favorito (top-right) */}
+        <div className="absolute right-2 top-2 h-8 w-8 rounded-full bg-white/[0.08]" />
       </div>
 
-      {/* Text block */}
-      <div className="flex flex-1 flex-col gap-2 px-3 pb-3">
-        <div className="h-3 w-3/4 rounded-full bg-white/[0.08]" />
-        <div className="h-2.5 w-1/2 rounded-full bg-white/[0.06]" />
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <div className="h-4 w-16 rounded-full bg-white/[0.09]" />
-          <div className="h-8 w-8 rounded-full bg-white/[0.08]" />
+      {/* Conteúdo — replica px-3 pt-3 pb-3 do card real */}
+      <div className="relative flex flex-1 flex-col px-3 pt-3 pb-3">
+        {/* Título (~2 linhas de 13.5px uppercase) */}
+        <div className="space-y-1.5">
+          <div className="h-3 w-11/12 rounded-full bg-white/[0.09]" />
+          <div className="h-3 w-2/3 rounded-full bg-white/[0.07]" />
+        </div>
+
+        {/* Linha de ingredientes (mt-1.5, ~1 linha 9.5px) */}
+        <div className="mt-1.5 h-2.5 w-4/5 rounded-full bg-white/[0.05]" />
+
+        {/* Rodapé de preço + botão redondo (mt-3, botão h-10 w-10) */}
+        <div className="mt-3 flex items-end justify-between gap-2">
+          <div className="flex flex-col gap-1.5">
+            <div className="h-2 w-16 rounded-full bg-white/[0.06]" />
+            <div className="h-5 w-20 rounded-md bg-white/[0.10]" />
+          </div>
+          <div className="h-10 w-10 shrink-0 rounded-full bg-white/[0.09]" />
         </div>
       </div>
     </div>

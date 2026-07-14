@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { ProductCardSkeleton } from "@/components/menu/ProductCardSkeleton";
 
 /* =========================================================================
  * Skeleton primitives
@@ -135,27 +136,13 @@ export function OrdersListSkeleton({ count = 3 }: { count?: number }) {
   );
 }
 
-/** Grid de favoritos: usa o mesmo tamanho do ProductCard. */
+/** Grid de favoritos: reusa o skeleton do ProductCard para bater pixel a pixel
+ *  com o card real (mesma altura de imagem `h-[175px]` + mesmo miolo). */
 export function FavoritesGridSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="relative flex aspect-[3/4] w-full flex-col overflow-hidden rounded-[22px] border border-white/5 bg-gradient-to-b from-purple-900/40 to-purple-950/40"
-        >
-          <div className="relative aspect-square w-full p-3">
-            <SkelBox delay={i * 90} className="h-full w-full rounded-2xl" />
-          </div>
-          <div className="flex flex-1 flex-col gap-2 px-3 pb-3">
-            <SkelLine w="75%" h={10} delay={i * 90 + 100} />
-            <SkelLine w="50%" h={8} delay={i * 90 + 140} />
-            <div className="mt-auto flex items-center justify-between pt-2">
-              <SkelLine w={50} h={12} delay={i * 90 + 180} />
-              <SkelCircle size={28} delay={i * 90 + 220} />
-            </div>
-          </div>
-        </div>
+        <ProductCardSkeleton key={i} delay={i * 90} />
       ))}
     </div>
   );
