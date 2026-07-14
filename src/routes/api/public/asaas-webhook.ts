@@ -26,9 +26,16 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
         const eventId = (payload.id as string | undefined) ?? null;
         const event = (payload.event as string | undefined) ?? null;
         const payment = (payload.payment as Record<string, unknown> | undefined) ?? undefined;
+        const checkout = (payload.checkout as Record<string, unknown> | undefined) ?? undefined;
         const paymentId = (payment?.id as string | undefined) ?? null;
-        const status = (payment?.status as string | undefined) ?? null;
-        const externalReference = (payment?.externalReference as string | undefined) ?? null;
+        const status =
+          (payment?.status as string | undefined) ??
+          (checkout?.status as string | undefined) ??
+          null;
+        const externalReference =
+          (payment?.externalReference as string | undefined) ??
+          (checkout?.externalReference as string | undefined) ??
+          null;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { mapAsaasStatusToOrder } = await import("@/lib/asaas.server");

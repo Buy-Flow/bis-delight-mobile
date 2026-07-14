@@ -25,7 +25,7 @@ import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/A
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { useServerFn } from "@tanstack/react-start";
-import { createAsaasCardForOrder } from "@/lib/asaas.functions";
+import { createAsaasCardForOrder, createAsaasCheckoutForOrder } from "@/lib/asaas.functions";
 
 function formatCardNumber(v: string) {
   const d = v.replace(/\D/g, "").slice(0, 19);
@@ -131,7 +131,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [geoLoading, setGeoLoading] = useState(false);
 
   const [sending, setSending] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao">("whatsapp");
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("whatsapp");
   const [cpf, setCpf] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -145,6 +145,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [useSavedCard, setUseSavedCard] = useState(true);
   const [saveCard, setSaveCard] = useState(true);
   const runCardCharge = useServerFn(createAsaasCardForOrder);
+  const runAsaasCheckout = useServerFn(createAsaasCheckoutForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
@@ -641,6 +642,30 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             : raw || "Não foi possível processar o cartão.";
           toast.error("Pagamento recusado", { description: friendly, duration: 10000 });
           // Não apaga o pedido — usuário pode tentar de novo em /pagamento/:orderId
+          setSending(false);
+          return;
+        }
+      } else if (paymentMethod === "asaas_checkout") {
+        try {
+          const res = await runAsaasCheckout({
+            data: {
+              orderId: order.id,
+              customer: {
+                name: name.trim(),
+                email: (cardEmail || user?.email || "").trim() || undefined,
+                cpfCnpj: cpf ? cpfDigits(cpf) : undefined,
+                phone: phone.replace(/\D/g, "") || undefined,
+              },
+              origin: window.location.origin,
+            },
+          });
+          clear();
+          closeCheckout();
+          window.location.href = res.url;
+          return;
+        } catch (chkErr: any) {
+          console.error("[checkout] asaas checkout failed", chkErr);
+          toast.error("Não foi possível abrir o checkout Asaas", { description: chkErr?.message ?? "Tente novamente." });
           setSending(false);
           return;
         }
@@ -1387,11 +1412,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               </div>
               <h4 className="font-display text-base font-extrabold text-white">Pagamento</h4>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {([
                 { id: "whatsapp", label: "Combinar", hint: "Falar no WhatsApp", Icon: WhatsIcon, color: "text-neon-cyan" },
                 { id: "pix", label: "PIX", hint: "QR Code na hora", Icon: QrCode, color: "text-neon-yellow" },
-                { id: "cartao", label: "Cartão", hint: "Até 12x", Icon: CreditCard, color: "text-neon-pink" },
+                { id: "cartao", label: "Cartão", hint: "Até 12x aqui", Icon: CreditCard, color: "text-neon-pink" },
+                { id: "asaas_checkout", label: "Checkout Asaas", hint: "PIX ou Cartão (mais seguro)", Icon: CreditCard, color: "text-neon-cyan" },
               ] as const).map(({ id, label, hint, Icon, color }) => (
                 <button
                   key={id}
@@ -1410,6 +1436,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 </button>
               ))}
             </div>
+            {paymentMethod === "asaas_checkout" && (
+              <div className="mt-3 rounded-2xl border border-neon-cyan/20 bg-neon-cyan/[0.04] p-3 text-[12px] text-white/80">
+                Você será redirecionado para a página segura do Asaas para escolher PIX ou Cartão. Volta pra cá automaticamente depois do pagamento.
+              </div>
+            )}
             {paymentMethod === "cartao" && (
               <div className="mt-3 space-y-2.5 rounded-2xl border border-neon-pink/20 bg-neon-pink/[0.04] p-3">
                 <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-neon-pink/80">
