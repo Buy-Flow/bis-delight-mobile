@@ -50,6 +50,7 @@ import { Route as AuthenticatedCopilotoRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
 import { Route as AuthenticatedCarrinhosRouteImport } from './routes/_authenticated/carrinhos'
+import { Route as AuthenticatedCaixaFechamentoRouteImport } from './routes/_authenticated/caixa-fechamento'
 import { Route as AuthenticatedCaixaRouteImport } from './routes/_authenticated/caixa'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
@@ -59,6 +60,7 @@ import { Route as AuthenticatedAlertasSonorosRouteImport } from './routes/_authe
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
+import { Route as ApiPublicCashCloseCronRouteImport } from './routes/api/public/cash-close-cron'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 import { Route as ApiPublicWhatsappWebhookEventRouteImport } from './routes/api/public/whatsapp-webhook.$event'
@@ -272,6 +274,12 @@ const AuthenticatedCarrinhosRoute = AuthenticatedCarrinhosRouteImport.update({
   path: '/carrinhos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCaixaFechamentoRoute =
+  AuthenticatedCaixaFechamentoRouteImport.update({
+    id: '/caixa-fechamento',
+    path: '/caixa-fechamento',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCaixaRoute = AuthenticatedCaixaRouteImport.update({
   id: '/caixa',
   path: '/caixa',
@@ -320,6 +328,11 @@ const ApiPublicWhatsappWebhookRoute =
     path: '/api/public/whatsapp-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCashCloseCronRoute = ApiPublicCashCloseCronRouteImport.update({
+  id: '/api/public/cash-close-cron',
+  path: '/api/public/cash-close-cron',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRastrearOrderIdRoute =
   AuthenticatedRastrearOrderIdRouteImport.update({
     id: '/rastrear/$orderId',
@@ -356,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/caixa': typeof AuthenticatedCaixaRoute
+  '/caixa-fechamento': typeof AuthenticatedCaixaFechamentoRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -390,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
@@ -410,6 +425,7 @@ export interface FileRoutesByTo {
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/caixa': typeof AuthenticatedCaixaRoute
+  '/caixa-fechamento': typeof AuthenticatedCaixaFechamentoRoute
   '/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/clientes': typeof AuthenticatedClientesRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -444,6 +460,7 @@ export interface FileRoutesByTo {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
@@ -466,6 +483,7 @@ export interface FileRoutesById {
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/_authenticated/caixa': typeof AuthenticatedCaixaRoute
+  '/_authenticated/caixa-fechamento': typeof AuthenticatedCaixaFechamentoRoute
   '/_authenticated/carrinhos': typeof AuthenticatedCarrinhosRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
@@ -500,6 +518,7 @@ export interface FileRoutesById {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
@@ -522,6 +541,7 @@ export interface FileRouteTypes {
     | '/avaliacoes'
     | '/biblioteca'
     | '/caixa'
+    | '/caixa-fechamento'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -556,6 +576,7 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/cash-close-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesByTo: FileRoutesByTo
@@ -576,6 +597,7 @@ export interface FileRouteTypes {
     | '/avaliacoes'
     | '/biblioteca'
     | '/caixa'
+    | '/caixa-fechamento'
     | '/carrinhos'
     | '/clientes'
     | '/conta'
@@ -610,6 +632,7 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/cash-close-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/whatsapp-webhook/$event'
   id:
@@ -631,6 +654,7 @@ export interface FileRouteTypes {
     | '/_authenticated/avaliacoes'
     | '/_authenticated/biblioteca'
     | '/_authenticated/caixa'
+    | '/_authenticated/caixa-fechamento'
     | '/_authenticated/carrinhos'
     | '/_authenticated/clientes'
     | '/_authenticated/conta'
@@ -665,6 +689,7 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
+    | '/api/public/cash-close-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesById: FileRoutesById
@@ -684,6 +709,7 @@ export interface RootRouteChildren {
   ProdutoIdRoute: typeof ProdutoIdRoute
   RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
+  ApiPublicCashCloseCronRoute: typeof ApiPublicCashCloseCronRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
 }
 
@@ -976,6 +1002,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarrinhosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/caixa-fechamento': {
+      id: '/_authenticated/caixa-fechamento'
+      path: '/caixa-fechamento'
+      fullPath: '/caixa-fechamento'
+      preLoaderRoute: typeof AuthenticatedCaixaFechamentoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/caixa': {
       id: '/_authenticated/caixa'
       path: '/caixa'
@@ -1039,6 +1072,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cash-close-cron': {
+      id: '/api/public/cash-close-cron'
+      path: '/api/public/cash-close-cron'
+      fullPath: '/api/public/cash-close-cron'
+      preLoaderRoute: typeof ApiPublicCashCloseCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/rastrear/$orderId': {
       id: '/_authenticated/rastrear/$orderId'
       path: '/rastrear/$orderId'
@@ -1072,6 +1112,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
   AuthenticatedCaixaRoute: typeof AuthenticatedCaixaRoute
+  AuthenticatedCaixaFechamentoRoute: typeof AuthenticatedCaixaFechamentoRoute
   AuthenticatedCarrinhosRoute: typeof AuthenticatedCarrinhosRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
@@ -1112,6 +1153,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
   AuthenticatedCaixaRoute: AuthenticatedCaixaRoute,
+  AuthenticatedCaixaFechamentoRoute: AuthenticatedCaixaFechamentoRoute,
   AuthenticatedCarrinhosRoute: AuthenticatedCarrinhosRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
@@ -1175,6 +1217,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutoIdRoute: ProdutoIdRoute,
   RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
+  ApiPublicCashCloseCronRoute: ApiPublicCashCloseCronRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
 }
 export const routeTree = rootRouteImport

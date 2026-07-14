@@ -166,6 +166,7 @@ const groups: NavGroup[] = [
     items: [
       { to: "/financeiro", label: "Financeiro", icon: LineChart },
       { to: "/lucratividade", label: "Lucratividade", icon: PiggyBank },
+      { to: "/caixa-fechamento", label: "Fechamento de Caixa", icon: FileDown },
     ],
   },
   {
