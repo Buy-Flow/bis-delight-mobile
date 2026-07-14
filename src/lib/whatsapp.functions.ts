@@ -308,12 +308,11 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 const dataRec = (j.data ?? {}) as Record<string, unknown>;
                 const attemptEvoId = extractEvolutionMessageId(j);
                 const evoStatus = String(j.status ?? dataRec.status ?? "pending").toLowerCase();
-                const historyStatus = await getHistoryStatus(attemptEvoId);
-                if (historyStatus === "ERROR") {
-                  sendReports.push(
-                    `checagem pós-envio: mensagem ${attemptEvoId ?? "sem-id"} voltou ERROR no histórico da Evolution, mas o endpoint de envio aceitou HTTP ${sendStatus}. Mantendo como pendente para confirmação por webhook/sincronização, sem marcar como número rejeitado.`,
-                  );
-                }
+                // Evolution 201 = mensagem aceita e enfileirada no celular.
+                // O status "PENDING" é normal na resposta inicial; a confirmação
+                // real de entrega vem depois pelo webhook (ack=2/3). Não fazemos
+                // polling do histórico aqui porque ele frequentemente retorna
+                // ERROR transitório mesmo em mensagens entregues com sucesso.
                 evoId = attemptEvoId;
                 acceptedParsed = j as Json;
                 acceptedStatus = evoStatus;
@@ -326,6 +325,7 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 accepted = true;
                 break;
               }
+
             }
             if (!resp) throw new Error("Nenhum número válido para envio.");
             sendStatus = resp.status;
