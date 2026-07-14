@@ -5,7 +5,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+// textarea: use native element (no shadcn textarea in this project)
 import { toast } from "sonner";
 import {
   Camera, Upload, Sparkles, X, Trash2, Play, TrendingUp, TrendingDown,
