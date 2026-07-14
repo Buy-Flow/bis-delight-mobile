@@ -97,6 +97,8 @@ function MotoboyPortal() {
   const [battery, setBattery] = useState<number | null>(null);
   const gpsWatch = useRef<number | null>(null);
   const heartbeatTimer = useRef<number | null>(null);
+  const latestCoordRef = useRef<{ lat: number; lng: number; heading?: number; speed?: number; acc?: number } | null>(null);
+  const lastSentAtRef = useRef<number>(0);
 
   const load = useCallback(async () => {
     const { data: u } = await supabase.auth.getUser();
