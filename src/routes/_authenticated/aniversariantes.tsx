@@ -492,8 +492,16 @@ function BirthdayAdmin() {
                   </tr>
                 ))}
                 {history.length === 0 && (
-                  <tr><td colSpan={6} className="px-3 py-8 text-center text-sm text-white/40">Nenhum brinde emitido ainda.</td></tr>
+                  <EmptyState
+                    variant="table"
+                    colSpan={6}
+                    icon={Gift}
+                    title="Nenhum brinde emitido ainda"
+                    description="Assim que um aniversariante ganhar cupom, ele aparece aqui."
+                    size="sm"
+                  />
                 )}
+
               </tbody>
             </table>
           </div>
