@@ -114,24 +114,50 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   async function refreshDiagnostics() {
     try {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const [okRes, skipRes, errRes, lastEvt, lastSync, lastErr] = await Promise.all([
+      const [okRes, skipRes, errRes, noiseRes, lastEvt, lastSync, lastErr, skipList, errList] = await Promise.all([
         supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "ok").gte("created_at", since),
         supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "skipped").gte("created_at", since),
         supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "error").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "noise").gte("created_at", since),
         supabase.from("whatsapp_ingest_logs").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("whatsapp_ingest_logs").select("created_at").eq("source", "sync").order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("whatsapp_ingest_logs").select("created_at,error").eq("status", "error").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("whatsapp_ingest_logs").select("error").eq("status", "skipped").gte("created_at", since).limit(500),
+        supabase.from("whatsapp_ingest_logs").select("error,created_at").eq("status", "error").gte("created_at", since).order("created_at", { ascending: false }).limit(500),
       ]);
       const ok = okRes.count ?? 0;
       const skipped = skipRes.count ?? 0;
       const error = errRes.count ?? 0;
+      const noise = noiseRes.count ?? 0;
+      const groupReasons = (rows: Array<{ error: string | null; created_at?: string }> | null | undefined) => {
+        const acc = new Map<string, { count: number; lastAt: string | null }>();
+        for (const r of rows ?? []) {
+          const k = (r.error ?? "sem motivo").trim();
+          const prev = acc.get(k);
+          const lastAt = r.created_at ?? null;
+          if (prev) {
+            prev.count += 1;
+            if (lastAt && (!prev.lastAt || lastAt > prev.lastAt)) prev.lastAt = lastAt;
+          } else {
+            acc.set(k, { count: 1, lastAt });
+          }
+        }
+        return Array.from(acc.entries())
+          .map(([reason, v]) => ({ reason, count: v.count, lastAt: v.lastAt }))
+          .sort((a, b) => b.count - a.count);
+      };
+      const skipReasons = groupReasons(skipList.data as { error: string | null }[] | null).map(({ reason, count }) => ({ reason, count }));
+      const errorReasons = groupReasons(errList.data as { error: string | null; created_at: string }[] | null);
       setDiag({
-        ok, skipped, error, total: ok + skipped + error,
+        ok, skipped, error, noise, total: ok + skipped + error + noise,
         lastEventAt: (lastEvt.data as { created_at: string } | null)?.created_at ?? null,
         lastSyncAt: (lastSync.data as { created_at: string } | null)?.created_at ?? null,
         lastErrorAt: (lastErr.data as { created_at: string; error: string | null } | null)?.created_at ?? null,
         lastError: (lastErr.data as { created_at: string; error: string | null } | null)?.error ?? null,
+        skipReasons,
+        errorReasons,
       });
+
     } catch {
       /* noop */
     }
