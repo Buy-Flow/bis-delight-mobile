@@ -6,7 +6,9 @@ export async function resolveOrCreateAsaasCustomer(opts: {
   phone?: string;
 }): Promise<{ id: string }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { upsertAsaasCustomer } = await import("@/lib/asaas.server");
+  const { upsertAsaasCustomer, getAsaasCustomer, updateAsaasCustomer } = await import("@/lib/asaas.server");
+
+  const cpfDigits = (opts.cpfCnpj ?? "").replace(/\D/g, "") || undefined;
 
   if (opts.userId) {
     const { data: p } = await supabaseAdmin
@@ -14,7 +16,21 @@ export async function resolveOrCreateAsaasCustomer(opts: {
       .select("asaas_customer_id")
       .eq("id", opts.userId)
       .maybeSingle();
-    if (p?.asaas_customer_id) return { id: p.asaas_customer_id };
+    if (p?.asaas_customer_id) {
+      // Ensure remote customer has cpfCnpj (Asaas Checkout requires it).
+      if (cpfDigits) {
+        const remote = await getAsaasCustomer(p.asaas_customer_id);
+        const remoteCpf = (remote?.cpfCnpj ?? "").replace(/\D/g, "");
+        if (!remoteCpf) {
+          await updateAsaasCustomer(p.asaas_customer_id, {
+            cpfCnpj: cpfDigits,
+            phone: opts.phone,
+            email: opts.email,
+          });
+        }
+      }
+      return { id: p.asaas_customer_id };
+    }
   }
 
   const c = await upsertAsaasCustomer({
