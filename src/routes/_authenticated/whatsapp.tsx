@@ -1549,12 +1549,24 @@ function messageStatusMeta(m: Message): StatusMeta {
       className: "text-black/70",
     };
   }
-  // default: sent
+  // default: sent — Evolution aceitou (SERVER_ACK), mas o aparelho do
+  // destinatário ainda não confirmou entrega. Se ficou muito tempo assim,
+  // provavelmente número inválido/bloqueado/sem WhatsApp.
+  const createdMs = m.created_at ? Date.parse(m.created_at) : NaN;
+  const ageMin = Number.isFinite(createdMs) ? (Date.now() - createdMs) / 60000 : 0;
+  if (ageMin > 3) {
+    return {
+      kind: "failed",
+      label: "Não entregue",
+      icon: <AlertTriangle className="h-3 w-3" />,
+      className: "text-amber-300",
+    };
+  }
   return {
     kind: "sent",
-    label: "Enviada",
+    label: "Enviada ao servidor",
     icon: <Check className="h-3 w-3" />,
-    className: "text-black/70",
+    className: "text-black/60",
   };
 }
 
