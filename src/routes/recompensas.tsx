@@ -18,7 +18,9 @@ export const Route = createFileRoute("/recompensas")({
       { name: "description", content: "Acumule selos, suba de nível e ganhe cupons cada vez maiores no Programa Bis Recompensa." },
       { property: "og:title", content: "Bis Recompensa — Quero Bis" },
       { property: "og:description", content: "Bronze, Prata e Ouro: recompensas crescentes para clientes fiéis." },
+      { property: "og:url", content: "https://querobis.lovable.app/recompensas" },
     ],
+    links: [{ rel: "canonical", href: "https://querobis.lovable.app/recompensas" }],
   }),
   component: RecompensasPage,
 });
