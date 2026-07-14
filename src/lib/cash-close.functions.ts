@@ -207,7 +207,6 @@ export const resendCashCloseReport = createServerFn({ method: "POST" })
         whatsapp_status: failed.length ? (ok.length ? "partial" : "failed") : "sent",
         whatsapp_error: errs.length ? errs.join(" | ") : null,
         sent_at: new Date().toISOString(),
-        resend_count: (rep.resend_count ?? 0) + 1,
       })
       .eq("id", data.report_id);
 
