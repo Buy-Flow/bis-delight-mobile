@@ -116,15 +116,15 @@ export const updateInsightStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdminOrManager(context.supabase, context.userId);
-    const patch: Record<string, unknown> = {
+    const nowIso = new Date().toISOString();
+    const { error } = await context.supabase.from("daily_insights").update({
       status: data.status,
-      updated_at: new Date().toISOString(),
-    };
-    if (data.status === "read") patch.read_at = new Date().toISOString();
-    if (data.status === "done" || data.status === "dismissed") patch.resolved_at = new Date().toISOString();
-    if (data.status === "snoozed" && data.snoozed_until) patch.snoozed_until = data.snoozed_until;
-    if (data.notes !== undefined) patch.notes = data.notes;
-    const { error } = await context.supabase.from("daily_insights").update(patch).eq("id", data.id);
+      updated_at: nowIso,
+      read_at: data.status === "read" ? nowIso : undefined,
+      resolved_at: (data.status === "done" || data.status === "dismissed") ? nowIso : undefined,
+      snoozed_until: data.status === "snoozed" ? (data.snoozed_until ?? null) : undefined,
+      notes: data.notes,
+    }).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
