@@ -300,7 +300,7 @@ function PDVPage() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
-      <div className="mx-auto grid max-w-[1600px] gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="mx-auto grid max-w-[1600px] items-start gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         {/* Catalog */}
         <section className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -347,14 +347,15 @@ function PDVPage() {
                 onClick={() => onProductClick(p)}
                 className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition hover:-translate-y-0.5 hover:border-neon-pink/50 hover:shadow-[0_10px_30px_-15px_rgb(255_20_147/.6)]"
               >
-                <div className="relative aspect-square w-full overflow-hidden bg-black/40">
+                <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-black/60 to-black/20 p-2">
                   {p.image ? (
                     <img
                       src={p.image}
                       alt={p.name}
                       loading="lazy"
-                      className="h-full w-full object-cover transition group-hover:scale-105"
+                      className="h-full w-full object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.4)] transition group-hover:scale-105"
                     />
+
                   ) : (
                     <div className="grid h-full w-full place-items-center text-white/30">
                       <ShoppingCart className="h-8 w-8" />
@@ -388,7 +389,7 @@ function PDVPage() {
         </section>
 
         {/* Cart panel — desktop */}
-        <aside className="hidden lg:block">
+        <aside className="hidden self-start lg:sticky lg:top-20 lg:block">
           <CartPanel
             cart={cart}
             subtotal={subtotal}
