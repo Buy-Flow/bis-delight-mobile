@@ -9,7 +9,7 @@ import {
   applySkeletonSettings,
   DEFAULT_SKELETON_SETTINGS,
   type SkeletonSettings,
-} from "@/components/skeleton/SkeletonProvider";
+} from "@/components/skeleton";
 import {
   KpiRowSkeleton,
   ListSkeleton,
@@ -18,8 +18,8 @@ import {
   CardGridSkeleton,
   FormSkeleton,
   AdminPageSkeleton,
-} from "@/components/skeleton/SkeletonKit";
-import { Sk } from "@/components/skeleton/Sk";
+} from "@/components/skeleton";
+import { Sk } from "@/components/skeleton";
 import {
   Save,
   RotateCcw,

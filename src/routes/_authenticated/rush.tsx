@@ -43,7 +43,7 @@ import { sendAdminTestPush } from "@/lib/push.functions";
 import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 import { useSlaSettings, computeSla, type SlaSettings, type SlaHistoryRow } from "@/lib/sla";
 import { SlaBadge, SlaBar } from "@/components/admin/SlaBadge";
-import { AdminPageSkeleton } from "@/components/skeleton/SkeletonKit";
+import { AdminPageSkeleton } from "@/components/skeleton";
 
 export const Route = createFileRoute("/_authenticated/rush")({
   head: () => ({

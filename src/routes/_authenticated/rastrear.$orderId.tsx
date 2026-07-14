@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { TrackingPageSkeleton } from "@/components/ui/skeletons";
+import { TrackingPageSkeleton } from "@/components/skeleton";
 import { ReviewSubmitDialog } from "@/components/reviews/ReviewSubmitDialog";
 
 export const Route = createFileRoute("/_authenticated/rastrear/$orderId")({
