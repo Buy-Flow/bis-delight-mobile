@@ -1035,7 +1035,7 @@ function RadioDot({ checked, onChange, title }: { checked: boolean; onChange: ()
         "grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition",
         checked
           ? "border-neon-pink bg-neon-pink text-white shadow-[0_0_10px_-2px_oklch(0.72_0.24_10/0.7)]"
-          : "border-white/20 bg-transparent hover:border-white/40",
+          : "border-white/50 bg-white/[0.03] hover:border-white/80 hover:bg-white/[0.06]",
       )}
     >
       {checked && <Check className="h-3.5 w-3.5" strokeWidth={4} />}
