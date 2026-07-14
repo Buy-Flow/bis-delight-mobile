@@ -468,9 +468,38 @@ function MotoboyPortal() {
       if (!times.length) return null;
       return times.reduce((a, b) => a + b, 0) / times.length;
     })();
-    const totalMissed = missedOffers.filter((m) => inRange(m.offered_at, startToday)).length;
-    const totalOffered = today.length + totalMissed;
-    const acceptRate = totalOffered > 0 ? (today.length / totalOffered) * 100 : null;
+    // ============================================================
+    // Taxa de aceitação — regra rigorosa para não distorcer com broadcast:
+    //
+    // Só conta no denominador ofertas em que ESTE motoboy teve a chance
+    // real de aceitar/recusar:
+    //   • Direcionadas a ele (courier_id = c.id, broadcast=false) que
+    //     ele aceitou, recusou ou deixou expirar.
+    //   • Broadcasts que ele efetivamente aceitou (numerador) — pois
+    //     broadcast recusado/expirado/tomado por outro NÃO é "perdida"
+    //     dele: ele pode nunca ter visto, estar offline, ou outro
+    //     motoboy foi mais rápido. Contar isso puniria injustamente.
+    //
+    // Numerador: ofertas aceitas hoje por ele (qualquer origem).
+    // Denominador: aceitas + recusadas por ele + expiradas direcionadas
+    // a ele (não broadcast).
+    // ============================================================
+    const isMine = (m: Offer) => m.courier_id === courier?.id;
+    const todayMissedMine = missedOffers.filter(
+      (m) => inRange(m.offered_at, startToday) && isMine(m),
+    );
+    const rejectedByMe = todayMissedMine.filter((m) => m.status === "rejected").length;
+    const directExpired = todayMissedMine.filter(
+      (m) => m.status === "expired" && m.broadcast === false,
+    ).length;
+    // Numerador: usa entregas de hoje como proxy conservador (todo pedido
+    // entregue passou por aceitação). Se um dia expusermos accepted_at no
+    // delivery_offers, trocar por contagem direta.
+    const acceptedToday = today.length;
+    const denom = acceptedToday + rejectedByMe + directExpired;
+    const acceptRate = denom > 0 ? (acceptedToday / denom) * 100 : null;
+    // "Perdidas hoje" no card = apenas as que realmente pesam contra ele.
+    const totalMissed = rejectedByMe + directExpired;
     return {
       today: { count: today.length, earnings: sumFee(today), km: sumKm(today) },
       week: { count: week.length, earnings: sumFee(week), km: sumKm(week) },
@@ -479,7 +508,7 @@ function MotoboyPortal() {
       acceptRate,
       missedToday: totalMissed,
     };
-  }, [historyOrders, missedOffers]);
+  }, [historyOrders, missedOffers, courier?.id]);
 
   // Battery indicator
   useEffect(() => {
