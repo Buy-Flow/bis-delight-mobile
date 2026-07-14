@@ -421,8 +421,23 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         _order_total: subtotal,
       });
       if (!promoErr && Array.isArray(promo) && promo.length > 0) {
-        const row = promo[0] as { id: string; code: string; discount: number };
-        setCouponApplied({ id: row.id, code: row.code, discount: Number(row.discount), kind: "promo" });
+        const row = promo[0] as {
+          id: string;
+          code: string;
+          discount: number;
+          discount_type?: "fixed" | "percent";
+          discount_value?: number;
+          min_order?: number;
+        };
+        setCouponApplied({
+          id: row.id,
+          code: row.code,
+          discount: Number(row.discount),
+          kind: "promo",
+          minOrder: Number(row.min_order ?? 0),
+          discountType: row.discount_type,
+          discountValue: row.discount_value != null ? Number(row.discount_value) : undefined,
+        });
         toast.success(`Cupom aplicado! −${brl(Number(row.discount))}`);
         return;
       }
@@ -438,7 +453,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           return;
         }
         const discountValue = Math.min(rewardValue, subtotal);
-        setCouponApplied({ id: row.id, code: row.code, discount: discountValue, kind: "loyalty" });
+        setCouponApplied({
+          id: row.id,
+          code: row.code,
+          discount: discountValue,
+          kind: "loyalty",
+          minOrder: rewardValue,
+          discountType: "fixed",
+          discountValue: rewardValue,
+        });
         toast.success(`Cupom aplicado! −${brl(discountValue)}`);
         return;
       }
