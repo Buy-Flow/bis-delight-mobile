@@ -28,6 +28,7 @@ export function useSoundAlertsListener() {
   const globalRef = useRef<SoundGlobalSettings | null>(null);
   const firedLateRef = useRef<Set<string>>(new Set());
   const initialFillRef = useRef(false);
+  const channelSuffixRef = useRef(`sound-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,8 +57,9 @@ export function useSoundAlertsListener() {
     };
 
     // Realtime subscription to orders
+    const suffix = channelSuffixRef.current;
     const orderChannel = supabase
-      .channel("sound-alerts-orders")
+      .channel(`sound-alerts-orders-${suffix}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "orders" },
@@ -84,7 +86,7 @@ export function useSoundAlertsListener() {
 
     // Reviews
     const reviewsChannel = supabase
-      .channel("sound-alerts-reviews")
+      .channel(`sound-alerts-reviews-${suffix}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "reviews" },
@@ -96,7 +98,7 @@ export function useSoundAlertsListener() {
 
     // Reload config when it changes in another tab
     const cfgChannel = supabase
-      .channel("sound-alerts-cfg")
+      .channel(`sound-alerts-cfg-${suffix}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "sound_alerts" },

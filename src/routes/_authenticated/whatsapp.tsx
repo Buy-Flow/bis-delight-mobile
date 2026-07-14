@@ -39,7 +39,6 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { AdminShell } from "@/components/admin/AdminShell";
 
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -615,7 +614,6 @@ function WhatsappPage() {
   };
 
   return (
-    <AdminShell>
     <div className="flex h-[calc(100dvh-4rem)] w-full flex-col overflow-hidden rounded-lg border border-black/40 bg-[#0b141a] text-[#e9edef]">
 
       {/* Top bar estilo WhatsApp Web */}
@@ -1033,7 +1031,6 @@ function WhatsappPage() {
         </div>
         )}
     </div>
-    </AdminShell>
   );
 }
 
