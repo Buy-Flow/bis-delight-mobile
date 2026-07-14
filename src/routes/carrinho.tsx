@@ -268,6 +268,7 @@ function CartPage() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (it.quantity <= 1) {
@@ -277,34 +278,47 @@ function CartPage() {
                           }
                         }}
                         className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white active:scale-95"
-                        aria-label="Diminuir"
+                        aria-label={
+                          it.quantity <= 1
+                            ? `Remover ${it.name} do carrinho`
+                            : `Diminuir quantidade de ${it.name}`
+                        }
+                        title={it.quantity <= 1 ? "Remover do carrinho" : "Diminuir quantidade"}
                       >
-                        {it.quantity <= 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+                        {it.quantity <= 1 ? (
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        ) : (
+                          <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                        )}
                       </button>
                       <div className="w-5 text-center text-sm font-extrabold text-white">{it.quantity}</div>
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           update(it.uid, { quantity: it.quantity + 1 });
                         }}
                         className="grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white glow-pink active:scale-95"
-                        aria-label="Aumentar"
+                        aria-label={`Aumentar quantidade de ${it.name}`}
+                        title="Aumentar quantidade"
                       >
-                        <Plus className="h-3.5 w-3.5" />
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
                 </div>
 
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     openEdit(it);
                   }}
                   className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80 active:scale-95"
-                  aria-label="Editar"
+                  aria-label={`Editar ${it.name}`}
+                  title="Editar item"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </div>
             ))}
