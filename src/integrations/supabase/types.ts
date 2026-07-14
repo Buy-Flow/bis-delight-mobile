@@ -3638,6 +3638,66 @@ export type Database = {
         }
         Relationships: []
       }
+      skeleton_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          intensity: number
+          on_admin: boolean
+          on_forms: boolean
+          on_lists: boolean
+          on_menu: boolean
+          on_orders: boolean
+          radius_px: number
+          reduce_motion_respect: boolean
+          speed_ms: number
+          stagger_ms: number
+          tint: string
+          tone: string
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          intensity?: number
+          on_admin?: boolean
+          on_forms?: boolean
+          on_lists?: boolean
+          on_menu?: boolean
+          on_orders?: boolean
+          radius_px?: number
+          reduce_motion_respect?: boolean
+          speed_ms?: number
+          stagger_ms?: number
+          tint?: string
+          tone?: string
+          updated_at?: string
+          variant?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          intensity?: number
+          on_admin?: boolean
+          on_forms?: boolean
+          on_lists?: boolean
+          on_menu?: boolean
+          on_orders?: boolean
+          radius_px?: number
+          reduce_motion_respect?: boolean
+          speed_ms?: number
+          stagger_ms?: number
+          tint?: string
+          tone?: string
+          updated_at?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       sla_settings: {
         Row: {
           auto_notify_admin: boolean
