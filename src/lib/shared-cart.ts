@@ -18,13 +18,17 @@ export type SharedCart = {
 };
 
 const PARTICIPATE_KEY = "querobis:share_mode";
+const RECENT_KEY = "querobis:share_recent";
 
 export type ShareMode = { token: string; name: string; ownerName?: string } | null;
+export type RecentShare = { token: string; name: string; ownerName?: string; lastAt: number };
 
 export function readShareMode(): ShareMode {
   if (typeof window === "undefined") return null;
   try {
-    const raw = sessionStorage.getItem(PARTICIPATE_KEY);
+    // Migração: aceita tanto localStorage (novo) quanto sessionStorage (legado)
+    const raw =
+      localStorage.getItem(PARTICIPATE_KEY) || sessionStorage.getItem(PARTICIPATE_KEY);
     return raw ? (JSON.parse(raw) as ShareMode) : null;
   } catch {
     return null;
@@ -34,11 +38,45 @@ export function readShareMode(): ShareMode {
 export function writeShareMode(mode: ShareMode) {
   if (typeof window === "undefined") return;
   if (mode) {
-    sessionStorage.setItem(PARTICIPATE_KEY, JSON.stringify(mode));
+    localStorage.setItem(PARTICIPATE_KEY, JSON.stringify(mode));
+    sessionStorage.removeItem(PARTICIPATE_KEY);
+    pushRecentShare({ token: mode.token, name: mode.name, ownerName: mode.ownerName, lastAt: Date.now() });
   } else {
+    localStorage.removeItem(PARTICIPATE_KEY);
     sessionStorage.removeItem(PARTICIPATE_KEY);
   }
   window.dispatchEvent(new Event("querobis:share_mode"));
+}
+
+export function readRecentShares(): RecentShare[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    const list = raw ? (JSON.parse(raw) as RecentShare[]) : [];
+    // Mantém apenas 7 dias
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return list.filter((r) => r.lastAt > cutoff).sort((a, b) => b.lastAt - a.lastAt);
+  } catch {
+    return [];
+  }
+}
+
+function pushRecentShare(entry: RecentShare) {
+  if (typeof window === "undefined") return;
+  try {
+    const cur = readRecentShares().filter((r) => r.token !== entry.token);
+    const next = [entry, ...cur].slice(0, 5);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  } catch {}
+}
+
+export function removeRecentShare(token: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const next = readRecentShares().filter((r) => r.token !== token);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+    window.dispatchEvent(new Event("querobis:share_mode"));
+  } catch {}
 }
 
 export async function createSharedCart(input: {
