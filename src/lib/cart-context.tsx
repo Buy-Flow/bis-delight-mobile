@@ -283,8 +283,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         writeShareMode(m);
         setShareModeState(m);
       },
+      hydrated,
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId, shareMode]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId, shareMode, hydrated]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
