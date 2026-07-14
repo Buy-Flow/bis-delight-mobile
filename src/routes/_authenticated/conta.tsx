@@ -50,6 +50,7 @@ import {
   LoyaltyPanelSkeleton,
 } from "@/components/ui/skeletons";
 import { AddressManager } from "@/components/account/AddressManager";
+import { VipRankingCard } from "@/components/account/VipRankingCard";
 import { formatCpf, isValidCpf, cpfDigits } from "@/lib/cpf";
 
 
