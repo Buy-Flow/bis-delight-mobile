@@ -850,3 +850,29 @@ label:has(:focus-visible):not([data-no-focus-ring]),
   }
 }
 
+/* ============================================================
+ * Canonical Media Aspect Ratios
+ * ------------------------------------------------------------
+ * Fonte única de verdade para as proporções de mídia (uploads,
+ * previews, cards). Antes: `aspect-[16/10]` e `aspect-[9/16]`
+ * pulverizados em admin.tsx (6k linhas) e em componentes de
+ * popups — mudar um valor forçava caçar strings arbitrárias.
+ *
+ * Tokens:
+ *   - aspect-banner  → 16/10  (banners horizontais, hero de card,
+ *                              dropzones de imagem de produto)
+ *   - aspect-story   →  9/16  (stories/popups mobile, mockups
+ *                              de tela cheia)
+ *   - aspect-tile    →  1/1   (ícones, thumbs, grids uniformes)
+ *   - aspect-wide    → 21/9   (headers ultrawide, reservado)
+ *
+ * O módulo `src/lib/media-aspect.ts` espelha os mesmos valores
+ * para código TS que precisa do ratio numérico (crop, canvas,
+ * validação de upload).
+ * ============================================================ */
+@utility aspect-banner { aspect-ratio: 16 / 10; }
+@utility aspect-story  { aspect-ratio: 9 / 16; }
+@utility aspect-tile   { aspect-ratio: 1 / 1; }
+@utility aspect-wide   { aspect-ratio: 21 / 9; }
+
+
