@@ -1024,6 +1024,15 @@ function RushOrderCard({
           {brl(Number(order.total || 0))}
         </span>
       </div>
+      {slaSettings.enabled && sla.status !== "done" && (
+        <div className="mt-2">
+          <SlaBar sla={sla} />
+          <div className="mt-1 flex items-center justify-between text-[10px] text-white/50">
+            <span>{Math.round(sla.elapsedMin)}m decorridos</span>
+            <span>meta {sla.greenMax}m • máx {sla.yellowMax}m</span>
+          </div>
+        </div>
+      )}
 
       {/* customer (clickable to expand) */}
       <button
