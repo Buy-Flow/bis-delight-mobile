@@ -24,6 +24,7 @@ import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as PagamentoOrderIdRouteImport } from './routes/pagamento.$orderId'
 import { Route as CTokenRouteImport } from './routes/c.$token'
+import { Route as BlogGelatoVsSorveteRouteImport } from './routes/blog.gelato-vs-sorvete'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedWhatsappIaRouteImport } from './routes/_authenticated/whatsapp-ia'
 import { Route as AuthenticatedWhatsappDiagnosticoRouteImport } from './routes/_authenticated/whatsapp-diagnostico'
@@ -152,6 +153,11 @@ const PagamentoOrderIdRoute = PagamentoOrderIdRouteImport.update({
 const CTokenRoute = CTokenRouteImport.update({
   id: '/c/$token',
   path: '/c/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogGelatoVsSorveteRoute = BlogGelatoVsSorveteRouteImport.update({
+  id: '/blog/gelato-vs-sorvete',
+  path: '/blog/gelato-vs-sorvete',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCopilotChatRoute = ApiCopilotChatRouteImport.update({
@@ -505,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
+  '/blog/gelato-vs-sorvete': typeof BlogGelatoVsSorveteRoute
   '/c/$token': typeof CTokenRoute
   '/pagamento/$orderId': typeof PagamentoOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -576,6 +583,7 @@ export interface FileRoutesByTo {
   '/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
+  '/blog/gelato-vs-sorvete': typeof BlogGelatoVsSorveteRoute
   '/c/$token': typeof CTokenRoute
   '/pagamento/$orderId': typeof PagamentoOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -649,6 +657,7 @@ export interface FileRoutesById {
   '/_authenticated/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/_authenticated/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
+  '/blog/gelato-vs-sorvete': typeof BlogGelatoVsSorveteRoute
   '/c/$token': typeof CTokenRoute
   '/pagamento/$orderId': typeof PagamentoOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -722,6 +731,7 @@ export interface FileRouteTypes {
     | '/whatsapp-diagnostico'
     | '/whatsapp-ia'
     | '/api/copilot-chat'
+    | '/blog/gelato-vs-sorvete'
     | '/c/$token'
     | '/pagamento/$orderId'
     | '/produto/$id'
@@ -793,6 +803,7 @@ export interface FileRouteTypes {
     | '/whatsapp-diagnostico'
     | '/whatsapp-ia'
     | '/api/copilot-chat'
+    | '/blog/gelato-vs-sorvete'
     | '/c/$token'
     | '/pagamento/$orderId'
     | '/produto/$id'
@@ -865,6 +876,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whatsapp-diagnostico'
     | '/_authenticated/whatsapp-ia'
     | '/api/copilot-chat'
+    | '/blog/gelato-vs-sorvete'
     | '/c/$token'
     | '/pagamento/$orderId'
     | '/produto/$id'
@@ -893,6 +905,7 @@ export interface RootRouteChildren {
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
+  BlogGelatoVsSorveteRoute: typeof BlogGelatoVsSorveteRoute
   CTokenRoute: typeof CTokenRoute
   PagamentoOrderIdRoute: typeof PagamentoOrderIdRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
@@ -1011,6 +1024,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$token'
       fullPath: '/c/$token'
       preLoaderRoute: typeof CTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/gelato-vs-sorvete': {
+      id: '/blog/gelato-vs-sorvete'
+      path: '/blog/gelato-vs-sorvete'
+      fullPath: '/blog/gelato-vs-sorvete'
+      preLoaderRoute: typeof BlogGelatoVsSorveteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/copilot-chat': {
@@ -1530,6 +1550,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
+  BlogGelatoVsSorveteRoute: BlogGelatoVsSorveteRoute,
   CTokenRoute: CTokenRoute,
   PagamentoOrderIdRoute: PagamentoOrderIdRoute,
   ProdutoIdRoute: ProdutoIdRoute,

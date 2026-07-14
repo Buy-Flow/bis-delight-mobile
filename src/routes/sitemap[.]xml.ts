@@ -30,6 +30,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/carrinho", changefreq: "weekly", priority: "0.4" },
           { path: "/recompensas", changefreq: "weekly", priority: "0.5" },
           { path: "/baixar-app", changefreq: "monthly", priority: "0.5" },
+          { path: "/blog/gelato-vs-sorvete", changefreq: "monthly", priority: "0.6" },
         ];
 
         // Dynamic: all active products
