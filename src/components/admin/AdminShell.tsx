@@ -395,7 +395,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const sidebarWidth = collapsed ? "md:w-[68px]" : "md:w-[248px]";
 
   return (
-    <div className="min-h-screen bg-[#0c031f] text-white">
+    <div data-scope="admin" className="min-h-screen bg-[#0c031f] text-white">
       {/* Desktop sidebar */}
       <aside
         className={cn(

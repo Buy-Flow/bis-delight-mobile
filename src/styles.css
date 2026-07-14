@@ -553,3 +553,32 @@ select:-webkit-autofill {
 .placeholder\:text-white\/30::placeholder { color: rgb(255 255 255 / 0.62) !important; }
 .placeholder\:text-white\/40::placeholder { color: rgb(255 255 255 / 0.70) !important; }
 .placeholder\:text-white\/50::placeholder { color: rgb(255 255 255 / 0.78) !important; }
+
+/* ============================================================
+ * Admin scope — piso de contraste ainda mais alto
+ * ============================================================
+ * A área administrativa mistura superfícies mais claras
+ * (gradientes, cards com bg-white/5..10 sobre roxo médio) onde
+ * texto de apoio a /62..78 ainda parece "apagado" — especial-
+ * mente em rótulos, hints e legendas < 13px. Dentro do
+ * `AdminShell` (`data-scope="admin"`) elevamos:
+ *   /30 → 0.78   (antes 0.62)
+ *   /40 → 0.86   (antes 0.70)
+ *   /50 → 0.92   (antes 0.78)
+ * Todos ≥ 8.5:1 sobre o fundo #0c031f do shell → AAA.
+ * Bordas/backgrounds NÃO são afetados (seletores casam apenas
+ * com `.text-white/{n}`).
+ * ============================================================ */
+[data-scope="admin"] :not([data-allow-low-contrast] *).text-white\/30 {
+  color: rgb(255 255 255 / 0.78) !important;
+}
+[data-scope="admin"] :not([data-allow-low-contrast] *).text-white\/40 {
+  color: rgb(255 255 255 / 0.86) !important;
+}
+[data-scope="admin"] :not([data-allow-low-contrast] *).text-white\/50 {
+  color: rgb(255 255 255 / 0.92) !important;
+}
+[data-scope="admin"] .placeholder\:text-white\/30::placeholder { color: rgb(255 255 255 / 0.78) !important; }
+[data-scope="admin"] .placeholder\:text-white\/40::placeholder { color: rgb(255 255 255 / 0.86) !important; }
+[data-scope="admin"] .placeholder\:text-white\/50::placeholder { color: rgb(255 255 255 / 0.92) !important; }
+
