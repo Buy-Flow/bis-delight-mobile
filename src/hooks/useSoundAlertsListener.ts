@@ -140,15 +140,16 @@ export function useSoundAlertsListener() {
     const scanLowStock = async () => {
       const { data } = await supabase
         .from("inventory_items")
-        .select("id,current_qty,min_qty")
-        .limit(200);
+        .select("id,stock,low_stock_threshold,active")
+        .eq("active", true)
+        .limit(500);
       if (!data) return;
       const low = data.some(
         (r) =>
-          typeof r.current_qty === "number" &&
-          typeof r.min_qty === "number" &&
-          r.min_qty > 0 &&
-          r.current_qty <= r.min_qty,
+          typeof r.stock === "number" &&
+          typeof r.low_stock_threshold === "number" &&
+          r.low_stock_threshold > 0 &&
+          r.stock <= r.low_stock_threshold,
       );
       if (low) void fire("low_stock");
     };
