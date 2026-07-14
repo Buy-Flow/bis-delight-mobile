@@ -244,7 +244,7 @@ export async function getEvolutionConnectionSnapshot(): Promise<EvolutionConnect
   const stateCall = await evolutionRequest(`/instance/connectionState/${encodeURIComponent(instance)}`, {}, 12_000);
   if (!stateCall.ok) {
     if (stateCall.status === 404) {
-      return { state: "not_found", exists: false, ownerJid: null, profileName: null, disconnectionAt: null, disconnectionCode: null, raw: stateCall.json ?? stateCall.text };
+      return { state: "not_found", exists: false, ownerJid: null, profileName: null, disconnectionAt: null, disconnectionCode: null, raw: stateCall.json ?? { body: stateCall.text } };
     }
     throw new Error(`Evolution ${stateCall.status}: ${evolutionErrorMessage(stateCall)}`);
   }
