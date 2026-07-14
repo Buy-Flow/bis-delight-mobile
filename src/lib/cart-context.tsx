@@ -179,8 +179,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setPendingProductId(productId);
       },
       consumePendingProduct: () => setPendingProductId(null),
+      shareMode,
+      setShareMode: (m) => {
+        writeShareMode(m);
+        setShareModeState(m);
+      },
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId, shareMode]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
