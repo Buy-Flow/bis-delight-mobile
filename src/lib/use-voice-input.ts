@@ -33,6 +33,46 @@ export type VoiceInputState = {
   level: number; // 0..1 for waveform
 };
 
+/** Traduz erros de mídia/permissão para mensagens curtas em PT-BR. */
+function friendlyMicError(err: unknown): string {
+  const e = err as { name?: string; message?: string; error?: string } | null;
+  const name = e?.name || e?.error || "";
+  const msg = e?.message || "";
+  switch (name) {
+    case "NotAllowedError":
+    case "SecurityError":
+    case "not-allowed":
+      return "Permissão do microfone negada. Libere o acesso nas configurações do navegador.";
+    case "NotFoundError":
+    case "OverconstrainedError":
+      return "Nenhum microfone encontrado. Conecte um dispositivo e tente novamente.";
+    case "NotReadableError":
+    case "AbortError":
+      return "Microfone em uso por outro aplicativo. Feche-o e tente novamente.";
+    case "no-speech":
+      return "Não ouvi nada — tenta de novo.";
+    case "audio-capture":
+      return "Falha na captura de áudio. Verifique o microfone.";
+    case "network":
+      return "Erro de rede na transcrição. Verifique sua conexão.";
+    case "service-not-allowed":
+      return "Serviço de voz bloqueado pelo navegador ou sistema.";
+    default:
+      return msg || "Não foi possível acessar o microfone.";
+  }
+}
+
+/** Consulta status de permissão sem quebrar em navegadores que não suportam. */
+async function queryMicPermission(): Promise<PermissionState | null> {
+  try {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return null;
+    const status = await navigator.permissions.query({ name: "microphone" as PermissionName });
+    return status.state;
+  } catch {
+    return null;
+  }
+}
+
 export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (text: string) => void) {
   const _transcribe = useServerFn(transcribeAudio);
   const [state, setState] = useState<VoiceInputState>({
@@ -52,28 +92,71 @@ export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (t
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number | null>(null);
   const finalBufferRef = useRef("");
+  const permStatusRef = useRef<PermissionStatus | null>(null);
+  const permChangeHandlerRef = useRef<(() => void) | null>(null);
+
+  const setError = useCallback((err: unknown) => {
+    const message = friendlyMicError(err);
+    // eslint-disable-next-line no-console
+    console.warn("[voice-input]", err);
+    setState((s) => ({ ...s, error: message }));
+  }, []);
+
+  const detachPermissionWatcher = useCallback(() => {
+    const status = permStatusRef.current;
+    const handler = permChangeHandlerRef.current;
+    if (status && handler) {
+      try {
+        status.removeEventListener?.("change", handler);
+      } catch (e) {
+        console.debug("[voice-input] removeEventListener failed", e);
+      }
+    }
+    permStatusRef.current = null;
+    permChangeHandlerRef.current = null;
+  }, []);
 
   const cleanup = useCallback(() => {
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     silenceTimerRef.current = null;
     rafRef.current = null;
-    try { nativeRef.current?.stop(); } catch {}
+    try {
+      nativeRef.current?.stop();
+    } catch (e) {
+      console.debug("[voice-input] native.stop cleanup", e);
+    }
     nativeRef.current = null;
-    try { recorderRef.current?.stop(); } catch {}
+    try {
+      recorderRef.current?.stop();
+    } catch (e) {
+      console.debug("[voice-input] recorder.stop cleanup", e);
+    }
     recorderRef.current = null;
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current?.getTracks().forEach((t) => {
+      try {
+        t.stop();
+      } catch (e) {
+        console.debug("[voice-input] track.stop cleanup", e);
+      }
+    });
     streamRef.current = null;
-    try { audioCtxRef.current?.close(); } catch {}
+    try {
+      audioCtxRef.current?.close();
+    } catch (e) {
+      console.debug("[voice-input] audioCtx.close cleanup", e);
+    }
     audioCtxRef.current = null;
     analyserRef.current = null;
-  }, []);
+    detachPermissionWatcher();
+  }, [detachPermissionWatcher]);
 
   useEffect(() => () => cleanup(), [cleanup]);
 
   const setupAnalyser = useCallback(async (stream: MediaStream) => {
     try {
       const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
       const ctx: AudioContext = new AC();
       const src = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
@@ -92,8 +175,45 @@ export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (t
         rafRef.current = requestAnimationFrame(tick);
       };
       tick();
-    } catch {}
+    } catch (e) {
+      // Meter é opcional — não bloqueia gravação, apenas log.
+      console.debug("[voice-input] analyser setup failed", e);
+    }
   }, []);
+
+  /** Aborta tudo imediatamente com uma mensagem — usado quando permissão é revogada em runtime. */
+  const abortWithError = useCallback((err: unknown) => {
+    setError(err);
+    try {
+      nativeRef.current?.abort();
+    } catch (e) {
+      console.debug("[voice-input] native.abort", e);
+    }
+    try {
+      if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+    } catch (e) {
+      console.debug("[voice-input] recorder.stop abort", e);
+    }
+    cleanup();
+    setState((s) => ({ ...s, isRecording: false, interim: "", level: 0 }));
+  }, [cleanup, setError]);
+
+  const attachPermissionWatcher = useCallback(async () => {
+    try {
+      if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+      const status = await navigator.permissions.query({ name: "microphone" as PermissionName });
+      const handler = () => {
+        if (status.state === "denied") {
+          abortWithError({ name: "NotAllowedError" });
+        }
+      };
+      status.addEventListener?.("change", handler);
+      permStatusRef.current = status;
+      permChangeHandlerRef.current = handler;
+    } catch (e) {
+      console.debug("[voice-input] permission watcher unsupported", e);
+    }
+  }, [abortWithError]);
 
   const startNative = useCallback((lang: string, interim: boolean, autoSend: boolean, silenceMs: number) => {
     const Ctor = getNativeRecognition();
@@ -108,7 +228,11 @@ export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (t
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       if (!autoSend) return;
       silenceTimerRef.current = setTimeout(() => {
-        try { r.stop(); } catch {}
+        try {
+          r.stop();
+        } catch (e) {
+          console.debug("[voice-input] native.stop silence", e);
+        }
       }, silenceMs);
     };
 
@@ -126,7 +250,13 @@ export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (t
       resetSilence();
     };
     r.onerror = (e: any) => {
-      setState((s) => ({ ...s, error: e?.error === "no-speech" ? "Não ouvi nada — tenta de novo." : `Erro: ${e?.error ?? "desconhecido"}` }));
+      // "no-speech" e "aborted" são não-fatais; qualquer outro erro deve ser visível ao usuário.
+      const code = e?.error;
+      if (code === "aborted") return;
+      setError({ name: code, message: e?.message });
+      if (code === "not-allowed" || code === "service-not-allowed" || code === "audio-capture") {
+        abortWithError({ name: code });
+      }
     };
     r.onend = () => {
       const finalText = finalBufferRef.current.trim();
@@ -139,15 +269,26 @@ export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (t
       r.start();
       resetSilence();
       return true;
-    } catch {
+    } catch (err) {
+      setError(err);
       return false;
     }
-  }, [cleanup, onFinal]);
+  }, [abortWithError, cleanup, onFinal, setError]);
 
   const startCloud = useCallback(async (settings: VoiceCopilotSettings) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
+
+      // Se um dos tracks acabar (permissão revogada, cabo puxado), avise o usuário.
+      stream.getTracks().forEach((t) => {
+        t.onended = () => {
+          if (recorderRef.current && recorderRef.current.state !== "inactive") {
+            abortWithError({ name: "NotReadableError", message: "Microfone desconectado durante a gravação." });
+          }
+        };
+      });
+
       await setupAnalyser(stream);
       const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
@@ -158,6 +299,7 @@ export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (t
       recorderRef.current = rec;
       chunksRef.current = [];
       rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      rec.onerror = (e: any) => setError(e?.error ?? { name: "NotReadableError" });
       rec.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
         chunksRef.current = [];
@@ -185,42 +327,80 @@ export function useVoiceInput(settings: VoiceCopilotSettings | null, onFinal: (t
       };
       rec.start();
       return true;
-    } catch (err: any) {
-      setState((s) => ({ ...s, error: err?.message ?? "Sem acesso ao microfone." }));
+    } catch (err) {
+      setError(err);
       cleanup();
       return false;
     }
-  }, [_transcribe, cleanup, onFinal, setupAnalyser]);
+  }, [_transcribe, abortWithError, cleanup, onFinal, setError, setupAnalyser]);
 
   const start = useCallback(async () => {
     if (!settings) return;
     setState({ isRecording: false, interim: "", final: "", error: null, level: 0 });
     finalBufferRef.current = "";
+
+    // Verificação proativa: se permissão já está negada, avise imediatamente sem tentar getUserMedia.
+    const perm = await queryMicPermission();
+    if (perm === "denied") {
+      setError({ name: "NotAllowedError" });
+      return;
+    }
+
+    // Ouça revogações mid-session
+    await attachPermissionWatcher();
+
     let ok = false;
     if (settings.engine === "native" && isNativeVoiceSupported()) {
-      // Native does not expose a stream, so only meter via mic separately (skip for simplicity)
       ok = startNative(settings.language, settings.interim_preview, settings.auto_send, settings.silence_ms);
       if (!ok) ok = await startCloud(settings); // fallback
     } else {
       ok = await startCloud(settings);
     }
     if (ok) {
-      if (settings.haptic && "vibrate" in navigator) try { navigator.vibrate?.(20); } catch {}
+      if (settings.haptic && "vibrate" in navigator) {
+        try {
+          navigator.vibrate?.(20);
+        } catch (e) {
+          console.debug("[voice-input] vibrate", e);
+        }
+      }
       setState((s) => ({ ...s, isRecording: true }));
+    } else {
+      detachPermissionWatcher();
     }
-  }, [settings, startCloud, startNative]);
+  }, [attachPermissionWatcher, detachPermissionWatcher, setError, settings, startCloud, startNative]);
 
   const stop = useCallback(() => {
-    if (settings?.haptic && "vibrate" in navigator) try { navigator.vibrate?.(10); } catch {}
-    try { nativeRef.current?.stop(); } catch {}
+    if (settings?.haptic && "vibrate" in navigator) {
+      try {
+        navigator.vibrate?.(10);
+      } catch (e) {
+        console.debug("[voice-input] vibrate stop", e);
+      }
+    }
+    try {
+      nativeRef.current?.stop();
+    } catch (e) {
+      console.debug("[voice-input] native.stop", e);
+    }
     try {
       if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
-    } catch {}
+    } catch (e) {
+      console.debug("[voice-input] recorder.stop", e);
+    }
   }, [settings]);
 
   const cancel = useCallback(() => {
-    try { nativeRef.current?.abort(); } catch {}
-    try { recorderRef.current?.stop(); } catch {}
+    try {
+      nativeRef.current?.abort();
+    } catch (e) {
+      console.debug("[voice-input] native.abort", e);
+    }
+    try {
+      recorderRef.current?.stop();
+    } catch (e) {
+      console.debug("[voice-input] recorder.stop cancel", e);
+    }
     finalBufferRef.current = "";
     cleanup();
     setState({ isRecording: false, interim: "", final: "", error: null, level: 0 });
