@@ -87,6 +87,16 @@ export const Route = createFileRoute("/api/copilot-chat")({
               const threadId = body.threadId;
               if (!threadId) return;
               try {
+                // Verify the thread belongs to the authenticated user before writing.
+                const { data: thread } = await supabaseAdmin
+                  .from("copilot_threads")
+                  .select("id,user_id")
+                  .eq("id", threadId)
+                  .maybeSingle();
+                if (!thread || thread.user_id !== user.id) {
+                  console.warn("[copilot] thread ownership mismatch; refusing to persist");
+                  return;
+                }
                 const originals = body.messages ?? [];
                 const lastUser = [...originals].reverse().find(m => m.role === "user");
                 const finalAssistant = messages[messages.length - 1];
