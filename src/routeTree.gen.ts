@@ -26,7 +26,6 @@ import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedWhatsappIaRouteImport } from './routes/_authenticated/whatsapp-ia'
 import { Route as AuthenticatedWhatsappDiagnosticoRouteImport } from './routes/_authenticated/whatsapp-diagnostico'
-import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as AuthenticatedVozCopilotoRouteImport } from './routes/_authenticated/voz-copiloto'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
@@ -162,11 +161,6 @@ const AuthenticatedWhatsappDiagnosticoRoute =
     path: '/whatsapp-diagnostico',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
-  id: '/whatsapp',
-  path: '/whatsapp',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedVozCopilotoRoute =
   AuthenticatedVozCopilotoRouteImport.update({
     id: '/voz-copiloto',
@@ -483,7 +477,6 @@ export interface FileRoutesByFullPath {
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
-  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
@@ -551,7 +544,6 @@ export interface FileRoutesByTo {
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
-  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
@@ -621,7 +613,6 @@ export interface FileRoutesById {
   '/_authenticated/sla': typeof AuthenticatedSlaRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
-  '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/_authenticated/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/_authenticated/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
@@ -691,7 +682,6 @@ export interface FileRouteTypes {
     | '/sla'
     | '/usuarios'
     | '/voz-copiloto'
-    | '/whatsapp'
     | '/whatsapp-diagnostico'
     | '/whatsapp-ia'
     | '/api/copilot-chat'
@@ -759,7 +749,6 @@ export interface FileRouteTypes {
     | '/sla'
     | '/usuarios'
     | '/voz-copiloto'
-    | '/whatsapp'
     | '/whatsapp-diagnostico'
     | '/whatsapp-ia'
     | '/api/copilot-chat'
@@ -828,7 +817,6 @@ export interface FileRouteTypes {
     | '/_authenticated/sla'
     | '/_authenticated/usuarios'
     | '/_authenticated/voz-copiloto'
-    | '/_authenticated/whatsapp'
     | '/_authenticated/whatsapp-diagnostico'
     | '/_authenticated/whatsapp-ia'
     | '/api/copilot-chat'
@@ -986,13 +974,6 @@ declare module '@tanstack/react-router' {
       path: '/whatsapp-diagnostico'
       fullPath: '/whatsapp-diagnostico'
       preLoaderRoute: typeof AuthenticatedWhatsappDiagnosticoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/whatsapp': {
-      id: '/_authenticated/whatsapp'
-      path: '/whatsapp'
-      fullPath: '/whatsapp'
-      preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/voz-copiloto': {
@@ -1384,7 +1365,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedVozCopilotoRoute: typeof AuthenticatedVozCopilotoRoute
-  AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
   AuthenticatedWhatsappDiagnosticoRoute: typeof AuthenticatedWhatsappDiagnosticoRoute
   AuthenticatedWhatsappIaRoute: typeof AuthenticatedWhatsappIaRoute
   AuthenticatedAvaliarOrderIdRoute: typeof AuthenticatedAvaliarOrderIdRoute
@@ -1434,7 +1414,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSlaRoute: AuthenticatedSlaRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedVozCopilotoRoute: AuthenticatedVozCopilotoRoute,
-  AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
   AuthenticatedWhatsappDiagnosticoRoute: AuthenticatedWhatsappDiagnosticoRoute,
   AuthenticatedWhatsappIaRoute: AuthenticatedWhatsappIaRoute,
   AuthenticatedAvaliarOrderIdRoute: AuthenticatedAvaliarOrderIdRoute,
