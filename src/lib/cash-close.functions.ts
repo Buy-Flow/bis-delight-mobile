@@ -23,10 +23,6 @@ const SettingsPatch = z.object({
   email_backup: z.array(z.string().email()).max(10).optional(),
 });
 
-async function assertAdmin(supabase: ReturnType<typeof requireSupabaseAuth> extends never ? never : never, _userId: string): Promise<void> {
-  // typing helper kept minimal; real check below
-  void supabase; void _userId;
-}
 
 export const getCashCloseSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
