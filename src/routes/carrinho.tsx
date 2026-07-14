@@ -75,8 +75,25 @@ function CartPage() {
     : null;
 
   const combo = useComboDiscounts(items, allProducts);
-  const fee = items.length ? BRAND.deliveryFee : 0;
-  const total = subtotal + fee - combo.discount;
+  const { data: settings } = useSiteSettings();
+  const { user } = useAuth();
+  const { items: addresses } = useUserAddresses(user?.id);
+  const defaultAddress = addresses.find((a) => a.is_default) ?? addresses[0] ?? null;
+
+  const preview = computeDeliveryPreview({
+    subtotal,
+    flatFee: settings?.deliveryFee ?? 0,
+    freeThreshold: settings?.freeDeliveryThreshold ?? 0,
+    zone: settings?.deliveryZone ?? null,
+    storeLat: settings?.storeLat ?? null,
+    storeLng: settings?.storeLng ?? null,
+    addressLat: defaultAddress?.lat ?? null,
+    addressLng: defaultAddress?.lng ?? null,
+    mode: "entrega",
+  });
+  const fee = items.length ? preview.fee : 0;
+  const total = Math.max(0, subtotal + fee - combo.discount);
+
 
 
 
