@@ -228,18 +228,26 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     if (user) {
       supabase
         .from("profiles")
-        .select("full_name, phone, address, reference")
+        .select("full_name, phone, address, reference, asaas_card_last4, asaas_card_brand, asaas_card_token")
         .eq("id", user.id)
         .maybeSingle()
         .then(({ data }) => {
           if (!data) return;
-          // Profile is authoritative when logged in — overwrite cached values
-          // so phone/name edits in "Dados pessoais" propagate everywhere.
           if (data.full_name) setName(data.full_name);
           if (data.phone) setPhone(data.phone);
           if (data.address && !address) setAddress(data.address);
           if (data.reference && !reference) setReference(data.reference);
+          if (data.asaas_card_token && data.asaas_card_last4) {
+            setSavedCard({ last4: String(data.asaas_card_last4), brand: String(data.asaas_card_brand || "Cartão") });
+            setUseSavedCard(true);
+          } else {
+            setSavedCard(null);
+            setUseSavedCard(false);
+          }
         });
+    } else {
+      setSavedCard(null);
+      setUseSavedCard(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCheckoutOpen, user?.id]);
