@@ -724,6 +724,17 @@ function MotoboyPortal() {
           <NavBtn active={tab === "profile"} onClick={() => setTab("profile")} icon={User} label="Perfil" />
         </div>
       </nav>
+
+      {proofOrder && (
+        <DeliveryProofDialog
+          open={!!proofOrder}
+          onClose={() => setProofOrder(null)}
+          onConfirm={submitProof}
+          orderId={proofOrder.id}
+          orderNumber={proofOrder.order_number ?? proofOrder.id.slice(0, 6)}
+          courierName={courier.name}
+        />
+      )}
     </div>
   );
 }
