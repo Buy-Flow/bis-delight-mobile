@@ -559,6 +559,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <NotificationCenter />
+
             {(() => {
               const primary =
                 (["admin", "manager", "staff", "kitchen"] as const).find((r) =>
