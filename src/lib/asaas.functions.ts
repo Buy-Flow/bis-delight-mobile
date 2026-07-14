@@ -54,21 +54,21 @@ export const createAsaasPixForOrder = createServerFn({ method: "POST" })
   .inputValidator((raw) => pixInput.parse(raw))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { upsertAsaasCustomer, createPixCharge } = await import("@/lib/asaas.server");
+    const { createPixCharge } = await import("@/lib/asaas.server");
 
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select("id, total, customer_name, phone")
+      .select("id, total, customer_name, phone, user_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
 
-    const customer = await upsertAsaasCustomer({
+    const customer = await resolveOrCreateAsaasCustomer({
+      userId: order.user_id ?? null,
       name: data.customer.name || order.customer_name || "Cliente",
       email: data.customer.email,
       cpfCnpj: data.customer.cpfCnpj,
       phone: data.customer.phone ?? order.phone ?? undefined,
-      externalReference: data.customer.externalReference,
     });
 
     const { payment, qr } = await createPixCharge({
