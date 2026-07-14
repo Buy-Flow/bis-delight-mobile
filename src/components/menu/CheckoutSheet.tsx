@@ -146,7 +146,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const runAsaasCheckout = useServerFn(createAsaasCheckoutForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
-  const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
+  const [couponApplied, setCouponApplied] = useState<{
+    id: string;
+    code: string;
+    discount: number;
+    kind: "loyalty" | "promo";
+    minOrder: number;
+    discountType?: "fixed" | "percent";
+    discountValue?: number;
+  } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<
     Array<{ id: string; code: string; discount: number; kind: "loyalty" | "promo"; label?: string; minOrder?: number }>
@@ -385,9 +393,37 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const freeDelivery =
     mode === "entrega" && freeThreshold > 0 && subtotal >= freeThreshold;
   const fee = freeDelivery ? 0 : rawFee;
-  const discount = couponApplied?.discount ?? 0;
+  // Recomputa o desconto quando o subtotal muda:
+  // - promo em %: recalcula sobre o subtotal atual;
+  // - fixo/loyalty: nunca desconta mais do que o subtotal.
+  const discount = (() => {
+    if (!couponApplied) return 0;
+    if (couponApplied.discountType === "percent" && couponApplied.discountValue) {
+      return Math.round((subtotal * couponApplied.discountValue) / 100 * 100) / 100;
+    }
+    return Math.min(couponApplied.discount, subtotal);
+  })();
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+
+  // Revalida o mínimo do cupom sempre que o subtotal cair (item removido,
+  // quantidade reduzida, edição de sabor barato). Se ficar abaixo, remove
+  // o cupom automaticamente e avisa — evita desconto indevido no total.
+  useEffect(() => {
+    if (!couponApplied) return;
+    if (items.length === 0) {
+      setCouponApplied(null);
+      return;
+    }
+    if (subtotal < couponApplied.minOrder) {
+      const min = couponApplied.minOrder;
+      const code = couponApplied.code;
+      setCouponApplied(null);
+      toast.error(`Cupom ${code} removido`, {
+        description: `Pedido mínimo de ${brl(min)} não foi atingido.`,
+      });
+    }
+  }, [subtotal, items.length, couponApplied]);
 
   const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase();
@@ -404,8 +440,23 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         _order_total: subtotal,
       });
       if (!promoErr && Array.isArray(promo) && promo.length > 0) {
-        const row = promo[0] as { id: string; code: string; discount: number };
-        setCouponApplied({ id: row.id, code: row.code, discount: Number(row.discount), kind: "promo" });
+        const row = promo[0] as {
+          id: string;
+          code: string;
+          discount: number;
+          discount_type?: "fixed" | "percent";
+          discount_value?: number;
+          min_order?: number;
+        };
+        setCouponApplied({
+          id: row.id,
+          code: row.code,
+          discount: Number(row.discount),
+          kind: "promo",
+          minOrder: Number(row.min_order ?? 0),
+          discountType: row.discount_type,
+          discountValue: row.discount_value != null ? Number(row.discount_value) : undefined,
+        });
         toast.success(`Cupom aplicado! −${brl(Number(row.discount))}`);
         return;
       }
@@ -421,7 +472,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           return;
         }
         const discountValue = Math.min(rewardValue, subtotal);
-        setCouponApplied({ id: row.id, code: row.code, discount: discountValue, kind: "loyalty" });
+        setCouponApplied({
+          id: row.id,
+          code: row.code,
+          discount: discountValue,
+          kind: "loyalty",
+          minOrder: rewardValue,
+          discountType: "fixed",
+          discountValue: rewardValue,
+        });
         toast.success(`Cupom aplicado! −${brl(discountValue)}`);
         return;
       }
