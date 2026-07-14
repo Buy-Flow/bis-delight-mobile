@@ -379,7 +379,7 @@ function ShareDialog({
   const [creating, setCreating] = useState(false);
   const [result, setResult] = useState<{ url: string; token: string } | null>(null);
 
-  useState(() => {
+  useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const meta = data.user?.user_metadata as { full_name?: string; name?: string } | undefined;
       const raw =
@@ -390,8 +390,7 @@ function ShareDialog({
         "";
       if (raw) setOwnerName(raw.split(" ")[0]);
     });
-    return undefined;
-  });
+  }, []);
 
   async function handleCreate() {
     if (ownerName.trim().length < 2) {
