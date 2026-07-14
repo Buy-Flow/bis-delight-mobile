@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { uid } from "@/lib/uid";
 import {
   PRODUCTS as STATIC_PRODUCTS,
   CATEGORIES as STATIC_CATEGORIES,

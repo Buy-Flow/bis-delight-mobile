@@ -53,6 +53,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { confirmDialog } from "@/lib/confirm";
+import { shortUid } from "@/lib/uid";
 
 import {
   useIsAdmin,

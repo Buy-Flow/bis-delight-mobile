@@ -30,6 +30,7 @@ import type { Product } from "@/data/menu";
 import type { CartItem } from "@/lib/cart-context";
 import { ProductModal } from "@/components/menu/ProductModal";
 import { cn } from "@/lib/utils";
+import { shortUid } from "@/lib/uid";
 
 export const Route = createFileRoute("/_authenticated/pdv")({
   head: () => ({

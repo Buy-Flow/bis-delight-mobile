@@ -23,6 +23,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { extractMenuFromMedia } from "@/lib/menu-import.functions";
+import { shortUid } from "@/lib/uid";
 
 export const Route = createFileRoute("/_authenticated/importar")({
   head: () => ({

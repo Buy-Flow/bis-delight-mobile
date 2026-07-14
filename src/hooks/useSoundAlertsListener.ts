@@ -3,6 +3,7 @@
 
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { shortUid } from "@/lib/uid";
 import {
   fetchAlerts,
   fetchGlobal,

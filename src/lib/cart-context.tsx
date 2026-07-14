@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { addSharedItem, readShareMode, writeShareMode, type ShareMode } from "@/lib/shared-cart";
 import { logSilent } from "@/lib/silent-errors";
+import { shortUid } from "@/lib/uid";
 
 export type CartItem = {
   uid: string;
