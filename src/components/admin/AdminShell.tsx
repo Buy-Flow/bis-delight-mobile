@@ -368,6 +368,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   // Mount the global sound-alerts listener (differentiated per event).
   useSoundAlertsListener();
+  useAdminNotificationsListener();
 
   const toggleGroup = (id: string) =>
     setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
