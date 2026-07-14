@@ -1388,11 +1388,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               </div>
               <h4 className="font-display text-base font-extrabold text-white">Pagamento</h4>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {([
                 { id: "whatsapp", label: "Combinar", hint: "Falar no WhatsApp", Icon: WhatsIcon, color: "text-neon-cyan" },
                 { id: "pix", label: "PIX", hint: "QR Code na hora", Icon: QrCode, color: "text-neon-yellow" },
-                { id: "cartao", label: "Cartão", hint: "Até 12x", Icon: CreditCard, color: "text-neon-pink" },
+                { id: "cartao", label: "Cartão", hint: "Até 12x aqui", Icon: CreditCard, color: "text-neon-pink" },
+                { id: "asaas_checkout", label: "Checkout Asaas", hint: "PIX ou Cartão (mais seguro)", Icon: CreditCard, color: "text-neon-cyan" },
               ] as const).map(({ id, label, hint, Icon, color }) => (
                 <button
                   key={id}
@@ -1411,6 +1412,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 </button>
               ))}
             </div>
+            {paymentMethod === "asaas_checkout" && (
+              <div className="mt-3 rounded-2xl border border-neon-cyan/20 bg-neon-cyan/[0.04] p-3 text-[12px] text-white/80">
+                Você será redirecionado para a página segura do Asaas para escolher PIX ou Cartão. Volta pra cá automaticamente depois do pagamento.
+              </div>
+            )}
             {paymentMethod === "cartao" && (
               <div className="mt-3 space-y-2.5 rounded-2xl border border-neon-pink/20 bg-neon-pink/[0.04] p-3">
                 <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-neon-pink/80">
