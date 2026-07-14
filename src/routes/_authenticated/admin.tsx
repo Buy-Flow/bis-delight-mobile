@@ -839,7 +839,13 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
                 paused && "ring-1 ring-inset ring-amber-400/30",
               )}
             >
-              <div className="grid h-8 w-6 md:w-8 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing">
+              <div
+                role="button"
+                tabIndex={-1}
+                aria-label={`Arrastar para reordenar ${p.name}`}
+                title="Arraste para reordenar"
+                className="grid h-8 w-6 md:w-8 cursor-grab place-items-center rounded-md bg-white/5 text-white/70 ring-1 ring-inset ring-white/10 transition hover:bg-white/10 hover:text-white hover:ring-white/25 active:cursor-grabbing active:bg-white/15"
+              >
                 <GripVertical className="h-4 w-4" />
               </div>
 
