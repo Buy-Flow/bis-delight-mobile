@@ -1,11 +1,16 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
-import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles, Gift } from "lucide-react";
+import { lazy, Suspense, useState } from "react";
+import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles, Gift, Share2, Copy, MessageCircle, X, Users } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
+import { createSharedCart, shareUrlFor } from "@/lib/shared-cart";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 import { useComboDiscounts } from "@/lib/use-combo-discounts";
 
