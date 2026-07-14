@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
@@ -160,6 +160,9 @@ function WhatsappPage() {
   const selectedIdRef = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const syncInFlightRef = useRef(false);
+  // Estável por instância do componente — evita colisão entre múltiplas
+  // renderizações simultâneas sem recriar canal a cada render.
+  const channelId = useId();
 
   const sendFn = useServerFn(sendWhatsappMessage);
   const pauseFn = useServerFn(setAiPaused);
@@ -269,7 +272,7 @@ function WhatsappPage() {
     syncFromPhone(false);
     const stateTimer = window.setInterval(loadConfigAndState, 30_000);
     const channel = supabase
-      .channel(`whatsapp-page-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+      .channel(`whatsapp-page:${channelId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_conversations" }, () => loadConversations())
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "whatsapp_messages" }, (payload) => {
         const message = payload.new as Message;
