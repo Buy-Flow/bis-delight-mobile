@@ -211,7 +211,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const full = { ...item, uid };
         setItems((prev) => [...prev, full]);
         if (shareMode?.token) {
-          void addSharedItem(shareMode.token, shareMode.name, full).catch(() => {});
+          // Sync ao carrinho compartilhado com 1 retry e feedback visível ao
+          // convidado — falha silenciosa fazia o item sumir do lado do dono.
+          const trySync = async (attempt: number): Promise<void> => {
+            try {
+              await addSharedItem(shareMode.token, shareMode.name, full);
+            } catch (err) {
+              logSilent("cart:shared-add", err);
+              if (attempt < 1) {
+                await new Promise((r) => setTimeout(r, 800));
+                return trySync(attempt + 1);
+              }
+              toast.error("Não foi possível enviar o item ao anfitrião", {
+                description: "Verifique sua conexão. Toque para tentar novamente.",
+                action: { label: "Tentar de novo", onClick: () => void trySync(0) },
+              });
+            }
+          };
+          void trySync(0);
         }
       },
       update: (uid, patch) =>
