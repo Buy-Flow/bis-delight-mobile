@@ -51,6 +51,7 @@ import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authenticated/automacoes'
 import { Route as AuthenticatedAniversariantesRouteImport } from './routes/_authenticated/aniversariantes'
+import { Route as AuthenticatedAlertasSonorosRouteImport } from './routes/_authenticated/alertas-sonoros'
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
@@ -272,6 +273,12 @@ const AuthenticatedAniversariantesRoute =
     path: '/aniversariantes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAlertasSonorosRoute =
+  AuthenticatedAlertasSonorosRouteImport.update({
+    id: '/alertas-sonoros',
+    path: '/alertas-sonoros',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAiGrowthRoute = AuthenticatedAiGrowthRouteImport.update({
   id: '/ai-growth',
   path: '/ai-growth',
@@ -318,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/alertas-sonoros': typeof AuthenticatedAlertasSonorosRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
@@ -367,6 +375,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/alertas-sonoros': typeof AuthenticatedAlertasSonorosRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
@@ -418,6 +427,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/_authenticated/alertas-sonoros': typeof AuthenticatedAlertasSonorosRoute
   '/_authenticated/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
@@ -469,6 +479,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/alertas-sonoros'
     | '/aniversariantes'
     | '/automacoes'
     | '/avaliacoes'
@@ -518,6 +529,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/alertas-sonoros'
     | '/aniversariantes'
     | '/automacoes'
     | '/avaliacoes'
@@ -568,6 +580,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/ai-growth'
+    | '/_authenticated/alertas-sonoros'
     | '/_authenticated/aniversariantes'
     | '/_authenticated/automacoes'
     | '/_authenticated/avaliacoes'
@@ -921,6 +934,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAniversariantesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/alertas-sonoros': {
+      id: '/_authenticated/alertas-sonoros'
+      path: '/alertas-sonoros'
+      fullPath: '/alertas-sonoros'
+      preLoaderRoute: typeof AuthenticatedAlertasSonorosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ai-growth': {
       id: '/_authenticated/ai-growth'
       path: '/ai-growth'
@@ -969,6 +989,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiGrowthRoute: typeof AuthenticatedAiGrowthRoute
+  AuthenticatedAlertasSonorosRoute: typeof AuthenticatedAlertasSonorosRoute
   AuthenticatedAniversariantesRoute: typeof AuthenticatedAniversariantesRoute
   AuthenticatedAutomacoesRoute: typeof AuthenticatedAutomacoesRoute
   AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
@@ -1004,6 +1025,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiGrowthRoute: AuthenticatedAiGrowthRoute,
+  AuthenticatedAlertasSonorosRoute: AuthenticatedAlertasSonorosRoute,
   AuthenticatedAniversariantesRoute: AuthenticatedAniversariantesRoute,
   AuthenticatedAutomacoesRoute: AuthenticatedAutomacoesRoute,
   AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,

@@ -2852,6 +2852,102 @@ export type Database = {
         }
         Relationships: []
       }
+      sound_alert_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: number
+          late_after_minutes: number
+          master_volume: number
+          quiet_end: string
+          quiet_hours_enabled: boolean
+          quiet_start: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: number
+          late_after_minutes?: number
+          master_volume?: number
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: number
+          late_after_minutes?: number
+          master_volume?: number
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sound_alerts: {
+        Row: {
+          created_at: string
+          custom_url: string | null
+          description: string | null
+          duration_ms: number
+          enabled: boolean
+          event_key: string
+          frequency: number
+          interval_ms: number
+          label: string
+          preset: string
+          repeats: number
+          sort_index: number
+          speak_enabled: boolean
+          speak_text: string | null
+          updated_at: string
+          volume: number
+          waveform: string
+        }
+        Insert: {
+          created_at?: string
+          custom_url?: string | null
+          description?: string | null
+          duration_ms?: number
+          enabled?: boolean
+          event_key: string
+          frequency?: number
+          interval_ms?: number
+          label: string
+          preset?: string
+          repeats?: number
+          sort_index?: number
+          speak_enabled?: boolean
+          speak_text?: string | null
+          updated_at?: string
+          volume?: number
+          waveform?: string
+        }
+        Update: {
+          created_at?: string
+          custom_url?: string | null
+          description?: string | null
+          duration_ms?: number
+          enabled?: boolean
+          event_key?: string
+          frequency?: number
+          interval_ms?: number
+          label?: string
+          preset?: string
+          repeats?: number
+          sort_index?: number
+          speak_enabled?: boolean
+          speak_text?: string | null
+          updated_at?: string
+          volume?: number
+          waveform?: string
+        }
+        Relationships: []
+      }
       user_addresses: {
         Row: {
           address: string

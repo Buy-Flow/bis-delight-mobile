@@ -45,6 +45,7 @@ import {
   BellRing,
   Award,
   Plus,
+  Volume2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +54,7 @@ import { markAdminShellMounted } from "@/lib/admin-shell-flag";
 import { usePermissions, labelForRole } from "@/lib/permissions";
 import { FloatingAssistant } from "@/components/admin/FloatingAssistant";
 import { CommandPalette } from "@/components/admin/CommandPalette";
+import { useSoundAlertsListener } from "@/hooks/useSoundAlertsListener";
 
 type AdminTab =
   | "products"
@@ -165,6 +167,7 @@ const groups: NavGroup[] = [
     items: [
       { to: "/admin", tab: "settings", label: "Loja", icon: Settings },
       { to: "/usuarios", label: "Usuários e permissões", icon: ShieldCheck },
+      { to: "/alertas-sonoros", label: "Alertas sonoros", icon: Volume2 },
       { to: "/automacoes", label: "Automações", icon: Zap },
     ],
   },
@@ -338,6 +341,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     return markAdminShellMounted();
   }, []);
+
+  // Mount the global sound-alerts listener (differentiated per event).
+  useSoundAlertsListener();
 
   const toggleGroup = (id: string) =>
     setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
