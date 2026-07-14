@@ -575,11 +575,16 @@ select:-webkit-autofill {
   transform: translateX(-100%);
   animation: sk-shimmer var(--sk-speed) ease-in-out infinite;
 }
-:root[data-sk-respect-motion="1"] .skeleton-shimmer::after,
 :root[data-sk-enabled="0"] .skeleton-shimmer::after {
   animation: none;
   display: none;
 }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-sk-respect-motion="1"] .skeleton-shimmer::after {
+    animation: none;
+  }
+}
+
 
 
 /* ============================================================
