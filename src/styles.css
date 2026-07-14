@@ -760,3 +760,35 @@ select:-webkit-autofill {
 }
 
 
+
+/* ============================================================
+ * WCAG 2.5.5 (AAA) — Target Size 44×44
+ * ------------------------------------------------------------
+ * Botões densos (sm/icon: 32–36px) permanecem visualmente
+ * compactos no desktop, mas ganham área de toque real de
+ * 44×44 em dispositivos com ponteiro grosso (touch/stylus) via
+ * pseudo-elemento invisível. Não altera o layout — o ::before
+ * é absolute e não afeta o fluxo, apenas o hit-region do
+ * elemento (via pointer-events: auto).
+ * ============================================================ */
+@utility hit-target {
+  position: relative;
+  touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+  .hit-target::before {
+    content: "";
+    position: absolute;
+    inset: 50% 50% 50% 50%;
+    min-width: 44px;
+    min-height: 44px;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    /* Expande além do box quando o elemento é menor que 44px */
+    padding: max(0px, calc((44px - 100%) / 2));
+    pointer-events: auto;
+    /* Debug opcional: outline: 1px dashed cyan; */
+  }
+}
