@@ -38,14 +38,23 @@ export const getWhatsappConnectionState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdminRole(context.supabase, context.userId);
-    return getEvolutionConnectionSnapshot();
+    const state = await getEvolutionConnectionSnapshot();
+    return {
+      state: state.state,
+      exists: state.exists,
+      ownerJid: state.ownerJid,
+      profileName: state.profileName,
+      disconnectionAt: state.disconnectionAt,
+      disconnectionCode: state.disconnectionCode,
+    };
   });
 
 export const getWhatsappQrCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdminRole(context.supabase, context.userId);
-    return connectEvolutionInstance();
+    const qr = await connectEvolutionInstance();
+    return { base64: qr.base64, code: qr.code, pairingCode: qr.pairingCode };
   });
 
 export const disconnectWhatsapp = createServerFn({ method: "POST" })
@@ -418,5 +427,5 @@ export const probeWhatsappNumber = createServerFn({ method: "POST" })
     if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
     const number = normalizeWhatsappPhone(data.phone);
     const result = await evolutionRequest(`/chat/whatsappNumbers/${encodeURIComponent(instance)}`, { method: "POST", body: JSON.stringify({ numbers: [number] }) });
-    return { ok: result.ok, status: result.status, response: result.json ?? result.text, error: result.ok ? null : evolutionErrorMessage(result) };
+    return { ok: result.ok, status: result.status, responseText: result.text.slice(0, 2000), error: result.ok ? null : evolutionErrorMessage(result) };
   });
