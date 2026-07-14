@@ -7,8 +7,8 @@ export const Route = createFileRoute("/api/public/daily-insights-cron")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
-        const provided = request.headers.get("apikey") ?? request.headers.get("x-cron-key");
+        const expected = process.env.CRON_SHARED_SECRET;
+        const provided = request.headers.get("x-cron-secret") ?? request.headers.get("x-cron-key");
         if (!expected || !provided || provided !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
