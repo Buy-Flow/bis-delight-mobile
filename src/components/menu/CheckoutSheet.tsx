@@ -586,7 +586,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           STORAGE_KEY,
           JSON.stringify({ name: name.trim(), phone: phone.trim(), address: address.trim(), reference: reference.trim() }),
         );
-      } catch {}
+      } catch (e) {
+        // Sem toast: os dados já foram persistidos no perfil (Supabase) acima.
+        // O cache local é apenas para pré-preencher na próxima visita.
+        logSilent("checkout:save-customer", e);
+      }
 
       if (couponApplied) {
         const { data: redeemed, error: redeemErr } =
