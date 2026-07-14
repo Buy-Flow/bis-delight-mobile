@@ -77,16 +77,32 @@ function loadSaved(): SavedCustomer {
 
 
 
+// Canonical delimiter between the "left" (street, number) and "right" (neighborhood, city)
+// halves of a serialized address. We intentionally use an em-dash with spaces because "-" is
+// common inside street names (e.g. "Rua Dr. José-Maria", "Av. Nossa Senhora - São Paulo") and
+// splitting on "-" would corrupt them silently, sending malformed addresses to the courier.
+const ADDR_DELIM = " — ";
+
+function splitAddressHalves(s: string): [string, string] {
+  const emIdx = s.indexOf("—");
+  if (emIdx >= 0) return [s.slice(0, emIdx).trim(), s.slice(emIdx + 1).trim()];
+  // Legacy fallback for addresses persisted with " - ": use the LAST occurrence so hyphenated
+  // street names on the left half stay intact and the split lands between left/right halves.
+  const lastDash = s.lastIndexOf(" - ");
+  if (lastDash >= 0) return [s.slice(0, lastDash).trim(), s.slice(lastDash + 3).trim()];
+  return [s.trim(), ""];
+}
+
 function parseAddressParts(full: string): { street: string; number: string; neighborhood: string; city: string } {
   const s = (full || "").trim();
   if (!s) return { street: "", number: "", neighborhood: "", city: "" };
-  const [left, rightRaw] = s.includes("—") ? s.split("—") : s.includes(" - ") ? s.split(" - ") : [s, ""];
+  let [left, right] = splitAddressHalves(s);
   const leftParts = left.split(",").map((x) => x.trim()).filter(Boolean);
   let street = leftParts[0] ?? "";
   let number = "";
   if (leftParts[1] && /^\d/.test(leftParts[1])) number = leftParts[1];
   else if (leftParts[1]) street = `${street}, ${leftParts[1]}`;
-  const right = (rightRaw || leftParts.slice(2).join(", ")).trim();
+  if (!right && leftParts.length > 2) right = leftParts.slice(2).join(", ");
   const rightParts = right.split(",").map((x) => x.trim()).filter(Boolean);
   return { street, number, neighborhood: rightParts[0] ?? "", city: rightParts.slice(1).join(", ") };
 }
@@ -94,7 +110,8 @@ function parseAddressParts(full: string): { street: string; number: string; neig
 function joinAddressParts(p: { street: string; number: string; neighborhood: string; city: string }): string {
   const left = [p.street.trim(), p.number.trim()].filter(Boolean).join(", ");
   const right = [p.neighborhood.trim(), p.city.trim()].filter(Boolean).join(", ");
-  return [left, right].filter(Boolean).join(" — ");
+  if (left && right) return `${left}${ADDR_DELIM}${right}`;
+  return left || right;
 }
 
 
