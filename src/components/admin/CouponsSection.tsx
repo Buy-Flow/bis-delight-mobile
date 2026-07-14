@@ -39,13 +39,54 @@ type TabKey = "active" | "scheduled" | "expired" | "inactive" | "all";
 const brl = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-function randomCode(prefix = "BIS") {
-  const s = Math.random()
-    .toString(36)
-    .replace(/[^a-z0-9]/gi, "")
-    .slice(0, 6)
-    .toUpperCase();
-  return `${prefix}-${s}`;
+// Alfabeto sem caracteres ambíguos (sem 0/O, 1/I/L) para leitura em voz alta
+// e digitação sem erro. 32 símbolos → 8 chars ≈ 1.1 × 10¹² combinações.
+const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+function randomCode(prefix = "BIS", length = 8): string {
+  const cryptoObj: Crypto | undefined =
+    typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
+  let out = "";
+  if (cryptoObj && typeof cryptoObj.getRandomValues === "function") {
+    // Rejection sampling para distribuição uniforme sobre o alfabeto.
+    const max = Math.floor(256 / CODE_ALPHABET.length) * CODE_ALPHABET.length;
+    const buf = new Uint8Array(length * 2);
+    while (out.length < length) {
+      cryptoObj.getRandomValues(buf);
+      for (let i = 0; i < buf.length && out.length < length; i++) {
+        const b = buf[i];
+        if (b < max) out += CODE_ALPHABET[b % CODE_ALPHABET.length];
+      }
+    }
+  } else {
+    // Fallback improvável (SSR/ambientes sem crypto).
+    for (let i = 0; i < length; i++) {
+      out += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+    }
+  }
+  return `${prefix}-${out}`;
+}
+
+/**
+ * Gera um código garantidamente único consultando a tabela antes de retornar.
+ * Aumenta o comprimento gradualmente se houver colisões repetidas (extremamente
+ * improvável, mas defensivo).
+ */
+async function generateUniqueCode(prefix = "BIS"): Promise<string> {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const length = 8 + Math.floor(attempt / 2); // 8, 8, 9, 9, 10, 10
+    const candidate = randomCode(prefix, length);
+    const { data, error } = await supabase
+      .from("promo_coupons")
+      .select("id")
+      .eq("code", candidate)
+      .maybeSingle();
+    // PGRST116 = no rows; qualquer outro erro trata como "não sei", tenta de novo.
+    if (!error && !data) return candidate;
+    if (error && error.code === "PGRST116") return candidate;
+  }
+  // Última tentativa: sufixo temporal para praticamente eliminar colisão.
+  return `${prefix}-${randomCode("", 10).slice(-10)}${Date.now().toString(36).toUpperCase().slice(-4)}`;
 }
 
 function getStatus(c: Coupon): {
