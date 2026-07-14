@@ -109,10 +109,26 @@ function formatTime(iso: string | null) {
 }
 
 function formatPhone(p: string) {
-  const d = p.replace(/\D/g, "");
-  if (d.length === 13) return `+${d.slice(0, 2)} (${d.slice(2, 4)}) ${d.slice(4, 9)}-${d.slice(9)}`;
-  if (d.length === 12) return `+${d.slice(0, 2)} (${d.slice(2, 4)}) ${d.slice(4, 8)}-${d.slice(8)}`;
-  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  const d = (p || "").replace(/\D/g, "");
+  // Remove country code 55 quando aplicável (BR)
+  let local = d;
+  if (local.startsWith("55") && (local.length === 12 || local.length === 13)) {
+    local = local.slice(2);
+  }
+  // Celular BR: 11 dígitos, terceiro dígito (após DDD) = 9
+  if (local.length === 11 && local[2] === "9") {
+    return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
+  }
+  // Fixo BR: 10 dígitos
+  if (local.length === 10) {
+    return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
+  }
+  // Fixo BR com "9" espúrio adicionado por normalização (11 dígitos mas não celular)
+  if (local.length === 11 && local[2] !== "9") {
+    // Provável fixo com dígito extra — trata como fixo removendo o 3º
+    const fixo = local.slice(0, 2) + local.slice(3);
+    return `(${fixo.slice(0, 2)}) ${fixo.slice(2, 6)}-${fixo.slice(6)}`;
+  }
   return p;
 }
 
