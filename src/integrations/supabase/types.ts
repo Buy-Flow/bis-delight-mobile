@@ -2045,6 +2045,146 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+          uses_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+          uses_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          uses_count?: number
+        }
+        Relationships: []
+      }
+      referral_events: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          order_id: string | null
+          referee_coupon_id: string | null
+          referee_user_id: string | null
+          referrer_coupon_id: string | null
+          referrer_user_id: string
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referee_coupon_id?: string | null
+          referee_user_id?: string | null
+          referrer_coupon_id?: string | null
+          referrer_user_id: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referee_coupon_id?: string | null
+          referee_user_id?: string | null
+          referrer_coupon_id?: string | null
+          referrer_user_id?: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_referee_coupon_id_fkey"
+            columns: ["referee_coupon_id"]
+            isOneToOne: false
+            referencedRelation: "promo_coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_events_referrer_coupon_id_fkey"
+            columns: ["referrer_coupon_id"]
+            isOneToOne: false
+            referencedRelation: "promo_coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_settings: {
+        Row: {
+          enabled: boolean
+          expires_days: number
+          id: number
+          max_referrals_per_user: number | null
+          referee_discount_type: string
+          referee_discount_value: number
+          referee_min_order: number
+          referrer_discount_type: string
+          referrer_discount_value: number
+          referrer_min_order: number
+          require_first_order: boolean
+          share_message: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          expires_days?: number
+          id?: number
+          max_referrals_per_user?: number | null
+          referee_discount_type?: string
+          referee_discount_value?: number
+          referee_min_order?: number
+          referrer_discount_type?: string
+          referrer_discount_value?: number
+          referrer_min_order?: number
+          require_first_order?: boolean
+          share_message?: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          expires_days?: number
+          id?: number
+          max_referrals_per_user?: number | null
+          referee_discount_type?: string
+          referee_discount_value?: number
+          referee_min_order?: number
+          referrer_discount_type?: string
+          referrer_discount_value?: number
+          referrer_min_order?: number
+          require_first_order?: boolean
+          share_message?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       restaurant_tables: {
         Row: {
           created_at: string
@@ -3306,6 +3446,20 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_list_referrals: {
+        Args: { _limit?: number }
+        Returns: {
+          code: string
+          created_at: string
+          id: string
+          referee_email: string
+          referee_name: string
+          referrer_email: string
+          referrer_name: string
+          rewarded_at: string
+          status: string
+        }[]
+      }
       admin_list_role_audit: {
         Args: { _limit?: number }
         Returns: {
@@ -3345,6 +3499,39 @@ export type Database = {
           _target: string
         }
         Returns: undefined
+      }
+      admin_update_referral_settings: {
+        Args: { _payload: Json }
+        Returns: {
+          enabled: boolean
+          expires_days: number
+          id: number
+          max_referrals_per_user: number | null
+          referee_discount_type: string
+          referee_discount_value: number
+          referee_min_order: number
+          referrer_discount_type: string
+          referrer_discount_value: number
+          referrer_min_order: number
+          require_first_order: boolean
+          share_message: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "referral_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      apply_referral_code: {
+        Args: { _code: string }
+        Returns: {
+          coupon_code: string
+          discount_type: string
+          discount_value: number
+          expires_at: string
+        }[]
       }
       broadcast_delivery_offer: {
         Args: { _fee?: number; _order_id: string }
@@ -3434,6 +3621,18 @@ export type Database = {
           tier: string
         }[]
       }
+      get_my_referrals: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          referee_email: string
+          referee_name: string
+          referrer_coupon_code: string
+          rewarded_at: string
+          status: string
+        }[]
+      }
       get_open_cash_session: {
         Args: never
         Returns: {
@@ -3460,6 +3659,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_or_create_my_referral_code: { Args: never; Returns: string }
       get_pix_key: { Args: never; Returns: string }
       get_shared_cart: { Args: { _token: string }; Returns: Json }
       get_tracking_by_token: { Args: { _token: string }; Returns: Json }
