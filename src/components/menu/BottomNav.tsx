@@ -58,6 +58,24 @@ function LinkNavItem({ item, path, search }: { item: LinkItem; path: string; sea
   );
 }
 
+// Customer-facing routes where the BottomNav is allowed to render.
+// Allow-list is intentional: any new route (admin, internal, tooling) stays
+// hidden by default. Add here only when the route is a real customer surface.
+const CUSTOMER_EXACT: ReadonlySet<string> = new Set([
+  "/",
+  "/carrinho",
+  "/recompensas",
+  "/conta",
+  "/indique",
+  "/baixar-app",
+]);
+const CUSTOMER_PREFIXES: readonly string[] = [
+  "/produto/",
+  "/c/",
+  "/r/",
+  "/pagamento/",
+];
+
 export function BottomNav() {
   const { pathname, searchStr } = useRouterState({
     select: (s) => ({ pathname: s.location.pathname, searchStr: s.location.searchStr }),
@@ -67,9 +85,13 @@ export function BottomNav() {
 
   const insideAdmin = useIsInsideAdminShell();
 
-  // Hide on admin / auth-only routes
-  const hiddenPrefixes = ["/finalizar", "/rush", "/carrinhos", "/clientes", "/financeiro", "/notificacoes", "/admin", "/auth", "/previsao", "/copiloto", "/ai-growth", "/rastrear", "/avaliacoes", "/precificacao", "/lucratividade", "/modelos", "/entregas", "/pdv", "/garcons", "/impressao", "/biblioteca", "/motoboy"];
-  if (insideAdmin || hiddenPrefixes.some((p) => pathname.startsWith(p))) return null;
+  // Allow-list gate: hide by default, show only on known customer routes.
+  // insideAdmin flag remains as defense-in-depth in case a customer path
+  // ever gets wrapped by AdminShell.
+  const isCustomerRoute =
+    CUSTOMER_EXACT.has(pathname) ||
+    CUSTOMER_PREFIXES.some((p) => pathname.startsWith(p));
+  if (insideAdmin || !isCustomerRoute) return null;
 
   const isHome = pathname === "/";
   const isCart = pathname === "/carrinho";
