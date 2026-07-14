@@ -146,7 +146,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const runAsaasCheckout = useServerFn(createAsaasCheckoutForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
-  const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
+  const [couponApplied, setCouponApplied] = useState<{
+    id: string;
+    code: string;
+    discount: number;
+    kind: "loyalty" | "promo";
+    minOrder: number;
+    discountType?: "fixed" | "percent";
+    discountValue?: number;
+  } | null>(null);
   const [couponChecking, setCouponChecking] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState<
     Array<{ id: string; code: string; discount: number; kind: "loyalty" | "promo"; label?: string; minOrder?: number }>
