@@ -87,24 +87,10 @@ type ClientRow = Profile & {
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-const onlyDigits = (s: string | null | undefined) => (s ?? "").replace(/\D/g, "");
+import { onlyDigits as _onlyDigits, formatPhone as _formatPhone } from "@/lib/phone";
+const onlyDigits = _onlyDigits;
+const formatPhone = _formatPhone;
 
-const formatPhone = (s: string | null | undefined) => {
-  const d = onlyDigits(s);
-  let local = d;
-  if (local.startsWith("55") && (local.length === 12 || local.length === 13)) {
-    local = local.slice(2);
-  }
-  if (local.length === 11 && local[2] === "9")
-    return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
-  if (local.length === 10)
-    return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
-  if (local.length === 11 && local[2] !== "9") {
-    const fixo = local.slice(0, 2) + local.slice(3);
-    return `(${fixo.slice(0, 2)}) ${fixo.slice(2, 6)}-${fixo.slice(6)}`;
-  }
-  return s ?? "—";
-};
 
 const formatBirthday = (b: string | null) => {
   if (!b) return null;
