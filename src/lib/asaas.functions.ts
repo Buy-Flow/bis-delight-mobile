@@ -34,8 +34,9 @@ const pixInput = z.object({
 });
 
 export const createAsaasPixForOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => pixInput.parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createPixCharge } = await import("@/lib/asaas.server");
     const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
@@ -46,6 +47,8 @@ export const createAsaasPixForOrder = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
+
 
     const customer = await resolveOrCreateAsaasCustomer({
       userId: order.user_id ?? null,
