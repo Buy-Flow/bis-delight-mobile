@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
+import { logSilent } from "@/lib/silent-errors";
 import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
 import { useStoreStatus } from "@/lib/store-status";
@@ -67,7 +68,8 @@ function loadSaved(): SavedCustomer {
   if (typeof window === "undefined") return {};
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch {
+  } catch (e) {
+    logSilent("checkout:load-saved", e);
     return {};
   }
 }
@@ -584,7 +586,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           STORAGE_KEY,
           JSON.stringify({ name: name.trim(), phone: phone.trim(), address: address.trim(), reference: reference.trim() }),
         );
-      } catch {}
+      } catch (e) {
+        // Sem toast: os dados já foram persistidos no perfil (Supabase) acima.
+        // O cache local é apenas para pré-preencher na próxima visita.
+        logSilent("checkout:save-customer", e);
+      }
 
       if (couponApplied) {
         const { data: redeemed, error: redeemErr } =
@@ -714,7 +720,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               cpf: cpf ? cpfDigits(cpf) : "",
             }),
           );
-        } catch {}
+        } catch (e) {
+          logSilent("checkout:save-customer", e);
+        }
         clear();
         closeCheckout();
         navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });

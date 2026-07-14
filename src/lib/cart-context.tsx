@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { addSharedItem, readShareMode, writeShareMode, type ShareMode } from "@/lib/shared-cart";
+import { logSilent } from "@/lib/silent-errors";
 
 export type CartItem = {
   uid: string;
@@ -52,7 +54,8 @@ function loadCart(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
     return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
-  } catch {
+  } catch (e) {
+    logSilent("cart:persist", e);
     return [];
   }
 }
@@ -90,11 +93,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // persist to localStorage
+  const quotaWarned = useRef(false);
   useEffect(() => {
     if (!hydrated) return;
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(items));
-    } catch {}
+    } catch (e) {
+      const { quota } = logSilent("cart:persist", e);
+      if (quota && !quotaWarned.current) {
+        quotaWarned.current = true;
+        toast.error("Não foi possível salvar seu carrinho", {
+          description: "O armazenamento local está cheio. Limpe o histórico do navegador para não perder itens.",
+        });
+      }
+    }
   }, [items, hydrated]);
 
   // Track logged-in user for abandoned cart sync
@@ -118,9 +130,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         if (items.length === 0) {
           // Cart emptied: mark recovered (or leave if already gone)
-          await supabase.from("abandoned_carts").delete().eq("user_id", userId);
+          const { error } = await supabase.from("abandoned_carts").delete().eq("user_id", userId);
+          if (error) throw error;
         } else {
-          await supabase.from("abandoned_carts").upsert({
+          const { error } = await supabase.from("abandoned_carts").upsert({
             user_id: userId,
             items: items as unknown as never,
             subtotal,
@@ -128,8 +141,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
             notified_at: null,
             recovered_at: null,
           });
+          if (error) throw error;
         }
-      } catch {}
+      } catch (e) {
+        // Não é fatal para o usuário: o carrinho continua no localStorage.
+        // Registramos para diagnóstico (RLS, rede, schema drift).
+        logSilent("cart:abandoned-sync", e);
+      }
     }, 1500);
     return () => {
       if (syncTimer.current) clearTimeout(syncTimer.current);
