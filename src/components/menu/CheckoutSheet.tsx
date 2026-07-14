@@ -241,8 +241,16 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
 
 
 
+  // Hidrata identidade/endereço UMA vez por sessão (usuário) para não sobrescrever
+  // o que o cliente digitou ao reabrir o modal. Guardas `!current` respeitam
+  // edições em andamento; um ref garante que profile só é lido uma vez.
+  const hydratedFor = useRef<string | null>(null);
   useEffect(() => {
     if (!isCheckoutOpen && !pageMode) return;
+    const key = user?.id ?? "guest";
+    if (hydratedFor.current === key) return;
+    hydratedFor.current = key;
+
     const saved = loadSaved();
     if (saved.name && !name) setName(saved.name);
     if (saved.phone && !phone) setPhone(saved.phone);
@@ -257,8 +265,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         .maybeSingle()
         .then(({ data }) => {
           if (!data) return;
-          if (data.full_name) setName(data.full_name);
-          if (data.phone) setPhone(data.phone);
+          // Só preenche campos VAZIOS — nunca sobrescreve edição do cliente.
+          if (data.full_name && !name) setName(data.full_name);
+          if (data.phone && !phone) setPhone(data.phone);
           if (data.address && !address) setAddress(data.address);
           if (data.reference && !reference) setReference(data.reference);
           if (data.asaas_card_token && data.asaas_card_last4) {
