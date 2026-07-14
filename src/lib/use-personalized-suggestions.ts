@@ -76,7 +76,7 @@ export function usePersonalizedSuggestions(
       /sobremesa|sorvete|doce/i.test(c),
     );
 
-    const hour = new Date().getHours();
+    const hour = Number(new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", hour12: false }).format(new Date()));
     const isMorning = hour >= 6 && hour < 12;
     const isEvening = hour >= 18 || hour < 4;
 
