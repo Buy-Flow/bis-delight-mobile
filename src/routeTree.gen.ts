@@ -39,6 +39,7 @@ import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMesasRouteImport } from './routes/_authenticated/mesas'
 import { Route as AuthenticatedMarketingWinbackRouteImport } from './routes/_authenticated/marketing-winback'
 import { Route as AuthenticatedLucratividadeRouteImport } from './routes/_authenticated/lucratividade'
+import { Route as AuthenticatedInsightsDiariosRouteImport } from './routes/_authenticated/insights-diarios'
 import { Route as AuthenticatedIndiqueRouteImport } from './routes/_authenticated/indique'
 import { Route as AuthenticatedIndicacoesRouteImport } from './routes/_authenticated/indicacoes'
 import { Route as AuthenticatedImpressaoRouteImport } from './routes/_authenticated/impressao'
@@ -221,6 +222,12 @@ const AuthenticatedLucratividadeRoute =
   AuthenticatedLucratividadeRouteImport.update({
     id: '/lucratividade',
     path: '/lucratividade',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInsightsDiariosRoute =
+  AuthenticatedInsightsDiariosRouteImport.update({
+    id: '/insights-diarios',
+    path: '/insights-diarios',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedIndiqueRoute = AuthenticatedIndiqueRouteImport.update({
@@ -409,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/indicacoes': typeof AuthenticatedIndicacoesRoute
   '/indique': typeof AuthenticatedIndiqueRoute
+  '/insights-diarios': typeof AuthenticatedInsightsDiariosRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/marketing-winback': typeof AuthenticatedMarketingWinbackRoute
   '/mesas': typeof AuthenticatedMesasRoute
@@ -469,6 +477,7 @@ export interface FileRoutesByTo {
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/indicacoes': typeof AuthenticatedIndicacoesRoute
   '/indique': typeof AuthenticatedIndiqueRoute
+  '/insights-diarios': typeof AuthenticatedInsightsDiariosRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/marketing-winback': typeof AuthenticatedMarketingWinbackRoute
   '/mesas': typeof AuthenticatedMesasRoute
@@ -531,6 +540,7 @@ export interface FileRoutesById {
   '/_authenticated/impressao': typeof AuthenticatedImpressaoRoute
   '/_authenticated/indicacoes': typeof AuthenticatedIndicacoesRoute
   '/_authenticated/indique': typeof AuthenticatedIndiqueRoute
+  '/_authenticated/insights-diarios': typeof AuthenticatedInsightsDiariosRoute
   '/_authenticated/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/_authenticated/marketing-winback': typeof AuthenticatedMarketingWinbackRoute
   '/_authenticated/mesas': typeof AuthenticatedMesasRoute
@@ -593,6 +603,7 @@ export interface FileRouteTypes {
     | '/impressao'
     | '/indicacoes'
     | '/indique'
+    | '/insights-diarios'
     | '/lucratividade'
     | '/marketing-winback'
     | '/mesas'
@@ -653,6 +664,7 @@ export interface FileRouteTypes {
     | '/impressao'
     | '/indicacoes'
     | '/indique'
+    | '/insights-diarios'
     | '/lucratividade'
     | '/marketing-winback'
     | '/mesas'
@@ -714,6 +726,7 @@ export interface FileRouteTypes {
     | '/_authenticated/impressao'
     | '/_authenticated/indicacoes'
     | '/_authenticated/indique'
+    | '/_authenticated/insights-diarios'
     | '/_authenticated/lucratividade'
     | '/_authenticated/marketing-winback'
     | '/_authenticated/mesas'
@@ -977,6 +990,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLucratividadeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/insights-diarios': {
+      id: '/_authenticated/insights-diarios'
+      path: '/insights-diarios'
+      fullPath: '/insights-diarios'
+      preLoaderRoute: typeof AuthenticatedInsightsDiariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/indique': {
       id: '/_authenticated/indique'
       path: '/indique'
@@ -1206,6 +1226,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedImpressaoRoute: typeof AuthenticatedImpressaoRoute
   AuthenticatedIndicacoesRoute: typeof AuthenticatedIndicacoesRoute
   AuthenticatedIndiqueRoute: typeof AuthenticatedIndiqueRoute
+  AuthenticatedInsightsDiariosRoute: typeof AuthenticatedInsightsDiariosRoute
   AuthenticatedLucratividadeRoute: typeof AuthenticatedLucratividadeRoute
   AuthenticatedMarketingWinbackRoute: typeof AuthenticatedMarketingWinbackRoute
   AuthenticatedMesasRoute: typeof AuthenticatedMesasRoute
@@ -1249,6 +1270,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedImpressaoRoute: AuthenticatedImpressaoRoute,
   AuthenticatedIndicacoesRoute: AuthenticatedIndicacoesRoute,
   AuthenticatedIndiqueRoute: AuthenticatedIndiqueRoute,
+  AuthenticatedInsightsDiariosRoute: AuthenticatedInsightsDiariosRoute,
   AuthenticatedLucratividadeRoute: AuthenticatedLucratividadeRoute,
   AuthenticatedMarketingWinbackRoute: AuthenticatedMarketingWinbackRoute,
   AuthenticatedMesasRoute: AuthenticatedMesasRoute,
