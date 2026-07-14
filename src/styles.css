@@ -798,3 +798,55 @@ select:-webkit-autofill {
   }
 }
 
+/* ============================================================
+ * Canonical Field Focus (unificação)
+ * ------------------------------------------------------------
+ * Antes desta regra, existiam ~7 tratamentos diferentes de foco
+ * em inputs/textarea/select pelo app: `focus:border-white/25`,
+ * `focus:border-neon-cyan`, `focus:border-neon-pink/60`,
+ * `focus:border-neon-yellow`, `focus:border-fuchsia-400`,
+ * `focus:border-pink-500/50`, `focus:border-yellow-400/50`.
+ *
+ * Este bloco força um único padrão coerente em todos os campos:
+ *   - border pintada com o token `--ring` (neon-cyan)
+ *   - ring suave (halo) via box-shadow, coexiste com o outline
+ *     global de `:focus-visible` sem alterar o box model
+ *   - também trata wrappers `<label>` que reagem via
+ *     `focus-within`, evitando dois padrões (input vs. wrapper).
+ *
+ * `!important` é necessário para vencer os utilitários Tailwind
+ * `focus:border-*` gravados em cada componente sem precisar
+ * reescrever 40+ arquivos. Opt-out: `data-no-focus-ring` no
+ * elemento (mesma convenção do fallback global).
+ * ============================================================ */
+:where(input, textarea, select, [contenteditable="true"]):focus-visible:not([data-no-focus-ring]) {
+  border-color: var(--ring) !important;
+}
+
+/* Wrappers <label> que já usam `focus-within:border-*` também
+ * são reconciliados com o mesmo token — resolve o descompasso
+ * "input branco / label neon-pink" no admin e precificação. */
+label:has(:focus-visible):not([data-no-focus-ring]),
+[data-field-wrapper]:has(:focus-visible):not([data-no-focus-ring]) {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 22%, transparent);
+}
+
+/* Utilitário canônico para novos campos — expressa a intenção
+ * sem depender do `!important` do bloco acima. Use em novos
+ * componentes: `<input class="field-focus" />`. */
+@utility field-focus {
+  &:focus-visible {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 22%, transparent);
+    outline: none;
+  }
+}
+
+@utility field-focus-within {
+  &:focus-within {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 22%, transparent);
+  }
+}
+
