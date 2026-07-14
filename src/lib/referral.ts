@@ -26,10 +26,14 @@ export function clearStoredReferralCode() {
   }
 }
 
+const sb = supabase as unknown as {
+  rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+  auth: typeof supabase.auth;
+};
+
 /**
  * If a referral code is pending in localStorage AND the user is logged in,
- * try to apply it (idempotent). Shows a success toast for the referee.
- * Silently ignores expected errors like "already_referred" or "not_new_customer".
+ * try to apply it (idempotent).
  */
 export async function tryConsumeStoredReferralCode(): Promise<void> {
   const code = getStoredReferralCode();
@@ -37,8 +41,7 @@ export async function tryConsumeStoredReferralCode(): Promise<void> {
   const { data: sess } = await supabase.auth.getSession();
   if (!sess.session) return;
 
-  // @ts-expect-error rpc name may not be in generated types yet
-  const { data, error } = await supabase.rpc("apply_referral_code", { _code: code });
+  const { data, error } = await sb.rpc("apply_referral_code", { _code: code });
   if (error) {
     const known = new Set([
       "already_referred",
@@ -54,22 +57,21 @@ export async function tryConsumeStoredReferralCode(): Promise<void> {
     return;
   }
   clearStoredReferralCode();
-  const row = Array.isArray(data) ? data[0] : data;
-  if (row?.coupon_code) {
-    const val =
-      row.discount_type === "percent"
-        ? `${row.discount_value}%`
-        : `R$ ${Number(row.discount_value).toFixed(2)}`;
+  const row = Array.isArray(data) ? (data[0] as Record<string, unknown>) : (data as Record<string, unknown>);
+  const couponCode = row?.coupon_code as string | undefined;
+  const discountType = row?.discount_type as string | undefined;
+  const discountValue = Number(row?.discount_value ?? 0);
+  if (couponCode) {
+    const val = discountType === "percent" ? `${discountValue}%` : `R$ ${discountValue.toFixed(2)}`;
     toast.success(`🎁 Cupom ${val} liberado!`, {
-      description: `Use ${row.coupon_code} no seu primeiro pedido.`,
+      description: `Use ${couponCode} no seu primeiro pedido.`,
       duration: 8000,
     });
   }
 }
 
 export async function getMyReferralCode(): Promise<string | null> {
-  // @ts-expect-error rpc name may not be in generated types yet
-  const { data, error } = await supabase.rpc("get_or_create_my_referral_code");
+  const { data, error } = await sb.rpc("get_or_create_my_referral_code");
   if (error) return null;
   return typeof data === "string" ? data : null;
 }

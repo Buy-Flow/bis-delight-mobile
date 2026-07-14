@@ -2,10 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyReferralCode } from "@/lib/referral";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Copy, Share2, MessageCircle, Gift, Users, Trophy, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,6 +41,11 @@ const statusLabel: Record<string, { label: string; tone: string }> = {
   expired: { label: "Expirado", tone: "bg-white/10 text-white/60" },
 };
 
+const sb = supabase as unknown as {
+  rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+  from: typeof supabase.from;
+};
+
 function IndiquePage() {
   const [code, setCode] = useState<string | null>(null);
   const [refs, setRefs] = useState<Referral[]>([]);
@@ -53,9 +56,13 @@ function IndiquePage() {
     (async () => {
       const [c, r, s] = await Promise.all([
         getMyReferralCode(),
-        // @ts-expect-error rpc
-        supabase.rpc("get_my_referrals"),
-        supabase.from("referral_settings").select("*").eq("id", 1).maybeSingle(),
+        sb.rpc("get_my_referrals"),
+        (supabase.from as unknown as (t: string) => { select: (c: string) => { eq: (a: string, b: number) => { maybeSingle: () => Promise<{ data: Settings | null }> } } })(
+          "referral_settings",
+        )
+          .select("*")
+          .eq("id", 1)
+          .maybeSingle(),
       ]);
       setCode(c);
       setRefs(((r.data as Referral[]) ?? []).filter(Boolean));
@@ -87,9 +94,10 @@ function IndiquePage() {
   };
   const share = async () => {
     if (!link) return;
-    if (navigator.share) {
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    if (nav.share) {
       try {
-        await navigator.share({ title: "Quero Bis", text: shareText, url: link });
+        await nav.share({ title: "Quero Bis", text: shareText, url: link });
       } catch {
         /* cancelled */
       }
@@ -102,11 +110,7 @@ function IndiquePage() {
     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
   };
 
-  if (loading) {
-    return (
-      <div className="p-6 text-white/60">Carregando...</div>
-    );
-  }
+  if (loading) return <div className="p-6 text-white/60">Carregando...</div>;
 
   if (settings && !settings.enabled) {
     return (
@@ -138,7 +142,7 @@ function IndiquePage() {
         </p>
       </header>
 
-      <Card className="bg-gradient-to-br from-fuchsia-500/20 to-purple-600/10 border-fuchsia-500/30 p-6 space-y-4">
+      <div className="rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-600/10 border border-fuchsia-500/30 p-6 space-y-4">
         <div className="text-xs uppercase tracking-wide text-fuchsia-200/80">Seu link</div>
         <div className="flex flex-col sm:flex-row gap-2">
           <Input readOnly value={link} className="bg-white/10 border-white/20 text-white font-mono" />
@@ -150,7 +154,11 @@ function IndiquePage() {
           <Button onClick={whatsapp} className="bg-emerald-500 hover:bg-emerald-600 text-white gap-2">
             <MessageCircle className="h-4 w-4" /> WhatsApp
           </Button>
-          <Button onClick={share} variant="outline" className="border-white/20 text-white gap-2 bg-white/5">
+          <Button
+            onClick={share}
+            variant="outline"
+            className="border-white/20 text-white gap-2 bg-white/5"
+          >
             <Share2 className="h-4 w-4" /> Compartilhar
           </Button>
         </div>
@@ -158,27 +166,27 @@ function IndiquePage() {
           Código: <span className="font-mono text-fuchsia-200">{code}</span> • cupons expiram em{" "}
           {settings?.expires_days ?? 60} dias
         </p>
-      </Card>
+      </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <Card className="bg-white/5 border-white/10 p-4 text-center">
+        <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-center">
           <Users className="h-5 w-5 mx-auto text-white/60 mb-1" />
           <div className="text-2xl font-bold text-white">{refs.length}</div>
           <div className="text-xs text-white/60">Indicados</div>
-        </Card>
-        <Card className="bg-white/5 border-white/10 p-4 text-center">
+        </div>
+        <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-center">
           <Gift className="h-5 w-5 mx-auto text-amber-300 mb-1" />
           <div className="text-2xl font-bold text-white">{pendingCount}</div>
           <div className="text-xs text-white/60">Aguardando pedido</div>
-        </Card>
-        <Card className="bg-white/5 border-white/10 p-4 text-center">
+        </div>
+        <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-center">
           <Trophy className="h-5 w-5 mx-auto text-emerald-300 mb-1" />
           <div className="text-2xl font-bold text-white">{rewardedCount}</div>
           <div className="text-xs text-white/60">Recompensas</div>
-        </Card>
+        </div>
       </div>
 
-      <Card className="bg-white/5 border-white/10 p-4">
+      <div className="rounded-xl bg-white/5 border border-white/10 p-4">
         <h2 className="text-white font-semibold mb-3">Suas indicações</h2>
         {refs.length === 0 ? (
           <div className="text-center py-8 text-white/50">
@@ -199,39 +207,45 @@ function IndiquePage() {
                       {r.referrer_coupon_code && (
                         <>
                           {" • "}
-                          <span className="font-mono text-emerald-300">{r.referrer_coupon_code}</span>
+                          <span className="font-mono text-emerald-300">
+                            {r.referrer_coupon_code}
+                          </span>
                         </>
                       )}
                     </div>
                   </div>
-                  <Badge className={`${s.tone} border-0`}>{s.label}</Badge>
+                  <span className={`text-xs px-2 py-1 rounded-full ${s.tone}`}>{s.label}</span>
                 </li>
               );
             })}
           </ul>
         )}
-      </Card>
+      </div>
 
-      <Card className="bg-white/5 border-white/10 p-4 text-sm text-white/70">
+      <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/70">
         <h3 className="text-white font-semibold mb-2">Como funciona</h3>
         <ol className="list-decimal list-inside space-y-1">
           <li>Compartilhe seu link com quem ainda não tem cadastro.</li>
           <li>
             Ao criar a conta, seu amigo ganha{" "}
             <b>
-              {settings ? format(settings.referee_discount_type, settings.referee_discount_value) : "—"}
+              {settings
+                ? format(settings.referee_discount_type, settings.referee_discount_value)
+                : "—"}
             </b>{" "}
             (pedido mínimo R$ {settings?.referee_min_order.toFixed(2) ?? "—"}).
           </li>
           <li>
             Quando ele pagar o 1º pedido, você recebe{" "}
             <b>
-              {settings ? format(settings.referrer_discount_type, settings.referrer_discount_value) : "—"}
+              {settings
+                ? format(settings.referrer_discount_type, settings.referrer_discount_value)
+                : "—"}
             </b>{" "}
             de cupom automaticamente.
           </li>
         </ol>
-      </Card>
+      </div>
     </div>
   );
 }
