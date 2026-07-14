@@ -6,7 +6,12 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/daily-insights-cron")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const provided = request.headers.get("apikey") ?? request.headers.get("x-cron-key");
+        if (!expected || !provided || provided !== expected) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { runDailyInsights } = await import("@/lib/daily-insights.server");
 
