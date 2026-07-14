@@ -382,6 +382,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       const msg = promoErr?.message ?? "";
       if (msg.includes("order_below_minimum")) toast.error("Pedido abaixo do mínimo pra este cupom.");
       else if (msg.includes("coupon_expired")) toast.error("Cupom expirado.");
+      else if (msg.includes("coupon_not_started")) toast.error("Este cupom ainda não começou.");
       else if (msg.includes("coupon_exhausted")) toast.error("Cupom esgotado.");
       else if (msg.includes("coupon_inactive")) toast.error("Cupom inativo.");
       else if (msg.includes("coupon_user_limit")) toast.error("Você já usou este cupom.");
