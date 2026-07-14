@@ -186,6 +186,7 @@ const groups: NavGroup[] = [
       { to: "/usuarios", label: "Usuários e permissões", icon: ShieldCheck },
       { to: "/alertas-sonoros", label: "Alertas sonoros", icon: Volume2 },
       { to: "/automacoes", label: "Automações", icon: Zap },
+      { to: "/skeleton-loading", label: "Skeleton loading", icon: Sparkles },
     ],
   },
 ];
