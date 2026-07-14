@@ -76,17 +76,33 @@ export function normalizeWhatsappPhone(raw: string): string {
   if (!n) return "";
   n = n.replace(/^0+/, "");
 
-  // Se veio com +DDI ou já começa com DDI internacional conhecido, não força Brasil.
-  // Ex.: +1 850 774 4710 / 18507744710 precisa continuar 18507744710, não 551850...
-  if (hasExplicitCountryCode || (n.length === 11 && n.startsWith("1"))) return n;
+  // 1) Se veio com +DDI explícito, respeita como está.
+  if (hasExplicitCountryCode) return n;
 
-  // BR sem DDI → adiciona 55 apenas quando o padrão parece brasileiro.
-  // Fixo BR: DDD + 8 dígitos. Celular BR: DDD + 9 + 8 dígitos.
-  if (n.length === 10 || (n.length === 11 && /^\d{2}9/.test(n))) n = "55" + n;
-  // 55 duplicado (55 55 + numero)
+  // 2) Já vem com DDI Brasil (55 + 10 ou 11 dígitos) → mantém.
+  //    Ex.: 5511987654321 (13) ou 551133334444 (12).
+  if ((n.length === 13 || n.length === 12) && n.startsWith("55")) {
+    // Corrige 55 duplicado por engano ("5555...").
+    while (n.length > 13 && n.startsWith("5555")) n = n.slice(2);
+    return n;
+  }
+
+  // 3) BR sem DDI:
+  //    - Celular: DDD (2) + 9 + 8 dígitos = 11 dígitos, padrão \d{2}9\d{8}.
+  //    - Fixo:    DDD (2) + 8 dígitos     = 10 dígitos.
+  //    Isso PRECISA vir antes da checagem de EUA, senão DDDs 11–19 (SP,
+  //    Campinas, Vale, Ribeirão etc.) são confundidos com "+1" americano.
+  if (n.length === 11 && /^[1-9]{2}9\d{8}$/.test(n)) return "55" + n;
+  if (n.length === 10 && /^[1-9]{2}\d{8}$/.test(n)) return "55" + n;
+
+  // 4) EUA/Canadá: 11 dígitos começando com 1 e que NÃO casem com o padrão BR acima.
+  if (n.length === 11 && n.startsWith("1")) return n;
+
+  // 5) Fallback: devolve como veio (já pode ser um DDI internacional válido).
   while (n.length > 13 && n.startsWith("5555")) n = n.slice(2);
   return n;
 }
+
 
 export function extractEvolutionMessageId(value: unknown): string | null {
   if (!value || typeof value !== "object") return null;
