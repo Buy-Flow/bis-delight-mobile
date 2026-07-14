@@ -48,7 +48,7 @@ import {
   FavoritesGridSkeleton,
   ProfilePanelSkeleton,
   LoyaltyPanelSkeleton,
-} from "@/components/ui/skeletons";
+} from "@/components/skeleton";
 import { AddressManager } from "@/components/account/AddressManager";
 import { VipRankingCard } from "@/components/account/VipRankingCard";
 import { formatCpf, isValidCpf, cpfDigits } from "@/lib/cpf";

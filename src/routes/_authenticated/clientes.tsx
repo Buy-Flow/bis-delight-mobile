@@ -46,7 +46,7 @@ import { cn } from "@/lib/utils";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
-import { ClientsListSkeleton, ClientDetailSkeleton } from "@/components/ui/skeletons";
+import { ClientsListSkeleton, ClientDetailSkeleton } from "@/components/skeleton";
 
 export const Route = createFileRoute("/_authenticated/clientes")({
   head: () => ({
