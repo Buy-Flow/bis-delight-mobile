@@ -22,6 +22,7 @@ import {
   X as XIcon,
 } from "lucide-react";
 import { z } from "zod";
+import { formatCpf, isValidCpf } from "@/lib/cpf";
 
 const searchSchema = z.object({
   next: z.string().optional(),
