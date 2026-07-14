@@ -154,7 +154,7 @@ function RecompensasPage() {
 
 
         {/* Hero card com nível atual */}
-        <section className={cn("relative overflow-hidden rounded-[32px] border p-6 shadow-[0_30px_80px_-40px_rgba(255,52,153,0.6)]", "border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240]")}>
+        <section className={cn("relative overflow-hidden rounded-4xl border p-6 shadow-[0_30px_80px_-40px_rgba(255,52,153,0.6)]", "border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240]")}>
           <Star aria-hidden className="absolute right-6 top-4 h-3 w-3 text-neon-yellow/70" fill="currentColor" />
           <Star aria-hidden className="absolute right-16 top-10 h-2 w-2 text-neon-pink/70" fill="currentColor" />
           <Star aria-hidden className="absolute left-8 bottom-6 h-2.5 w-2.5 text-neon-cyan/60" fill="currentColor" />

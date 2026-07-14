@@ -6,12 +6,18 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  /* Harmonic 4pt radius scale — single source of truth.
+     Base --radius = 16px; every step is a clean 4px increment so any two
+     neighboring surfaces (card + button, sheet + inner tile) stay coherent. */
+  --radius-xs: calc(var(--radius) - 12px);  /*  4px */
+  --radius-sm: calc(var(--radius) - 8px);   /*  8px */
+  --radius-md: calc(var(--radius) - 4px);   /* 12px */
+  --radius-lg: var(--radius);               /* 16px */
+  --radius-xl: calc(var(--radius) + 4px);   /* 20px */
+  --radius-2xl: calc(var(--radius) + 8px);  /* 24px */
+  --radius-3xl: calc(var(--radius) + 12px); /* 28px */
+  --radius-4xl: calc(var(--radius) + 16px); /* 32px — hero / full-bleed surfaces */
+
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -88,7 +88,7 @@ export function ActiveOrderCard() {
         params={{ orderId: order.id }}
         aria-label="Rastrear pedido"
         className={cn(
-          "group relative flex items-center gap-3 overflow-hidden rounded-[28px] border border-neon-cyan/40 p-3.5 shadow-[0_20px_60px_-30px_rgba(34,211,238,0.7)] transition-transform active:scale-[0.98]",
+          "group relative flex items-center gap-3 overflow-hidden rounded-3xl border border-neon-cyan/40 p-3.5 shadow-[0_20px_60px_-30px_rgba(34,211,238,0.7)] transition-transform active:scale-[0.98]",
         )}
         style={{ backgroundColor: "#0f2a3a" }}
       >

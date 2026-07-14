@@ -30,7 +30,7 @@ export function Benefits() {
   return (
     <section className="relative z-30 mt-2 px-4 pb-6">
       <div
-        className="rounded-[32px] border border-white/10 px-2 py-4 shadow-lg"
+        className="rounded-4xl border border-white/10 px-2 py-4 shadow-lg"
         style={{ backgroundColor: "#3a1f5c" }}
       >
 

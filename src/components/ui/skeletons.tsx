@@ -216,7 +216,7 @@ export function RecompensasSkeleton() {
   return (
     <div className="relative mx-auto max-w-2xl px-4 pt-5 space-y-5">
       {/* Hero card */}
-      <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240] p-6">
+      <section className="relative overflow-hidden rounded-4xl border border-white/10 bg-gradient-to-br from-[#3a1f5c] via-[#4a2470] to-[#2a1240] p-6">
         <div className="flex items-center gap-3">
           <SkelCircle size={64} />
           <div className="flex-1 space-y-2">

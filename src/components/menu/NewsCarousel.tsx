@@ -247,7 +247,7 @@ export function NewsPosterCard({
     <article className="group relative w-[85vw] max-w-[380px] shrink-0 snap-center">
       <button
         onClick={() => onOpen(product)}
-        className="relative block aspect-[3/4] w-full overflow-hidden rounded-[26px] text-left transition-transform duration-300 group-hover:-translate-y-1"
+        className="relative block aspect-[3/4] w-full overflow-hidden rounded-3xl text-left transition-transform duration-300 group-hover:-translate-y-1"
         style={{
           background: cardBg,
           boxShadow:

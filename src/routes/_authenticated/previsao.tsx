@@ -493,7 +493,7 @@ function Heatmap({
               <div
                 key={dow}
                 title={`${DOW[dow]} ${h}h · ${cell.orders.toFixed(1)} ped/ocor.`}
-                className="h-3 rounded-[3px]"
+                className="h-3 rounded-xs"
                 style={{
                   background: `rgba(236, 72, 153, ${alpha.toFixed(2)})`,
                   boxShadow:

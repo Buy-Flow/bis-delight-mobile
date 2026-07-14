@@ -336,7 +336,7 @@ function RastrearPage() {
         {/* Hero card */}
         <section
           className={cn(
-            "relative overflow-hidden rounded-[32px] border p-6 shadow-[0_30px_80px_-40px_rgba(34,211,238,0.55)]",
+            "relative overflow-hidden rounded-4xl border p-6 shadow-[0_30px_80px_-40px_rgba(34,211,238,0.55)]",
             isCanceled
               ? "border-red-500/40 bg-gradient-to-br from-[#3a1216] via-[#2a0b0f] to-[#1a0708]"
               : "border-white/10 bg-gradient-to-br from-[#123047] via-[#1a1740] to-[#2a1240]",

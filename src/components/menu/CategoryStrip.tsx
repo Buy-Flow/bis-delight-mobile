@@ -113,7 +113,7 @@ export function CategoryChip({
         aria-pressed={active}
 
         className={cn(
-          "group relative shrink-0 w-[72px] h-[104px] rounded-[16px]",
+          "group relative shrink-0 w-[72px] h-[104px] rounded-lg",
           "transition-all duration-300 active:scale-95 hover:-translate-y-0.5",
           active && `${accent.glow} scale-[1.03]`,
         )}
@@ -125,7 +125,7 @@ export function CategoryChip({
 
       <div
         className={cn(
-          "relative h-full w-full overflow-hidden rounded-[14px] transition-all duration-300",
+          "relative h-full w-full overflow-hidden rounded-md transition-all duration-300",
           "bg-[#2a0a5c]",
           active && `ring-2 ${accent.ring}`,
         )}
