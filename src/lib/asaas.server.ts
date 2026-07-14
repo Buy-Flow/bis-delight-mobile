@@ -121,7 +121,7 @@ export async function createCardCharge(input: {
   description?: string;
   dueDate?: string;
   installmentCount?: number;
-  creditCard: {
+  creditCard?: {
     holderName: string;
     number: string; // digits only
     expiryMonth: string; // "MM"
