@@ -40,6 +40,13 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
 
+  /* Surface ramp exposed as Tailwind colors — `bg-surface-1`, `border-surface-2`… */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+
   /* Brand tokens */
   --color-acai-950: var(--acai-950);
   --color-acai-900: var(--acai-900);
