@@ -223,6 +223,7 @@ export type Database = {
       }
       asaas_webhook_events: {
         Row: {
+          asaas_event_id: string | null
           created_at: string
           error: string | null
           event: string | null
@@ -234,6 +235,7 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          asaas_event_id?: string | null
           created_at?: string
           error?: string | null
           event?: string | null
@@ -245,6 +247,7 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          asaas_event_id?: string | null
           created_at?: string
           error?: string | null
           event?: string | null
@@ -2425,6 +2428,10 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          asaas_card_brand: string | null
+          asaas_card_last4: string | null
+          asaas_card_token: string | null
+          asaas_customer_id: string | null
           birthday: string | null
           cpf: string | null
           created_at: string
@@ -2437,6 +2444,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          asaas_card_brand?: string | null
+          asaas_card_last4?: string | null
+          asaas_card_token?: string | null
+          asaas_customer_id?: string | null
           birthday?: string | null
           cpf?: string | null
           created_at?: string
@@ -2449,6 +2460,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          asaas_card_brand?: string | null
+          asaas_card_last4?: string | null
+          asaas_card_token?: string | null
+          asaas_customer_id?: string | null
           birthday?: string | null
           cpf?: string | null
           created_at?: string
