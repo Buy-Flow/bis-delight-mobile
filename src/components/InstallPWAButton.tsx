@@ -125,7 +125,7 @@ export function InstallPWAButton() {
   };
 
 
-  if (installed || !visible) return null;
+  if (installed || !visible || !adminAllowed) return null;
 
   return (
     <>
