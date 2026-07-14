@@ -300,7 +300,7 @@ function PDVPage() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
-      <div className="mx-auto grid max-w-[1600px] gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="mx-auto grid max-w-[1600px] items-start gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         {/* Catalog */}
         <section className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center gap-2">
