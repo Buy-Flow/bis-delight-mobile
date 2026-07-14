@@ -71,6 +71,34 @@ async function asaasFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type AsaasCustomer = { id: string; name: string; email?: string; cpfCnpj?: string; phone?: string };
 
+export async function updateAsaasCustomer(id: string, input: {
+  name?: string;
+  email?: string;
+  cpfCnpj?: string;
+  phone?: string;
+}): Promise<AsaasCustomer> {
+  const phone = normalizeBrazilianPhone(input.phone);
+  const cpfCnpj = onlyDigits(input.cpfCnpj) || undefined;
+  return await asaasFetch<AsaasCustomer>(`/customers/${id}`, {
+    method: "POST",
+    body: JSON.stringify(cleanPayload({
+      name: input.name,
+      email: input.email,
+      cpfCnpj,
+      phone: phone?.length === 10 ? phone : undefined,
+      mobilePhone: phone?.length === 11 ? phone : undefined,
+    })),
+  });
+}
+
+export async function getAsaasCustomer(id: string): Promise<AsaasCustomer | null> {
+  try {
+    return await asaasFetch<AsaasCustomer>(`/customers/${id}`);
+  } catch {
+    return null;
+  }
+}
+
 export async function upsertAsaasCustomer(input: {
   name: string;
   email?: string;
@@ -85,7 +113,13 @@ export async function upsertAsaasCustomer(input: {
     const found = await asaasFetch<{ data: AsaasCustomer[] }>(
       `/customers?externalReference=${encodeURIComponent(input.externalReference)}`,
     );
-    if (found.data?.[0]) return found.data[0];
+    const existing = found.data?.[0];
+    if (existing) {
+      if (cpfCnpj && !onlyDigits(existing.cpfCnpj)) {
+        return await updateAsaasCustomer(existing.id, { cpfCnpj, phone: input.phone, email: input.email });
+      }
+      return existing;
+    }
   }
   return await asaasFetch<AsaasCustomer>("/customers", {
     method: "POST",
