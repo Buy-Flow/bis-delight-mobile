@@ -87,9 +87,6 @@ type ClientRow = Profile & {
 const BRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-import { onlyDigits as _onlyDigits, formatPhone as _formatPhone } from "@/lib/phone";
-const onlyDigits = _onlyDigits;
-const formatPhone = _formatPhone;
 
 
 const formatBirthday = (b: string | null) => {
