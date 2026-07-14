@@ -22,7 +22,8 @@ import {
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
 import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/AddressMapInline";
-import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail } from "lucide-react";
+import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
+import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 
 
 type Mode = "entrega" | "retirada";
@@ -104,6 +105,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [geoLoading, setGeoLoading] = useState(false);
 
   const [sending, setSending] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao">("whatsapp");
+  const [cpf, setCpf] = useState("");
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
@@ -423,6 +426,10 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
+    if (paymentMethod === "cartao" && !isValidCpf(cpf)) {
+      toast.error("CPF inválido — obrigatório para pagamento com cartão.");
+      return;
+    }
     if (mode === "entrega" && outsideRadius) {
       toast.error(
         zone?.outsideMessage ||
@@ -449,6 +456,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           distance_km: mode === "entrega" && quote ? Number(quote.km.toFixed(3)) : null,
           delivery_lat: mode === "entrega" && quote ? quote.lat : null,
           delivery_lng: mode === "entrega" && quote ? quote.lng : null,
+          payment_method: paymentMethod === "whatsapp" ? null : paymentMethod,
         })
         .select("id")
         .single();
@@ -512,14 +520,26 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         console.warn("merge_shared_cart failed", e);
       }
 
-      const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
-      const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
-      window.open(url, "_blank");
-      toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
-      setTimeout(() => {
+      if (paymentMethod === "whatsapp") {
+        const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
+        const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
+        window.open(url, "_blank");
+        toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
+        setTimeout(() => {
+          clear();
+          closeCheckout();
+        }, 400);
+      } else {
+        try {
+          sessionStorage.setItem(
+            "querobis:pending_payment_cpf",
+            JSON.stringify({ cpf: cpfDigits(cpf), name: name.trim(), phone: phone.trim(), email: user?.email ?? "" }),
+          );
+        } catch {}
         clear();
         closeCheckout();
-      }, 400);
+        navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
+      }
     } catch (err: any) {
       console.error("[checkout] send failed", err);
       const detail =
@@ -1128,7 +1148,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     Endereço fora do raio de entrega
                   </>
                 ) : isAuthenticated ? (
-                  `Enviar pedido no WhatsApp · ${brl(total)}`
+                  paymentMethod === "pix"
+                    ? `Gerar PIX · ${brl(total)}`
+                    : paymentMethod === "cartao"
+                      ? `Pagar com cartão · ${brl(total)}`
+                      : `Enviar pedido no WhatsApp · ${brl(total)}`
                 ) : (
                   `Entrar para finalizar · ${brl(total)}`
                 )}
@@ -1245,6 +1269,61 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             </button>
           )}
 
+          {/* Forma de pagamento */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow">
+                <CreditCard className="h-4 w-4" />
+              </div>
+              <h4 className="font-display text-base font-extrabold text-white">Pagamento</h4>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { id: "whatsapp", label: "Combinar", hint: "Falar no WhatsApp", Icon: WhatsIcon, color: "text-neon-cyan" },
+                { id: "pix", label: "PIX", hint: "QR Code na hora", Icon: QrCode, color: "text-neon-yellow" },
+                { id: "cartao", label: "Cartão", hint: "Até 12x", Icon: CreditCard, color: "text-neon-pink" },
+              ] as const).map(({ id, label, hint, Icon, color }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setPaymentMethod(id)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-center transition active:scale-95",
+                    paymentMethod === id
+                      ? "border-white/40 bg-white/10"
+                      : "border-white/10 bg-white/[0.03] hover:border-white/25",
+                  )}
+                >
+                  <Icon className={cn("h-5 w-5", color)} />
+                  <div className="text-[12px] font-extrabold text-white leading-tight">{label}</div>
+                  <div className="text-[9.5px] text-white/50 leading-tight">{hint}</div>
+                </button>
+              ))}
+            </div>
+            {paymentMethod === "cartao" && (
+              <div className="mt-3">
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/50">
+                  CPF do titular <span className="text-neon-pink">*</span>
+                </label>
+                <input
+                  value={formatCpf(cpf)}
+                  onChange={(e) => setCpf(e.target.value)}
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                />
+                <div className="mt-1 text-[10.5px] text-white/50">
+                  Exigido pela operadora para autenticar a compra.
+                </div>
+              </div>
+            )}
+            {paymentMethod === "pix" && (
+              <div className="mt-3 rounded-2xl bg-neon-yellow/5 px-3 py-2 text-[11.5px] text-white/70">
+                Você verá o QR Code na próxima tela. O pedido é confirmado automaticamente assim que o PIX cair.
+              </div>
+            )}
+          </div>
+
 
           <div className={pageMode ? "h-24" : "h-20"} />
 
@@ -1281,7 +1360,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 Endereço fora do raio de entrega
               </>
             ) : isAuthenticated ? (
-              `Enviar pedido no WhatsApp · ${brl(total)}`
+              paymentMethod === "pix"
+                ? `Gerar PIX · ${brl(total)}`
+                : paymentMethod === "cartao"
+                  ? `Pagar com cartão · ${brl(total)}`
+                  : `Enviar pedido no WhatsApp · ${brl(total)}`
             ) : (
               `Entrar para finalizar · ${brl(total)}`
             )}
