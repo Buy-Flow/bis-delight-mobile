@@ -9,10 +9,16 @@ import { useIsAdmin, isProductPaused, isIndefinitePause } from "@/lib/menu-data"
 
 
 
+/**
+ * Badges compartilham a mesma tinta escura (`--badge-ink`) para manter
+ * contraste WCAG AA consistente sobre qualquer fundo neon. Não trocar por
+ * `text-white` em fundos claros (yellow/cyan) — falha em 4.5:1.
+ */
+const BADGE_INK = "text-[oklch(0.18_0.11_305)]";
 const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
-  Premium: "bg-neon-yellow text-[oklch(0.18_0.11_305)]",
-  Novidade: "bg-neon-cyan text-[oklch(0.18_0.11_305)]",
-  Favorito: "bg-neon-pink text-white",
+  Premium: `bg-neon-yellow ${BADGE_INK}`,
+  Novidade: `bg-neon-cyan ${BADGE_INK}`,
+  Favorito: `bg-neon-pink ${BADGE_INK}`,
 };
 
 export function ProductCard({

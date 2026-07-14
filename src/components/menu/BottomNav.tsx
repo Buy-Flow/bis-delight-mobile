@@ -121,7 +121,7 @@ export function BottomNav() {
               <Link to="/" className="-mt-6 flex flex-col items-center gap-0.5">
                 <span
                   className={cn(
-                    "grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white shadow-[0_10px_28px_-6px_rgba(236,72,153,0.75)] ring-4 ring-[#1a0324] transition",
+                    "grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-neon-purple to-neon-pink text-white ring-4 ring-background transition [box-shadow:0_10px_28px_-6px_color-mix(in_oklch,var(--neon-pink)_75%,transparent)]",
                     isHome && "scale-105",
                   )}
                 >
