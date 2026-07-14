@@ -19,6 +19,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RastrearTokenRouteImport } from './routes/rastrear.$token'
+import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
@@ -32,6 +33,8 @@ import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authent
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated/modelos'
 import { Route as AuthenticatedMesasRouteImport } from './routes/_authenticated/mesas'
 import { Route as AuthenticatedLucratividadeRouteImport } from './routes/_authenticated/lucratividade'
+import { Route as AuthenticatedIndiqueRouteImport } from './routes/_authenticated/indique'
+import { Route as AuthenticatedIndicacoesRouteImport } from './routes/_authenticated/indicacoes'
 import { Route as AuthenticatedImpressaoRouteImport } from './routes/_authenticated/impressao'
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
 import { Route as AuthenticatedGarconsRouteImport } from './routes/_authenticated/garcons'
@@ -103,6 +106,11 @@ const RastrearTokenRoute = RastrearTokenRouteImport.update({
   path: '/rastrear/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RCodeRoute = RCodeRouteImport.update({
+  id: '/r/$code',
+  path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
@@ -171,6 +179,16 @@ const AuthenticatedLucratividadeRoute =
     path: '/lucratividade',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedIndiqueRoute = AuthenticatedIndiqueRouteImport.update({
+  id: '/indique',
+  path: '/indique',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIndicacoesRoute = AuthenticatedIndicacoesRouteImport.update({
+  id: '/indicacoes',
+  path: '/indicacoes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedImpressaoRoute = AuthenticatedImpressaoRouteImport.update({
   id: '/impressao',
   path: '/impressao',
@@ -308,6 +326,8 @@ export interface FileRoutesByFullPath {
   '/garcons': typeof AuthenticatedGarconsRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
+  '/indicacoes': typeof AuthenticatedIndicacoesRoute
+  '/indique': typeof AuthenticatedIndiqueRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/mesas': typeof AuthenticatedMesasRoute
   '/modelos': typeof AuthenticatedModelosRoute
@@ -321,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -353,6 +374,8 @@ export interface FileRoutesByTo {
   '/garcons': typeof AuthenticatedGarconsRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
+  '/indicacoes': typeof AuthenticatedIndicacoesRoute
+  '/indique': typeof AuthenticatedIndiqueRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/mesas': typeof AuthenticatedMesasRoute
   '/modelos': typeof AuthenticatedModelosRoute
@@ -366,6 +389,7 @@ export interface FileRoutesByTo {
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -400,6 +424,8 @@ export interface FileRoutesById {
   '/_authenticated/garcons': typeof AuthenticatedGarconsRoute
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
   '/_authenticated/impressao': typeof AuthenticatedImpressaoRoute
+  '/_authenticated/indicacoes': typeof AuthenticatedIndicacoesRoute
+  '/_authenticated/indique': typeof AuthenticatedIndiqueRoute
   '/_authenticated/lucratividade': typeof AuthenticatedLucratividadeRoute
   '/_authenticated/mesas': typeof AuthenticatedMesasRoute
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
@@ -413,6 +439,7 @@ export interface FileRoutesById {
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
@@ -447,6 +474,8 @@ export interface FileRouteTypes {
     | '/garcons'
     | '/importar'
     | '/impressao'
+    | '/indicacoes'
+    | '/indique'
     | '/lucratividade'
     | '/mesas'
     | '/modelos'
@@ -460,6 +489,7 @@ export interface FileRouteTypes {
     | '/api/copilot-chat'
     | '/c/$token'
     | '/produto/$id'
+    | '/r/$code'
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
@@ -492,6 +522,8 @@ export interface FileRouteTypes {
     | '/garcons'
     | '/importar'
     | '/impressao'
+    | '/indicacoes'
+    | '/indique'
     | '/lucratividade'
     | '/mesas'
     | '/modelos'
@@ -505,6 +537,7 @@ export interface FileRouteTypes {
     | '/api/copilot-chat'
     | '/c/$token'
     | '/produto/$id'
+    | '/r/$code'
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
@@ -538,6 +571,8 @@ export interface FileRouteTypes {
     | '/_authenticated/garcons'
     | '/_authenticated/importar'
     | '/_authenticated/impressao'
+    | '/_authenticated/indicacoes'
+    | '/_authenticated/indique'
     | '/_authenticated/lucratividade'
     | '/_authenticated/mesas'
     | '/_authenticated/modelos'
@@ -551,6 +586,7 @@ export interface FileRouteTypes {
     | '/api/copilot-chat'
     | '/c/$token'
     | '/produto/$id'
+    | '/r/$code'
     | '/rastrear/$token'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
@@ -571,6 +607,7 @@ export interface RootRouteChildren {
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   CTokenRoute: typeof CTokenRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
+  RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
 }
@@ -645,6 +682,13 @@ declare module '@tanstack/react-router' {
       path: '/rastrear/$token'
       fullPath: '/rastrear/$token'
       preLoaderRoute: typeof RastrearTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r/$code': {
+      id: '/r/$code'
+      path: '/r/$code'
+      fullPath: '/r/$code'
+      preLoaderRoute: typeof RCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produto/$id': {
@@ -736,6 +780,20 @@ declare module '@tanstack/react-router' {
       path: '/lucratividade'
       fullPath: '/lucratividade'
       preLoaderRoute: typeof AuthenticatedLucratividadeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/indique': {
+      id: '/_authenticated/indique'
+      path: '/indique'
+      fullPath: '/indique'
+      preLoaderRoute: typeof AuthenticatedIndiqueRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/indicacoes': {
+      id: '/_authenticated/indicacoes'
+      path: '/indicacoes'
+      fullPath: '/indicacoes'
+      preLoaderRoute: typeof AuthenticatedIndicacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/impressao': {
@@ -906,6 +964,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGarconsRoute: typeof AuthenticatedGarconsRoute
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
   AuthenticatedImpressaoRoute: typeof AuthenticatedImpressaoRoute
+  AuthenticatedIndicacoesRoute: typeof AuthenticatedIndicacoesRoute
+  AuthenticatedIndiqueRoute: typeof AuthenticatedIndiqueRoute
   AuthenticatedLucratividadeRoute: typeof AuthenticatedLucratividadeRoute
   AuthenticatedMesasRoute: typeof AuthenticatedMesasRoute
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
@@ -938,6 +998,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGarconsRoute: AuthenticatedGarconsRoute,
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
   AuthenticatedImpressaoRoute: AuthenticatedImpressaoRoute,
+  AuthenticatedIndicacoesRoute: AuthenticatedIndicacoesRoute,
+  AuthenticatedIndiqueRoute: AuthenticatedIndiqueRoute,
   AuthenticatedLucratividadeRoute: AuthenticatedLucratividadeRoute,
   AuthenticatedMesasRoute: AuthenticatedMesasRoute,
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
@@ -982,6 +1044,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCopilotChatRoute: ApiCopilotChatRoute,
   CTokenRoute: CTokenRoute,
   ProdutoIdRoute: ProdutoIdRoute,
+  RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
 }

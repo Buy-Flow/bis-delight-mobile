@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   User as UserIcon,
   ClipboardList,
+  Gift,
   Heart,
   Award,
   ChevronRight,
@@ -821,6 +822,20 @@ function ProfilePanel() {
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold text-white">Meus pedidos</div>
           <div className="text-[11px] text-white/60">Ver histórico e acompanhar entregas</div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
+      </Link>
+
+      <Link
+        to="/indique"
+        className="group flex items-center gap-3 rounded-2xl border border-fuchsia-500/30 bg-gradient-to-r from-fuchsia-500/15 to-purple-500/10 p-3 transition hover:border-fuchsia-400/60"
+      >
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-fuchsia-500/20 text-fuchsia-300 ring-1 ring-fuchsia-400/30">
+          <Gift className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold text-white">Indique &amp; ganhe 🎁</div>
+          <div className="text-[11px] text-white/60">Cupom pra você e pro amigo</div>
         </div>
         <ChevronRight className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white" />
       </Link>

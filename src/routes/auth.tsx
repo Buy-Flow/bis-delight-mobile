@@ -23,7 +23,11 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 
-const searchSchema = z.object({ next: z.string().optional() });
+const searchSchema = z.object({
+  next: z.string().optional(),
+  ref: z.string().optional(),
+  mode: z.string().optional(),
+});
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -114,7 +118,9 @@ function AuthPage() {
   const search = useSearch({ from: "/auth" });
   const next = safeNext(search.next);
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(
+    search.mode === "signup" ? "signup" : "signin",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -127,9 +133,19 @@ function AuthPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
+  // Store referral code if present in URL
+  useEffect(() => {
+    if (search.ref) {
+      import("@/lib/referral").then((m) => m.storeReferralCode(search.ref!));
+    }
+  }, [search.ref]);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: next });
+      if (data.user) {
+        import("@/lib/referral").then((m) => m.tryConsumeStoredReferralCode());
+        navigate({ to: next });
+      }
     });
   }, [navigate, next]);
 
@@ -233,11 +249,15 @@ function AuthPage() {
           return;
         }
         toast.success("Bem-vindo à Quero Bis!");
+        const { tryConsumeStoredReferralCode } = await import("@/lib/referral");
+        await tryConsumeStoredReferralCode();
         navigate({ to: next });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Bem-vindo de volta!");
+        const { tryConsumeStoredReferralCode } = await import("@/lib/referral");
+        await tryConsumeStoredReferralCode();
         navigate({ to: next });
       }
     } catch (err) {
