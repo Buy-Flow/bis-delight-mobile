@@ -3199,7 +3199,7 @@ function StoreStatusBadge({ s }: { s: SiteSettings }) {
       )}
     >
       <span className={cn("h-1.5 w-1.5 rounded-full bg-current", open && "animate-pulse")} />
-      {open ? "Aberto agora" : "Fechado agora"}
+      {STORE_COPY.nowPill(open)}
     </span>
   );
 }
