@@ -14,20 +14,36 @@ function getConfig() {
 
 async function asaasFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const { key, baseUrl } = getConfig();
-  const res = await fetch(`${baseUrl}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      access_token: key,
-      "User-Agent": "querobis-lovable",
-      ...(init?.headers ?? {}),
-    },
-  });
+  const url = `${baseUrl}${path}`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        access_token: key,
+        "User-Agent": "querobis-lovable",
+        Accept: "application/json",
+        ...(init?.headers ?? {}),
+      },
+    });
+  } catch (err) {
+    console.error("[asaas] network failure", { url, err: (err as Error).message });
+    throw new Error(`[asaas] Falha de rede ao chamar ${path}: ${(err as Error).message}`);
+  }
   const text = await res.text();
-  const body = text ? JSON.parse(text) : {};
+  let body: any = {};
+  try {
+    body = text ? JSON.parse(text) : {};
+  } catch {
+    console.error("[asaas] non-JSON response", { url, status: res.status, text: text.slice(0, 500) });
+    throw new Error(`[asaas] Resposta inválida do Asaas (${res.status}). Verifique ASAAS_API_KEY e ASAAS_ENV.`);
+  }
   if (!res.ok) {
-    const msg = body?.errors?.[0]?.description ?? body?.message ?? `Asaas ${res.status}`;
-    throw new Error(`[asaas] ${res.status} ${msg}`);
+    const firstErr = Array.isArray(body?.errors) ? body.errors[0] : null;
+    const msg = firstErr?.description ?? body?.message ?? body?.error ?? `HTTP ${res.status}`;
+    console.error("[asaas] api error", { url, status: res.status, body });
+    throw new Error(`[asaas ${res.status}] ${msg}`);
   }
   return body as T;
 }
