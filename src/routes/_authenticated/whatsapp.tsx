@@ -888,22 +888,27 @@ function WhatsappPage() {
                 {/* Messages */}
                 <div
                   ref={scrollRef}
-                  className="flex-1 overflow-y-auto bg-gradient-to-b from-[#0a0715] to-[#0e0a1a] p-4"
+                  className="flex-1 overflow-y-auto p-4"
+                  style={{
+                    backgroundColor: "#0b141a",
+                    backgroundImage:
+                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><g fill='%23182229' fill-opacity='0.35'><circle cx='50' cy='50' r='2'/><circle cx='150' cy='120' r='1.5'/><circle cx='250' cy='80' r='2'/><circle cx='350' cy='150' r='1.5'/><circle cx='100' cy='250' r='2'/><circle cx='300' cy='300' r='1.5'/><circle cx='200' cy='350' r='2'/></g></svg>\")",
+                  }}
                 >
                   {loadingMsgs ? (
-                    <div className="flex h-full items-center justify-center text-white/40">
+                    <div className="flex h-full items-center justify-center text-[#8696a0]">
                       <Loader2 className="h-5 w-5 animate-spin" />
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="flex h-full items-center justify-center text-xs text-white/40">
+                    <div className="flex h-full items-center justify-center text-xs text-[#8696a0]">
                       Sem mensagens ainda.
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-0.5">
                       {groupByDay(messages).map((group) => (
                         <div key={group.day}>
                           <div className="my-3 flex justify-center">
-                            <div className="rounded-full bg-black/40 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white/40">
+                            <div className="rounded-md bg-[#182229] px-3 py-1 text-[12px] font-medium uppercase tracking-wide text-[#8696a0] shadow-sm">
                               {group.day}
                             </div>
                           </div>
@@ -917,26 +922,26 @@ function WhatsappPage() {
                 </div>
 
                 {/* Composer */}
-                <div className="border-t border-white/10 bg-black/20 p-3">
+                <div className="border-t border-black/40 bg-[#202c33] px-3 py-2.5">
                   {!selected.ai_paused && (
-                    <div className="mb-2 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-[11px] text-emerald-200">
+                    <div className="mb-2 flex items-center gap-2 rounded-md bg-[#00a884]/10 px-3 py-1.5 text-[11px] text-[#00a884]">
                       <Bot className="h-3 w-3" />
                       IA está respondendo — envie manualmente ou pause a IA para assumir.
                     </div>
                   )}
                   {recording ? (
-                    <div className="flex items-center gap-2 rounded-2xl border border-red-400/40 bg-red-500/10 px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-lg bg-[#2a3942] px-3 py-2">
                       <span className="relative flex h-2.5 w-2.5">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                         <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
                       </span>
-                      <span className="flex-1 text-sm font-bold text-red-100">
+                      <span className="flex-1 text-sm font-medium text-[#e9edef]">
                         Gravando… {String(Math.floor(recordSeconds / 60)).padStart(2, "0")}:
                         {String(recordSeconds % 60).padStart(2, "0")}
                       </span>
                       <button
                         onClick={() => stopRecording(true)}
-                        className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 text-white/80 hover:bg-black/50"
+                        className="grid h-9 w-9 place-items-center rounded-full text-[#aebac1] hover:bg-white/5"
                         title="Cancelar"
                         type="button"
                       >
@@ -944,7 +949,7 @@ function WhatsappPage() {
                       </button>
                       <button
                         onClick={() => stopRecording(false)}
-                        className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black hover:brightness-110"
+                        className="grid h-10 w-10 place-items-center rounded-full bg-[#00a884] text-white hover:bg-[#06cf9c]"
                         title="Enviar áudio"
                         type="button"
                       >
@@ -964,10 +969,10 @@ function WhatsappPage() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 disabled:opacity-40"
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5 disabled:opacity-40"
                         title="Anexar imagem, vídeo, áudio ou PDF"
                       >
-                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                        {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
                       </button>
                       <textarea
                         value={text}
@@ -978,15 +983,15 @@ function WhatsappPage() {
                             handleSend();
                           }
                         }}
-                        rows={2}
-                        placeholder="Digite sua mensagem… (Enter envia, Shift+Enter quebra linha)"
-                        className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
+                        rows={1}
+                        placeholder="Digite uma mensagem"
+                        className="max-h-32 min-h-[42px] flex-1 resize-none rounded-lg bg-[#2a3942] px-4 py-2.5 text-[15px] text-[#e9edef] placeholder:text-[#8696a0] focus:outline-none"
                       />
                       {text.trim() ? (
                         <button
                           onClick={handleSend}
                           disabled={sending}
-                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#00a884] text-white transition hover:bg-[#06cf9c] disabled:opacity-40"
                           title="Enviar"
                         >
                           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -995,11 +1000,11 @@ function WhatsappPage() {
                         <button
                           onClick={startRecording}
                           disabled={uploading}
-                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5 disabled:opacity-40"
                           title="Gravar áudio"
                           type="button"
                         >
-                          <Mic className="h-4 w-4" />
+                          <Mic className="h-5 w-5" />
                         </button>
                       )}
                     </div>
@@ -1009,13 +1014,17 @@ function WhatsappPage() {
                       <button
                         key={q}
                         onClick={() => setText((t) => (t ? t + " " + q : q))}
-                        className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70 transition hover:bg-white/10 hover:text-white"
+                        className="rounded-full bg-[#2a3942] px-2.5 py-1 text-[11px] text-[#aebac1] transition hover:bg-[#374248] hover:text-[#e9edef]"
                       >
                         {q}
                       </button>
                     ))}
                   </div>
                 </div>
+              </>
+            )}
+          </section>
+
               </>
             )}
           </section>
