@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
+import type { LatLng, Map as LeafletMap, Marker as LeafletMarker } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Crosshair, Loader2, MapPin, Route as RouteIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -8,16 +8,6 @@ import { reverseGeocode } from "@/lib/delivery-zone";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-
-const DefaultIcon = L.icon({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
 
 export type InlinePickedLocation = { lat: number; lng: number; address: string };
 
@@ -31,8 +21,8 @@ export function AddressMapInline({
   onChange: (loc: InlinePickedLocation) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const markerRef = useRef<LeafletMarker | null>(null);
   const [reversing, setReversing] = useState(false);
   const [locating, setLocating] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
@@ -42,49 +32,64 @@ export function AddressMapInline({
   // init map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const startLat = coords?.lat ?? storeOrigin?.lat ?? -8.7619;
-    const startLng = coords?.lng ?? storeOrigin?.lng ?? -63.9039;
-    const zoom = coords ? 17 : 15;
+    let disposed = false;
 
-    const map = L.map(containerRef.current, {
-      zoomControl: true,
-      attributionControl: false,
-      scrollWheelZoom: false,
-    }).setView([startLat, startLng], zoom);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+    void import("leaflet").then((L) => {
+      if (disposed || !containerRef.current || mapRef.current) return;
+      const startLat = coords?.lat ?? storeOrigin?.lat ?? -8.7619;
+      const startLng = coords?.lng ?? storeOrigin?.lng ?? -63.9039;
+      const zoom = coords ? 17 : 15;
+      const defaultIcon = L.icon({
+        iconRetinaUrl: markerIcon2x,
+        iconUrl: markerIcon,
+        shadowUrl: markerShadow,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
 
-    const marker = L.marker([startLat, startLng], {
-      draggable: true,
-      icon: DefaultIcon,
-    }).addTo(map);
+      const map = L.map(containerRef.current, {
+        zoomControl: true,
+        attributionControl: false,
+        scrollWheelZoom: false,
+      }).setView([startLat, startLng], zoom);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
 
-    const applyMove = async (latlng: L.LatLng) => {
-      setCoords({ lat: latlng.lat, lng: latlng.lng });
-      setReversing(true);
-      try {
-        const text = await reverseGeocode(latlng.lat, latlng.lng);
-        onChange({
-          lat: Number(latlng.lat.toFixed(6)),
-          lng: Number(latlng.lng.toFixed(6)),
-          address: text ?? "",
-        });
-      } finally {
-        setReversing(false);
-      }
-    };
+      const marker = L.marker([startLat, startLng], {
+        draggable: true,
+        icon: defaultIcon,
+      }).addTo(map);
 
-    marker.on("dragend", () => applyMove(marker.getLatLng()));
-    map.on("click", (e) => {
-      marker.setLatLng(e.latlng);
-      void applyMove(e.latlng);
+      const applyMove = async (latlng: LatLng) => {
+        setCoords({ lat: latlng.lat, lng: latlng.lng });
+        setReversing(true);
+        try {
+          const text = await reverseGeocode(latlng.lat, latlng.lng);
+          onChange({
+            lat: Number(latlng.lat.toFixed(6)),
+            lng: Number(latlng.lng.toFixed(6)),
+            address: text ?? "",
+          });
+        } finally {
+          setReversing(false);
+        }
+      };
+
+      marker.on("dragend", () => applyMove(marker.getLatLng()));
+      map.on("click", (e) => {
+        marker.setLatLng(e.latlng);
+        void applyMove(e.latlng);
+      });
+
+      mapRef.current = map;
+      markerRef.current = marker;
+      setTimeout(() => map.invalidateSize(), 60);
     });
 
-    mapRef.current = map;
-    markerRef.current = marker;
-    setTimeout(() => map.invalidateSize(), 60);
-
     return () => {
-      map.remove();
+      disposed = true;
+      mapRef.current?.remove();
       mapRef.current = null;
       markerRef.current = null;
     };
