@@ -515,7 +515,7 @@ export async function ingestEvolutionPayload(
         result.skipped += 1;
         await logRow({
           status: "skipped",
-          error: "duplicate content within 10s window",
+          error: "duplicata por conteúdo (janela 10s)",
           phone,
           evolution_id: null,
           from_me: fromMe,
@@ -549,7 +549,7 @@ export async function ingestEvolutionPayload(
         result.skipped += 1;
         await logRow({
           status: "skipped",
-          error: "duplicate on insert (unique violation)",
+          error: "duplicata detectada ao gravar",
           phone,
           evolution_id: evoId,
           from_me: fromMe,
