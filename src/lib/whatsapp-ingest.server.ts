@@ -601,6 +601,24 @@ export async function ingestEvolutionPayload(
       message_type: type,
       preview: text,
     });
+
+    // 🤖 AI auto-reply (inbound text only). Fire and await so Evolution
+    // sees a completed webhook; latency stays under a few seconds.
+    if (!fromMe && type === "text" && text && text.trim()) {
+      try {
+        const { maybeReplyWithAI } = await import("./whatsapp-ai.server");
+        await maybeReplyWithAI({
+          db: supabase,
+          conversationId: convId,
+          phone,
+          incomingText: text,
+          contactName: (existing?.contact_name as string | null | undefined) ?? item.pushName ?? null,
+          isFirstMessage: !existing,
+        });
+      } catch (e) {
+        console.error("[wa-ai] reply failed", e);
+      }
+    }
   }
 
   return result;

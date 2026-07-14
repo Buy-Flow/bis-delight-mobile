@@ -166,6 +166,7 @@ const groups: NavGroup[] = [
       { to: "/pre-preparo", label: "Pré-preparo IA", icon: ChefHat },
       { to: "/analise-concorrentes", label: "Análise concorrentes", icon: ScanSearch },
       { to: "/voz-copiloto", label: "Voz no Copiloto", icon: Mic },
+      { to: "/whatsapp-ia", label: "IA no WhatsApp", icon: Bot },
     ],
   },
   {
