@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   User as UserIcon,
   ClipboardList,
+  Gift,
   Heart,
   Award,
   ChevronRight,
