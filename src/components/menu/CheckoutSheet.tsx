@@ -595,6 +595,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         let expiryYear = exp.slice(2);
         if (expiryYear.length === 2) expiryYear = `20${expiryYear}`;
         try {
+          const usingSaved = Boolean(savedCard && useSavedCard);
           const result = await runCardCharge({
             data: {
               orderId: order.id,
@@ -606,13 +607,17 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 postalCode: (cardCep || cep).replace(/\D/g, ""),
                 addressNumber: (cardAddrNumber || addrNumber).trim(),
               },
-              card: {
-                holderName: cardHolder.trim(),
-                number: cardNumber.replace(/\D/g, ""),
-                expiryMonth,
-                expiryYear,
-                ccv: cardCcv,
-              },
+              ...(usingSaved ? {} : {
+                card: {
+                  holderName: cardHolder.trim(),
+                  number: cardNumber.replace(/\D/g, ""),
+                  expiryMonth,
+                  expiryYear,
+                  ccv: cardCcv,
+                },
+              }),
+              useSavedCard: usingSaved || undefined,
+              saveCard: !usingSaved && saveCard && !!user ? true : undefined,
               installmentCount: installments > 1 ? installments : undefined,
             },
           });
