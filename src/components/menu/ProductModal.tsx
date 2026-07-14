@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { ProductReviews } from "@/components/reviews/ProductReviews";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown, Share2 } from "lucide-react";
 import { toast } from "sonner";
