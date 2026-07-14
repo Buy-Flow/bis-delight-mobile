@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
-import { Toaster } from "sonner";
+
 import { Home, LogOut, Loader2, ShoppingCart, Users, LineChart, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/lib/menu-data";
@@ -52,7 +52,6 @@ function CarrinhosPage() {
 
   return (
     <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
-      <Toaster position="bottom-center" theme="dark" closeButton />
 
 
       <main className="mx-auto max-w-6xl px-4 py-8">

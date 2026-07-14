@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import {
   RefreshCw,
   TrendingUp,
@@ -123,7 +123,6 @@ function AIGrowthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-950 via-purple-950 to-black text-white pb-24">
-      <Toaster richColors position="top-center" />
 
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
         <HeroCard

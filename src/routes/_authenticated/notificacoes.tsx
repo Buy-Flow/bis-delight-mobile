@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
-import { Toaster } from "sonner";
+
 import { useEffect } from "react";
 import { Loader2, BellRing } from "lucide-react";
 import { useIsAdmin } from "@/lib/menu-data";
@@ -45,7 +45,6 @@ function NotificacoesPage() {
 
   return (
     <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
-      <Toaster position="bottom-center" theme="dark" closeButton />
 
 
       <main className="mx-auto max-w-6xl px-4 py-6 pb-24">

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Bell,
@@ -589,7 +589,6 @@ function RushPage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_oklch(0.18_0.15_305)_0%,_oklch(0.08_0.08_305)_60%)] pb-32 text-white">
-      <Toaster theme="dark" richColors position="top-center" />
 
 
       {/* Sub-bar: live status + actions */}
