@@ -131,7 +131,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [geoLoading, setGeoLoading] = useState(false);
 
   const [sending, setSending] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao">("whatsapp");
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("whatsapp");
   const [cpf, setCpf] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
