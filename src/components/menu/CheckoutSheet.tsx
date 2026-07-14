@@ -25,6 +25,7 @@ import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/AddressMapInline";
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
+import { maskPhoneInput as formatPhone } from "@/lib/phone";
 import { useServerFn } from "@tanstack/react-start";
 import { createAsaasCardForOrder, createAsaasCheckoutForOrder } from "@/lib/asaas.functions";
 
@@ -74,13 +75,7 @@ function loadSaved(): SavedCustomer {
   }
 }
 
-function formatPhone(v: string) {
-  const d = v.replace(/\D/g, "").slice(0, 11);
-  if (d.length <= 2) return d;
-  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
-}
+
 
 function parseAddressParts(full: string): { street: string; number: string; neighborhood: string; city: string } {
   const s = (full || "").trim();
