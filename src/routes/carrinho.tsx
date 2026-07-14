@@ -149,9 +149,9 @@ function CartPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-[oklch(0.14_0.09_305)] text-white">
+    <div className="min-h-dvh text-white">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[oklch(0.14_0.09_305)] via-[oklch(0.14_0.09_305)]/85 to-transparent pb-4 backdrop-blur-xl">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-background via-background/70 to-transparent pb-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 pr-4">
 
 
@@ -159,7 +159,7 @@ function CartPage() {
           <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-pink/25 to-neon-purple/25 ring-1 ring-white/15">
             <ShoppingBag className="h-5 w-5 text-neon-yellow" />
             {items.length > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white ring-2 ring-[oklch(0.14_0.09_305)]">
+              <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-neon-pink px-1 text-[10px] font-black text-white ring-2 ring-background">
                 {items.reduce((s, i) => s + i.quantity, 0)}
               </span>
             )}
@@ -287,7 +287,7 @@ function CartPage() {
                 }}
                 className="relative flex cursor-pointer gap-3 rounded-3xl border border-white/10 bg-white/[0.04] p-3 transition active:scale-[0.99] hover:border-white/20"
               >
-                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-[oklch(0.24_0.14_305)]">
+                <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-card">
                   <img src={it.image} alt={it.name} className="absolute inset-0 h-full w-full object-contain p-1" loading="lazy" />
                 </div>
 
@@ -385,7 +385,7 @@ function CartPage() {
                       onClick={() => handleSuggestion(p.id)}
                       className="group relative w-[132px] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition active:scale-[0.97] hover:border-neon-pink/50"
                     >
-                      <div className="relative aspect-square w-full overflow-hidden bg-[oklch(0.24_0.14_305)] p-2">
+                      <div className="relative aspect-square w-full overflow-hidden bg-card p-2">
                         <img
                           src={p.image}
                           alt={p.name}
