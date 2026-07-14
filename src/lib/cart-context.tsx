@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { addSharedItem, readShareMode, writeShareMode, type ShareMode } from "@/lib/shared-cart";
 
 export type CartItem = {
   uid: string;
@@ -39,6 +40,8 @@ type CartCtx = {
   pendingProductId: string | null;
   requestOpenProduct: (productId: string) => void;
   consumePendingProduct: () => void;
+  shareMode: ShareMode;
+  setShareMode: (m: ShareMode) => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
@@ -62,6 +65,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isAcaiOpen, setAcaiOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
+  const [shareMode, setShareModeState] = useState<ShareMode>(null);
+
+  useEffect(() => {
+    setShareModeState(readShareMode());
+    const onChange = () => setShareModeState(readShareMode());
+    window.addEventListener("querobis:share_mode", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("querobis:share_mode", onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
 
   // hydrate from localStorage on mount
   useEffect(() => {
@@ -128,11 +143,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       items,
       subtotal,
       count,
-      add: (item) =>
-        setItems((prev) => [
-          ...prev,
-          { ...item, uid: Math.random().toString(36).slice(2, 10) },
-        ]),
+      add: (item) => {
+        const uid = Math.random().toString(36).slice(2, 10);
+        const full = { ...item, uid };
+        setItems((prev) => [...prev, full]);
+        if (shareMode?.token) {
+          void addSharedItem(shareMode.token, shareMode.name, full).catch(() => {});
+        }
+      },
       update: (uid, patch) =>
         setItems((prev) => prev.map((it) => (it.uid === uid ? { ...it, ...patch } : it))),
       remove: (uid) => setItems((prev) => prev.filter((it) => it.uid !== uid)),
@@ -161,8 +179,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setPendingProductId(productId);
       },
       consumePendingProduct: () => setPendingProductId(null),
+      shareMode,
+      setShareMode: (m) => {
+        writeShareMode(m);
+        setShareModeState(m);
+      },
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId, shareMode]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

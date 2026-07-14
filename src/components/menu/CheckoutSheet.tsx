@@ -500,6 +500,17 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         }
       }
 
+      // Consolidar carrinho compartilhado (se houver)
+      try {
+        const shareToken = sessionStorage.getItem("querobis:merge_share_token");
+        if (shareToken) {
+          await supabase.rpc("merge_shared_cart", { _token: shareToken, _order_id: order.id });
+          sessionStorage.removeItem("querobis:merge_share_token");
+        }
+      } catch (e) {
+        console.warn("merge_shared_cart failed", e);
+      }
+
       const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
       const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
       window.open(url, "_blank");

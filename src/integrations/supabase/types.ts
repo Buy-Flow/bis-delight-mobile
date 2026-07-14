@@ -2210,6 +2210,69 @@ export type Database = {
           },
         ]
       }
+      shared_carts: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          items: Json
+          merged_order_id: string | null
+          message: string
+          owner_name: string
+          owner_user_id: string | null
+          participants: Json
+          status: string
+          title: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          items?: Json
+          merged_order_id?: string | null
+          message?: string
+          owner_name?: string
+          owner_user_id?: string | null
+          participants?: Json
+          status?: string
+          title?: string
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          items?: Json
+          merged_order_id?: string | null
+          message?: string
+          owner_name?: string
+          owner_user_id?: string | null
+          participants?: Json
+          status?: string
+          title?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_carts_merged_order_id_fkey"
+            columns: ["merged_order_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_carts_merged_order_id_fkey"
+            columns: ["merged_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_popups: {
         Row: {
           active: boolean
@@ -3191,6 +3254,10 @@ export type Database = {
     }
     Functions: {
       accept_delivery_offer: { Args: { _offer_id: string }; Returns: Json }
+      add_shared_cart_item: {
+        Args: { _item: Json; _participant: string; _token: string }
+        Returns: Json
+      }
       admin_cancel_pending_grant: { Args: { _id: string }; Returns: undefined }
       admin_grant_role: {
         Args: {
@@ -3318,6 +3385,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      close_shared_cart: { Args: { _token: string }; Returns: Json }
       complete_delivery: { Args: { _order_id: string }; Returns: Json }
       compute_expected_cash: { Args: { _session_id: string }; Returns: number }
       courier_heartbeat: {
@@ -3332,6 +3400,15 @@ export type Database = {
         Returns: Json
       }
       cpf_exists: { Args: { _cpf: string }; Returns: boolean }
+      create_shared_cart: {
+        Args: {
+          _items: Json
+          _message: string
+          _owner_name: string
+          _title: string
+        }
+        Returns: string
+      }
       current_courier_id: { Args: never; Returns: string }
       get_birthday_gift_status: {
         Args: never
@@ -3384,6 +3461,7 @@ export type Database = {
         }
       }
       get_pix_key: { Args: never; Returns: string }
+      get_shared_cart: { Args: { _token: string }; Returns: Json }
       get_tracking_by_token: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
@@ -3401,6 +3479,10 @@ export type Database = {
       loyalty_stamp_bonus: { Args: { _tier: string }; Returns: number }
       loyalty_tier: { Args: { _lifetime: number }; Returns: string }
       mark_push_opened: { Args: { _delivery_id: string }; Returns: undefined }
+      merge_shared_cart: {
+        Args: { _order_id: string; _token: string }
+        Returns: Json
+      }
       open_table: {
         Args: { _people?: number; _table_id: string; _waiter_id?: string }
         Returns: string
@@ -3422,6 +3504,10 @@ export type Database = {
         }[]
       }
       reject_delivery_offer: { Args: { _offer_id: string }; Returns: Json }
+      remove_shared_cart_item: {
+        Args: { _participant: string; _token: string; _uid: string }
+        Returns: Json
+      }
       set_courier_status: { Args: { _status: string }; Returns: Json }
       set_pix_key: { Args: { _val: string }; Returns: undefined }
       transfer_table: {
