@@ -4,6 +4,7 @@ import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/l
 import { useEffect, useState } from "react";
 import { AdminEditButton } from "./AdminEditButton";
 import { formatPhone } from "@/lib/phone";
+import { STORE_COPY } from "@/lib/store-status";
 
 
 const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
