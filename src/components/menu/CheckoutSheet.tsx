@@ -141,6 +141,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [cardAddrNumber, setCardAddrNumber] = useState("");
   const [cardEmail, setCardEmail] = useState("");
   const [installments, setInstallments] = useState(1);
+  const [savedCard, setSavedCard] = useState<{ last4: string; brand: string } | null>(null);
+  const [useSavedCard, setUseSavedCard] = useState(true);
+  const [saveCard, setSaveCard] = useState(true);
   const runCardCharge = useServerFn(createAsaasCardForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
