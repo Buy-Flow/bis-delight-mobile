@@ -4,6 +4,22 @@
 const SANDBOX_URL = "https://api-sandbox.asaas.com/v3";
 const PROD_URL = "https://api.asaas.com/v3";
 
+function onlyDigits(value?: string) {
+  return (value ?? "").replace(/\D/g, "");
+}
+
+function normalizeBrazilianPhone(value?: string) {
+  let digits = onlyDigits(value);
+  if (digits.startsWith("55") && digits.length > 11) digits = digits.slice(2);
+  if (digits.length < 10 || digits.length > 11) return undefined;
+  return digits;
+}
+
+function cleanPayload<T extends Record<string, unknown>>(payload: T): T {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined && value !== null && value !== ""),
+  ) as T;
+}
 
 function getConfig() {
   const key = process.env.ASAAS_API_KEY;
@@ -42,7 +58,7 @@ async function asaasFetch<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (!res.ok) {
     const firstErr = Array.isArray(body?.errors) ? body.errors[0] : null;
-    const msg = firstErr?.description ?? body?.message ?? body?.error ?? `HTTP ${res.status}`;
+    const msg = firstErr?.description ?? firstErr?.code ?? body?.message ?? body?.error ?? `HTTP ${res.status}`;
     console.error("[asaas] api error", { url, status: res.status, body });
     throw new Error(`[asaas ${res.status}] ${msg}`);
   }
@@ -58,6 +74,8 @@ export async function upsertAsaasCustomer(input: {
   phone?: string;
   externalReference?: string;
 }): Promise<AsaasCustomer> {
+  const phone = normalizeBrazilianPhone(input.phone);
+  const cpfCnpj = onlyDigits(input.cpfCnpj) || undefined;
   // Try find by externalReference first
   if (input.externalReference) {
     const found = await asaasFetch<{ data: AsaasCustomer[] }>(
@@ -67,13 +85,14 @@ export async function upsertAsaasCustomer(input: {
   }
   return await asaasFetch<AsaasCustomer>("/customers", {
     method: "POST",
-    body: JSON.stringify({
+    body: JSON.stringify(cleanPayload({
       name: input.name,
       email: input.email,
-      cpfCnpj: input.cpfCnpj,
-      phone: input.phone,
+      cpfCnpj,
+      phone: phone?.length === 10 ? phone : undefined,
+      mobilePhone: phone?.length === 11 ? phone : undefined,
       externalReference: input.externalReference,
-    }),
+    })),
   });
 }
 
@@ -143,7 +162,13 @@ export async function createCardCharge(input: {
 }): Promise<AsaasPayment & { creditCard?: { creditCardBrand?: string; creditCardNumber?: string; creditCardToken?: string } }> {
   const today = new Date().toISOString().slice(0, 10);
   // Asaas antifraud recomenda mandar phone e mobilePhone. Se apenas um foi passado, usar em ambos.
-  const holder = { ...input.creditCardHolderInfo };
+  const holder = cleanPayload({
+    ...input.creditCardHolderInfo,
+    cpfCnpj: onlyDigits(input.creditCardHolderInfo.cpfCnpj),
+    postalCode: onlyDigits(input.creditCardHolderInfo.postalCode),
+    phone: normalizeBrazilianPhone(input.creditCardHolderInfo.phone),
+    mobilePhone: normalizeBrazilianPhone(input.creditCardHolderInfo.mobilePhone),
+  });
   if (!holder.mobilePhone && holder.phone) holder.mobilePhone = holder.phone;
   if (!holder.phone && holder.mobilePhone) holder.phone = holder.mobilePhone;
 
