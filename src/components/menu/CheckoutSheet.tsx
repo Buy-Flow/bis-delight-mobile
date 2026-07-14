@@ -457,6 +457,18 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   };
 
   const send = async () => {
+    console.log("[checkout] send() clicked", {
+      paymentMethod,
+      mode,
+      isAuthenticated,
+      hasUser: !!user,
+      storeClosed: storeStatus.isClosed,
+      outsideRadius,
+      itemsCount: items.length,
+      name: !!name.trim(),
+      phone: !!phone.trim(),
+      address: !!address.trim(),
+    });
     if (storeStatus.isClosed) {
       toast.error(
         storeStatus.nextOpenLabel
@@ -470,9 +482,10 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       return;
     }
     if (!name.trim() || !phone.trim() || (mode === "entrega" && !address.trim())) {
-      toast.error("Preencha os campos obrigatórios.");
+      toast.error("Preencha os campos obrigatórios: nome, telefone" + (mode === "entrega" ? " e endereço" : "") + ".");
       return;
     }
+
     if (paymentMethod === "cartao") {
       if (!isValidCpf(cpf)) { toast.error("CPF inválido — obrigatório para pagamento com cartão."); return; }
       if (!(savedCard && useSavedCard)) {
