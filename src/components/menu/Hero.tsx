@@ -112,7 +112,10 @@ export function Hero({
             fontWeight: 900,
           }}
         >
-          <span className="stagger-letters inline-block -rotate-[3deg]" aria-label="Transforma">
+          <span className="sr-only">
+            Quero Bis — Sorveteria e Açaí em Ouro Preto do Oeste: sabor que transforma seu dia.
+          </span>
+          <span aria-hidden="true" className="stagger-letters inline-block -rotate-[3deg]">
             {"Transforma".split("").map((c, i) => (
               <span key={i}>{c}</span>
             ))}
