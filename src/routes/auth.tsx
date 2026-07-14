@@ -290,7 +290,7 @@ function AuthPage() {
         </Link>
 
         {/* Card */}
-        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[oklch(0.14_0.09_305)]/85 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[oklch(0.14_0.09_305)]/85 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl">
           {/* Top glow strip */}
           <div
             aria-hidden

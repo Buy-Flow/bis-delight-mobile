@@ -78,7 +78,7 @@ export function ProductCard({
       aria-disabled={blocked || undefined}
       data-status={paused ? "paused" : outOfStock ? "out-of-stock" : lowStock ? "low-stock" : "available"}
       className={cn(
-        "group relative flex h-full w-full flex-col overflow-visible rounded-[22px] text-left select-none",
+        "group relative flex h-full w-full flex-col overflow-visible rounded-2xl text-left select-none",
         blocked ? "cursor-not-allowed" : "cursor-pointer",
         "touch-manipulation [-webkit-tap-highlight-color:transparent]",
         "transition-transform duration-150 ease-out will-change-transform",

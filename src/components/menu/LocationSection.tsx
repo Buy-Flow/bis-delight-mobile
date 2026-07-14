@@ -295,7 +295,7 @@ export function LocationSection() {
         href={waLink}
         target="_blank"
         rel="noreferrer"
-        className="relative mb-4 flex w-full items-center gap-3 overflow-hidden rounded-[28px] px-5 py-4 font-black text-white active:scale-[0.98] transition"
+        className="relative mb-4 flex w-full items-center gap-3 overflow-hidden rounded-3xl px-5 py-4 font-black text-white active:scale-[0.98] transition"
         style={{
           background:
             "linear-gradient(135deg, oklch(0.68 0.26 350) 0%, oklch(0.55 0.28 340) 55%, oklch(0.45 0.24 315) 100%)",

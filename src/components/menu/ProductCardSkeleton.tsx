@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
  * o placeholder e o card real.
  *
  * Espelho fiel de ProductCard.tsx:
- *  - Container: `rounded-[22px]`, flex-col, altura conduzida pelo conteúdo.
+ *  - Container: `rounded-2xl`, flex-col, altura conduzida pelo conteúdo.
  *  - Imagem: bloco fixo `h-[175px]` no topo (idêntico ao card real).
  *  - Conteúdo: `px-3 pt-3 pb-3`, título (~2 linhas 13.5px), linha de
  *    ingredientes, e rodapé com stack de preço + botão redondo `h-10 w-10`.
@@ -23,7 +23,7 @@ export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
         // Usa o sistema unificado `.sk` (shimmer/pulse/motion vindos do
         // SkeletonProvider). O container inteiro é o skeleton — as caixas
         // internas apenas desenham a silhueta do card real.
-        "sk relative flex h-full w-full flex-col overflow-hidden rounded-[22px]",
+        "sk relative flex h-full w-full flex-col overflow-hidden rounded-2xl",
       )}
       style={{
         background:

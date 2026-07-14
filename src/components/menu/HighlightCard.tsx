@@ -27,7 +27,7 @@ export function HighlightCard({
           onOpen(product);
         }
       }}
-      className="relative flex h-full cursor-pointer overflow-hidden rounded-[26px] transition active:scale-[0.99]"
+      className="relative flex h-full cursor-pointer overflow-hidden rounded-3xl transition active:scale-[0.99]"
       style={{
         background:
           "linear-gradient(155deg, oklch(0.24 0.17 305) 0%, oklch(0.14 0.10 305) 55%, oklch(0.10 0.06 300) 100%)",
@@ -37,7 +37,7 @@ export function HighlightCard({
     >
 
       {/* Neon border tint */}
-      <div className="pointer-events-none absolute inset-0 rounded-[26px] ring-1 ring-inset ring-neon-pink/20" />
+      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-neon-pink/20" />
       {/* Corner glows */}
       <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-neon-pink/25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-8 -left-6 h-24 w-24 rounded-full bg-neon-cyan/20 blur-2xl" />

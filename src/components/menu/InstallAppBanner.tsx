@@ -37,7 +37,7 @@ export function InstallAppBanner() {
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 py-10">
-      <div className="relative overflow-hidden rounded-[32px] border border-white/10 shadow-[0_30px_80px_-30px_rgba(217,70,239,0.55)]">
+      <div className="relative overflow-hidden rounded-4xl border border-white/10 shadow-[0_30px_80px_-30px_rgba(217,70,239,0.55)]">
         {/* Background image */}
         <img
           src={heroImg}
