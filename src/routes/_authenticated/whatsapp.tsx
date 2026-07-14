@@ -160,6 +160,9 @@ function WhatsappPage() {
   const selectedIdRef = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const syncInFlightRef = useRef(false);
+  // Estável por instância do componente — evita colisão entre múltiplas
+  // renderizações simultâneas sem recriar canal a cada render.
+  const channelId = useId();
 
   const sendFn = useServerFn(sendWhatsappMessage);
   const pauseFn = useServerFn(setAiPaused);
