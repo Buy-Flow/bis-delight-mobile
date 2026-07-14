@@ -133,6 +133,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [sending, setSending] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao">("whatsapp");
   const [cpf, setCpf] = useState("");
+  const [cardHolder, setCardHolder] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCcv, setCardCcv] = useState("");
+  const [cardCep, setCardCep] = useState("");
+  const [cardAddrNumber, setCardAddrNumber] = useState("");
+  const [cardEmail, setCardEmail] = useState("");
+  const [installments, setInstallments] = useState(1);
+  const runCardCharge = useServerFn(createAsaasCardForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
