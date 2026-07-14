@@ -199,6 +199,25 @@ function WhatsappDiagPage() {
                       : "Não configurado"
                 }
               />
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5",
+                  (wh?.count24h ?? 0) > 0
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                    : "border-rose-500/30 bg-rose-500/10 text-rose-400",
+                )}>
+                  <Activity className="h-3 w-3" />
+                  {wh?.count24h ?? 0} eventos/24h
+                </span>
+                {wh?.lastEventAt ? (
+                  <span className="text-muted-foreground">
+                    último: {new Date(wh.lastEventAt).toLocaleString("pt-BR")}
+                    {wh.lastEvent ? ` (${wh.lastEvent})` : ""}
+                  </span>
+                ) : (
+                  <span className="text-rose-400">Nenhum evento recebido ainda</span>
+                )}
+              </div>
               {wh?.current && (
                 <p className="mt-3 break-all font-mono text-[11px] text-muted-foreground">
                   Atual: {wh.current}

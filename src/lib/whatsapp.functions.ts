@@ -934,12 +934,32 @@ export const runWhatsappDiagnostics = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(5);
 
+    // 7) Saúde do webhook — quantos eventos chegaram nas últimas 24h e quando foi o último
+    const { count: webhookCount24h } = await context.supabase
+      .from("whatsapp_ingest_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("source", "webhook")
+      .gte("created_at", since24);
+    const { data: lastWebhookRow } = await context.supabase
+      .from("whatsapp_ingest_logs")
+      .select("created_at,event,status")
+      .eq("source", "webhook")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
     return {
       generatedAt: new Date().toISOString(),
       elapsedMs: Date.now() - started,
       config,
       connection,
-      webhook,
+      webhook: {
+        ...webhook,
+        count24h: webhookCount24h ?? 0,
+        lastEventAt: lastWebhookRow?.created_at ?? null,
+        lastEvent: lastWebhookRow?.event ?? null,
+        lastStatus: lastWebhookRow?.status ?? null,
+      },
       metrics24h: { total, delivered, read, errored, pending, deliveryRate, errorRate },
       failures,
       ingest6h: { total: ingest.length, byStatus: ingestByStatus, recentErrors: ingestErrors ?? [] },
