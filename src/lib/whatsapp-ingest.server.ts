@@ -338,11 +338,22 @@ export async function ingestEvolutionPayload(
         continue;
       }
       result.updated = (result.updated ?? 0) + 1;
+      // Auto-retry BR 9-digit variant on delivery failure.
+      // Muitas linhas antigas de WhatsApp guardam o JID sem o "9" extra,
+      // então quando Evolution devolve ack=-1 tentamos o outro formato uma vez.
+      if (appStatus === "failed") {
+        try {
+          await retryAlt9DigitOnFailure(supabase, upd.id);
+        } catch (retryErr) {
+          console.error("[wa-ingest] auto-retry error", retryErr);
+        }
+      }
       await logRow({
         status: "ok",
         evolution_id: evoId,
         preview: `status=${statusName}→${appStatus}`,
       });
+
     }
     return result;
   }
@@ -624,4 +635,79 @@ export async function ingestEvolutionPayload(
   }
 
   return result;
+}
+
+/**
+ * Quando o WhatsApp devolve ack=-1 (ERROR) para uma mensagem outbound, tenta
+ * reenviar UMA vez usando a variante alternativa de 9 dígitos (BR).
+ * Muitos contatos migrados guardam o número sem o "9" extra e o sendText só
+ * funciona no formato correto — que a Evolution não descobre sozinha.
+ */
+async function retryAlt9DigitOnFailure(supabase: DbClient, messageId: string) {
+  const { data: msg } = await supabase
+    .from("whatsapp_messages")
+    .select("id, content, type, conversation_id, raw, direction")
+    .eq("id", messageId)
+    .maybeSingle();
+  if (!msg || msg.direction !== "out" || msg.type !== "text" || !msg.content) return;
+  const rawObj: Record<string, unknown> =
+    msg.raw && typeof msg.raw === "object" ? (msg.raw as Record<string, unknown>) : {};
+  if (rawObj.retriedAlt9 === true || rawObj.retryOf) return;
+
+  const { evolutionConfig, normalizeWhatsappPhone, extractEvolutionMessageId } = await import(
+    "./whatsapp-evolution.server"
+  );
+  const { data: conv } = await supabase
+    .from("whatsapp_conversations")
+    .select("phone")
+    .eq("id", msg.conversation_id)
+    .maybeSingle();
+  const phone = conv?.phone ? normalizeWhatsappPhone(String(conv.phone)) : "";
+  let alt: string | null = null;
+  if (/^55\d{2}9\d{8}$/.test(phone)) alt = phone.slice(0, 4) + phone.slice(5);
+  else if (/^55\d{2}\d{8}$/.test(phone)) alt = phone.slice(0, 4) + "9" + phone.slice(4);
+  if (!alt) return;
+
+  const cfg = evolutionConfig();
+  if (!cfg.base || !cfg.key || !cfg.instance) return;
+  const sendUrl = `${cfg.base}/message/sendText/${encodeURIComponent(cfg.instance)}`;
+  const resp = await fetch(sendUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: cfg.key },
+    body: JSON.stringify({ number: alt, text: msg.content, delay: 0, linkPreview: false }),
+  });
+  const bodyText = await resp.text();
+  let newEvoId: string | null = null;
+  try {
+    newEvoId = extractEvolutionMessageId(JSON.parse(bodyText));
+  } catch {
+    /* ignore */
+  }
+
+  if (resp.ok && newEvoId) {
+    await supabase.from("whatsapp_messages").insert({
+      conversation_id: msg.conversation_id,
+      direction: "out",
+      type: "text",
+      content: msg.content,
+      evolution_id: newEvoId,
+      status: "sent",
+      raw: { retryOf: msg.id, sentTo: alt, originalPhone: phone },
+    });
+    await supabase
+      .from("whatsapp_messages")
+      .update({
+        raw: { ...rawObj, retriedAlt9: true, retryTarget: alt },
+        error: `WhatsApp rejeitou a entrega em ${phone}. Reenviado automaticamente para ${alt}.`,
+      })
+      .eq("id", msg.id);
+  } else {
+    await supabase
+      .from("whatsapp_messages")
+      .update({
+        raw: { ...rawObj, retriedAlt9: true, retryTarget: alt, retryError: bodyText.slice(0, 400) },
+        error: `WhatsApp rejeitou entrega em ${phone}. Tentativa em ${alt} também falhou (HTTP ${resp.status}). O número pode não ter WhatsApp.`,
+      })
+      .eq("id", msg.id);
+  }
 }
