@@ -487,6 +487,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       return;
     }
 
+    if ((paymentMethod === "pix" || paymentMethod === "asaas_checkout") && !isValidCpf(cpf)) {
+      toast.error("CPF válido obrigatório para gerar PIX ou abrir o checkout Asaas.");
+      return;
+    }
+
     if (paymentMethod === "cartao") {
       if (!isValidCpf(cpf)) { toast.error("CPF inválido — obrigatório para pagamento com cartão."); return; }
       if (!(savedCard && useSavedCard)) {
@@ -1436,8 +1441,20 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               ))}
             </div>
             {paymentMethod === "asaas_checkout" && (
-              <div className="mt-3 rounded-2xl border border-neon-cyan/20 bg-neon-cyan/[0.04] p-3 text-[12px] text-white/80">
-                Você será redirecionado para a página segura do Asaas para escolher PIX ou Cartão. Volta pra cá automaticamente depois do pagamento.
+              <div className="mt-3 space-y-2.5 rounded-2xl border border-neon-cyan/20 bg-neon-cyan/[0.04] p-3">
+                <div className="text-[12px] text-white/80">
+                  Você será redirecionado para a página segura do Asaas para escolher PIX ou Cartão. Volta pra cá automaticamente depois do pagamento.
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF para pagamento *</label>
+                  <input
+                    value={formatCpf(cpf)}
+                    onChange={(e) => setCpf(e.target.value)}
+                    inputMode="numeric"
+                    placeholder="000.000.000-00"
+                    className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-cyan/60"
+                  />
+                </div>
               </div>
             )}
             {paymentMethod === "cartao" && (
@@ -1593,8 +1610,20 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               </div>
             )}
             {paymentMethod === "pix" && (
-              <div className="mt-3 rounded-2xl bg-neon-yellow/5 px-3 py-2 text-[11.5px] text-white/70">
-                Você verá o QR Code na próxima tela. O pedido é confirmado automaticamente assim que o PIX cair.
+              <div className="mt-3 space-y-2.5 rounded-2xl border border-neon-yellow/20 bg-neon-yellow/[0.04] p-3">
+                <div className="text-[11.5px] text-white/70">
+                  Você verá o QR Code na próxima tela. O pedido é confirmado automaticamente assim que o PIX cair.
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF para gerar PIX *</label>
+                  <input
+                    value={formatCpf(cpf)}
+                    onChange={(e) => setCpf(e.target.value)}
+                    inputMode="numeric"
+                    placeholder="000.000.000-00"
+                    className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-yellow/60"
+                  />
+                </div>
               </div>
             )}
           </div>
