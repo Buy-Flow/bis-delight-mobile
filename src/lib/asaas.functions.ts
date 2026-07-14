@@ -111,8 +111,9 @@ const cardInput = z.object({
 });
 
 export const createAsaasCardForOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => cardInput.parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCardCharge } = await import("@/lib/asaas.server");
     const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
@@ -123,6 +124,7 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
 
     const customer = await resolveOrCreateAsaasCustomer({
       userId: order.user_id ?? null,
@@ -132,9 +134,13 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
       phone: data.customer.phone ?? order.phone ?? undefined,
     });
 
-    // Load saved token if the user opted in
+    // Load saved token if the user opted in — only allowed when caller IS the
+    // order's owner (never let staff charge a customer's stored card).
     let savedToken: string | null = null;
-    if (data.useSavedCard && order.user_id) {
+    if (data.useSavedCard) {
+      if (!order.user_id || order.user_id !== context.userId) {
+        throw new Error("Cartão salvo só pode ser usado pelo próprio titular");
+      }
       const { data: p } = await supabaseAdmin
         .from("profiles")
         .select("asaas_card_token")
@@ -142,6 +148,7 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
         .maybeSingle();
       savedToken = p?.asaas_card_token ?? null;
     }
+
     if (data.useSavedCard && !savedToken) {
       throw new Error("Nenhum cartão salvo encontrado");
     }
