@@ -3758,6 +3758,165 @@ export type Database = {
           },
         ]
       }
+      winback_sends: {
+        Row: {
+          channel: string
+          coupon_code: string | null
+          coupon_id: string | null
+          created_at: string
+          days_since_last_order: number | null
+          discount_type: string | null
+          discount_value: number | null
+          error: string | null
+          id: string
+          last_order_at: string | null
+          message: string | null
+          phone: string | null
+          push_ok: boolean | null
+          status: string
+          triggered_by: string
+          triggered_user: string | null
+          user_id: string
+          whatsapp_ok: boolean | null
+        }
+        Insert: {
+          channel: string
+          coupon_code?: string | null
+          coupon_id?: string | null
+          created_at?: string
+          days_since_last_order?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
+          error?: string | null
+          id?: string
+          last_order_at?: string | null
+          message?: string | null
+          phone?: string | null
+          push_ok?: boolean | null
+          status: string
+          triggered_by?: string
+          triggered_user?: string | null
+          user_id: string
+          whatsapp_ok?: boolean | null
+        }
+        Update: {
+          channel?: string
+          coupon_code?: string | null
+          coupon_id?: string | null
+          created_at?: string
+          days_since_last_order?: number | null
+          discount_type?: string | null
+          discount_value?: number | null
+          error?: string | null
+          id?: string
+          last_order_at?: string | null
+          message?: string | null
+          phone?: string | null
+          push_ok?: boolean | null
+          status?: string
+          triggered_by?: string
+          triggered_user?: string | null
+          user_id?: string
+          whatsapp_ok?: boolean | null
+        }
+        Relationships: []
+      }
+      winback_settings: {
+        Row: {
+          cooldown_days: number
+          coupon_prefix: string
+          created_at: string
+          days_inactive: number
+          discount_type: string
+          discount_value: number
+          enabled: boolean
+          id: number
+          last_run_at: string | null
+          last_run_count: number
+          last_run_error: string | null
+          last_run_status: string | null
+          max_per_run: number
+          message_template: string
+          min_lifetime_spent: number
+          min_order: number
+          min_orders: number
+          order_link_path: string
+          push_body: string
+          push_title: string
+          require_phone: boolean
+          send_hour: number
+          send_minute: number
+          send_push: boolean
+          send_whatsapp: boolean
+          timezone: string
+          updated_at: string
+          validity_days: number
+          weekdays: number[]
+        }
+        Insert: {
+          cooldown_days?: number
+          coupon_prefix?: string
+          created_at?: string
+          days_inactive?: number
+          discount_type?: string
+          discount_value?: number
+          enabled?: boolean
+          id?: number
+          last_run_at?: string | null
+          last_run_count?: number
+          last_run_error?: string | null
+          last_run_status?: string | null
+          max_per_run?: number
+          message_template?: string
+          min_lifetime_spent?: number
+          min_order?: number
+          min_orders?: number
+          order_link_path?: string
+          push_body?: string
+          push_title?: string
+          require_phone?: boolean
+          send_hour?: number
+          send_minute?: number
+          send_push?: boolean
+          send_whatsapp?: boolean
+          timezone?: string
+          updated_at?: string
+          validity_days?: number
+          weekdays?: number[]
+        }
+        Update: {
+          cooldown_days?: number
+          coupon_prefix?: string
+          created_at?: string
+          days_inactive?: number
+          discount_type?: string
+          discount_value?: number
+          enabled?: boolean
+          id?: number
+          last_run_at?: string | null
+          last_run_count?: number
+          last_run_error?: string | null
+          last_run_status?: string | null
+          max_per_run?: number
+          message_template?: string
+          min_lifetime_spent?: number
+          min_order?: number
+          min_orders?: number
+          order_link_path?: string
+          push_body?: string
+          push_title?: string
+          require_phone?: boolean
+          send_hour?: number
+          send_minute?: number
+          send_push?: boolean
+          send_whatsapp?: boolean
+          timezone?: string
+          updated_at?: string
+          validity_days?: number
+          weekdays?: number[]
+        }
+        Relationships: []
+      }
     }
     Views: {
       couriers_live: {
@@ -4616,6 +4775,29 @@ export type Database = {
         }[]
       }
       get_tracking_by_token: { Args: { _token: string }; Returns: Json }
+      get_winback_candidates: {
+        Args: {
+          _cooldown_days?: number
+          _days?: number
+          _limit?: number
+          _min_orders?: number
+          _min_spent?: number
+          _require_phone?: boolean
+        }
+        Returns: {
+          avg_ticket: number
+          days_since_last_order: number
+          email: string
+          full_name: string
+          last_order_at: string
+          last_winback_at: string
+          lifetime_spent: number
+          orders_count: number
+          phone: string
+          user_id: string
+        }[]
+      }
+      get_winback_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
