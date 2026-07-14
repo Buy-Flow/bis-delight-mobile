@@ -74,7 +74,7 @@ export function LocationSection() {
   const override = settings?.openOverride ?? "auto";
 
   const open = mounted ? isOpenNow(hours, override) : false;
-  const todayKey = mounted ? jsWeekdayToKey(new Date().getDay()) : "mon";
+  const todayKey = mounted ? zonedTodayKey() : "mon";
   const todayHours = hours.find((h) => h.day === todayKey);
   const todayLabel =
     todayHours && !todayHours.closed
