@@ -575,17 +575,58 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           clear();
           closeCheckout();
         }, 400);
-      } else {
+      } else if (paymentMethod === "cartao") {
+        // Processa cartão via Asaas AGORA, mostrando erro claro se algo falhar
+        const exp = cardExpiry.replace(/\D/g, "");
+        const expiryMonth = exp.slice(0, 2);
+        let expiryYear = exp.slice(2);
+        if (expiryYear.length === 2) expiryYear = `20${expiryYear}`;
         try {
-          sessionStorage.setItem(
-            "querobis:pending_payment_cpf",
-            JSON.stringify({ cpf: cpfDigits(cpf), name: name.trim(), phone: phone.trim(), email: user?.email ?? "" }),
-          );
-        } catch {}
-        clear();
-        closeCheckout();
-        navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
-      }
+          const result = await runCardCharge({
+            data: {
+              orderId: order.id,
+              customer: {
+                name: name.trim(),
+                email: (cardEmail || user?.email || "").trim(),
+                cpfCnpj: cpfDigits(cpf),
+                phone: phone.replace(/\D/g, ""),
+                postalCode: (cardCep || cep).replace(/\D/g, ""),
+                addressNumber: (cardAddrNumber || addrNumber).trim(),
+              },
+              card: {
+                holderName: cardHolder.trim(),
+                number: cardNumber.replace(/\D/g, ""),
+                expiryMonth,
+                expiryYear,
+                ccv: cardCcv,
+              },
+              installmentCount: installments > 1 ? installments : undefined,
+            },
+          });
+          const st = String(result?.status ?? "").toUpperCase();
+          if (["CONFIRMED", "RECEIVED", "AUTHORIZED"].includes(st)) {
+            toast.success("Pagamento aprovado! 🎉");
+          } else if (st === "PENDING") {
+            toast.info("Pagamento em processamento — vamos avisar assim que confirmar.");
+          } else {
+            toast.warning(`Status: ${st}`);
+          }
+          clear();
+          closeCheckout();
+          navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
+        } catch (payErr: any) {
+          console.error("[checkout] card charge failed", payErr);
+          const raw = payErr?.message || payErr?.error_description || (typeof payErr === "string" ? payErr : "");
+          const friendly = raw.includes("invalid_credit_card") ? "Cartão recusado — verifique os dados."
+            : raw.includes("insufficient_funds") ? "Cartão sem saldo suficiente."
+            : raw.includes("expired") ? "Cartão expirado."
+            : raw || "Não foi possível processar o cartão.";
+          toast.error("Pagamento recusado", { description: friendly, duration: 10000 });
+          // Não apaga o pedido — usuário pode tentar de novo em /pagamento/:orderId
+          setSending(false);
+          return;
+        }
+      } else {
     } catch (err: any) {
       console.error("[checkout] send failed", err);
       const detail =
