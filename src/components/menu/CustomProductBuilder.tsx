@@ -156,7 +156,7 @@ export function CustomProductBuilder({
         <div
           className={cn(
             "relative shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
-            collapsed ? "h-[72px]" : "h-[220px]",
+            collapsed ? "h-[72px]" : "h-[260px]",
           )}
         >
           <div className="absolute inset-0 noise-purple" />
