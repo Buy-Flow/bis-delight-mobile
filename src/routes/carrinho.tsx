@@ -8,7 +8,7 @@ import { useUserAddresses } from "@/lib/user-addresses";
 import { computeDeliveryPreview } from "@/lib/delivery-preview";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
-import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, type RecentShare } from "@/lib/shared-cart";
+import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, getSharedCartStatuses, type RecentShare, type SharedCartStatus } from "@/lib/shared-cart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -54,6 +54,7 @@ function CartPage() {
 
   const [shareOpen, setShareOpen] = useState(false);
   const [recentShares, setRecentShares] = useState<RecentShare[]>([]);
+  const [shareStatuses, setShareStatuses] = useState<Record<string, SharedCartStatus>>({});
 
   useEffect(() => {
     const refresh = () => setRecentShares(readRecentShares());
@@ -66,7 +67,51 @@ function CartPage() {
     };
   }, []);
 
-  const rejoinable = recentShares.filter((r) => !shareMode || r.token !== shareMode.token);
+  // Revalida contra o servidor: shares fechados/merged/expirados/inexistentes
+  // são purgados da lista automaticamente para não aparecerem como "rejoinable".
+  useEffect(() => {
+    const tokens = recentShares.map((r) => r.token);
+    if (tokens.length === 0) {
+      setShareStatuses({});
+      return;
+    }
+    let cancelled = false;
+    const run = () => {
+      getSharedCartStatuses(tokens).then((map) => {
+        if (cancelled) return;
+        setShareStatuses(map);
+        // Auto-purge de tokens que não são mais reingressáveis.
+        for (const [token, status] of Object.entries(map)) {
+          if (status === "closed" || status === "merged" || status === "expired" || status === "not_found") {
+            removeRecentShare(token);
+          }
+        }
+      });
+    };
+    run();
+    const onFocus = () => run();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") run();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+    // Reexecuta quando o conjunto de tokens muda.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recentShares.map((r) => r.token).join("|")]);
+
+  const rejoinable = recentShares.filter((r) => {
+    if (shareMode && r.token === shareMode.token) return false;
+    const status = shareStatuses[r.token];
+    // Mostra apenas quando confirmado como "open". Enquanto "unknown"
+    // (ex.: primeira carga, offline), esconde para não induzir o convidado
+    // a clicar em algo que pode estar fechado.
+    return status === "open";
+  });
 
   const suggestions = usePersonalizedSuggestions(items, allProducts);
 
