@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { runWhatsappDiagnostics } from "@/lib/whatsapp.functions";
+import { AdminShell } from "@/components/admin/AdminShell";
 
 export const Route = createFileRoute("/_authenticated/whatsapp-diagnostico")({
   head: () => ({
@@ -108,7 +109,9 @@ function WhatsappDiagPage() {
   const state = conn ? stateLabel(conn.state) : null;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-6">
+    <AdminShell>
+    <div className="space-y-6 p-4 md:p-6">
+
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
@@ -296,6 +299,7 @@ function WhatsappDiagPage() {
         </>
       )}
     </div>
+    </AdminShell>
   );
 }
 
