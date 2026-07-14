@@ -1634,7 +1634,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
-        <div className={pageMode ? "sticky bottom-0 z-20 border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
+        <div className={pageMode ? "fixed inset-x-0 bottom-0 z-50 mx-auto max-w-2xl border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
           <button
             onClick={send}
             disabled={
