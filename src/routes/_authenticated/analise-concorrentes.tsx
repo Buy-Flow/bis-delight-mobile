@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -65,7 +66,7 @@ function Page() {
     catch (e) { toast.error((e as Error).message); }
   };
   const remove = async (id: string) => {
-    if (!confirm("Remover esta análise e todas as fotos?")) return;
+    if (!(await confirmDialog({ message: "Remover esta análise e todas as fotos?" }))) return;
     try { await _del({ data: { id } }); await refresh(); if (selected?.id === id) setSelected(null); toast.success("Removida."); }
     catch (e) { toast.error((e as Error).message); }
   };
@@ -315,7 +316,7 @@ function AnalysisDetail({ a, onDelete, onRefresh }: { a: FullAnalysis; onDelete:
   });
 
   const apply = async (pid: string, price: number) => {
-    if (!confirm(`Aplicar novo preço de R$ ${price.toFixed(2)}?`)) return;
+    if (!(await confirmDialog({ message: `Aplicar novo preço de R$ ${price.toFixed(2)}?` }))) return;
     try { await _apply({ data: { product_id: pid, new_price: price } }); toast.success("Preço atualizado."); onRefresh(); }
     catch (e) { toast.error((e as Error).message); }
   };

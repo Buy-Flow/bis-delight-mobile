@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Library,
@@ -274,7 +275,7 @@ function BibliotecaPage() {
 
   const bulkDelete = async () => {
     if (selection.size === 0) return;
-    if (!confirm(`Excluir ${selection.size} mídia(s)? Esta ação não pode ser desfeita.`)) return;
+    if (!(await confirmDialog({ message: `Excluir ${selection.size} mídia(s)? Esta ação não pode ser desfeita.` }))) return;
     const ids = Array.from(selection);
     const toDelete = items.filter((i) => ids.includes(i.id));
     // Storage delete
@@ -291,7 +292,7 @@ function BibliotecaPage() {
   };
 
   const deleteOne = async (item: MediaItem) => {
-    if (!confirm(`Excluir "${item.name}"?`)) return;
+    if (!(await confirmDialog({ message: `Excluir "${item.name}"?` }))) return;
     await supabase.storage.from(BUCKET).remove([item.storage_path]);
     const { error } = await supabase.from("media_library").delete().eq("id", item.id);
     if (error) {

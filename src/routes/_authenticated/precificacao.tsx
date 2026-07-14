@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useState } from "react";
 import {
   Calculator,
@@ -327,9 +328,7 @@ function PrecificacaoPage() {
       return;
     }
     if (
-      !confirm(
-        `Ajustar preço de ${list.length} produto(s) para o valor sugerido (mantendo a margem alvo)?`,
-      )
+      !(await confirmDialog({ message: `Ajustar preço de ${list.length} produto(s) para o valor sugerido (mantendo a margem alvo)?`, }))
     )
       return;
     for (const p of list) {

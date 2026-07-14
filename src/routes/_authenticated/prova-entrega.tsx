@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -138,7 +139,7 @@ function ProvaEntregaPage() {
 
   const deletePhoto = async (p: Proof) => {
     if (!p.delivery_photo_url) return;
-    if (!confirm(`Remover a foto do pedido #${p.order_number}?`)) return;
+    if (!(await confirmDialog({ message: `Remover a foto do pedido #${p.order_number}?` }))) return;
     const { error: e1 } = await supabase.storage
       .from("delivery-proofs")
       .remove([p.delivery_photo_url]);

@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -174,9 +175,9 @@ function PDVPage() {
 
   const removeLine = (uid: string) => setCart((prev) => prev.filter((l) => l.uid !== uid));
 
-  const clearAll = () => {
+  const clearAll = async () => {
     if (cart.length === 0) return;
-    if (!confirm("Limpar toda a venda atual?")) return;
+    if (!(await confirmDialog({ message: "Limpar toda a venda atual?" }))) return;
     resetSale();
   };
 

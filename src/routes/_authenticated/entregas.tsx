@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import L from "leaflet";
@@ -881,7 +882,7 @@ function CouriersTab({
   };
 
   const remove = async (c: Courier) => {
-    if (!confirm(`Remover motoboy "${c.name}"?`)) return;
+    if (!(await confirmDialog({ message: `Remover motoboy "${c.name}"?` }))) return;
     const { error } = await supabase.from("couriers").delete().eq("id", c.id);
     if (error) toast.error("Falha ao remover");
     else {

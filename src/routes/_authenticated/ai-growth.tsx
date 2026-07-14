@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -623,7 +624,7 @@ function ConsultantChat() {
   };
 
   const removeThread = async (id: string) => {
-    if (!confirm("Apagar esta conversa?")) return;
+    if (!(await confirmDialog({ message: "Apagar esta conversa?" }))) return;
     try {
       await deleteFn({ data: { id } });
       const next = threads.filter((t) => t.id !== id);

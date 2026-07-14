@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -852,7 +853,7 @@ function HistorySection({ history, onChanged }: { history: Campaign[]; onChanged
   const sent = history.filter((c) => !(c.status === "scheduled" && c.scheduled_for));
 
   async function handleDelete(c: Campaign) {
-    if (!confirm(`Apagar "${c.title}"?`)) return;
+    if (!(await confirmDialog({ message: `Apagar "${c.title}"?` }))) return;
     const { error } = await supabase.from("push_campaigns").delete().eq("id", c.id);
     if (error) return toast.error("Erro ao apagar");
     toast.success("Apagada");
@@ -868,7 +869,7 @@ function HistorySection({ history, onChanged }: { history: Campaign[]; onChanged
     await onChanged();
   }
   async function cancelScheduled(c: Campaign) {
-    if (!confirm(`Cancelar o envio agendado de "${c.title}"?`)) return;
+    if (!(await confirmDialog({ message: `Cancelar o envio agendado de "${c.title}"?` }))) return;
     const { error } = await supabase
       .from("push_campaigns")
       .update({ status: "canceled" } as any)
@@ -1020,7 +1021,7 @@ function AutomationsPanel({ items, onChanged }: { items: Automation[]; onChanged
   };
 
   const remove = async (a: Automation) => {
-    if (!confirm(`Apagar "${a.name || a.title}"?`)) return;
+    if (!(await confirmDialog({ message: `Apagar "${a.name || a.title}"?` }))) return;
     const { error } = await supabase.from("push_automations").delete().eq("id", a.id);
     if (error) return toast.error("Erro ao apagar");
     toast.success("Apagada");

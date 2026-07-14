@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { confirmDialog } from "@/lib/confirm";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -187,8 +188,8 @@ function CopilotoPage() {
       {activeThreadId && (
         <button
           type="button"
-          onClick={() => {
-            if (confirm("Reverter todas as alterações desta conversa?\n\nIsto desativa cupons, popups, banners criados e restaura preços/pausas alteradas.")) {
+          onClick={async () => {
+            if ((await confirmDialog({ message: "Reverter todas as alterações desta conversa?\n\nIsto desativa cupons, popups, banners criados e restaura preços/pausas alteradas." }))) {
               revertMut.mutate(activeThreadId);
             }
           }}
