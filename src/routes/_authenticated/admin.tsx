@@ -771,7 +771,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               sizes: [{ id: "u", label: "Único", priceDelta: 0 }],
             })
           }
-          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[oklch(0.72_0.22_35)] to-neon-pink px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-neon-pink/30 transition hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-neon-pink to-neon-purple px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-neon-pink/30 transition hover:brightness-110"
         >
           <Plus className="h-4 w-4" strokeWidth={3} /> Novo Produto
         </button>
