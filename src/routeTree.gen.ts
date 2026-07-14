@@ -20,6 +20,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RastrearTokenRouteImport } from './routes/rastrear.$token'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
@@ -105,6 +106,11 @@ const RastrearTokenRoute = RastrearTokenRouteImport.update({
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CTokenRoute = CTokenRouteImport.update({
+  id: '/c/$token',
+  path: '/c/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCopilotChatRoute = ApiCopilotChatRouteImport.update({
@@ -313,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
+  '/c/$token': typeof CTokenRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
@@ -357,6 +364,7 @@ export interface FileRoutesByTo {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
+  '/c/$token': typeof CTokenRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
@@ -403,6 +411,7 @@ export interface FileRoutesById {
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
+  '/c/$token': typeof CTokenRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/rastrear/$token': typeof RastrearTokenRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
@@ -449,6 +458,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/whatsapp'
     | '/api/copilot-chat'
+    | '/c/$token'
     | '/produto/$id'
     | '/rastrear/$token'
     | '/avaliar/$orderId'
@@ -493,6 +503,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/whatsapp'
     | '/api/copilot-chat'
+    | '/c/$token'
     | '/produto/$id'
     | '/rastrear/$token'
     | '/avaliar/$orderId'
@@ -538,6 +549,7 @@ export interface FileRouteTypes {
     | '/_authenticated/usuarios'
     | '/_authenticated/whatsapp'
     | '/api/copilot-chat'
+    | '/c/$token'
     | '/produto/$id'
     | '/rastrear/$token'
     | '/_authenticated/avaliar/$orderId'
@@ -557,6 +569,7 @@ export interface RootRouteChildren {
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
+  CTokenRoute: typeof CTokenRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -639,6 +652,13 @@ declare module '@tanstack/react-router' {
       path: '/produto/$id'
       fullPath: '/produto/$id'
       preLoaderRoute: typeof ProdutoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/c/$token': {
+      id: '/c/$token'
+      path: '/c/$token'
+      fullPath: '/c/$token'
+      preLoaderRoute: typeof CTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/copilot-chat': {
@@ -960,6 +980,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
+  CTokenRoute: CTokenRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   RastrearTokenRoute: RastrearTokenRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
