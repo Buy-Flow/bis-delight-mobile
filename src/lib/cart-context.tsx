@@ -93,10 +93,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Cross-tab convergence: adopt another tab's cart when localStorage changes.
+  // Sem isso, duas abas fazem upsert independentes e a última grava por cima.
+  const skipPersistRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== CART_KEY) return;
+      try {
+        const next: CartItem[] = e.newValue ? JSON.parse(e.newValue) : [];
+        skipPersistRef.current = true;
+        setItems(next);
+      } catch (err) {
+        logSilent("cart:storage-merge", err);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   // persist to localStorage
   const quotaWarned = useRef(false);
   useEffect(() => {
     if (!hydrated) return;
+    if (skipPersistRef.current) {
+      // Estado veio de outra aba via evento storage — não re-persistir para
+      // não disparar loop de storage → setState → setItem em cadeia.
+      skipPersistRef.current = false;
+      return;
+    }
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(items));
     } catch (e) {
@@ -120,40 +145,59 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  // Sync abandoned cart to Supabase (debounced) when logged in
+  // Sync abandoned cart to Supabase (debounced) when logged in.
+  // Serializado entre abas via Web Locks e sempre lê o snapshot fresco de
+  // localStorage dentro do lock — assim a última gravação reflete o estado
+  // efetivamente compartilhado, não o snapshot capturado no closure.
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!hydrated || !userId) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
-      const subtotal = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
-      const count = items.reduce((s, i) => s + i.quantity, 0);
-      try {
-        if (items.length === 0) {
-          // Cart emptied: mark recovered (or leave if already gone)
-          const { error } = await supabase.from("abandoned_carts").delete().eq("user_id", userId);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase.from("abandoned_carts").upsert({
-            user_id: userId,
-            items: items as unknown as never,
-            subtotal,
-            item_count: count,
-            notified_at: null,
-            recovered_at: null,
-          });
-          if (error) throw error;
+    syncTimer.current = setTimeout(() => {
+      const doSync = async () => {
+        const fresh = loadCart();
+        const subtotal = fresh.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+        const count = fresh.reduce((s, i) => s + i.quantity, 0);
+        try {
+          if (fresh.length === 0) {
+            const { error } = await supabase
+              .from("abandoned_carts")
+              .delete()
+              .eq("user_id", userId);
+            if (error) throw error;
+          } else {
+            const { error } = await supabase.from("abandoned_carts").upsert({
+              user_id: userId,
+              items: fresh as unknown as never,
+              subtotal,
+              item_count: count,
+              notified_at: null,
+              recovered_at: null,
+            });
+            if (error) throw error;
+          }
+        } catch (e) {
+          logSilent("cart:abandoned-sync", e);
         }
-      } catch (e) {
-        // Não é fatal para o usuário: o carrinho continua no localStorage.
-        // Registramos para diagnóstico (RLS, rede, schema drift).
-        logSilent("cart:abandoned-sync", e);
+      };
+      const lockName = `querobis:cart-sync:${userId}`;
+      const nav = typeof navigator !== "undefined" ? navigator : null;
+      if (nav && "locks" in nav && nav.locks?.request) {
+        nav.locks
+          .request(lockName, { mode: "exclusive" }, doSync)
+          .catch((e) => {
+            logSilent("cart:lock", e);
+            return doSync();
+          });
+      } else {
+        void doSync();
       }
     }, 1500);
     return () => {
       if (syncTimer.current) clearTimeout(syncTimer.current);
     };
   }, [items, hydrated, userId]);
+
 
   const value = useMemo<CartCtx>(() => {
     const subtotal = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
