@@ -563,11 +563,7 @@ function RushPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] text-white">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
+    return <AdminPageSkeleton />;
   }
   if (!isAdmin && !canOperate) {
     return (
