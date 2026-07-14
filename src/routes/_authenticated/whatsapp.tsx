@@ -292,11 +292,11 @@ function WhatsappPage() {
       )
       .subscribe();
 
-    const syncTimer = window.setInterval(() => syncFromPhone(false), 30000);
+    // Realtime já entrega inserts/updates de mensagens e conversas.
+    // Não fazemos polling agressivo que recarrega toda a lista (interrompia áudio em reprodução).
 
     return () => {
       supabase.removeChannel(ch);
-      window.clearInterval(syncTimer);
       clearInterval(stateTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
