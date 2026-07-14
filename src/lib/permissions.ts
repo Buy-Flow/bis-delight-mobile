@@ -24,13 +24,35 @@ export type Role =
   | "user";
 
 /**
+ * Rotas administrativas EXCLUSIVAS de admin (gestão de usuários, IA sensível,
+ * automações com custo/envio de mensagens e configuração global de preços).
+ * Manager herda `*` MENOS estas rotas.
+ */
+export const ADMIN_ONLY_ROUTES = [
+  "/usuarios",
+  "/ai-growth",
+  "/copiloto",
+  "/automacoes",
+  "/modelos",
+  "/previsao",
+  "/importar",
+  "/precificacao",
+];
+
+export function isAdminOnlyRoute(pathname: string) {
+  return ADMIN_ONLY_ROUTES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
+}
+
+/**
  * Rotas permitidas por papel. `*` = acesso total à área administrativa.
  * Ordem importa: a primeira rota da lista é usada como "landing" quando o
  * usuário tenta acessar algo fora do seu escopo.
  */
 export const ROLE_ROUTES: Record<Exclude<Role, "user">, string[]> = {
   admin: ["*"],
-  manager: ["*"],
+  manager: ["*"], // com exclusão automática de ADMIN_ONLY_ROUTES em canAccessRoute
   staff: [
     "/rush",
     "/pdv",
