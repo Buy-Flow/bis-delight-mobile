@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { optimizeRoute, type OptimizeResult } from "@/lib/route-optimization.functions";
+import { DeliveryProofDialog } from "@/components/courier/DeliveryProofDialog";
 
 export const Route = createFileRoute("/motoboy")({
   head: () => ({
