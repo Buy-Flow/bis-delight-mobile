@@ -2,6 +2,24 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+// Verify the authenticated user owns the order (or is admin/manager/cashier staff).
+async function assertOrderAccess(
+  supabase: SupabaseClient,
+  orderUserId: string | null | undefined,
+  callerId: string,
+) {
+  if (orderUserId && orderUserId === callerId) return;
+  const roles = ["admin", "manager", "cashier"] as const;
+  for (const r of roles) {
+    const { data } = await supabase.rpc("has_role", { _user_id: callerId, _role: r });
+    if (data) return;
+  }
+  throw new Error("Sem permissão para acessar este pedido");
+}
+
 
 const pixInput = z.object({
   orderId: z.string().uuid(),
