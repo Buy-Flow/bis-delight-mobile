@@ -947,6 +947,174 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_insight_settings: {
+        Row: {
+          ai_model: string
+          ai_tone: string
+          cart_abandon_threshold: number
+          category_drop_threshold: number
+          compare_window_days: number
+          enabled: boolean
+          id: number
+          last_run_at: string | null
+          last_run_count: number | null
+          last_run_error: string | null
+          last_run_status: string | null
+          max_insights_per_run: number
+          min_severity: string
+          monitor_carts: boolean
+          monitor_categories: boolean
+          monitor_new_customers: boolean
+          monitor_products: boolean
+          monitor_revenue: boolean
+          monitor_reviews: boolean
+          product_drop_threshold: number
+          rating_drop_threshold: number
+          revenue_drop_threshold: number
+          send_hour: number
+          send_minute: number
+          send_push: boolean
+          send_whatsapp: boolean
+          timezone: string
+          updated_at: string
+          weekdays: Json
+          whatsapp_target: string | null
+        }
+        Insert: {
+          ai_model?: string
+          ai_tone?: string
+          cart_abandon_threshold?: number
+          category_drop_threshold?: number
+          compare_window_days?: number
+          enabled?: boolean
+          id?: number
+          last_run_at?: string | null
+          last_run_count?: number | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          max_insights_per_run?: number
+          min_severity?: string
+          monitor_carts?: boolean
+          monitor_categories?: boolean
+          monitor_new_customers?: boolean
+          monitor_products?: boolean
+          monitor_revenue?: boolean
+          monitor_reviews?: boolean
+          product_drop_threshold?: number
+          rating_drop_threshold?: number
+          revenue_drop_threshold?: number
+          send_hour?: number
+          send_minute?: number
+          send_push?: boolean
+          send_whatsapp?: boolean
+          timezone?: string
+          updated_at?: string
+          weekdays?: Json
+          whatsapp_target?: string | null
+        }
+        Update: {
+          ai_model?: string
+          ai_tone?: string
+          cart_abandon_threshold?: number
+          category_drop_threshold?: number
+          compare_window_days?: number
+          enabled?: boolean
+          id?: number
+          last_run_at?: string | null
+          last_run_count?: number | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          max_insights_per_run?: number
+          min_severity?: string
+          monitor_carts?: boolean
+          monitor_categories?: boolean
+          monitor_new_customers?: boolean
+          monitor_products?: boolean
+          monitor_revenue?: boolean
+          monitor_reviews?: boolean
+          product_drop_threshold?: number
+          rating_drop_threshold?: number
+          revenue_drop_threshold?: number
+          send_hour?: number
+          send_minute?: number
+          send_push?: boolean
+          send_whatsapp?: boolean
+          timezone?: string
+          updated_at?: string
+          weekdays?: Json
+          whatsapp_target?: string | null
+        }
+        Relationships: []
+      }
+      daily_insights: {
+        Row: {
+          action_kind: string | null
+          action_payload: Json | null
+          created_at: string
+          delivered_push: boolean
+          delivered_whatsapp: boolean
+          finding: string
+          hypothesis: string | null
+          id: string
+          kind: string
+          metrics: Json | null
+          notes: string | null
+          read_at: string | null
+          resolved_at: string | null
+          severity: string
+          snoozed_until: string | null
+          status: string
+          suggested_action: string | null
+          title: string
+          triggered_by: string
+          updated_at: string
+        }
+        Insert: {
+          action_kind?: string | null
+          action_payload?: Json | null
+          created_at?: string
+          delivered_push?: boolean
+          delivered_whatsapp?: boolean
+          finding: string
+          hypothesis?: string | null
+          id?: string
+          kind: string
+          metrics?: Json | null
+          notes?: string | null
+          read_at?: string | null
+          resolved_at?: string | null
+          severity?: string
+          snoozed_until?: string | null
+          status?: string
+          suggested_action?: string | null
+          title: string
+          triggered_by?: string
+          updated_at?: string
+        }
+        Update: {
+          action_kind?: string | null
+          action_payload?: Json | null
+          created_at?: string
+          delivered_push?: boolean
+          delivered_whatsapp?: boolean
+          finding?: string
+          hypothesis?: string | null
+          id?: string
+          kind?: string
+          metrics?: Json | null
+          notes?: string | null
+          read_at?: string | null
+          resolved_at?: string | null
+          severity?: string
+          snoozed_until?: string | null
+          status?: string
+          suggested_action?: string | null
+          title?: string
+          triggered_by?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       delivery_offers: {
         Row: {
           broadcast: boolean
