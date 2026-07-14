@@ -173,6 +173,57 @@ export async function getPayment(paymentId: string): Promise<AsaasPayment> {
   return await asaasFetch<AsaasPayment>(`/payments/${paymentId}`);
 }
 
+export type AsaasCheckoutSession = {
+  id: string;
+  link: string;
+  status?: string;
+  expirationDate?: string;
+};
+
+export async function createCheckoutSession(input: {
+  value: number;
+  externalReference: string;
+  description: string;
+  successUrl: string;
+  cancelUrl: string;
+  expiredUrl: string;
+  minutesToExpire?: number;
+  customer?: { name?: string; email?: string; cpfCnpj?: string; phone?: string };
+  billingTypes?: Array<"CREDIT_CARD" | "PIX">;
+}): Promise<AsaasCheckoutSession> {
+  const body: Record<string, unknown> = {
+    billingTypes: input.billingTypes ?? ["CREDIT_CARD", "PIX"],
+    chargeTypes: ["DETACHED"],
+    minutesToExpire: input.minutesToExpire ?? 60,
+    externalReference: input.externalReference,
+    callback: {
+      successUrl: input.successUrl,
+      cancelUrl: input.cancelUrl,
+      expiredUrl: input.expiredUrl,
+    },
+    items: [
+      {
+        name: input.description,
+        value: Number(input.value.toFixed(2)),
+        quantity: 1,
+      },
+    ],
+  };
+  if (input.customer) {
+    body.customerData = {
+      name: input.customer.name,
+      email: input.customer.email,
+      cpfCnpj: input.customer.cpfCnpj,
+      phone: input.customer.phone,
+    };
+  }
+  return await asaasFetch<AsaasCheckoutSession>("/checkouts", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+
 // Map Asaas status → local order status
 export function mapAsaasStatusToOrder(status: string): { paid: boolean; canceled: boolean } {
   const s = status.toUpperCase();
