@@ -1,5 +1,5 @@
 import { Clock, MoonStar } from "lucide-react";
-import { useStoreStatus } from "@/lib/store-status";
+import { useStoreStatus, STORE_COPY } from "@/lib/store-status";
 
 function formatDuration(mins: number): string {
   if (mins < 1) return "menos de 1 min";
@@ -18,7 +18,7 @@ export function StoreClosedBanner() {
   const nextLabel = status.nextOpenLabel;
   const untilOpen = status.minutesUntilOpen;
 
-  const headline = isOverride ? "Estamos temporariamente fechados" : "Loja fechada no momento";
+  const headline = STORE_COPY.closedHeadline(status);
   const body = isOverride
     ? "Voltamos assim que possível. Você pode explorar o cardápio à vontade."
     : nextLabel
