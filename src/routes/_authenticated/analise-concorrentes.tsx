@@ -256,8 +256,10 @@ function NewAnalysisForm({ onDone }: { onDone: (id: string) => Promise<void> }) 
         </div>
         <div>
           <Label>Anotações internas</Label>
-          <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)}
-            placeholder="Impressões, promoções em andamento, etc." />
+          <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)}
+            placeholder="Impressões, promoções em andamento, etc."
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
+
         </div>
       </section>
 
