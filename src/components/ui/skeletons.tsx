@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { ProductCardSkeleton } from "@/components/menu/ProductCardSkeleton";
 
 /* =========================================================================
  * Skeleton primitives
