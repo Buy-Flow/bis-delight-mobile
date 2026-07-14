@@ -44,8 +44,19 @@ export function InstallPWAButton() {
   const [showHelp, setShowHelp] = useState<null | "ios" | "android" | "desktop">(null);
   const [visible, setVisible] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const [adminAllowed, setAdminAllowed] = useState(true);
 
   useEffect(() => {
+    // Respect admin toggle from pwa_settings.show_install_prompt (cached fast path).
+    try {
+      const raw = localStorage.getItem("pwa_settings_cache_v1");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.show_install_prompt === false) setAdminAllowed(false);
+      }
+    } catch {
+      /* noop */
+    }
     if (isStandalone() || isAppInstalled()) {
       setInstalled(true);
       return;
@@ -114,7 +125,7 @@ export function InstallPWAButton() {
   };
 
 
-  if (installed || !visible) return null;
+  if (installed || !visible || !adminAllowed) return null;
 
   return (
     <>

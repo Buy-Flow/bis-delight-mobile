@@ -2745,6 +2745,66 @@ export type Database = {
         }
         Relationships: []
       }
+      pwa_settings: {
+        Row: {
+          auto_update: boolean
+          cache_version: number
+          enabled: boolean
+          id: boolean
+          kill_switch: boolean
+          max_image_cache_entries: number
+          offline_banner_enabled: boolean
+          offline_banner_text: string
+          offline_fallback_cta: string
+          offline_fallback_message: string
+          offline_fallback_title: string
+          online_restored_text: string
+          prefetch_images: boolean
+          prefetch_menu_on_load: boolean
+          show_install_prompt: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_update?: boolean
+          cache_version?: number
+          enabled?: boolean
+          id?: boolean
+          kill_switch?: boolean
+          max_image_cache_entries?: number
+          offline_banner_enabled?: boolean
+          offline_banner_text?: string
+          offline_fallback_cta?: string
+          offline_fallback_message?: string
+          offline_fallback_title?: string
+          online_restored_text?: string
+          prefetch_images?: boolean
+          prefetch_menu_on_load?: boolean
+          show_install_prompt?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_update?: boolean
+          cache_version?: number
+          enabled?: boolean
+          id?: boolean
+          kill_switch?: boolean
+          max_image_cache_entries?: number
+          offline_banner_enabled?: boolean
+          offline_banner_text?: string
+          offline_fallback_cta?: string
+          offline_fallback_message?: string
+          offline_fallback_title?: string
+          online_restored_text?: string
+          prefetch_images?: boolean
+          prefetch_menu_on_load?: boolean
+          show_install_prompt?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string

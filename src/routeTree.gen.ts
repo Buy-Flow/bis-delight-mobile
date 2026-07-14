@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RecompensasRouteImport } from './routes/recompensas'
+import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as MotoboyRouteImport } from './routes/motoboy'
 import { Route as FinalizarRouteImport } from './routes/finalizar'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
@@ -32,6 +33,7 @@ import { Route as AuthenticatedSkeletonLoadingRouteImport } from './routes/_auth
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedRotasRouteImport } from './routes/_authenticated/rotas'
 import { Route as AuthenticatedRankingVipRouteImport } from './routes/_authenticated/ranking-vip'
+import { Route as AuthenticatedPwaOfflineRouteImport } from './routes/_authenticated/pwa-offline'
 import { Route as AuthenticatedProvaEntregaRouteImport } from './routes/_authenticated/prova-entrega'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authenticated/precificacao'
@@ -82,6 +84,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RecompensasRoute = RecompensasRouteImport.update({
   id: '/recompensas',
   path: '/recompensas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfflineRoute = OfflineRouteImport.update({
+  id: '/offline',
+  path: '/offline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MotoboyRoute = MotoboyRouteImport.update({
@@ -188,6 +195,11 @@ const AuthenticatedRotasRoute = AuthenticatedRotasRouteImport.update({
 const AuthenticatedRankingVipRoute = AuthenticatedRankingVipRouteImport.update({
   id: '/ranking-vip',
   path: '/ranking-vip',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPwaOfflineRoute = AuthenticatedPwaOfflineRouteImport.update({
+  id: '/pwa-offline',
+  path: '/pwa-offline',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProvaEntregaRoute =
@@ -419,6 +431,7 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/finalizar': typeof FinalizarRoute
   '/motoboy': typeof MotoboyRoute
+  '/offline': typeof OfflineRoute
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -455,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/prova-entrega': typeof AuthenticatedProvaEntregaRoute
+  '/pwa-offline': typeof AuthenticatedPwaOfflineRoute
   '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
@@ -484,6 +498,7 @@ export interface FileRoutesByTo {
   '/carrinho': typeof CarrinhoRoute
   '/finalizar': typeof FinalizarRoute
   '/motoboy': typeof MotoboyRoute
+  '/offline': typeof OfflineRoute
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -520,6 +535,7 @@ export interface FileRoutesByTo {
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/prova-entrega': typeof AuthenticatedProvaEntregaRoute
+  '/pwa-offline': typeof AuthenticatedPwaOfflineRoute
   '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
@@ -551,6 +567,7 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/finalizar': typeof FinalizarRoute
   '/motoboy': typeof MotoboyRoute
+  '/offline': typeof OfflineRoute
   '/recompensas': typeof RecompensasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -587,6 +604,7 @@ export interface FileRoutesById {
   '/_authenticated/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/prova-entrega': typeof AuthenticatedProvaEntregaRoute
+  '/_authenticated/pwa-offline': typeof AuthenticatedPwaOfflineRoute
   '/_authenticated/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/_authenticated/rotas': typeof AuthenticatedRotasRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
@@ -618,6 +636,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/finalizar'
     | '/motoboy'
+    | '/offline'
     | '/recompensas'
     | '/sitemap.xml'
     | '/admin'
@@ -654,6 +673,7 @@ export interface FileRouteTypes {
     | '/precificacao'
     | '/previsao'
     | '/prova-entrega'
+    | '/pwa-offline'
     | '/ranking-vip'
     | '/rotas'
     | '/rush'
@@ -683,6 +703,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/finalizar'
     | '/motoboy'
+    | '/offline'
     | '/recompensas'
     | '/sitemap.xml'
     | '/admin'
@@ -719,6 +740,7 @@ export interface FileRouteTypes {
     | '/precificacao'
     | '/previsao'
     | '/prova-entrega'
+    | '/pwa-offline'
     | '/ranking-vip'
     | '/rotas'
     | '/rush'
@@ -749,6 +771,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/finalizar'
     | '/motoboy'
+    | '/offline'
     | '/recompensas'
     | '/sitemap.xml'
     | '/_authenticated/admin'
@@ -785,6 +808,7 @@ export interface FileRouteTypes {
     | '/_authenticated/precificacao'
     | '/_authenticated/previsao'
     | '/_authenticated/prova-entrega'
+    | '/_authenticated/pwa-offline'
     | '/_authenticated/ranking-vip'
     | '/_authenticated/rotas'
     | '/_authenticated/rush'
@@ -816,6 +840,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   FinalizarRoute: typeof FinalizarRoute
   MotoboyRoute: typeof MotoboyRoute
+  OfflineRoute: typeof OfflineRoute
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
@@ -843,6 +868,13 @@ declare module '@tanstack/react-router' {
       path: '/recompensas'
       fullPath: '/recompensas'
       preLoaderRoute: typeof RecompensasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offline': {
+      id: '/offline'
+      path: '/offline'
+      fullPath: '/offline'
+      preLoaderRoute: typeof OfflineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/motoboy': {
@@ -990,6 +1022,13 @@ declare module '@tanstack/react-router' {
       path: '/ranking-vip'
       fullPath: '/ranking-vip'
       preLoaderRoute: typeof AuthenticatedRankingVipRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pwa-offline': {
+      id: '/_authenticated/pwa-offline'
+      path: '/pwa-offline'
+      fullPath: '/pwa-offline'
+      preLoaderRoute: typeof AuthenticatedPwaOfflineRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/prova-entrega': {
@@ -1317,6 +1356,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrecificacaoRoute: typeof AuthenticatedPrecificacaoRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedProvaEntregaRoute: typeof AuthenticatedProvaEntregaRoute
+  AuthenticatedPwaOfflineRoute: typeof AuthenticatedPwaOfflineRoute
   AuthenticatedRankingVipRoute: typeof AuthenticatedRankingVipRoute
   AuthenticatedRotasRoute: typeof AuthenticatedRotasRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
@@ -1365,6 +1405,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrecificacaoRoute: AuthenticatedPrecificacaoRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedProvaEntregaRoute: AuthenticatedProvaEntregaRoute,
+  AuthenticatedPwaOfflineRoute: AuthenticatedPwaOfflineRoute,
   AuthenticatedRankingVipRoute: AuthenticatedRankingVipRoute,
   AuthenticatedRotasRoute: AuthenticatedRotasRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
@@ -1403,6 +1444,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   FinalizarRoute: FinalizarRoute,
   MotoboyRoute: MotoboyRoute,
+  OfflineRoute: OfflineRoute,
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,

@@ -52,6 +52,7 @@ import {
   HeartHandshake,
   ScanSearch,
   Mic,
+  WifiOff,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -187,6 +188,7 @@ const groups: NavGroup[] = [
       { to: "/alertas-sonoros", label: "Alertas sonoros", icon: Volume2 },
       { to: "/automacoes", label: "Automações", icon: Zap },
       { to: "/skeleton-loading", label: "Skeleton loading", icon: Sparkles },
+      { to: "/pwa-offline", label: "PWA & Offline", icon: WifiOff },
     ],
   },
 ];
