@@ -782,7 +782,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
           <input
-            className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white placeholder:text-white/40 outline-none transition focus:border-white/25 focus:bg-white/[0.06]"
+            className="field-focus h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white placeholder:text-white/40 outline-none transition focus:bg-white/[0.06]"
             placeholder="Buscar produto..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
