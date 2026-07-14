@@ -426,6 +426,10 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
+    if (paymentMethod === "cartao" && !isValidCpf(cpf)) {
+      toast.error("CPF inválido — obrigatório para pagamento com cartão.");
+      return;
+    }
     if (mode === "entrega" && outsideRadius) {
       toast.error(
         zone?.outsideMessage ||
