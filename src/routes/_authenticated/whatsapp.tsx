@@ -644,14 +644,6 @@ function WhatsappPage() {
   );
 }
 
-function Kpi({ label, value, accent = false }: { label: string; value: number; accent?: boolean }) {
-  return (
-    <div className="rounded-lg bg-[#0b141a] px-2 py-2">
-      <div className={cn("text-base font-black", accent ? "text-emerald-300" : "text-white")}>{value}</div>
-      <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-white/35">{label}</div>
-    </div>
-  );
-}
 
 function Avatar({ conversation }: { conversation: Conversation }) {
   if (conversation.profile_pic_url) return <img src={conversation.profile_pic_url} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" loading="lazy" />;
