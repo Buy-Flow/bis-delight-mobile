@@ -244,31 +244,37 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
           const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
           const getHistoryStatus = async (messageId: string | null) => {
             if (!messageId) return null;
-            await sleep(1200);
-            try {
-              const history = await fetchEvolutionWithTimeout(
-                `${base}/chat/findMessages/${encodeURIComponent(instance)}`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", apikey: key },
-                  body: JSON.stringify({ page: 1, offset: 5, where: { key: { id: messageId } } }),
-                },
-                8_000,
-              );
-              const historyBody = await history.text();
-              if (!history.ok) return null;
-              const parsedHistory = JSON.parse(historyBody) as Record<string, unknown>;
-              const messages = parsedHistory.messages && typeof parsedHistory.messages === "object"
-                ? (parsedHistory.messages as Record<string, unknown>)
-                : {};
-              const records = Array.isArray(messages.records) ? messages.records : [];
-              const first = records[0] && typeof records[0] === "object" ? records[0] as Record<string, unknown> : null;
-              const updates = first && Array.isArray(first.MessageUpdate) ? first.MessageUpdate : [];
-              const latest = updates[updates.length - 1] as Record<string, unknown> | undefined;
-              return typeof latest?.status === "string" ? latest.status.toUpperCase() : null;
-            } catch {
-              return null;
+            let lastStatus: string | null = null;
+            for (const delayMs of [1000, 2200, 3800]) {
+              await sleep(delayMs);
+              try {
+                const history = await fetchEvolutionWithTimeout(
+                  `${base}/chat/findMessages/${encodeURIComponent(instance)}`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", apikey: key },
+                    body: JSON.stringify({ page: 1, offset: 5, where: { key: { id: messageId } } }),
+                  },
+                  8_000,
+                );
+                const historyBody = await history.text();
+                if (!history.ok) continue;
+                const parsedHistory = JSON.parse(historyBody) as Record<string, unknown>;
+                const messages = parsedHistory.messages && typeof parsedHistory.messages === "object"
+                  ? (parsedHistory.messages as Record<string, unknown>)
+                  : {};
+                const records = Array.isArray(messages.records) ? messages.records : [];
+                const first = records[0] && typeof records[0] === "object" ? firstRecord(records[0]) : null;
+                const updates = first && Array.isArray(first.MessageUpdate) ? first.MessageUpdate : [];
+                const latest = updates[updates.length - 1] as Record<string, unknown> | undefined;
+                const statusText = typeof latest?.status === "string" ? latest.status.toUpperCase() : null;
+                if (statusText) lastStatus = statusText;
+                if (statusText === "ERROR" || statusText === "DELIVERY_ACK" || statusText === "READ") return statusText;
+              } catch {
+                // tenta de novo; a Evolution pode demorar para gravar o MessageUpdate
+              }
             }
+            return lastStatus;
           };
           try {
             let resp: Response | null = null;
