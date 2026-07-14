@@ -89,24 +89,47 @@ export function NotificationsBell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user?.id]);
 
+  const notifyCountRefresh = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("querobis:notifications_refresh"));
+    }
+  };
+
   const markAllRead = async () => {
     const ids = items.flatMap((i) => i.deliveryIds);
     if (!ids.length) return;
-    await supabase
+    const snapshot = items;
+    setItems([]);
+    notifyCountRefresh();
+    const { error } = await supabase
       .from("push_deliveries")
       .update({ opened_at: new Date().toISOString() })
       .in("id", ids)
       .is("opened_at", null);
-    setItems([]);
+    if (error) {
+      // rollback UI se falhar — evita sumir badge indevidamente.
+      setItems(snapshot);
+      notifyCountRefresh();
+    } else {
+      notifyCountRefresh();
+    }
   };
 
   const openItem = async (item: Item) => {
-    await supabase
+    const snapshot = items;
+    setItems((prev) => prev.filter((i) => i.campaign.id !== item.campaign.id));
+    notifyCountRefresh();
+    const { error } = await supabase
       .from("push_deliveries")
       .update({ opened_at: new Date().toISOString() })
       .in("id", item.deliveryIds)
       .is("opened_at", null);
-    setItems((prev) => prev.filter((i) => i.campaign.id !== item.campaign.id));
+    if (error) {
+      setItems(snapshot);
+      notifyCountRefresh();
+    } else {
+      notifyCountRefresh();
+    }
     const url = item.campaign.url;
     if (url) {
       if (url.startsWith("http")) window.open(url, "_blank");
