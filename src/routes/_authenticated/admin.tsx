@@ -117,11 +117,14 @@ import {
   ArrowUpRight,
   Zap,
 } from "lucide-react";
+import { SearchX } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { STORE_COPY } from "@/lib/store-status";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 import { DeliveryZoneEditor } from "@/components/admin/DeliveryZoneEditor";
 import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
+import { EmptyState } from "@/components/ui/empty-state";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -5802,8 +5805,24 @@ function IconPicker({
           );
         })}
         {list.length === 0 && (
-          <div className="col-span-8 py-4 text-center text-[11px] text-white/40">
-            Nenhum ícone encontrado.
+          <div className="col-span-8">
+            <EmptyState
+              size="sm"
+              icon={SearchX}
+              title="Nenhum ícone encontrado"
+              description={q.trim() ? `Sem resultados para "${q.trim()}". Tente outro termo (ex.: cream, cup, star).` : "Ajuste sua busca para ver ícones disponíveis."}
+              action={
+                q.trim() ? (
+                  <button
+                    type="button"
+                    onClick={() => setQ("")}
+                    className="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-white/80 hover:bg-white/10"
+                  >
+                    Limpar busca
+                  </button>
+                ) : undefined
+              }
+            />
           </div>
         )}
       </div>
