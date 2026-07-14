@@ -24,6 +24,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ReviewSettingsPanel } from "@/components/reviews/ReviewSettingsPanel";
+import { Settings2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/avaliacoes")({
   component: AvaliacoesPage,
