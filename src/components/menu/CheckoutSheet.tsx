@@ -406,6 +406,25 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
+  // Revalida o mínimo do cupom sempre que o subtotal cair (item removido,
+  // quantidade reduzida, edição de sabor barato). Se ficar abaixo, remove
+  // o cupom automaticamente e avisa — evita desconto indevido no total.
+  useEffect(() => {
+    if (!couponApplied) return;
+    if (items.length === 0) {
+      setCouponApplied(null);
+      return;
+    }
+    if (subtotal < couponApplied.minOrder) {
+      const min = couponApplied.minOrder;
+      const code = couponApplied.code;
+      setCouponApplied(null);
+      toast.error(`Cupom ${code} removido`, {
+        description: `Pedido mínimo de ${brl(min)} não foi atingido.`,
+      });
+    }
+  }, [subtotal, items.length, couponApplied]);
+
   const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase();
     if (!code) return;
