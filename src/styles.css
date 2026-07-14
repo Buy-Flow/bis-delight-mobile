@@ -454,3 +454,64 @@ select:-webkit-autofill {
   background-color: transparent !important;
   transition: background-color 9999s ease-in-out 0s;
 }
+
+/* ============================================================
+ * Skeleton loading system — driven by CSS vars set on :root by
+ * SkeletonProvider from skeleton_settings. Overridable per surface.
+ * ============================================================ */
+:root {
+  --sk-radius: 14px;
+  --sk-speed: 1600ms;
+  --sk-base: oklch(0.94 0.008 300 / 0.85);
+  --sk-highlight: oklch(1 0 0 / 0.7);
+  --sk-shine: rgba(255, 255, 255, 0.55);
+  --sk-stagger: 60ms;
+}
+.dark, [data-theme="dark"] {
+  --sk-base: oklch(0.22 0.03 300 / 0.6);
+  --sk-highlight: oklch(0.32 0.05 300 / 0.9);
+  --sk-shine: rgba(255, 255, 255, 0.08);
+}
+
+.sk {
+  position: relative;
+  overflow: hidden;
+  background: var(--sk-base);
+  border-radius: var(--sk-radius);
+  isolation: isolate;
+}
+.sk::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, var(--sk-shine) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: sk-shimmer var(--sk-speed) ease-in-out infinite;
+}
+.sk--pulse::after { display: none; }
+.sk--pulse { animation: sk-pulse var(--sk-speed) ease-in-out infinite; }
+.sk--wave::after {
+  background: linear-gradient(90deg, transparent, var(--sk-highlight), transparent);
+}
+.sk--static::after { display: none; animation: none; }
+.sk--static { animation: none; }
+
+@keyframes sk-shimmer {
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes sk-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-sk-respect-motion="1"] .sk::after { animation: none; }
+  :root[data-sk-respect-motion="1"] .sk--pulse { animation: none; }
+}
+
+/* Skeleton disabled globally — fall back to invisible placeholder space */
+:root[data-sk-enabled="0"] .sk { background: transparent; }
+:root[data-sk-enabled="0"] .sk::after { display: none; }
