@@ -151,7 +151,7 @@ function PrintCenterPage() {
 
   const load = async () => {
     setLoading(true);
-    const [ps, ss, ord, jb] = await Promise.all([
+    const [ps, ss, ord, jb, pr] = await Promise.all([
       supabase.from("print_settings").select("*").eq("id", 1).maybeSingle(),
       supabase
         .from("site_settings")
@@ -170,8 +170,13 @@ function PrintCenterPage() {
         .select("id,order_id,kind,status,created_at")
         .order("created_at", { ascending: false })
         .limit(50),
+      supabase
+        .from("print_printers")
+        .select("*")
+        .order("sort_index", { ascending: true }),
     ]);
     if (ps.data) setSettings(ps.data as PrintSettings);
+    if (pr.data) setPrinters(pr.data as Printer[]);
     if (ss.data) {
       // Load admin-only pix_key via RPC and merge in
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
