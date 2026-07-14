@@ -401,10 +401,12 @@ function ShareDialog({
   onOpenChange: (v: boolean) => void;
   items: import("@/lib/cart-context").CartItem[];
 }) {
+  const navigate = useNavigate();
   const [ownerName, setOwnerName] = useState("");
   const [message, setMessage] = useState("");
   const [creating, setCreating] = useState(false);
   const [result, setResult] = useState<{ url: string; token: string } | null>(null);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
