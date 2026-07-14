@@ -189,6 +189,7 @@ export async function createCheckoutSession(input: {
   cancelUrl: string;
   expiredUrl: string;
   minutesToExpire?: number;
+  customerId?: string;
   customer?: { name?: string; email?: string; cpfCnpj?: string; phone?: string };
   billingTypes?: Array<"CREDIT_CARD" | "PIX">;
 }): Promise<AsaasCheckoutSession> {
@@ -210,6 +211,9 @@ export async function createCheckoutSession(input: {
       },
     ],
   };
+  if (input.customerId) {
+    body.customer = input.customerId;
+  }
   if (input.customer) {
     body.customerData = {
       name: input.customer.name,
