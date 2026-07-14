@@ -237,9 +237,10 @@ export async function ingestEvolutionPayload(
   // mensagem já persistida. Fonte: whatsapp.baileys.service.ts:1258-1350.
   if (isStatusUpdate) {
     if (items.length === 0) {
-      await logRow({ status: "skipped", error: "no items in status update", payload });
+      await logRow({ status: "noise", error: "status update sem itens", payload });
       return result;
     }
+
     for (const item of items) {
       result.processed += 1;
       const rec = item as unknown as Record<string, unknown>;
