@@ -345,7 +345,7 @@ function Content() {
           </div>
           <img
             src={monteAcaiImg.url}
-            alt="Monte seu açaí"
+            alt="Taça de açaí personalizada com frutas frescas e complementos"
             loading="lazy"
             width={1024}
             height={1024}
