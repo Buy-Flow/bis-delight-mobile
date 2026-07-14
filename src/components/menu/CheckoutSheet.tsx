@@ -520,14 +520,26 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         console.warn("merge_shared_cart failed", e);
       }
 
-      const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
-      const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
-      window.open(url, "_blank");
-      toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
-      setTimeout(() => {
+      if (paymentMethod === "whatsapp") {
+        const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
+        const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
+        window.open(url, "_blank");
+        toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
+        setTimeout(() => {
+          clear();
+          closeCheckout();
+        }, 400);
+      } else {
+        try {
+          sessionStorage.setItem(
+            "querobis:pending_payment_cpf",
+            JSON.stringify({ cpf: cpfDigits(cpf), name: name.trim(), phone: phone.trim(), email: user?.email ?? "" }),
+          );
+        } catch {}
         clear();
         closeCheckout();
-      }, 400);
+        navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
+      }
     } catch (err: any) {
       console.error("[checkout] send failed", err);
       const detail =
