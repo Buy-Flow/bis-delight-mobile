@@ -734,7 +734,7 @@ function WhatsappPage() {
                   <div>Nenhuma conversa encontrada.</div>
                 </div>
               ) : (
-                <ul className="divide-y divide-white/5">
+                <ul>
                   {filtered.map((c) => {
                     const active = c.id === selectedId;
                     return (
@@ -742,33 +742,32 @@ function WhatsappPage() {
                         <button
                           onClick={() => setSelectedId(c.id)}
                           className={cn(
-                            "flex w-full items-start gap-3 px-3 py-3 text-left transition",
-                            active
-                              ? "bg-emerald-500/10"
-                              : "hover:bg-white/[0.04]",
+                            "flex w-full items-center gap-3 border-b border-white/[0.04] px-3 py-3 text-left transition",
+                            active ? "bg-[#2a3942]" : "hover:bg-[#202c33]",
                           )}
                         >
                           <Avatar name={c.contact_name} phone={c.phone} pic={c.profile_pic_url} />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <div className="min-w-0 flex-1 truncate text-sm font-bold text-white">
+                              <div className="min-w-0 flex-1 truncate text-[15px] font-normal text-[#e9edef]">
                                 {c.contact_name || formatPhone(c.phone)}
                               </div>
-                              <div className="shrink-0 text-[10px] font-bold text-white/40">
+                              <div className={cn(
+                                "shrink-0 text-[11px]",
+                                c.unread_count > 0 ? "text-[#00a884]" : "text-[#8696a0]",
+                              )}>
                                 {formatTime(c.last_message_at)}
                               </div>
                             </div>
-                            <div className="mt-0.5 flex items-center gap-2">
-                              <div className="min-w-0 flex-1 truncate text-xs text-white/60">
+                            <div className="mt-1 flex items-center gap-2">
+                              <div className="min-w-0 flex-1 truncate text-[13px] text-[#8696a0]">
                                 {c.last_message_preview || "—"}
                               </div>
                               {c.ai_paused && (
-                                <BotOff
-                                  className="h-3 w-3 shrink-0 text-yellow-300"
-                                />
+                                <BotOff className="h-3.5 w-3.5 shrink-0 text-yellow-400" />
                               )}
                               {c.unread_count > 0 && (
-                                <span className="grid h-4 min-w-4 shrink-0 place-items-center rounded-full bg-emerald-500 px-1 text-[10px] font-black text-black">
+                                <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[#00a884] px-1.5 text-[11px] font-medium text-[#111b21]">
                                   {c.unread_count > 99 ? "99+" : c.unread_count}
                                 </span>
                               )}
@@ -782,6 +781,7 @@ function WhatsappPage() {
               )}
             </div>
           </aside>
+
 
           {/* Chat panel */}
           <section className="flex h-[70vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
