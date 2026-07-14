@@ -461,11 +461,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     };
     setActionError(null);
     if (storeStatus.isClosed) {
-      fail(
-        storeStatus.nextOpenLabel
-          ? `Loja fechada. Reabrimos ${storeStatus.nextOpenLabel}.`
-          : "A loja está fechada no momento.",
-      );
+      fail(STORE_COPY.closedShort(storeStatus));
       return;
     }
     if (authLoading) {
