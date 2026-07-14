@@ -248,3 +248,62 @@ export const getAsaasPaymentStatus = createServerFn({ method: "GET" })
       .maybeSingle();
     return order ?? null;
   });
+
+const checkoutInput = z.object({
+  orderId: z.string().uuid(),
+  customer: z.object({
+    name: z.string().min(2),
+    email: z.string().email().optional(),
+    cpfCnpj: z.string().min(11).max(18).optional(),
+    phone: z.string().optional(),
+  }),
+  origin: z.string().url(),
+});
+
+export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
+  .inputValidator((raw) => checkoutInput.parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { createCheckoutSession } = await import("@/lib/asaas.server");
+
+    const { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select("id, total, customer_name, phone, user_id")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (error || !order) throw new Error("Pedido não encontrado");
+
+    const shortId = order.id.slice(0, 8);
+    const origin = data.origin.replace(/\/+$/, "");
+    const successUrl = `${origin}/pagamento/${order.id}?checkout=success`;
+    const cancelUrl = `${origin}/pagamento/${order.id}?checkout=cancel`;
+    const expiredUrl = `${origin}/pagamento/${order.id}?checkout=expired`;
+
+    const session = await createCheckoutSession({
+      value: Number(order.total),
+      externalReference: order.id,
+      description: `Pedido ${shortId}`,
+      successUrl,
+      cancelUrl,
+      expiredUrl,
+      minutesToExpire: 60,
+      billingTypes: ["CREDIT_CARD", "PIX"],
+      customer: {
+        name: data.customer.name || order.customer_name || "Cliente",
+        email: data.customer.email,
+        cpfCnpj: data.customer.cpfCnpj,
+        phone: data.customer.phone ?? order.phone ?? undefined,
+      },
+    });
+
+    await supabaseAdmin
+      .from("orders")
+      .update({
+        payment_method: "asaas_checkout",
+        asaas_status: session.status ?? "CHECKOUT_CREATED",
+        invoice_url: session.link,
+      })
+      .eq("id", order.id);
+
+    return { checkoutId: session.id, url: session.link };
+  });
