@@ -24,6 +24,32 @@ import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/AddressMapInline";
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
+import { useServerFn } from "@tanstack/react-start";
+import { createAsaasCardForOrder } from "@/lib/asaas.functions";
+
+function formatCardNumber(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 19);
+  return d.replace(/(.{4})/g, "$1 ").trim();
+}
+function formatCardExpiry(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 4);
+  if (d.length <= 2) return d;
+  return `${d.slice(0, 2)}/${d.slice(2)}`;
+}
+function formatCep(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 5) return d;
+  return `${d.slice(0, 5)}-${d.slice(5)}`;
+}
+function detectCardBrand(num: string): string | null {
+  const n = num.replace(/\D/g, "");
+  if (/^4/.test(n)) return "Visa";
+  if (/^(5[1-5]|2[2-7])/.test(n)) return "Mastercard";
+  if (/^3[47]/.test(n)) return "Amex";
+  if (/^(4011|4312|4389|4514|4573|5041|5066|5067|6277|6362|6363|6516|6550)/.test(n)) return "Elo";
+  if (/^(606282|3841)/.test(n)) return "Hipercard";
+  return null;
+}
 
 
 type Mode = "entrega" | "retirada";
