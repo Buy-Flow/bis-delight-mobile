@@ -11,6 +11,30 @@ import {
   configureWhatsappWebhook,
 } from "@/lib/whatsapp.functions";
 
+type WhatsappStateResult = {
+  state: string;
+  exists?: boolean;
+  ownerJid?: string | null;
+  profileName?: string | null;
+  disconnectionAt?: string | null;
+  disconnectionCode?: number | null;
+};
+
+type WhatsappQrResult = {
+  base64: string | null;
+  code: string | null;
+  pairingCode: string | null;
+};
+
+type WhatsappWebhookResult = {
+  url: string;
+  currentUrl: string | null;
+  configured: boolean;
+  enabled?: boolean;
+  hasToken: boolean;
+  error?: string | null;
+};
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -43,7 +67,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
 
   async function refreshState() {
     try {
-      const s = await getState();
+      const s = (await getState()) as WhatsappStateResult;
       setState(s.state);
       if (s.state === "open") {
         setQr(null);
@@ -64,7 +88,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   async function fetchQr() {
     setLoadingQr(true);
     try {
-      const r = await getQr();
+      const r = (await getQr()) as WhatsappQrResult;
       setQr(r);
       await refreshState();
     } catch (e) {
@@ -91,7 +115,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
 
   async function refreshWebhook() {
     try {
-      const w = await getWebhook();
+      const w = (await getWebhook()) as WhatsappWebhookResult;
       setWebhookState(w);
     } catch {
       /* noop */
@@ -101,7 +125,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   async function handleConfigureWebhook() {
     setWbSaving(true);
     try {
-      const r = await setWebhook();
+      const r = (await setWebhook()) as { url: string };
       toast.success("Webhook configurado! Mensagens agora chegam em tempo real.");
       setWebhookState((prev) => (prev ? { ...prev, currentUrl: r.url, configured: true } : prev));
     } catch (e) {
