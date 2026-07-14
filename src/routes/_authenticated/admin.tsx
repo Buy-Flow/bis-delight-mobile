@@ -1687,7 +1687,7 @@ function ImageDropzone({
         if (f) onFile(f);
       }}
       className={cn(
-        "relative flex aspect-[16/10] w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition",
+        "relative flex aspect-banner w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition",
         over ? "border-neon-cyan bg-neon-cyan/10" : "border-white/15 bg-white/5 hover:bg-white/10",
       )}
     >
