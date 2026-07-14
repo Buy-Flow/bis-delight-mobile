@@ -1031,10 +1031,10 @@ function WhatsappPage() {
         </div>
         )}
     </div>
-    </div>
     </AdminShell>
   );
 }
+
 
 
 
