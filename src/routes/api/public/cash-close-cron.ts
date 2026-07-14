@@ -9,11 +9,10 @@ export const Route = createFileRoute("/api/public/cash-close-cron")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Require the Supabase publishable key in the `apikey` header (pg_cron
-        // convention). /api/public/* bypasses auth at the edge, so we enforce
-        // the shared-secret ourselves before running any cron logic.
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
-        const provided = request.headers.get("apikey") ?? request.headers.get("x-cron-key");
+        // Require the private CRON_SHARED_SECRET (server-only). The publishable
+        // anon key is NOT a secret, so we cannot use it to authenticate callers.
+        const expected = process.env.CRON_SHARED_SECRET;
+        const provided = request.headers.get("x-cron-secret") ?? request.headers.get("x-cron-key");
         if (!expected || !provided || provided !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
