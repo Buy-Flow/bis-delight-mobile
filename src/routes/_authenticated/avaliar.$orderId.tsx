@@ -141,12 +141,12 @@ function AvaliarPage() {
       if (cancelled) return;
       if (eOrd || !ord) {
         toast.error("Pedido não encontrado.");
-        navigate({ to: "/meus-pedidos" as never });
+        navigate({ to: "/conta" });
         return;
       }
       if (ord.user_id !== uid) {
         toast.error("Este pedido não é seu.");
-        navigate({ to: "/meus-pedidos" as never });
+        navigate({ to: "/conta" });
         return;
       }
       setOrder(ord as OrderRow);
