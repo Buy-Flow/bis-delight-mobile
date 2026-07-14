@@ -542,7 +542,7 @@ function WhatsappPage() {
             </div>
           </aside>
 
-          <main className="hidden min-w-0 flex-1 flex-col bg-[#0b141a] md:flex">
+          <main className={cn("min-w-0 flex-1 flex-col bg-[#0b141a]", selected ? "flex" : "hidden md:flex")}>
             {selected ? (
               <>
                 <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-[#202c33] px-4">
