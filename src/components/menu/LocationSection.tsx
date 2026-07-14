@@ -4,7 +4,7 @@ import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/l
 import { useEffect, useState } from "react";
 import { AdminEditButton } from "./AdminEditButton";
 import { formatPhone } from "@/lib/phone";
-import { STORE_COPY } from "@/lib/store-status";
+import { STORE_COPY, computeStoreStatus, STORE_TIMEZONE } from "@/lib/store-status";
 
 
 const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -12,36 +12,29 @@ const DAY_LABEL: Record<WeekDay, string> = {
   mon: "SEG", tue: "TER", wed: "QUA", thu: "QUI", fri: "SEX", sat: "SÁB", sun: "DOM",
 };
 
-function jsWeekdayToKey(d: number): WeekDay {
-  return (["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as WeekDay[])[d];
-}
-
-
-
+/**
+ * Wrapper mantido para compatibilidade com chamadores antigos (ex.: admin.tsx).
+ * Delega em `computeStoreStatus`, que calcula tudo no fuso da loja via
+ * `Intl.DateTimeFormat` — não depende do relógio/timezone do dispositivo.
+ */
 export function isOpenNow(hours: DayHours[], override: "auto" | "open" | "closed") {
-  if (override === "open") return true;
-  if (override === "closed") return false;
-  const now = new Date();
-  const mins = now.getHours() * 60 + now.getMinutes();
-  const todayKey = jsWeekdayToKey(now.getDay());
-  const yestKey = jsWeekdayToKey((now.getDay() + 6) % 7);
-
-  const check = (day: DayHours | undefined, curMins: number) => {
-    if (!day || day.closed) return false;
-    const [oh, om] = day.open.split(":").map(Number);
-    const [ch, cm] = day.close.split(":").map(Number);
-    const openMin = oh * 60 + om;
-    let closeMin = ch * 60 + cm;
-    if (closeMin <= openMin) closeMin += 24 * 60;
-    let cur = curMins;
-    if (cur < openMin) cur += 24 * 60;
-    return cur >= openMin && cur < closeMin;
-  };
-
-  if (check(hours.find((h) => h.day === todayKey), mins)) return true;
-  if (check(hours.find((h) => h.day === yestKey), mins + 24 * 60)) return true;
-  return false;
+  return computeStoreStatus(hours, override).isOpen;
 }
+
+/** Retorna a chave do dia da semana atual **no fuso da loja**. */
+function zonedTodayKey(): WeekDay {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: STORE_TIMEZONE,
+    weekday: "short",
+  }).formatToParts(new Date());
+  const wd = parts.find((p) => p.type === "weekday")?.value ?? "Mon";
+  const map: Record<string, WeekDay> = {
+    Sun: "sun", Mon: "mon", Tue: "tue", Wed: "wed", Thu: "thu", Fri: "fri", Sat: "sat",
+  };
+  return map[wd] ?? "mon";
+}
+
+
 
 function toEmbedUrl(url: string): string {
   if (!url) return url;
