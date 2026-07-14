@@ -720,7 +720,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               cpf: cpf ? cpfDigits(cpf) : "",
             }),
           );
-        } catch {}
+        } catch (e) {
+          logSilent("checkout:save-customer", e);
+        }
         clear();
         closeCheckout();
         navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
