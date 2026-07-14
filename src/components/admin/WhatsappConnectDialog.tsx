@@ -363,7 +363,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-2 text-center">
               <CheckCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-emerald-300" />
               <div className="text-base font-black leading-none text-emerald-200">{diag?.ok ?? "—"}</div>
@@ -373,6 +373,11 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
               <MinusCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-amber-300" />
               <div className="text-base font-black leading-none text-amber-200">{diag?.skipped ?? "—"}</div>
               <div className="mt-1 text-[9px] uppercase tracking-wider text-amber-300/70">Ignorados</div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-center">
+              <Clock className="mx-auto mb-0.5 h-3.5 w-3.5 text-white/50" />
+              <div className="text-base font-black leading-none text-white/70">{diag?.noise ?? "—"}</div>
+              <div className="mt-1 text-[9px] uppercase tracking-wider text-white/40">Ruído</div>
             </div>
             <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-2 text-center">
               <XCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-red-300" />
@@ -391,7 +396,45 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
             />
           </div>
 
-          {diag?.lastError && (
+          {diag?.skipReasons && diag.skipReasons.length > 0 && (
+            <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-200/90">
+                <MinusCircle className="h-3 w-3" /> Por que foram ignorados
+              </div>
+              <ul className="space-y-1">
+                {diag.skipReasons.slice(0, 6).map((r) => (
+                  <li key={r.reason} className="flex items-center justify-between gap-2 rounded bg-black/25 px-2 py-1 text-[10px]">
+                    <span className="truncate text-amber-100/85">{r.reason}</span>
+                    <span className="shrink-0 rounded-full bg-amber-500/20 px-1.5 font-bold text-amber-200">{r.count}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1.5 text-[9.5px] text-amber-200/50">
+                "Ignorados" são mensagens reais que não gravamos (grupos, duplicatas, mídia vazia). "Ruído" são eventos da plataforma que não são mensagens (contatos, conexão).
+              </p>
+            </div>
+          )}
+
+          {diag?.errorReasons && diag.errorReasons.length > 0 && (
+            <div className="mt-2 rounded-lg border border-red-500/20 bg-red-500/10 p-2">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-red-200">
+                <AlertTriangle className="h-3 w-3" /> Erros por motivo
+              </div>
+              <ul className="space-y-1">
+                {diag.errorReasons.slice(0, 6).map((r) => (
+                  <li key={r.reason} className="flex items-center justify-between gap-2 rounded bg-black/25 px-2 py-1 text-[10px]">
+                    <span className="truncate text-red-100/85">{r.reason}</span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span className="text-red-200/50">{fmtRelative(r.lastAt)}</span>
+                      <span className="rounded-full bg-red-500/20 px-1.5 font-bold text-red-200">{r.count}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {diag?.lastError && (!diag.errorReasons || diag.errorReasons.length === 0) && (
             <div className="mt-2 rounded-lg border border-red-500/20 bg-red-500/10 p-2">
               <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-200">
                 <AlertTriangle className="h-3 w-3" /> Último erro · {fmtRelative(diag.lastErrorAt)}
@@ -399,6 +442,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
               <div className="mt-1 line-clamp-2 text-[10px] text-red-100/80">{diag.lastError}</div>
             </div>
           )}
+
 
           {(diag?.total ?? 0) === 0 && (
             <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-white/5 bg-black/20 p-2 text-[10px] text-white/50">
