@@ -420,8 +420,9 @@ function AnalysisDetail({ a, onDelete, onRefresh }: { a: FullAnalysis; onDelete:
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="py-8 text-center text-slate-400">Nenhum item.</td></tr>
+                <EmptyState variant="table" colSpan={7} icon={Inbox} title="Nenhum item" size="sm" />
               )}
+
               {filtered.map((it, idx) => (
                 <tr key={idx} className="border-b last:border-b-0">
                   <td className="py-2 pr-2 align-top">
