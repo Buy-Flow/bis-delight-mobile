@@ -199,8 +199,8 @@ function FinanceiroPage() {
           setItems([]);
         }
       } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Erro";
-        toast.error(msg);
+        const description = e instanceof Error ? e.message : String(e);
+        toast.error("Erro ao carregar dados financeiros", { description });
       } finally {
         if (!cancel) setLoading(false);
       }

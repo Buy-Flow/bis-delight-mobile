@@ -123,7 +123,7 @@ function CopilotoPage() {
       setDeleteTarget(null);
       if (activeThreadId === v.id) navigate({ to: "/copiloto", search: {} });
     },
-    onError: (e) => toast.error("Erro", { description: String(e).slice(0, 200) }),
+    onError: (e) => toast.error("Erro ao apagar conversa", { description: String(e).slice(0, 200) }),
   });
 
   const revertMut = useMutation({
