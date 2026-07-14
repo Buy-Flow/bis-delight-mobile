@@ -1148,7 +1148,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     Endereço fora do raio de entrega
                   </>
                 ) : isAuthenticated ? (
-                  `Enviar pedido no WhatsApp · ${brl(total)}`
+                  paymentMethod === "pix"
+                    ? `Gerar PIX · ${brl(total)}`
+                    : paymentMethod === "cartao"
+                      ? `Pagar com cartão · ${brl(total)}`
+                      : `Enviar pedido no WhatsApp · ${brl(total)}`
                 ) : (
                   `Entrar para finalizar · ${brl(total)}`
                 )}
