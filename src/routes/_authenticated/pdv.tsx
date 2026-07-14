@@ -28,6 +28,7 @@ import { useProducts, useCategories } from "@/lib/menu-data";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import type { Product } from "@/data/menu";
+import { formatSP } from "@/lib/tz";
 import type { CartItem } from "@/lib/cart-context";
 import { ProductModal } from "@/components/menu/ProductModal";
 import { cn } from "@/lib/utils";
@@ -1150,7 +1151,7 @@ function buildReceiptHtml(o: {
     <h1>QUERO BIS</h1>
     <div class="muted">Recibo não fiscal</div>
     <div class="muted">Pedido #${o.orderId.slice(0, 8).toUpperCase()}</div>
-    <div class="muted">${new Date().toLocaleString("pt-BR")}</div>
+    <div class="muted">${formatSP(new Date())}</div>
     <hr/>
     <div>Cliente: ${escapeHtml(o.customerName)}</div>
     <div>Modo: ${o.mode === "entrega" ? "Entrega" : "Balcão"}</div>
