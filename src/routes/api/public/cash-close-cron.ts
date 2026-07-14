@@ -9,9 +9,14 @@ export const Route = createFileRoute("/api/public/cash-close-cron")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Optional shared-secret via apikey header (matches Lovable cron convention).
-        // No hard requirement — /api/public/* bypasses auth. We still log calls.
-        void request;
+        // Require the Supabase publishable key in the `apikey` header (pg_cron
+        // convention). /api/public/* bypasses auth at the edge, so we enforce
+        // the shared-secret ourselves before running any cron logic.
+        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const provided = request.headers.get("apikey") ?? request.headers.get("x-cron-key");
+        if (!expected || !provided || provided !== expected) {
+          return new Response("Unauthorized", { status: 401 });
+        }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { runCashClose } = await import("@/lib/cash-close.server");

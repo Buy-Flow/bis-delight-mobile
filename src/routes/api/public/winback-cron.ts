@@ -6,7 +6,12 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/winback-cron")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const provided = request.headers.get("apikey") ?? request.headers.get("x-cron-key");
+        if (!expected || !provided || provided !== expected) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { runWinback } = await import("@/lib/winback.server");
