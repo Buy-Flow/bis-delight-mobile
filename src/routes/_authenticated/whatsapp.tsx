@@ -111,14 +111,6 @@ function formatTime(iso: string | null) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
-function formatPhone(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  let local = digits;
-  if (local.startsWith("55") && (local.length === 12 || local.length === 13)) local = local.slice(2);
-  if (local.length === 11) return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
-  if (local.length === 10) return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
-  return phone;
-}
 
 function initials(name: string | null, phone: string) {
   const src = (name || phone).trim();
