@@ -2,7 +2,26 @@
 // Feeds the bell in AdminShell header.
 
 import { shortUid } from "@/lib/uid";
-import { safeLocalRead, safeLocalWrite } from "@/lib/silent-errors";
+import { logSilent } from "@/lib/silent-errors";
+
+function safeLocalRead(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch (err) {
+    logSilent("localStorage.read", err);
+    return null;
+  }
+}
+
+function safeLocalWrite(key: string, value: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, value);
+  } catch (err) {
+    logSilent("localStorage.write", err);
+  }
+}
 
 export type AdminNotifKind =
   | "order_new"
