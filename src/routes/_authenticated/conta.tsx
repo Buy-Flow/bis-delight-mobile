@@ -196,7 +196,9 @@ function LoyaltyPanel() {
 
   return (
     <div className="space-y-4">
+      <VipRankingCard />
       <div className="overflow-hidden rounded-3xl border border-neon-yellow/40 bg-gradient-to-br from-neon-pink/30 via-purple-800/30 to-neon-cyan/20 p-5">
+
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-neon-yellow" />
           <div className="font-display text-lg font-black uppercase tracking-wide text-white">
