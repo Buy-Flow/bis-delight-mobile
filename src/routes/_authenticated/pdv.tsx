@@ -140,7 +140,7 @@ function PDVPage() {
         prev.map((l) => (l.uid === editingLine.uid ? { ...payload, uid: editingLine.uid } : l)),
       );
     } else {
-      const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const uid = shortUid(10);
       setCart((prev) => [...prev, { ...payload, uid }]);
       setShowMobileCart(true);
     }

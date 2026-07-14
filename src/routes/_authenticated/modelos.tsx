@@ -624,7 +624,7 @@ function ApplyDialog({
     setBusy(true);
     try {
       const baseId = slugify(name);
-      const id = `${baseId}-${Math.random().toString(36).slice(2, 6)}`;
+      const id = `${baseId}-${shortUid(6)}`;
       const payload: ProductInput = {
         id,
         name: name.trim(),

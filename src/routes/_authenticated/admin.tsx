@@ -5809,7 +5809,7 @@ function slugify(s: string) {
 /* ============================== Produto personalizado ============================== */
 
 function shortId() {
-  return Math.random().toString(36).slice(2, 8);
+  return shortUid(6);
 }
 
 function CustomTab({

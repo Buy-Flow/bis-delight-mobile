@@ -222,7 +222,7 @@ function ImportarPage() {
       if (!category) errs.push("Categoria vazia");
       if (price <= 0) errs.push("Preço inválido");
       return {
-        id: `d${idx}-${Math.random().toString(36).slice(2, 7)}`,
+        id: `d${idx}-${shortUid(6)}`,
         name, description: description || name, category, price, image_url, badge,
         _errors: errs, _include: errs.length === 0,
       };
@@ -255,7 +255,7 @@ function ImportarPage() {
 
   const removeDraft = (id: string) => setDrafts((prev) => prev.filter((d) => d.id !== id));
   const addBlank = () => setDrafts((p) => [...p, {
-    id: `d${p.length}-${Math.random().toString(36).slice(2, 7)}`,
+    id: `d${p.length}-${shortUid(6)}`,
     name: "", description: "", category: "", price: 0, image_url: "", badge: "",
     _errors: ["Nome vazio","Categoria vazia","Preço inválido"], _include: false,
   }]);

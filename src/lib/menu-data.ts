@@ -215,14 +215,14 @@ function normalizeOptionGroups(raw: unknown): OptionGroup[] | undefined {
     const type = r.type === "single" ? "single" : "multi";
     const opts = Array.isArray(r.options) ? (r.options as OptionItem[]) : [];
     return {
-      id: String(r.id ?? Math.random().toString(36).slice(2)),
+      id: String(r.id ?? uid()),
       name: String(r.name ?? ""),
       type,
       required: Boolean(r.required ?? false),
       freeCount: Number(r.freeCount ?? 0),
       pricePerExtra: Number(r.pricePerExtra ?? 0),
       options: opts.map((o) => ({
-        id: String((o as Record<string, unknown>).id ?? Math.random().toString(36).slice(2)),
+        id: String((o as Record<string, unknown>).id ?? uid()),
         label: String((o as Record<string, unknown>).label ?? ""),
         price: Number((o as Record<string, unknown>).price ?? 0),
       })),
