@@ -613,7 +613,9 @@ function WhatsappPage() {
   };
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col bg-[#0b141a] text-[#e9edef]">
+    <AdminShell>
+    <div className="flex h-[calc(100dvh-4rem)] w-full flex-col overflow-hidden rounded-lg border border-black/40 bg-[#0b141a] text-[#e9edef]">
+
       {/* Top bar estilo WhatsApp Web */}
       <header className="flex shrink-0 items-center justify-between gap-2 border-b border-black/40 bg-[#202c33] px-4 py-2.5">
         <div className="flex items-center gap-2">
