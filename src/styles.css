@@ -336,10 +336,15 @@
     50%     { transform: translate3d(0, -6px, 0) rotate(1.2deg); }
   }
 
+  /* Keyframe legado — mantido como alias do keyframe canônico `sk-shimmer`
+   * (definido fora deste @layer). Qualquer referência antiga a
+   * `skeleton-shimmer` continua animando com o timing unificado. */
   @keyframes skeleton-shimmer {
     0%   { transform: translateX(-100%); }
+    60%  { transform: translateX(100%); }
     100% { transform: translateX(100%); }
   }
+
 
   @keyframes bike-move {
     0%,100% { transform: translateX(-2px) rotate(-3deg); }
@@ -546,6 +551,36 @@ select:-webkit-autofill {
 /* Skeleton disabled globally — fall back to invisible placeholder space */
 :root[data-sk-enabled="0"] .sk { background: transparent; }
 :root[data-sk-enabled="0"] .sk::after { display: none; }
+
+/* -------------------------------------------------------------------------
+ * Alias legado: `.skeleton-shimmer` como utilitário standalone.
+ *
+ * Existiam classes soltas `className="skeleton-shimmer h-20 …"` (ex.:
+ * previsao.tsx) que dependiam desta classe — mas ela nunca foi definida,
+ * então eram um no-op silencioso. Aqui replicamos o comportamento do `.sk`
+ * (shimmer sweep via ::after usando as mesmas vars `--sk-*`) para que
+ * qualquer marcação existente já herde o sistema unificado sem edições.
+ * ------------------------------------------------------------------------- */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, var(--sk-shine) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: sk-shimmer var(--sk-speed) ease-in-out infinite;
+}
+:root[data-sk-respect-motion="1"] .skeleton-shimmer::after,
+:root[data-sk-enabled="0"] .skeleton-shimmer::after {
+  animation: none;
+  display: none;
+}
+
 
 /* ============================================================
  * Acessibilidade — Contraste mínimo WCAG AA
