@@ -792,7 +792,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="h-12 w-full appearance-none rounded-2xl border border-white/10 bg-white/[0.04] px-4 pr-10 text-sm text-white outline-none transition focus:border-white/25"
+            className="field-focus h-12 w-full appearance-none rounded-2xl border border-white/10 bg-white/[0.04] px-4 pr-10 text-sm text-white outline-none transition"
           >
             <option value="all" className="bg-[oklch(0.14_0.09_305)]">Todas ({products.length})</option>
             {catList.map((c) => {
