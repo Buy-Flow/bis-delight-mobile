@@ -23,7 +23,11 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 
-const searchSchema = z.object({ next: z.string().optional() });
+const searchSchema = z.object({
+  next: z.string().optional(),
+  ref: z.string().optional(),
+  mode: z.string().optional(),
+});
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
