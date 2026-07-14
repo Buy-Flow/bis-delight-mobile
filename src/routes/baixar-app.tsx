@@ -15,7 +15,9 @@ export const Route = createFileRoute("/baixar-app")({
         property: "og:description",
         content: "Instale o Quero Bis e peça em 2 toques. Rápido, offline e com Bis Recompensas.",
       },
+      { property: "og:url", content: "https://querobis.lovable.app/baixar-app" },
     ],
+    links: [{ rel: "canonical", href: "https://querobis.lovable.app/baixar-app" }],
   }),
   component: BaixarAppPage,
 });
