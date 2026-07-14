@@ -121,13 +121,14 @@ export async function createCardCharge(input: {
   description?: string;
   dueDate?: string;
   installmentCount?: number;
-  creditCard: {
+  creditCard?: {
     holderName: string;
     number: string; // digits only
     expiryMonth: string; // "MM"
     expiryYear: string; // "YYYY"
     ccv: string;
   };
+  creditCardToken?: string;
   creditCardHolderInfo: {
     name: string;
     email: string;
@@ -135,10 +136,16 @@ export async function createCardCharge(input: {
     postalCode: string;
     addressNumber: string;
     phone?: string;
+    mobilePhone?: string;
   };
   remoteIp: string;
-}): Promise<AsaasPayment & { creditCard?: { creditCardBrand?: string; creditCardNumber?: string } }> {
+}): Promise<AsaasPayment & { creditCard?: { creditCardBrand?: string; creditCardNumber?: string; creditCardToken?: string } }> {
   const today = new Date().toISOString().slice(0, 10);
+  // Asaas antifraud recomenda mandar phone e mobilePhone. Se apenas um foi passado, usar em ambos.
+  const holder = { ...input.creditCardHolderInfo };
+  if (!holder.mobilePhone && holder.phone) holder.mobilePhone = holder.phone;
+  if (!holder.phone && holder.mobilePhone) holder.phone = holder.mobilePhone;
+
   const body: Record<string, unknown> = {
     customer: input.customerId,
     billingType: "CREDIT_CARD",
@@ -146,10 +153,15 @@ export async function createCardCharge(input: {
     dueDate: input.dueDate ?? today,
     description: input.description,
     externalReference: input.externalReference,
-    creditCard: input.creditCard,
-    creditCardHolderInfo: input.creditCardHolderInfo,
+    creditCardHolderInfo: holder,
     remoteIp: input.remoteIp,
   };
+  // Prefer token (1-click); fallback to raw card
+  if (input.creditCardToken) {
+    body.creditCardToken = input.creditCardToken;
+  } else {
+    body.creditCard = input.creditCard;
+  }
   if (input.installmentCount && input.installmentCount > 1) {
     body.installmentCount = input.installmentCount;
     body.totalValue = Number(input.value.toFixed(2));

@@ -23,6 +23,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
           return new Response("Invalid JSON", { status: 400 });
         }
 
+        const eventId = (payload.id as string | undefined) ?? null;
         const event = (payload.event as string | undefined) ?? null;
         const payment = (payload.payment as Record<string, unknown> | undefined) ?? undefined;
         const paymentId = (payment?.id as string | undefined) ?? null;
@@ -31,6 +32,18 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { mapAsaasStatusToOrder } = await import("@/lib/asaas.server");
+
+        // Idempotency: if we already processed this event id, ack 200 without reprocessing.
+        if (eventId) {
+          const { data: prior } = await supabaseAdmin
+            .from("asaas_webhook_events")
+            .select("id, processed")
+            .eq("asaas_event_id", eventId)
+            .maybeSingle();
+          if (prior?.processed) {
+            return Response.json({ ok: true, deduped: true });
+          }
+        }
 
         // Locate order by externalReference (order id) or asaas_payment_id
         let orderId: string | null = null;
@@ -77,6 +90,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
         }
 
         await supabaseAdmin.from("asaas_webhook_events").insert({
+          asaas_event_id: eventId,
           event,
           payment_id: paymentId,
           order_id: orderId,
