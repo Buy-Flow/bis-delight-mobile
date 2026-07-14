@@ -347,9 +347,9 @@ function RotasPage() {
               onChange={(v: boolean) => setSettings({ ...settings, notify_courier: v })}
             />
 
-            <NumberField label="Mín. paradas para otimizar" value={settings.min_stops} min={2} max={10} onChange={(v: boolean) => setSettings({ ...settings, min_stops: v })} />
-            <NumberField label="Máx. paradas por rota" value={settings.max_stops} min={2} max={20} onChange={(v: boolean) => setSettings({ ...settings, max_stops: v })} />
-            <NumberField label="Tempo extra por parada (min)" value={settings.extra_time_per_stop_min} min={0} max={30} onChange={(v: boolean) => setSettings({ ...settings, extra_time_per_stop_min: v })} hint="Retirada, entrega física ao cliente etc." />
+            <NumberField label="Mín. paradas para otimizar" value={settings.min_stops} min={2} max={10} onChange={(v: number) => setSettings({ ...settings, min_stops: v })} />
+            <NumberField label="Máx. paradas por rota" value={settings.max_stops} min={2} max={20} onChange={(v: number) => setSettings({ ...settings, max_stops: v })} />
+            <NumberField label="Tempo extra por parada (min)" value={settings.extra_time_per_stop_min} min={0} max={30} onChange={(v: number) => setSettings({ ...settings, extra_time_per_stop_min: v })} hint="Retirada, entrega física ao cliente etc." />
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
@@ -360,7 +360,7 @@ function RotasPage() {
             <Select
               label="Provedor de rotas"
               value={settings.provider}
-              onChange={(v: boolean) => setSettings({ ...settings, provider: v as Settings["provider"] })}
+              onChange={(v: string) => setSettings({ ...settings, provider: v as Settings["provider"] })}
               options={[
                 { value: "google_directions", label: "Google Directions API (recomendado)" },
                 { value: "nearest_neighbor", label: "Vizinho mais próximo (offline)" },
@@ -370,7 +370,7 @@ function RotasPage() {
             <Select
               label="Modo de viagem"
               value={settings.travel_mode}
-              onChange={(v: boolean) => setSettings({ ...settings, travel_mode: v as Settings["travel_mode"] })}
+              onChange={(v: string) => setSettings({ ...settings, travel_mode: v as Settings["travel_mode"] })}
               options={[
                 { value: "TWO_WHEELER", label: "Moto (2 rodas)" },
                 { value: "DRIVE", label: "Carro" },
@@ -382,7 +382,7 @@ function RotasPage() {
               <Select
                 label="Trânsito"
                 value={settings.traffic_mode}
-                onChange={(v: boolean) => setSettings({ ...settings, traffic_mode: v as Settings["traffic_mode"] })}
+                onChange={(v: string) => setSettings({ ...settings, traffic_mode: v as Settings["traffic_mode"] })}
                 options={[
                   { value: "TRAFFIC_AWARE", label: "Ciente do trânsito (padrão)" },
                   { value: "TRAFFIC_AWARE_OPTIMAL", label: "Otimizado com trânsito (mais lento)" },
