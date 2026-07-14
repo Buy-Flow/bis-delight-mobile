@@ -366,6 +366,123 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_close_reports: {
+        Row: {
+          created_at: string
+          generated_at: string
+          id: string
+          pdf_path: string | null
+          report_date: string
+          sent_at: string | null
+          totals: Json
+          triggered_by: string
+          triggered_user: string | null
+          whatsapp_error: string | null
+          whatsapp_status: string
+          whatsapp_targets: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          generated_at?: string
+          id?: string
+          pdf_path?: string | null
+          report_date: string
+          sent_at?: string | null
+          totals?: Json
+          triggered_by?: string
+          triggered_user?: string | null
+          whatsapp_error?: string | null
+          whatsapp_status?: string
+          whatsapp_targets?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          generated_at?: string
+          id?: string
+          pdf_path?: string | null
+          report_date?: string
+          sent_at?: string | null
+          totals?: Json
+          triggered_by?: string
+          triggered_user?: string | null
+          whatsapp_error?: string | null
+          whatsapp_status?: string
+          whatsapp_targets?: string[] | null
+        }
+        Relationships: []
+      }
+      cash_close_settings: {
+        Row: {
+          auto_close_session: boolean
+          created_at: string
+          custom_footer: string
+          custom_header: string
+          email_backup: string[]
+          enabled: boolean
+          id: number
+          include_canceled: boolean
+          include_pending: boolean
+          last_run_at: string | null
+          last_run_error: string | null
+          last_run_status: string | null
+          logo_url: string | null
+          send_hour: number
+          send_minute: number
+          send_pdf: boolean
+          send_text_summary: boolean
+          timezone: string
+          updated_at: string
+          weekdays: number[]
+          whatsapp_numbers: string[]
+        }
+        Insert: {
+          auto_close_session?: boolean
+          created_at?: string
+          custom_footer?: string
+          custom_header?: string
+          email_backup?: string[]
+          enabled?: boolean
+          id?: number
+          include_canceled?: boolean
+          include_pending?: boolean
+          last_run_at?: string | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          logo_url?: string | null
+          send_hour?: number
+          send_minute?: number
+          send_pdf?: boolean
+          send_text_summary?: boolean
+          timezone?: string
+          updated_at?: string
+          weekdays?: number[]
+          whatsapp_numbers?: string[]
+        }
+        Update: {
+          auto_close_session?: boolean
+          created_at?: string
+          custom_footer?: string
+          custom_header?: string
+          email_backup?: string[]
+          enabled?: boolean
+          id?: number
+          include_canceled?: boolean
+          include_pending?: boolean
+          last_run_at?: string | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          logo_url?: string | null
+          send_hour?: number
+          send_minute?: number
+          send_pdf?: boolean
+          send_text_summary?: boolean
+          timezone?: string
+          updated_at?: string
+          weekdays?: number[]
+          whatsapp_numbers?: string[]
+        }
+        Relationships: []
+      }
       cash_movements: {
         Row: {
           amount: number
@@ -4263,6 +4380,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_update_cash_close_settings: {
+        Args: { _patch: Json }
+        Returns: {
+          auto_close_session: boolean
+          created_at: string
+          custom_footer: string
+          custom_header: string
+          email_backup: string[]
+          enabled: boolean
+          id: number
+          include_canceled: boolean
+          include_pending: boolean
+          last_run_at: string | null
+          last_run_error: string | null
+          last_run_status: string | null
+          logo_url: string | null
+          send_hour: number
+          send_minute: number
+          send_pdf: boolean
+          send_text_summary: boolean
+          timezone: string
+          updated_at: string
+          weekdays: number[]
+          whatsapp_numbers: string[]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "cash_close_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_update_referral_settings: {
         Args: { _payload: Json }
         Returns: {
@@ -4392,6 +4541,14 @@ export type Database = {
           min_order: number
           program_enabled: boolean
         }[]
+      }
+      get_cash_close_aggregate: {
+        Args: {
+          _date: string
+          _include_canceled?: boolean
+          _include_pending?: boolean
+        }
+        Returns: Json
       }
       get_loyalty_status: {
         Args: never
