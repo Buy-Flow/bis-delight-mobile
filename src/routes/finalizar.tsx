@@ -18,15 +18,15 @@ export const Route = createFileRoute("/finalizar")({
 });
 
 function FinalizarPage() {
-  const { items } = useCart();
+  const { items, hydrated } = useCart();
   const navigate = useNavigate();
 
+  // Só redireciona quando o cart terminou de hidratar do localStorage.
+  // Timeouts fixos derrubavam o usuário em rede lenta antes do estado real chegar.
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (items.length === 0) navigate({ to: "/" });
-    }, 350);
-    return () => window.clearTimeout(timer);
-  }, [items.length, navigate]);
+    if (!hydrated) return;
+    if (items.length === 0) navigate({ to: "/" });
+  }, [hydrated, items.length, navigate]);
 
   return (
     <Suspense fallback={<div className="min-h-dvh bg-[#0a0118]" />}>
