@@ -117,29 +117,49 @@ const cardInput = z.object({
     expiryMonth: z.string().length(2),
     expiryYear: z.string().length(4),
     ccv: z.string().min(3).max(4),
-  }),
+  }).optional(),
+  useSavedCard: z.boolean().optional(),
   installmentCount: z.number().int().min(1).max(12).optional(),
+  saveCard: z.boolean().optional(),
 });
 
 export const createAsaasCardForOrder = createServerFn({ method: "POST" })
   .inputValidator((raw) => cardInput.parse(raw))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { upsertAsaasCustomer, createCardCharge } = await import("@/lib/asaas.server");
+    const { createCardCharge } = await import("@/lib/asaas.server");
 
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select("id, total, customer_name, phone")
+      .select("id, total, customer_name, phone, user_id")
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
 
-    const customer = await upsertAsaasCustomer({
+    const customer = await resolveOrCreateAsaasCustomer({
+      userId: order.user_id ?? null,
       name: data.customer.name,
       email: data.customer.email,
       cpfCnpj: data.customer.cpfCnpj,
       phone: data.customer.phone ?? order.phone ?? undefined,
     });
+
+    // Load saved token if the user opted in
+    let savedToken: string | null = null;
+    if (data.useSavedCard && order.user_id) {
+      const { data: p } = await supabaseAdmin
+        .from("profiles")
+        .select("asaas_card_token")
+        .eq("id", order.user_id)
+        .maybeSingle();
+      savedToken = p?.asaas_card_token ?? null;
+    }
+    if (data.useSavedCard && !savedToken) {
+      throw new Error("Nenhum cartão salvo encontrado");
+    }
+    if (!savedToken && !data.card) {
+      throw new Error("Dados do cartão são obrigatórios");
+    }
 
     const ip = (() => {
       try {
@@ -155,13 +175,16 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
       externalReference: order.id,
       description: `Pedido ${order.id.slice(0, 8)}`,
       installmentCount: data.installmentCount,
-      creditCard: {
-        holderName: data.card.holderName,
-        number: data.card.number.replace(/\D/g, ""),
-        expiryMonth: data.card.expiryMonth,
-        expiryYear: data.card.expiryYear,
-        ccv: data.card.ccv,
-      },
+      creditCardToken: savedToken ?? undefined,
+      creditCard: data.card
+        ? {
+            holderName: data.card.holderName,
+            number: data.card.number.replace(/\D/g, ""),
+            expiryMonth: data.card.expiryMonth,
+            expiryYear: data.card.expiryYear,
+            ccv: data.card.ccv,
+          }
+        : undefined,
       creditCardHolderInfo: {
         name: data.customer.name,
         email: data.customer.email,
@@ -169,11 +192,15 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
         postalCode: data.customer.postalCode.replace(/\D/g, ""),
         addressNumber: data.customer.addressNumber,
         phone: data.customer.phone,
+        mobilePhone: data.customer.phone,
       },
       remoteIp: ip,
     });
 
-    const last4 = data.card.number.replace(/\D/g, "").slice(-4);
+    const last4 = data.card?.number.replace(/\D/g, "").slice(-4) ?? null;
+    const returnedToken = charge.creditCard?.creditCardToken ?? null;
+    const brand = charge.creditCard?.creditCardBrand ?? null;
+
     await supabaseAdmin
       .from("orders")
       .update({
@@ -181,7 +208,7 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
         asaas_payment_id: charge.id,
         asaas_status: charge.status,
         card_last4: last4,
-        card_brand: charge.creditCard?.creditCardBrand ?? null,
+        card_brand: brand,
         invoice_url: charge.invoiceUrl,
         ...(charge.status.toUpperCase() === "CONFIRMED" || charge.status.toUpperCase() === "RECEIVED"
           ? { status: "pago", paid_at: new Date().toISOString() }
@@ -189,12 +216,25 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
       })
       .eq("id", order.id);
 
+    // Save card token to profile for 1-click checkout next time
+    if (data.saveCard && order.user_id && returnedToken) {
+      await supabaseAdmin
+        .from("profiles")
+        .update({
+          asaas_card_token: returnedToken,
+          asaas_card_last4: last4,
+          asaas_card_brand: brand,
+        })
+        .eq("id", order.user_id);
+    }
+
     return {
       paymentId: charge.id,
       status: charge.status,
       last4,
-      brand: charge.creditCard?.creditCardBrand ?? null,
+      brand,
       invoiceUrl: charge.invoiceUrl,
+      tokenSaved: Boolean(data.saveCard && returnedToken),
     };
   });
 
