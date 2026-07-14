@@ -527,6 +527,15 @@ function MotoboyPortal() {
                     : "Ative o modo online para receber corridas."}
                 </div>
               )}
+
+              {activeOrders.length >= 2 && (
+                <OptimizeRouteWidget
+                  courierId={courier.id}
+                  gpsCoord={gpsCoord}
+                  count={activeOrders.length}
+                />
+              )}
+
               {activeOrders.map((o) => (
                 <ActiveOrderCard
                   key={o.id}
