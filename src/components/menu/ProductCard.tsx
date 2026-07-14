@@ -120,7 +120,9 @@ export function ProductCard({
             const imgEl = (
               <img
                 src={product.image}
-                alt={product.name}
+                alt=""
+                aria-hidden="true"
+
                 loading="lazy"
                 decoding="async"
                 draggable={false}
