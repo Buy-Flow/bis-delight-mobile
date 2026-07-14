@@ -11,7 +11,7 @@ import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { logSilent } from "@/lib/silent-errors";
 import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
-import { useStoreStatus } from "@/lib/store-status";
+import { useStoreStatus, STORE_COPY } from "@/lib/store-status";
 import { useSiteSettings } from "@/lib/menu-data";
 import {
   calcDeliveryFee,
