@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
+  ArrowLeft,
   Bot,
   BotOff,
   Check,
@@ -424,10 +425,13 @@ function WhatsappPage() {
 
   return (
     <AdminShell>
-      <div className="h-[calc(100dvh-3.5rem)] overflow-hidden bg-[#0b141a] text-white">
-        <div className="flex h-full">
-          <aside className="flex w-full min-w-0 flex-col border-r border-white/10 bg-[#111b21] md:w-[390px] md:min-w-[390px]">
-            <div className="border-b border-white/10 bg-[#202c33] px-4 py-3">
+      <div className="h-[calc(100dvh-3.5rem)] w-full min-w-0 overflow-hidden bg-[#0b141a] text-white">
+        <div className="flex h-full w-full min-w-0">
+          <aside className={cn(
+            "flex min-w-0 flex-col border-r border-white/10 bg-[#111b21]",
+            selected ? "hidden md:flex md:w-[340px] md:shrink-0 lg:w-[360px]" : "flex w-full md:w-[340px] md:shrink-0 lg:w-[360px]"
+          )}>
+            <div className="border-b border-white/10 bg-[#202c33] px-3 py-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 text-lg font-bold">
@@ -539,10 +543,13 @@ function WhatsappPage() {
             </div>
           </aside>
 
-          <main className="hidden min-w-0 flex-1 flex-col bg-[#0b141a] md:flex">
+          <main className={cn("min-w-0 flex-1 flex-col bg-[#0b141a]", selected ? "flex" : "hidden md:flex")}>
             {selected ? (
               <>
-                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-[#202c33] px-4">
+                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-[#202c33] px-3">
+                  <button type="button" onClick={() => setSelectedId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white md:hidden" aria-label="Voltar">
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
                   <Avatar conversation={selected} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold">{selected.contact_name || formatPhone(selected.phone)}</div>
