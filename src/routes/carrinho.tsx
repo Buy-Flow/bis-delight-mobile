@@ -142,8 +142,53 @@ function CartPage() {
         </div>
       )}
 
+      {!shareMode && rejoinable.length > 0 && (
+        <div className="mx-auto max-w-2xl px-4 pt-3">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+            <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              <Users className="h-3.5 w-3.5" />
+              Carrinhos compartilhados recentes
+            </div>
+            <ul className="space-y-1.5">
+              {rejoinable.map((r) => (
+                <li
+                  key={r.token}
+                  className="flex items-center gap-2 rounded-xl bg-white/[0.02] px-3 py-2"
+                >
+                  <div className="flex-1 min-w-0 text-[13px]">
+                    <div className="font-semibold text-white/90 truncate">
+                      {r.ownerName ? `Carrinho de ${r.ownerName}` : "Carrinho compartilhado"}
+                    </div>
+                    <div className="text-[11px] text-white/50 truncate">
+                      Você entrou como {r.name}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      writeShareMode({ token: r.token, name: r.name, ownerName: r.ownerName });
+                      navigate({ to: "/c/$token", params: { token: r.token } });
+                    }}
+                    className="rounded-full bg-neon-cyan/15 px-3 py-1.5 text-[11px] font-bold text-neon-cyan hover:bg-neon-cyan/25"
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    onClick={() => removeRecentShare(r.token)}
+                    className="rounded-full p-1.5 text-white/40 hover:bg-white/10 hover:text-white/80"
+                    aria-label="Remover"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       {/* Body */}
       <div className="mx-auto max-w-2xl px-4 pt-4">
+
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
             <div className="grid h-16 w-16 place-items-center rounded-full bg-white/5">
