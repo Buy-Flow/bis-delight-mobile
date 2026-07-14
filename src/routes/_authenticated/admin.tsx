@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import {
   LogOut,
   Package,
@@ -183,7 +183,6 @@ function AdminPage() {
 
   return (
     <div className="text-white">
-      <Toaster position="bottom-center" theme="dark" closeButton />
       <main className="mx-auto max-w-6xl px-4 py-6">
         {tab === "dashboard" && <DashboardTab />}
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}

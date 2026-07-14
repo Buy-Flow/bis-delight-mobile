@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import {
   Activity,
   AlertTriangle,
@@ -119,7 +119,6 @@ function PrevisaoPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[oklch(0.11_0.08_300)] via-[oklch(0.13_0.09_300)] to-[oklch(0.09_0.06_300)] pb-20 text-white">
-      <Toaster theme="dark" position="top-center" richColors />
 
 
       <main className="mx-auto max-w-5xl px-3 pt-4">

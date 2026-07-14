@@ -558,7 +558,7 @@ export function buildCopilotTools(ctx: Ctx) {
         const top = [...qtyMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, q]) => ({ name: n, qty: q }));
         const reviews = (reviewsRes.data ?? []) as Array<{ rating: number }>;
         const badReviews = reviews.filter((r) => r.rating <= 2).length;
-        const hour = new Date().getHours();
+        const hour = Number(new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", hour12: false }).format(new Date()));
         return {
           resumo: {
             pedidos_24h: orders.length,
