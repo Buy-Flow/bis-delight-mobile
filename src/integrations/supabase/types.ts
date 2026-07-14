@@ -5713,6 +5713,7 @@ export type Database = {
           discount_type: string
           discount_value: number
           id: string
+          min_order: number
         }[]
       }
     }
