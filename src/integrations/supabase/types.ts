@@ -4040,9 +4040,136 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_ai_logs: {
+        Row: {
+          ai_reply: string | null
+          conversation_id: string | null
+          created_at: string
+          error: string | null
+          handoff: boolean
+          id: string
+          latency_ms: number | null
+          model: string | null
+          phone: string | null
+          tools_used: Json
+          user_message: string | null
+        }
+        Insert: {
+          ai_reply?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          error?: string | null
+          handoff?: boolean
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          phone?: string | null
+          tools_used?: Json
+          user_message?: string | null
+        }
+        Update: {
+          ai_reply?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          error?: string | null
+          handoff?: boolean
+          id?: string
+          latency_ms?: number | null
+          model?: string | null
+          phone?: string | null
+          tools_used?: Json
+          user_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_ai_logs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_ai_settings: {
+        Row: {
+          allow_delivery: boolean
+          allow_hours: boolean
+          allow_menu: boolean
+          allow_price: boolean
+          allow_promotions: boolean
+          allow_stock: boolean
+          business_hours_only: boolean
+          created_at: string
+          enabled: boolean
+          excluded_phones: string[]
+          fallback_message: string
+          greeting_message: string
+          handoff_keywords: string[]
+          id: string
+          max_replies_per_hour: number
+          model: string
+          out_of_hours_message: string
+          pause_after_human_min: number
+          reply_delay_ms: number
+          send_greeting: boolean
+          system_prompt: string
+          updated_at: string
+        }
+        Insert: {
+          allow_delivery?: boolean
+          allow_hours?: boolean
+          allow_menu?: boolean
+          allow_price?: boolean
+          allow_promotions?: boolean
+          allow_stock?: boolean
+          business_hours_only?: boolean
+          created_at?: string
+          enabled?: boolean
+          excluded_phones?: string[]
+          fallback_message?: string
+          greeting_message?: string
+          handoff_keywords?: string[]
+          id?: string
+          max_replies_per_hour?: number
+          model?: string
+          out_of_hours_message?: string
+          pause_after_human_min?: number
+          reply_delay_ms?: number
+          send_greeting?: boolean
+          system_prompt?: string
+          updated_at?: string
+        }
+        Update: {
+          allow_delivery?: boolean
+          allow_hours?: boolean
+          allow_menu?: boolean
+          allow_price?: boolean
+          allow_promotions?: boolean
+          allow_stock?: boolean
+          business_hours_only?: boolean
+          created_at?: string
+          enabled?: boolean
+          excluded_phones?: string[]
+          fallback_message?: string
+          greeting_message?: string
+          handoff_keywords?: string[]
+          id?: string
+          max_replies_per_hour?: number
+          model?: string
+          out_of_hours_message?: string
+          pause_after_human_min?: number
+          reply_delay_ms?: number
+          send_greeting?: boolean
+          system_prompt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_conversations: {
         Row: {
+          ai_disabled: boolean
           ai_paused: boolean
+          ai_paused_until: string | null
           assigned_to: string | null
           contact_name: string | null
           created_at: string
@@ -4056,7 +4183,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          ai_disabled?: boolean
           ai_paused?: boolean
+          ai_paused_until?: string | null
           assigned_to?: string | null
           contact_name?: string | null
           created_at?: string
@@ -4070,7 +4199,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          ai_disabled?: boolean
           ai_paused?: boolean
+          ai_paused_until?: string | null
           assigned_to?: string | null
           contact_name?: string | null
           created_at?: string
