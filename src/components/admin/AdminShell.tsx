@@ -45,6 +45,7 @@ import {
   BellRing,
   Award,
   Plus,
+  Volume2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
