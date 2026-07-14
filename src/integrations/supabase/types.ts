@@ -2852,6 +2852,69 @@ export type Database = {
         }
         Relationships: []
       }
+      sla_settings: {
+        Row: {
+          auto_notify_admin: boolean
+          auto_notify_on: string
+          created_at: string
+          enabled: boolean
+          green_max_entrega: number
+          green_max_mesa: number
+          green_max_retirada: number
+          historical_green_factor: number
+          historical_lookback_days: number
+          historical_yellow_factor: number
+          id: number
+          mode: string
+          singleton: boolean
+          updated_at: string
+          warn_before_red_pct: number
+          yellow_max_entrega: number
+          yellow_max_mesa: number
+          yellow_max_retirada: number
+        }
+        Insert: {
+          auto_notify_admin?: boolean
+          auto_notify_on?: string
+          created_at?: string
+          enabled?: boolean
+          green_max_entrega?: number
+          green_max_mesa?: number
+          green_max_retirada?: number
+          historical_green_factor?: number
+          historical_lookback_days?: number
+          historical_yellow_factor?: number
+          id?: number
+          mode?: string
+          singleton?: boolean
+          updated_at?: string
+          warn_before_red_pct?: number
+          yellow_max_entrega?: number
+          yellow_max_mesa?: number
+          yellow_max_retirada?: number
+        }
+        Update: {
+          auto_notify_admin?: boolean
+          auto_notify_on?: string
+          created_at?: string
+          enabled?: boolean
+          green_max_entrega?: number
+          green_max_mesa?: number
+          green_max_retirada?: number
+          historical_green_factor?: number
+          historical_lookback_days?: number
+          historical_yellow_factor?: number
+          id?: number
+          mode?: string
+          singleton?: boolean
+          updated_at?: string
+          warn_before_red_pct?: number
+          yellow_max_entrega?: number
+          yellow_max_mesa?: number
+          yellow_max_retirada?: number
+        }
+        Relationships: []
+      }
       sound_alert_settings: {
         Row: {
           created_at: string
@@ -4024,6 +4087,16 @@ export type Database = {
       get_or_create_my_referral_code: { Args: never; Returns: string }
       get_pix_key: { Args: never; Returns: string }
       get_shared_cart: { Args: { _token: string }; Returns: Json }
+      get_sla_history: {
+        Args: { lookback_days?: number }
+        Returns: {
+          avg_minutes: number
+          mode: string
+          p50_minutes: number
+          p90_minutes: number
+          sample_size: number
+        }[]
+      }
       get_tracking_by_token: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
