@@ -3941,6 +3941,63 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_copilot_settings: {
+        Row: {
+          auto_send: boolean
+          created_at: string
+          enabled: boolean
+          engine: string
+          haptic: boolean
+          interim_preview: boolean
+          language: string
+          push_to_talk: boolean
+          silence_ms: number
+          stt_model: string
+          tts_reply: boolean
+          tts_speed: number
+          tts_voice: string
+          updated_at: string
+          user_id: string
+          wake_word: string | null
+        }
+        Insert: {
+          auto_send?: boolean
+          created_at?: string
+          enabled?: boolean
+          engine?: string
+          haptic?: boolean
+          interim_preview?: boolean
+          language?: string
+          push_to_talk?: boolean
+          silence_ms?: number
+          stt_model?: string
+          tts_reply?: boolean
+          tts_speed?: number
+          tts_voice?: string
+          updated_at?: string
+          user_id: string
+          wake_word?: string | null
+        }
+        Update: {
+          auto_send?: boolean
+          created_at?: string
+          enabled?: boolean
+          engine?: string
+          haptic?: boolean
+          interim_preview?: boolean
+          language?: string
+          push_to_talk?: boolean
+          silence_ms?: number
+          stt_model?: string
+          tts_reply?: boolean
+          tts_speed?: number
+          tts_voice?: string
+          updated_at?: string
+          user_id?: string
+          wake_word?: string | null
+        }
+        Relationships: []
+      }
       waiters: {
         Row: {
           active: boolean
