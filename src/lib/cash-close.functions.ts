@@ -177,7 +177,7 @@ export const resendCashCloseReport = createServerFn({ method: "POST" })
     const settings = s as never as { whatsapp_numbers: string[]; custom_header: string; custom_footer: string; send_pdf: boolean; send_text_summary: boolean };
     const numbers = data.numbers?.length ? data.numbers : settings.whatsapp_numbers;
     const summary = buildTextSummary(rep.totals as never, settings.custom_header ?? "", settings.custom_footer ?? "");
-    const dateBr = new Date(rep.report_date + "T12:00:00-03:00").toLocaleDateString("pt-BR");
+    const dateBr = new Date(rep.report_date + "T12:00:00-03:00").toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
 
     let pdfBytes: Uint8Array | null = null;
     if (settings.send_pdf && rep.pdf_path) {

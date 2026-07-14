@@ -89,7 +89,7 @@ const MOV_LABEL: Record<string, string> = {
 
 export function buildTextSummary(agg: Aggregate, header: string, footer: string): string {
   const lines: string[] = [];
-  const dateStr = new Date(agg.date + "T12:00:00-03:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+  const dateStr = new Date(agg.date + "T12:00:00-03:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
   if (header.trim()) lines.push(header.trim());
   lines.push(`*📊 Fechamento de Caixa*`);
   lines.push(`_${dateStr}_`);
@@ -179,7 +179,7 @@ export async function buildPdf(agg: Aggregate, settings: CashCloseSettings): Pro
   page.drawRectangle({ x: 0, y: 790, width: 595, height: 52, color: purple });
   drawText("Fechamento de Caixa", marginX, 808, 20, bold, rgb(1, 1, 1));
   const dateStr = new Date(agg.date + "T12:00:00-03:00").toLocaleDateString("pt-BR", {
-    weekday: "long", day: "2-digit", month: "long", year: "numeric",
+    weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "America/Sao_Paulo",
   });
   drawText(dateStr, marginX, 795, 10, font, rgb(0.94, 0.94, 1));
 
@@ -256,7 +256,7 @@ export async function buildPdf(agg: Aggregate, settings: CashCloseSettings): Pro
 
   // Footer
   drawText(settings.custom_footer || "Relatório gerado automaticamente pelo Quero Bis.", marginX, 40, 8, font, gray);
-  drawText(`Gerado em ${new Date().toLocaleString("pt-BR")}`, marginX, 28, 7, font, gray);
+  drawText(`Gerado em ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`, marginX, 28, 7, font, gray);
 
   return await pdf.save();
 }
@@ -386,7 +386,7 @@ export async function runCashClose(params: {
   }
 
   const summary = buildTextSummary(aggregate, s.custom_header, s.custom_footer);
-  const dateBr = new Date(reportDate + "T12:00:00-03:00").toLocaleDateString("pt-BR");
+  const dateBr = new Date(reportDate + "T12:00:00-03:00").toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
   const filename = `Fechamento-${reportDate}.pdf`;
 
   const targetsOk: string[] = [];

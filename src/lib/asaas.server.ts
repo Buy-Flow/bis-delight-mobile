@@ -156,7 +156,8 @@ export async function createPixCharge(input: {
   description?: string;
   dueDate?: string; // YYYY-MM-DD
 }): Promise<{ payment: AsaasPayment; qr: AsaasPixQr }> {
-  const today = new Date().toISOString().slice(0, 10);
+  const { todayInSP } = await import("@/lib/tz");
+  const today = todayInSP();
   const payment = await asaasFetch<AsaasPayment>("/payments", {
     method: "POST",
     body: JSON.stringify({
@@ -198,7 +199,8 @@ export async function createCardCharge(input: {
   };
   remoteIp: string;
 }): Promise<AsaasPayment & { creditCard?: { creditCardBrand?: string; creditCardNumber?: string; creditCardToken?: string } }> {
-  const today = new Date().toISOString().slice(0, 10);
+  const { todayInSP } = await import("@/lib/tz");
+  const today = todayInSP();
   // Asaas antifraud recomenda mandar phone e mobilePhone. Se apenas um foi passado, usar em ambos.
   const holder = cleanPayload({
     ...input.creditCardHolderInfo,

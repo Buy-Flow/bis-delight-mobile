@@ -22,6 +22,7 @@ import {
   getCashCloseReportUrl,
   resendCashCloseReport,
 } from "@/lib/cash-close.functions";
+import { todayInSP, formatSP, formatDateSP, parseDateOnlySP } from "@/lib/tz";
 
 export const Route = createFileRoute("/_authenticated/caixa-fechamento")({
   head: () => ({ meta: [{ title: "Fechamento de Caixa — Admin" }, { name: "robots", content: "noindex" }] }),
@@ -111,7 +112,7 @@ function CashClosePage() {
 // ---------------- Gerar tab ----------------
 
 function GerarTab() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayInSP();
   const [date, setDate] = useState(today);
   const [includePending, setIncludePending] = useState(false);
   const [includeCanceled, setIncludeCanceled] = useState(false);
@@ -335,8 +336,8 @@ function HistoricoTab() {
                 return (
                   <tr key={r.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3">
-                      <div className="font-medium">{new Date(r.report_date + "T12:00:00").toLocaleDateString("pt-BR")}</div>
-                      <div className="text-xs text-slate-400">{new Date(r.created_at).toLocaleString("pt-BR")}</div>
+                      <div className="font-medium">{formatDateSP(parseDateOnlySP(r.report_date))}</div>
+                      <div className="text-xs text-slate-400">{formatSP(r.created_at)}</div>
                     </td>
                     <td className="px-4 py-3 capitalize">{r.triggered_by}</td>
                     <td className="px-4 py-3 text-right">{totals?.orders?.orders_count ?? 0}</td>
@@ -486,7 +487,7 @@ function ConfigTab() {
 
         {s.last_run_at && (
           <div className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-            Última execução: <strong>{new Date(s.last_run_at).toLocaleString("pt-BR")}</strong> —{" "}
+            Última execução: <strong>{formatSP(s.last_run_at)}</strong> —{" "}
             <StatusBadge status={s.last_run_status ?? "unknown"} />
             {s.last_run_error && <div className="mt-1 text-rose-600">{s.last_run_error}</div>}
           </div>
