@@ -582,3 +582,73 @@ select:-webkit-autofill {
 [data-scope="admin"] .placeholder\:text-white\/40::placeholder { color: rgb(255 255 255 / 0.86) !important; }
 [data-scope="admin"] .placeholder\:text-white\/50::placeholder { color: rgb(255 255 255 / 0.92) !important; }
 
+/* ============================================================
+ * Focus-visible fallback (WCAG 2.4.7)
+ * ============================================================
+ * Muitos componentes usam `focus:outline-none` (Tailwind zera o
+ * outline nativo) sem compensar com `focus-visible:ring-*`.
+ * Resultado: navegação por teclado invisível.
+ *
+ * Este piso desenha um anel de foco em QUALQUER elemento
+ * interativo focado por teclado. Usa `outline` (não `box-shadow`)
+ * para não conflitar com anéis customizados via `ring-*`
+ * (esses usam box-shadow) — quando o componente já define seu
+ * próprio ring, ambos coexistem sem quebrar o layout.
+ *
+ * `!important` é necessário porque `.focus\:outline-none:focus`
+ * do Tailwind casa junto com `:focus-visible` (o navegador
+ * dispara ambos) e tem a mesma especificidade. O outline nunca
+ * altera o box model (não empurra layout).
+ *
+ * Escape hatch: adicione `data-no-focus-ring` no elemento (uso
+ * raro — apenas quando o próprio componente pinta um foco
+ * customizado equivalente, ex.: `focus-visible:ring-*`).
+ * ============================================================ */
+:where(
+  a[href],
+  button:not(:disabled),
+  input:not([type="hidden"]):not(:disabled),
+  select:not(:disabled),
+  textarea:not(:disabled),
+  summary,
+  [role="button"],
+  [role="link"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="tab"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="switch"],
+  [role="option"],
+  [role="treeitem"],
+  [contenteditable="true"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible:not([data-no-focus-ring]) {
+  outline: 2px solid var(--ring, oklch(0.85 0.18 200)) !important;
+  outline-offset: 2px !important;
+  border-radius: inherit;
+  /* Halo suave para elementos sobre fundos com alto contraste */
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--ring, oklch(0.85 0.18 200)) 28%, transparent);
+  transition: outline-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* Corrige recorte do outline dentro de containers com overflow-hidden
+ * (comum em cards com `rounded-*` + `overflow-hidden`): eleva o item
+ * focado para que o anel não seja cortado pelo pai. */
+:focus-visible { z-index: 1; }
+
+/* Respeita usuários que pedem menos movimento — remove a transição. */
+@media (prefers-reduced-motion: reduce) {
+  :focus-visible { transition: none !important; }
+}
+
+/* Windows High Contrast Mode: força cor do sistema. */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight !important;
+    box-shadow: none !important;
+  }
+}
+
+
