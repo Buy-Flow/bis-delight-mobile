@@ -93,11 +93,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // persist to localStorage
+  const quotaWarned = useRef(false);
   useEffect(() => {
     if (!hydrated) return;
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(items));
-    } catch {}
+    } catch (e) {
+      const { quota } = logSilent("cart:persist", e);
+      if (quota && !quotaWarned.current) {
+        quotaWarned.current = true;
+        toast.error("Não foi possível salvar seu carrinho", {
+          description: "O armazenamento local está cheio. Limpe o histórico do navegador para não perder itens.",
+        });
+      }
+    }
   }, [items, hydrated]);
 
   // Track logged-in user for abandoned cart sync
