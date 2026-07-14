@@ -50,6 +50,7 @@ import {
   Route,
   Camera,
   HeartHandshake,
+  ScanSearch,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
