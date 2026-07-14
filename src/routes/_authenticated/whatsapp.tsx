@@ -1525,12 +1525,22 @@ function messageStatusMeta(m: Message): StatusMeta {
       className: "text-red-300",
     };
   }
-  if (s === "pending") {
+  if (m.read_at) {
     return {
-      kind: "sending",
-      label: "Pendente",
-      icon: <Clock className="h-3 w-3" />,
-      className: "text-amber-300",
+      kind: "read",
+      label: "Lida",
+      icon: <CheckCheck className="h-3 w-3" />,
+      className: "text-sky-400",
+    };
+  }
+  if (s === "pending") {
+    // Evolution aceitou o envio mas ainda não confirmou entrega via webhook.
+    // Tratamos como "Enviada" para não gerar alarme falso.
+    return {
+      kind: "sent",
+      label: "Enviada",
+      icon: <Check className="h-3 w-3" />,
+      className: "text-black/70",
     };
   }
   if (s === "read" || m.read_at) {
