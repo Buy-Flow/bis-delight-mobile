@@ -95,6 +95,7 @@ const groups: NavGroup[] = [
       { to: "/entregas", label: "Entregas", icon: Truck },
       { to: "/garcons", label: "Garçons", icon: UserCheck },
       { to: "/impressao", label: "Impressão", icon: Printer },
+      { to: "/sla", label: "SLA de pedidos", icon: Gauge },
     ],
   },
   {
