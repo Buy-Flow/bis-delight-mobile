@@ -239,7 +239,7 @@ function AvaliarPage() {
       }
       setPhotos((p) => [...p, ...urls].slice(0, 3));
     } catch (e) {
-      toast.error("Falha ao enviar foto: " + (e instanceof Error ? e.message : String(e)));
+      toast.error("Falha ao enviar foto", { description: friendlyError(e, "Tente novamente em instantes.") });
     } finally {
       setUploading(false);
     }
