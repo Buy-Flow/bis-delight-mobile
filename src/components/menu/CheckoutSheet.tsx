@@ -453,7 +453,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const goLogin = () => {
     sessionStorage.setItem("querobis:resume_checkout", "1");
     closeCheckout();
-    navigate({ to: "/auth", search: { next: "/" } as never });
+    navigate({ to: "/auth", search: { next: "/finalizar" } as never });
   };
 
   const send = async () => {
