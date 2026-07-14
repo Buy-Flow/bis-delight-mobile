@@ -390,14 +390,14 @@ function MotoboyPortal() {
 
   // Battery indicator
   useEffect(() => {
-    const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number; addEventListener: (e: string, cb: () => void) => void }> };
+    const nav = navigator as Navigator & { getBattery?: () => Promise<{ level: number; addEventListener: (e: string, cb: () => void) => void; removeEventListener: (e: string, cb: () => void) => void }> };
     if (!nav.getBattery) return;
     let cleanup: (() => void) | undefined;
     nav.getBattery().then((bat) => {
       const update = () => setBattery(Math.round(bat.level * 100));
       update();
       bat.addEventListener("levelchange", update);
-      cleanup = () => {};
+      cleanup = () => bat.removeEventListener("levelchange", update);
     }).catch(() => {});
     return () => { cleanup?.(); };
   }, []);
