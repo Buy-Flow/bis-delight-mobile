@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { formatSP, formatDateSP, formatTimeSP, todayInSP } from "@/lib/tz";
 
 export const Route = createFileRoute("/_authenticated/caixa")({
   head: () => ({
@@ -167,7 +168,7 @@ function CaixaPage() {
     const rows = [
       ["Data","Tipo","Método","Valor","Nota"],
       ...list.map(m => [
-        new Date(m.created_at).toLocaleString("pt-BR"),
+        formatSP(m.created_at),
         typeMeta[m.type].label,
         methodMeta[m.payment_method].label,
         String(Number(m.amount).toFixed(2)).replace(".", ","),
@@ -179,7 +180,7 @@ function CaixaPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `caixa-${new Date(s.opened_at).toISOString().slice(0,10)}.csv`;
+    a.download = `caixa-${todayInSP(new Date(s.opened_at))}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -198,8 +199,8 @@ function CaixaPage() {
 ========================
    FECHAMENTO DE CAIXA
 ========================
-Abertura: ${new Date(s.opened_at).toLocaleString("pt-BR")}
-Fechamento: ${s.closed_at ? new Date(s.closed_at).toLocaleString("pt-BR") : "-"}
+Abertura: ${formatSP(s.opened_at)}
+Fechamento: ${s.closed_at ? formatSP(s.closed_at) : "-"}
 Operador: ${s.operator_name ?? "-"}
 Terminal: ${s.terminal ?? "-"}
 ------------------------
@@ -235,7 +236,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
               <h1 className="text-xl md:text-2xl font-bold text-white">Caixa</h1>
               <p className="text-xs md:text-sm text-white/60 flex items-center gap-1.5">
                 <span className={cn("h-2 w-2 rounded-full", session ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
-                {session ? `Aberto desde ${new Date(session.opened_at).toLocaleString("pt-BR")}` : "Caixa fechado"}
+                {session ? `Aberto desde ${formatSP(session.opened_at)}` : "Caixa fechado"}
               </p>
             </div>
           </div>
@@ -368,7 +369,7 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
                             <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-white/10 text-white/70">{M.label}</span>
                           </div>
                           <div className="text-xs text-white/60 truncate">
-                            {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            {formatTimeSP(m.created_at)}
                             {m.note ? ` · ${m.note}` : ""}
                           </div>
                         </div>
@@ -406,8 +407,8 @@ ${s.closing_note ? `Obs: ${s.closing_note}` : ""}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-white">
-                        {new Date(s.opened_at).toLocaleString("pt-BR")}
-                        {s.closed_at && ` → ${new Date(s.closed_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+                        {formatSP(s.opened_at)}
+                        {s.closed_at && ` → ${formatTimeSP(s.closed_at)}`}
                       </div>
                       <div className="text-xs text-white/60">
                         {s.operator_name ?? "Operador"} · Abertura {BRL(s.opening_amount)}
@@ -702,7 +703,7 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
       <div className="w-full max-w-2xl bg-[#170a2e] text-white border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-white">Sessão de {new Date(session.opened_at).toLocaleDateString("pt-BR")}</h3>
+            <h3 className="font-semibold text-white">Sessão de {formatDateSP(session.opened_at)}</h3>
             <p className="text-xs text-white/60">{session.operator_name} · {session.terminal}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -727,7 +728,7 @@ function DetailDialog({ session, movs, onClose, onPrint, onCsv }:
                 <div className={cn("h-8 w-8 rounded-lg grid place-items-center", M.color)}><Icon className="h-4 w-4" /></div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-white">{T.label} <span className="text-xs text-white/60">· {M.label}</span></div>
-                  <div className="text-xs text-white/60">{new Date(m.created_at).toLocaleString("pt-BR")} {m.note ? `· ${m.note}` : ""}</div>
+                  <div className="text-xs text-white/60">{formatSP(m.created_at)} {m.note ? `· ${m.note}` : ""}</div>
                 </div>
                 <div className={cn("text-sm font-bold tabular-nums", T.tone)}>{T.sign > 0 ? "+" : "−"} {BRL(Number(m.amount))}</div>
               </div>
