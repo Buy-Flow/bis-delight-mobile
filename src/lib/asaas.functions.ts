@@ -263,8 +263,9 @@ const checkoutInput = z.object({
 });
 
 export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => checkoutInput.parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCheckoutSession } = await import("@/lib/asaas.server");
     const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
@@ -275,6 +276,8 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
+
 
     const shortId = order.id.slice(0, 8);
     const origin = data.origin.replace(/\/+$/, "");
