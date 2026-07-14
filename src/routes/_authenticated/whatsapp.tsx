@@ -784,23 +784,27 @@ function WhatsappPage() {
 
 
           {/* Chat panel */}
-          <section className="flex h-[70vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+          <section className="flex min-h-0 flex-col overflow-hidden bg-[#0b141a]">
             {!selected ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white/50">
-                <MessageCircle className="h-10 w-10 text-white/20" />
-                <div className="text-sm">Selecione uma conversa para começar</div>
+              <div className="flex h-full flex-col items-center justify-center gap-3 border-t-4 border-t-[#00a884] p-6 text-center text-[#8696a0]">
+                <MessageCircle className="h-16 w-16 text-[#3b4a54]" />
+                <div className="text-2xl font-light text-[#e9edef]">WhatsApp</div>
+                <div className="max-w-md text-sm">
+                  Selecione uma conversa à esquerda para começar a atender.
+                  Mensagens chegam em tempo real assim que forem recebidas.
+                </div>
               </div>
             ) : (
               <>
                 {/* Header */}
-                <div className="flex items-center gap-3 border-b border-white/10 bg-black/20 p-3">
+                <div className="flex items-center gap-3 border-b border-black/40 bg-[#202c33] px-4 py-2">
                   <Avatar
                     name={selected.contact_name}
                     phone={selected.phone}
                     pic={selected.profile_pic_url}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold text-white">
+                    <div className="truncate text-[15px] font-normal text-[#e9edef]">
                       {selected.contact_name || formatPhone(selected.phone)}
                     </div>
                     {editingPhone ? (
@@ -813,13 +817,13 @@ function WhatsappPage() {
                             if (e.key === "Escape") setEditingPhone(false);
                           }}
                           placeholder="DDD + telefone"
-                          className="h-7 min-w-0 flex-1 rounded-full border border-white/10 bg-black/30 px-2.5 text-[11px] text-white outline-none focus:border-emerald-400"
+                          className="h-7 min-w-0 flex-1 rounded-md bg-[#2a3942] px-2.5 text-[12px] text-[#e9edef] outline-none"
                         />
                         <button
                           type="button"
                           onClick={handleSavePhone}
                           disabled={phoneSaving}
-                          className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-black text-black disabled:opacity-50"
+                          className="rounded-md bg-[#00a884] px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
                         >
                           {phoneSaving ? "..." : "Salvar"}
                         </button>
@@ -829,20 +833,19 @@ function WhatsappPage() {
                             setEditingPhone(false);
                             setPhoneDraft(selected.phone);
                           }}
-                          className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-bold text-white/60 hover:bg-white/10"
+                          className="rounded-md px-2 py-1 text-[11px] text-[#8696a0] hover:bg-white/5"
                         >
                           Cancelar
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-[11px] text-white/50">
-                        <Phone className="h-3 w-3" />
-                        {formatPhone(selected.phone)}
+                      <div className="flex items-center gap-2 text-[12px] text-[#8696a0]">
+                        <span>{formatPhone(selected.phone)}</span>
                         <button
                           onClick={() => setEditingPhone(true)}
-                          className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-bold text-white/60 hover:bg-white/10 hover:text-white"
+                          className="rounded px-1.5 py-0.5 text-[10px] text-[#8696a0] hover:bg-white/5 hover:text-[#e9edef]"
                         >
-                          Corrigir
+                          corrigir
                         </button>
                       </div>
                     )}
@@ -850,40 +853,37 @@ function WhatsappPage() {
                   <button
                     onClick={handleTogglePause}
                     className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold transition",
+                      "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition",
                       selected.ai_paused
-                        ? "border-yellow-400/40 bg-yellow-400/10 text-yellow-200 hover:bg-yellow-400/20"
-                        : "border-emerald-400/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20",
+                        ? "bg-yellow-500/15 text-yellow-300 hover:bg-yellow-500/25"
+                        : "bg-[#00a884]/15 text-[#00a884] hover:bg-[#00a884]/25",
                     )}
                     title={selected.ai_paused ? "IA pausada — humano" : "IA respondendo"}
                   >
                     {selected.ai_paused ? (
-                      <>
-                        <BotOff className="h-3 w-3" /> Humano
-                      </>
+                      <><BotOff className="h-3.5 w-3.5" /> Humano</>
                     ) : (
-                      <>
-                        <Bot className="h-3 w-3" /> IA
-                      </>
+                      <><Bot className="h-3.5 w-3.5" /> IA</>
                     )}
                   </button>
                   <a
                     href={`https://wa.me/${selected.phone.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10"
+                    className="grid h-9 w-9 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5"
                     title="Abrir no WhatsApp Web"
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <ExternalLink className="h-4 w-4" />
                   </a>
                   <button
                     onClick={() => setSelectedId(null)}
-                    className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 lg:hidden"
+                    className="grid h-9 w-9 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5 lg:hidden"
                     title="Fechar"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
+
 
                 {/* Messages */}
                 <div
