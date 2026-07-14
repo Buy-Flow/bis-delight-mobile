@@ -117,6 +117,7 @@ import {
   Zap,
 } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
+import { STORE_COPY } from "@/lib/store-status";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 import { DeliveryZoneEditor } from "@/components/admin/DeliveryZoneEditor";
 import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
