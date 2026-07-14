@@ -613,214 +613,116 @@ function WhatsappPage() {
   };
 
   return (
-    <div className="min-h-full bg-[#0e0a1a] pb-24 text-white">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] text-emerald-400/80">
-              <Sparkles className="h-3 w-3" /> Central de atendimento
-            </div>
-            <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">
-              WhatsApp{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-                dos clientes
-              </span>
-            </h1>
-            <p className="mt-1 text-sm text-white/60">
-              Converse em tempo real, pause a IA quando quiser assumir e transforme
-              conversas em vendas.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleReconfigureWebhook}
-              disabled={webhookSaving}
-              className="inline-flex items-center gap-2 rounded-full border border-sky-400/35 bg-sky-500/12 px-4 py-2 text-xs font-bold text-sky-100 transition hover:bg-sky-500/20 disabled:opacity-50"
-            >
-              {webhookSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
-              Reconfigurar webhook
-            </button>
-            <button
-              onClick={() => setConnectOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-4 py-2 text-xs font-bold text-emerald-100 transition hover:bg-emerald-500/25"
-            >
-              <Smartphone className="h-3.5 w-3.5" /> Conectar telefone
-            </button>
-            <button
-              onClick={() => syncFromPhone(true)}
-              disabled={syncing}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/80 transition hover:bg-white/10"
-            >
-              {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-              Sincronizar telefone
-            </button>
-          </div>
-        </header>
-
-        <WhatsappConnectDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
-
-
-        {/* Config warning */}
-        {config && !config.configured && (
-          <div className="mb-4 flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
-            <div>
-              <div className="font-bold">Evolution API não configurada</div>
-              <div className="mt-0.5 text-amber-100/80">
-                Defina{" "}
-                {!config.hasBase && <code className="rounded bg-black/30 px-1">EVOLUTION_API_URL</code>}{" "}
-                {!config.hasKey && <code className="rounded bg-black/30 px-1">EVOLUTION_API_KEY</code>}{" "}
-                {!config.hasInstance && (
-                  <code className="rounded bg-black/30 px-1">EVOLUTION_INSTANCE</code>
-                )}{" "}
-                nos secrets. O envio ficará indisponível até configurar; a leitura das
-                conversas continua funcionando.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Connection warning: instance was logged out from WhatsApp */}
-        {connState &&
-          config?.configured &&
-          connState.state !== "open" &&
-          connState.state !== "connecting" && (
-            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-red-500/50 bg-red-500/10 p-4 text-sm text-red-100">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
-              <div className="flex-1">
-                <div className="font-bold text-red-100">
-                  WhatsApp desconectado — nenhuma mensagem está sendo entregue
-                </div>
-                <div className="mt-1 text-xs leading-relaxed text-red-100/85">
-                  A Evolution aceita os pedidos de envio (por isso as mensagens somem do painel
-                  como "enviadas"), mas o WhatsApp derrubou a sessão do telefone
-                  {connState.disconnectionCode === 401 ? " (logout 401 — o celular precisa parear de novo)" : ""}
-                  {connState.disconnectionAt
-                    ? ` em ${new Date(connState.disconnectionAt).toLocaleString("pt-BR")}`
-                    : ""}
-                  . Enquanto isso, só mensagens antigas (enviadas antes da queda) chegam ao destino.
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setConnectOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-full bg-red-500/80 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-500"
-                  >
-                    <Smartphone className="h-3.5 w-3.5" /> Reconectar telefone (QR code)
-                  </button>
-                  <button
-                    onClick={() => stateFn().then(setConnState)}
-                    className="inline-flex items-center gap-2 rounded-full border border-red-400/40 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-100 hover:bg-red-500/20"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" /> Verificar de novo
-                  </button>
-                </div>
-              </div>
-            </div>
+    <div className="flex h-[100dvh] w-full flex-col bg-[#0b141a] text-[#e9edef]">
+      {/* Top bar estilo WhatsApp Web */}
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-black/40 bg-[#202c33] px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <MessageCircle className="h-5 w-5 text-[#00a884]" />
+          <span className="text-sm font-semibold text-[#e9edef]">WhatsApp</span>
+          {connState && connState.state === "open" && (
+            <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#00a884]/15 px-2 py-0.5 text-[10px] font-semibold text-[#00a884]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00a884]" />
+              {connState.profileName || "conectado"}
+            </span>
           )}
-
-        {/* Connection healthy indicator */}
-        {connState && connState.state === "open" && connState.profileName && (
-          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/8 px-3 py-2 text-xs text-emerald-100">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-            <div>
-              WhatsApp conectado como{" "}
-              <span className="font-bold">{connState.profileName}</span>
-              {connState.ownerJid ? ` (${connState.ownerJid.split("@")[0]})` : ""}
-            </div>
-          </div>
-        )}
-
-        {/* KPIs */}
-        <section className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Kpi
-            icon={<Inbox className="h-4 w-4" />}
-            label="Conversas"
-            value={String(kpis.total)}
-            accent="from-emerald-400/30 to-emerald-500/10"
-            iconColor="text-emerald-300"
-          />
-          <Kpi
-            icon={<TrendingUp className="h-4 w-4" />}
-            label="Ativas hoje"
-            value={String(kpis.active)}
-            accent="from-cyan-400/30 to-cyan-500/10"
-            iconColor="text-cyan-300"
-          />
-          <Kpi
-            icon={<MessageCircle className="h-4 w-4" />}
-            label="Não lidas"
-            value={String(kpis.unread)}
-            accent="from-neon-pink/30 to-fuchsia-500/10"
-            iconColor="text-neon-pink"
-          />
-          <Kpi
-            icon={<Users className="h-4 w-4" />}
-            label="Humano no comando"
-            value={String(kpis.paused)}
-            accent="from-yellow-400/30 to-yellow-500/10"
-            iconColor="text-yellow-300"
-          />
-        </section>
-
-        {/* Tabs */}
-        <div className="mb-3 inline-flex rounded-full border border-white/10 bg-white/5 p-1 text-xs font-bold">
+        </div>
+        <div className="flex items-center gap-1">
           <button
-            onClick={() => setTab("inbox")}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition",
-              tab === "inbox" ? "bg-emerald-500/20 text-emerald-100" : "text-white/60 hover:text-white",
-            )}
+            onClick={() => setTab(tab === "inbox" ? "logs" : "inbox")}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-[#aebac1] transition hover:bg-white/5"
+            title={tab === "inbox" ? "Ver logs" : "Voltar às conversas"}
           >
-            <Inbox className="h-3.5 w-3.5" /> Caixa de entrada
+            {tab === "inbox" ? <ScrollText className="h-3.5 w-3.5" /> : <Inbox className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">{tab === "inbox" ? "Logs" : "Conversas"}</span>
           </button>
           <button
-            onClick={() => setTab("logs")}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition",
-              tab === "logs" ? "bg-emerald-500/20 text-emerald-100" : "text-white/60 hover:text-white",
-            )}
+            onClick={handleReconfigureWebhook}
+            disabled={webhookSaving}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-[#aebac1] transition hover:bg-white/5 disabled:opacity-50"
+            title="Reconfigurar webhook"
           >
-            <ScrollText className="h-3.5 w-3.5" /> Logs de ingestão
+            {webhookSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            onClick={() => syncFromPhone(true)}
+            disabled={syncing}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-[#aebac1] transition hover:bg-white/5 disabled:opacity-50"
+            title="Sincronizar com o telefone"
+          >
+            {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            onClick={() => setConnectOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[#00a884] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#06cf9c]"
+          >
+            <Smartphone className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Conectar</span>
           </button>
         </div>
+      </header>
+
+      <WhatsappConnectDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
+
+      {/* Alertas de configuração/conexão (compactos) */}
+      {config && !config.configured && (
+        <div className="flex shrink-0 items-start gap-2 border-b border-black/30 bg-amber-500/15 px-4 py-2 text-xs text-amber-100">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <div>
+            Evolution API não configurada. Envio ficará indisponível até definir os
+            secrets EVOLUTION_API_URL, EVOLUTION_API_KEY e EVOLUTION_INSTANCE.
+          </div>
+        </div>
+      )}
+      {connState &&
+        config?.configured &&
+        connState.state !== "open" &&
+        connState.state !== "connecting" && (
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-black/30 bg-red-500/15 px-4 py-2 text-xs text-red-100">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              WhatsApp desconectado — mensagens não estão sendo entregues.
+            </div>
+            <button
+              onClick={() => setConnectOpen(true)}
+              className="inline-flex items-center gap-1 rounded-md bg-red-500/80 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-500"
+            >
+              <Smartphone className="h-3 w-3" /> Reconectar
+            </button>
+          </div>
+        )}
 
         {tab === "logs" ? (
-          <LogsPanel />
+          <div className="flex-1 overflow-y-auto p-4"><LogsPanel /></div>
         ) : (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[380px_1fr]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[380px_1fr]">
           {/* Conversations list */}
-          <aside className="flex h-[70vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
-            <div className="border-b border-white/10 p-3">
+          <aside className="flex min-h-0 flex-col overflow-hidden border-r border-black/40 bg-[#111b21]">
+            <div className="border-b border-black/30 bg-[#111b21] p-2">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8696a0]" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Buscar por nome, telefone…"
-                  className="w-full rounded-full border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
+                  placeholder="Pesquisar ou começar nova conversa"
+                  className="w-full rounded-lg bg-[#202c33] py-2 pl-9 pr-3 text-sm text-[#e9edef] placeholder:text-[#8696a0] focus:outline-none"
                 />
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <Chip active={filter === "todas"} onClick={() => setFilter("todas")}>
-                  <Filter className="h-3 w-3" /> Todas
+                  Todas
                 </Chip>
-                <Chip
-                  active={filter === "nao_lidas"}
-                  onClick={() => setFilter("nao_lidas")}
-                >
+                <Chip active={filter === "nao_lidas"} onClick={() => setFilter("nao_lidas")}>
                   Não lidas
                 </Chip>
                 <Chip active={filter === "hoje"} onClick={() => setFilter("hoje")}>
                   Hoje
                 </Chip>
-                <Chip
-                  active={filter === "ia_pausada"}
-                  onClick={() => setFilter("ia_pausada")}
-                >
+                <Chip active={filter === "ia_pausada"} onClick={() => setFilter("ia_pausada")}>
                   <BotOff className="h-3 w-3" /> IA pausada
                 </Chip>
               </div>
             </div>
+
             <div className="flex-1 overflow-y-auto">
               {loadingList ? (
                 <div className="flex h-full items-center justify-center text-white/40">
@@ -832,7 +734,7 @@ function WhatsappPage() {
                   <div>Nenhuma conversa encontrada.</div>
                 </div>
               ) : (
-                <ul className="divide-y divide-white/5">
+                <ul>
                   {filtered.map((c) => {
                     const active = c.id === selectedId;
                     return (
@@ -840,33 +742,32 @@ function WhatsappPage() {
                         <button
                           onClick={() => setSelectedId(c.id)}
                           className={cn(
-                            "flex w-full items-start gap-3 px-3 py-3 text-left transition",
-                            active
-                              ? "bg-emerald-500/10"
-                              : "hover:bg-white/[0.04]",
+                            "flex w-full items-center gap-3 border-b border-white/[0.04] px-3 py-3 text-left transition",
+                            active ? "bg-[#2a3942]" : "hover:bg-[#202c33]",
                           )}
                         >
                           <Avatar name={c.contact_name} phone={c.phone} pic={c.profile_pic_url} />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <div className="min-w-0 flex-1 truncate text-sm font-bold text-white">
+                              <div className="min-w-0 flex-1 truncate text-[15px] font-normal text-[#e9edef]">
                                 {c.contact_name || formatPhone(c.phone)}
                               </div>
-                              <div className="shrink-0 text-[10px] font-bold text-white/40">
+                              <div className={cn(
+                                "shrink-0 text-[11px]",
+                                c.unread_count > 0 ? "text-[#00a884]" : "text-[#8696a0]",
+                              )}>
                                 {formatTime(c.last_message_at)}
                               </div>
                             </div>
-                            <div className="mt-0.5 flex items-center gap-2">
-                              <div className="min-w-0 flex-1 truncate text-xs text-white/60">
+                            <div className="mt-1 flex items-center gap-2">
+                              <div className="min-w-0 flex-1 truncate text-[13px] text-[#8696a0]">
                                 {c.last_message_preview || "—"}
                               </div>
                               {c.ai_paused && (
-                                <BotOff
-                                  className="h-3 w-3 shrink-0 text-yellow-300"
-                                />
+                                <BotOff className="h-3.5 w-3.5 shrink-0 text-yellow-400" />
                               )}
                               {c.unread_count > 0 && (
-                                <span className="grid h-4 min-w-4 shrink-0 place-items-center rounded-full bg-emerald-500 px-1 text-[10px] font-black text-black">
+                                <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[#00a884] px-1.5 text-[11px] font-medium text-[#111b21]">
                                   {c.unread_count > 99 ? "99+" : c.unread_count}
                                 </span>
                               )}
@@ -881,24 +782,29 @@ function WhatsappPage() {
             </div>
           </aside>
 
+
           {/* Chat panel */}
-          <section className="flex h-[70vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+          <section className="flex min-h-0 flex-col overflow-hidden bg-[#0b141a]">
             {!selected ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white/50">
-                <MessageCircle className="h-10 w-10 text-white/20" />
-                <div className="text-sm">Selecione uma conversa para começar</div>
+              <div className="flex h-full flex-col items-center justify-center gap-3 border-t-4 border-t-[#00a884] p-6 text-center text-[#8696a0]">
+                <MessageCircle className="h-16 w-16 text-[#3b4a54]" />
+                <div className="text-2xl font-light text-[#e9edef]">WhatsApp</div>
+                <div className="max-w-md text-sm">
+                  Selecione uma conversa à esquerda para começar a atender.
+                  Mensagens chegam em tempo real assim que forem recebidas.
+                </div>
               </div>
             ) : (
               <>
                 {/* Header */}
-                <div className="flex items-center gap-3 border-b border-white/10 bg-black/20 p-3">
+                <div className="flex items-center gap-3 border-b border-black/40 bg-[#202c33] px-4 py-2">
                   <Avatar
                     name={selected.contact_name}
                     phone={selected.phone}
                     pic={selected.profile_pic_url}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold text-white">
+                    <div className="truncate text-[15px] font-normal text-[#e9edef]">
                       {selected.contact_name || formatPhone(selected.phone)}
                     </div>
                     {editingPhone ? (
@@ -911,13 +817,13 @@ function WhatsappPage() {
                             if (e.key === "Escape") setEditingPhone(false);
                           }}
                           placeholder="DDD + telefone"
-                          className="h-7 min-w-0 flex-1 rounded-full border border-white/10 bg-black/30 px-2.5 text-[11px] text-white outline-none focus:border-emerald-400"
+                          className="h-7 min-w-0 flex-1 rounded-md bg-[#2a3942] px-2.5 text-[12px] text-[#e9edef] outline-none"
                         />
                         <button
                           type="button"
                           onClick={handleSavePhone}
                           disabled={phoneSaving}
-                          className="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-black text-black disabled:opacity-50"
+                          className="rounded-md bg-[#00a884] px-2.5 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
                         >
                           {phoneSaving ? "..." : "Salvar"}
                         </button>
@@ -927,20 +833,19 @@ function WhatsappPage() {
                             setEditingPhone(false);
                             setPhoneDraft(selected.phone);
                           }}
-                          className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-bold text-white/60 hover:bg-white/10"
+                          className="rounded-md px-2 py-1 text-[11px] text-[#8696a0] hover:bg-white/5"
                         >
                           Cancelar
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-[11px] text-white/50">
-                        <Phone className="h-3 w-3" />
-                        {formatPhone(selected.phone)}
+                      <div className="flex items-center gap-2 text-[12px] text-[#8696a0]">
+                        <span>{formatPhone(selected.phone)}</span>
                         <button
                           onClick={() => setEditingPhone(true)}
-                          className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-bold text-white/60 hover:bg-white/10 hover:text-white"
+                          className="rounded px-1.5 py-0.5 text-[10px] text-[#8696a0] hover:bg-white/5 hover:text-[#e9edef]"
                         >
-                          Corrigir
+                          corrigir
                         </button>
                       </div>
                     )}
@@ -948,60 +853,62 @@ function WhatsappPage() {
                   <button
                     onClick={handleTogglePause}
                     className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold transition",
+                      "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition",
                       selected.ai_paused
-                        ? "border-yellow-400/40 bg-yellow-400/10 text-yellow-200 hover:bg-yellow-400/20"
-                        : "border-emerald-400/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20",
+                        ? "bg-yellow-500/15 text-yellow-300 hover:bg-yellow-500/25"
+                        : "bg-[#00a884]/15 text-[#00a884] hover:bg-[#00a884]/25",
                     )}
                     title={selected.ai_paused ? "IA pausada — humano" : "IA respondendo"}
                   >
                     {selected.ai_paused ? (
-                      <>
-                        <BotOff className="h-3 w-3" /> Humano
-                      </>
+                      <><BotOff className="h-3.5 w-3.5" /> Humano</>
                     ) : (
-                      <>
-                        <Bot className="h-3 w-3" /> IA
-                      </>
+                      <><Bot className="h-3.5 w-3.5" /> IA</>
                     )}
                   </button>
                   <a
                     href={`https://wa.me/${selected.phone.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10"
+                    className="grid h-9 w-9 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5"
                     title="Abrir no WhatsApp Web"
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <ExternalLink className="h-4 w-4" />
                   </a>
                   <button
                     onClick={() => setSelectedId(null)}
-                    className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 lg:hidden"
+                    className="grid h-9 w-9 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5 lg:hidden"
                     title="Fechar"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
+
 
                 {/* Messages */}
                 <div
                   ref={scrollRef}
-                  className="flex-1 overflow-y-auto bg-gradient-to-b from-[#0a0715] to-[#0e0a1a] p-4"
+                  className="flex-1 overflow-y-auto p-4"
+                  style={{
+                    backgroundColor: "#0b141a",
+                    backgroundImage:
+                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><g fill='%23182229' fill-opacity='0.35'><circle cx='50' cy='50' r='2'/><circle cx='150' cy='120' r='1.5'/><circle cx='250' cy='80' r='2'/><circle cx='350' cy='150' r='1.5'/><circle cx='100' cy='250' r='2'/><circle cx='300' cy='300' r='1.5'/><circle cx='200' cy='350' r='2'/></g></svg>\")",
+                  }}
                 >
                   {loadingMsgs ? (
-                    <div className="flex h-full items-center justify-center text-white/40">
+                    <div className="flex h-full items-center justify-center text-[#8696a0]">
                       <Loader2 className="h-5 w-5 animate-spin" />
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="flex h-full items-center justify-center text-xs text-white/40">
+                    <div className="flex h-full items-center justify-center text-xs text-[#8696a0]">
                       Sem mensagens ainda.
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-0.5">
                       {groupByDay(messages).map((group) => (
                         <div key={group.day}>
                           <div className="my-3 flex justify-center">
-                            <div className="rounded-full bg-black/40 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white/40">
+                            <div className="rounded-md bg-[#182229] px-3 py-1 text-[12px] font-medium uppercase tracking-wide text-[#8696a0] shadow-sm">
                               {group.day}
                             </div>
                           </div>
@@ -1015,26 +922,26 @@ function WhatsappPage() {
                 </div>
 
                 {/* Composer */}
-                <div className="border-t border-white/10 bg-black/20 p-3">
+                <div className="border-t border-black/40 bg-[#202c33] px-3 py-2.5">
                   {!selected.ai_paused && (
-                    <div className="mb-2 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-[11px] text-emerald-200">
+                    <div className="mb-2 flex items-center gap-2 rounded-md bg-[#00a884]/10 px-3 py-1.5 text-[11px] text-[#00a884]">
                       <Bot className="h-3 w-3" />
                       IA está respondendo — envie manualmente ou pause a IA para assumir.
                     </div>
                   )}
                   {recording ? (
-                    <div className="flex items-center gap-2 rounded-2xl border border-red-400/40 bg-red-500/10 px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-lg bg-[#2a3942] px-3 py-2">
                       <span className="relative flex h-2.5 w-2.5">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                         <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
                       </span>
-                      <span className="flex-1 text-sm font-bold text-red-100">
+                      <span className="flex-1 text-sm font-medium text-[#e9edef]">
                         Gravando… {String(Math.floor(recordSeconds / 60)).padStart(2, "0")}:
                         {String(recordSeconds % 60).padStart(2, "0")}
                       </span>
                       <button
                         onClick={() => stopRecording(true)}
-                        className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-black/30 text-white/80 hover:bg-black/50"
+                        className="grid h-9 w-9 place-items-center rounded-full text-[#aebac1] hover:bg-white/5"
                         title="Cancelar"
                         type="button"
                       >
@@ -1042,7 +949,7 @@ function WhatsappPage() {
                       </button>
                       <button
                         onClick={() => stopRecording(false)}
-                        className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black hover:brightness-110"
+                        className="grid h-10 w-10 place-items-center rounded-full bg-[#00a884] text-white hover:bg-[#06cf9c]"
                         title="Enviar áudio"
                         type="button"
                       >
@@ -1062,10 +969,10 @@ function WhatsappPage() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 disabled:opacity-40"
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5 disabled:opacity-40"
                         title="Anexar imagem, vídeo, áudio ou PDF"
                       >
-                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                        {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
                       </button>
                       <textarea
                         value={text}
@@ -1076,15 +983,15 @@ function WhatsappPage() {
                             handleSend();
                           }
                         }}
-                        rows={2}
-                        placeholder="Digite sua mensagem… (Enter envia, Shift+Enter quebra linha)"
-                        className="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400 focus:outline-none"
+                        rows={1}
+                        placeholder="Digite uma mensagem"
+                        className="max-h-32 min-h-[42px] flex-1 resize-none rounded-lg bg-[#2a3942] px-4 py-2.5 text-[15px] text-[#e9edef] placeholder:text-[#8696a0] focus:outline-none"
                       />
                       {text.trim() ? (
                         <button
                           onClick={handleSend}
                           disabled={sending}
-                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#00a884] text-white transition hover:bg-[#06cf9c] disabled:opacity-40"
                           title="Enviar"
                         >
                           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -1093,11 +1000,11 @@ function WhatsappPage() {
                         <button
                           onClick={startRecording}
                           disabled={uploading}
-                          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-black transition hover:brightness-110 disabled:opacity-40"
+                          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#aebac1] transition hover:bg-white/5 disabled:opacity-40"
                           title="Gravar áudio"
                           type="button"
                         >
-                          <Mic className="h-4 w-4" />
+                          <Mic className="h-5 w-5" />
                         </button>
                       )}
                     </div>
@@ -1107,7 +1014,7 @@ function WhatsappPage() {
                       <button
                         key={q}
                         onClick={() => setText((t) => (t ? t + " " + q : q))}
-                        className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70 transition hover:bg-white/10 hover:text-white"
+                        className="rounded-full bg-[#2a3942] px-2.5 py-1 text-[11px] text-[#aebac1] transition hover:bg-[#374248] hover:text-[#e9edef]"
                       >
                         {q}
                       </button>
@@ -1117,12 +1024,14 @@ function WhatsappPage() {
               </>
             )}
           </section>
+
+
         </div>
         )}
-      </div>
     </div>
   );
 }
+
 
 const QUICK_REPLIES = [
   "Oi! Como posso te ajudar? 🍫",
@@ -1149,23 +1058,21 @@ function MessageBubble({ m }: { m: Message }) {
   const meta = messageStatusMeta(m);
   const hasMedia = !!m.media_url || ["audio", "image", "video", "document", "sticker"].includes(m.type);
   return (
-    <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-1")}>
+    <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-0.5")}>
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm sm:max-w-[75%]",
+          "relative max-w-[85%] rounded-lg px-2 py-1.5 text-[14.2px] shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] sm:max-w-[65%]",
           out
             ? isAi
-              ? "bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 border border-purple-400/30 text-white"
+              ? "bg-[#005c4b] text-[#e9edef] ring-1 ring-purple-400/30"
               : meta.kind === "failed"
-                ? "bg-red-500/15 border border-red-500/40 text-white"
-                : meta.kind === "sending"
-                  ? "border border-amber-400/40 bg-amber-500/15 text-white"
-                  : "bg-emerald-500/90 text-black"
-            : "bg-white/10 text-white border border-white/10",
+                ? "bg-red-900/60 text-[#e9edef]"
+                : "bg-[#005c4b] text-[#e9edef]"
+            : "bg-[#202c33] text-[#e9edef]",
         )}
       >
         {isAi && (
-          <div className="mb-0.5 inline-flex items-center gap-1 rounded-full bg-purple-500/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white">
+          <div className="mb-0.5 inline-flex items-center gap-1 rounded bg-purple-500/30 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-purple-100">
             <Sparkles className="h-2.5 w-2.5" /> IA
           </div>
         )}
@@ -1174,13 +1081,10 @@ function MessageBubble({ m }: { m: Message }) {
           <div className="whitespace-pre-wrap break-words">{m.content}</div>
         )}
         {!m.content && !hasMedia && m.transcript && (
-          <div className="whitespace-pre-wrap break-words">🎤 {m.transcript}</div>
+          <div className="whitespace-pre-wrap break-words italic text-[#e9edef]/80">🎤 {m.transcript}</div>
         )}
         <div
-          className={cn(
-            "mt-1 flex items-center justify-end gap-1 text-[10px]",
-            out && !isAi && meta.kind !== "failed" && meta.kind !== "sending" ? "text-black/60" : "text-white/60",
-          )}
+          className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-[#e9edef]/60"
           title={out ? meta.label : undefined}
           aria-label={out ? `Status: ${meta.label}` : undefined}
         >
@@ -1191,11 +1095,11 @@ function MessageBubble({ m }: { m: Message }) {
             })}
           </span>
           {out && (
-            <span className={cn("inline-flex items-center gap-0.5", meta.className)}>
+            <span className={cn("inline-flex items-center", meta.className)}>
               {meta.icon}
-              <span className="hidden sm:inline">{meta.label}</span>
             </span>
           )}
+
         </div>
         {meta.kind === "failed" && (m.error || m._optimistic) && (
           <FailedDetail error={m.error ?? "Não foi possível gravar a mensagem no banco de dados."} />
