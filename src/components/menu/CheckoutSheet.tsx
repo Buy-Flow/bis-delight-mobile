@@ -553,6 +553,17 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       fail("Preencha os campos obrigatórios: nome, telefone" + (mode === "entrega" ? " e endereço" : "") + ".");
       return;
     }
+    if (mode === "entrega") {
+      const missing: string[] = [];
+      if (!addrStreet.trim()) missing.push("rua");
+      if (!addrNumber.trim()) missing.push("número");
+      if (!addrNeighborhood.trim()) missing.push("bairro");
+      if (!addrCity.trim()) missing.push("cidade");
+      if (missing.length) {
+        fail(`Endereço incompleto — informe: ${missing.join(", ")}.`);
+        return;
+      }
+    }
 
     if ((paymentMethod === "pix" || paymentMethod === "asaas_checkout") && !isValidCpf(cpf)) {
       fail("CPF válido obrigatório para gerar PIX ou abrir o checkout Asaas.");
