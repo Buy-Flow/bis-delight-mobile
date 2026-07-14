@@ -386,7 +386,7 @@ export const optimizeRoute = createServerFn({ method: "POST" })
           saved_km: Number(savedKm.toFixed(2)),
           saved_min: Number(savedMin.toFixed(1)),
           encoded_polyline: encodedPolyline,
-          legs: stops as unknown,
+          legs: stops as unknown as Record<string, unknown>[],
           origin_lat: origin.lat,
           origin_lng: origin.lng,
           provider_used: providerUsed,
