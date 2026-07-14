@@ -1061,8 +1061,11 @@ export function ProductModal({
             );
           })()}
 
+          {product?.id && <ProductReviews productId={product.id} />}
+
           <div className="h-6" />
         </div>
+
 
 
         {/* Footer — quantidade + CTA gradiente pink */}
