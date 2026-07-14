@@ -56,7 +56,12 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
         try {
           if (orderId && status) {
             const map = mapAsaasStatusToOrder(status);
-            const update: Record<string, unknown> = { asaas_status: status };
+            const update: {
+              asaas_status: string;
+              status?: string;
+              paid_at?: string;
+              canceled_at?: string;
+            } = { asaas_status: status };
             if (map.paid) {
               update.status = "pago";
               update.paid_at = new Date().toISOString();
