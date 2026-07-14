@@ -388,7 +388,7 @@ function PDVPage() {
         </section>
 
         {/* Cart panel — desktop */}
-        <aside className="hidden lg:block">
+        <aside className="hidden self-start lg:sticky lg:top-20 lg:block">
           <CartPanel
             cart={cart}
             subtotal={subtotal}
