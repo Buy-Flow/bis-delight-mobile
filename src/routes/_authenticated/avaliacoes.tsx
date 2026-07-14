@@ -68,6 +68,7 @@ function AvaliacoesPage() {
   const [sort, setSort] = useState<SortKey>("recent");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<Review | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
