@@ -234,16 +234,22 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
   });
 
 export const getAsaasPaymentStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => z.object({ orderId: z.string().uuid() }).parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin
       .from("orders")
-      .select("id, status, asaas_status, asaas_payment_id, payment_method, paid_at")
+      .select("id, status, asaas_status, asaas_payment_id, payment_method, paid_at, user_id")
       .eq("id", data.orderId)
       .maybeSingle();
-    return order ?? null;
+    if (!order) return null;
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
+    // Strip user_id from the response — callers only need payment status fields.
+    const { user_id: _uid, ...rest } = order;
+    return rest;
   });
+
 
 const checkoutInput = z.object({
   orderId: z.string().uuid(),
