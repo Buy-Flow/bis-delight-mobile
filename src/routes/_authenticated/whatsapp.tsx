@@ -8,6 +8,7 @@ import {
   BotOff,
   Check,
   CheckCheck,
+  ChevronDown,
   Clock,
   Loader2,
   MessageCircle,
