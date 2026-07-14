@@ -1646,9 +1646,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             ) : storeStatus.isClosed ? (
               <>
                 <MoonStar className="h-4 w-4 text-red-300" />
-                {storeStatus.nextOpenLabel
-                  ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
-                  : "Loja fechada no momento"}
+                {STORE_COPY.closedButtonLabel(storeStatus)}
               </>
             ) : mode === "entrega" && outsideRadius ? (
               <>
