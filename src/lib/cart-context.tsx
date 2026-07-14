@@ -143,11 +143,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       items,
       subtotal,
       count,
-      add: (item) =>
-        setItems((prev) => [
-          ...prev,
-          { ...item, uid: Math.random().toString(36).slice(2, 10) },
-        ]),
+      add: (item) => {
+        const uid = Math.random().toString(36).slice(2, 10);
+        const full = { ...item, uid };
+        setItems((prev) => [...prev, full]);
+        if (shareMode?.token) {
+          void addSharedItem(shareMode.token, shareMode.name, full).catch(() => {});
+        }
+      },
       update: (uid, patch) =>
         setItems((prev) => prev.map((it) => (it.uid === uid ? { ...it, ...patch } : it))),
       remove: (uid) => setItems((prev) => prev.filter((it) => it.uid !== uid)),
