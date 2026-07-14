@@ -1,5 +1,6 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import L from "leaflet";
@@ -8,8 +9,10 @@ import {
   Bike, Power, MapPin, Navigation, Check, X, Package, Clock, DollarSign,
   Phone, LogOut, Star, TrendingUp, Wifi, Target, Award, Flame, Timer,
   Loader2, Home, User, Calendar, XCircle, CheckCircle2, BarChart3,
+  Sparkles, Route as RouteIcon, ArrowRight, PlayCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { optimizeRoute, type OptimizeResult } from "@/lib/route-optimization.functions";
 
 export const Route = createFileRoute("/motoboy")({
   head: () => ({
