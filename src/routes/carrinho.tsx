@@ -309,14 +309,16 @@ function CartPage() {
                 </div>
 
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     openEdit(it);
                   }}
                   className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/80 active:scale-95"
-                  aria-label="Editar"
+                  aria-label={`Editar ${it.name}`}
+                  title="Editar item"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </div>
             ))}
