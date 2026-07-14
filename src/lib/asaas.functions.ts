@@ -2,6 +2,24 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+// Verify the authenticated user owns the order (or is admin/manager/cashier staff).
+async function assertOrderAccess(
+  supabase: SupabaseClient,
+  orderUserId: string | null | undefined,
+  callerId: string,
+) {
+  if (orderUserId && orderUserId === callerId) return;
+  const roles = ["admin", "manager", "cashier"] as const;
+  for (const r of roles) {
+    const { data } = await supabase.rpc("has_role", { _user_id: callerId, _role: r });
+    if (data) return;
+  }
+  throw new Error("Sem permissão para acessar este pedido");
+}
+
 
 const pixInput = z.object({
   orderId: z.string().uuid(),
@@ -16,8 +34,9 @@ const pixInput = z.object({
 });
 
 export const createAsaasPixForOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => pixInput.parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createPixCharge } = await import("@/lib/asaas.server");
     const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
@@ -28,6 +47,8 @@ export const createAsaasPixForOrder = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
+
 
     const customer = await resolveOrCreateAsaasCustomer({
       userId: order.user_id ?? null,
@@ -90,8 +111,9 @@ const cardInput = z.object({
 });
 
 export const createAsaasCardForOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => cardInput.parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCardCharge } = await import("@/lib/asaas.server");
     const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
@@ -102,6 +124,7 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
 
     const customer = await resolveOrCreateAsaasCustomer({
       userId: order.user_id ?? null,
@@ -111,9 +134,13 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
       phone: data.customer.phone ?? order.phone ?? undefined,
     });
 
-    // Load saved token if the user opted in
+    // Load saved token if the user opted in — only allowed when caller IS the
+    // order's owner (never let staff charge a customer's stored card).
     let savedToken: string | null = null;
-    if (data.useSavedCard && order.user_id) {
+    if (data.useSavedCard) {
+      if (!order.user_id || order.user_id !== context.userId) {
+        throw new Error("Cartão salvo só pode ser usado pelo próprio titular");
+      }
       const { data: p } = await supabaseAdmin
         .from("profiles")
         .select("asaas_card_token")
@@ -121,6 +148,7 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
         .maybeSingle();
       savedToken = p?.asaas_card_token ?? null;
     }
+
     if (data.useSavedCard && !savedToken) {
       throw new Error("Nenhum cartão salvo encontrado");
     }
@@ -206,16 +234,22 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
   });
 
 export const getAsaasPaymentStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => z.object({ orderId: z.string().uuid() }).parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin
       .from("orders")
-      .select("id, status, asaas_status, asaas_payment_id, payment_method, paid_at")
+      .select("id, status, asaas_status, asaas_payment_id, payment_method, paid_at, user_id")
       .eq("id", data.orderId)
       .maybeSingle();
-    return order ?? null;
+    if (!order) return null;
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
+    // Strip user_id from the response — callers only need payment status fields.
+    const { user_id: _uid, ...rest } = order;
+    return rest;
   });
+
 
 const checkoutInput = z.object({
   orderId: z.string().uuid(),
@@ -229,8 +263,9 @@ const checkoutInput = z.object({
 });
 
 export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((raw) => checkoutInput.parse(raw))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCheckoutSession } = await import("@/lib/asaas.server");
     const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
@@ -241,6 +276,8 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
+    await assertOrderAccess(context.supabase, order.user_id, context.userId);
+
 
     const shortId = order.id.slice(0, 8);
     const origin = data.origin.replace(/\/+$/, "");
