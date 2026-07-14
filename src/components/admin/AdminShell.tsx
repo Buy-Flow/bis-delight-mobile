@@ -49,6 +49,7 @@ import {
   Gauge,
   Route,
   Camera,
+  HeartHandshake,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -148,6 +149,7 @@ const groups: NavGroup[] = [
       { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
       { to: "/indicacoes", label: "Indique um amigo", icon: Gift },
       { to: "/aniversariantes", label: "Aniversariantes", icon: Cake },
+      { to: "/marketing-winback", label: "Reativação de clientes", icon: HeartHandshake },
     ],
   },
   {

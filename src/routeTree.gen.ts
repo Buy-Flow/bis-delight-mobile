@@ -36,6 +36,7 @@ import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pd
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated/modelos'
 import { Route as AuthenticatedMesasRouteImport } from './routes/_authenticated/mesas'
+import { Route as AuthenticatedMarketingWinbackRouteImport } from './routes/_authenticated/marketing-winback'
 import { Route as AuthenticatedLucratividadeRouteImport } from './routes/_authenticated/lucratividade'
 import { Route as AuthenticatedIndiqueRouteImport } from './routes/_authenticated/indique'
 import { Route as AuthenticatedIndicacoesRouteImport } from './routes/_authenticated/indicacoes'
@@ -59,6 +60,7 @@ import { Route as AuthenticatedAniversariantesRouteImport } from './routes/_auth
 import { Route as AuthenticatedAlertasSonorosRouteImport } from './routes/_authenticated/alertas-sonoros'
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicWinbackCronRouteImport } from './routes/api/public/winback-cron'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
 import { Route as ApiPublicCashCloseCronRouteImport } from './routes/api/public/cash-close-cron'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
@@ -202,6 +204,12 @@ const AuthenticatedMesasRoute = AuthenticatedMesasRouteImport.update({
   path: '/mesas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMarketingWinbackRoute =
+  AuthenticatedMarketingWinbackRouteImport.update({
+    id: '/marketing-winback',
+    path: '/marketing-winback',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLucratividadeRoute =
   AuthenticatedLucratividadeRouteImport.update({
     id: '/lucratividade',
@@ -322,6 +330,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicWinbackCronRoute = ApiPublicWinbackCronRouteImport.update({
+  id: '/api/public/winback-cron',
+  path: '/api/public/winback-cron',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp-webhook',
@@ -384,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/indicacoes': typeof AuthenticatedIndicacoesRoute
   '/indique': typeof AuthenticatedIndiqueRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
+  '/marketing-winback': typeof AuthenticatedMarketingWinbackRoute
   '/mesas': typeof AuthenticatedMesasRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -406,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
+  '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesByTo {
@@ -440,6 +455,7 @@ export interface FileRoutesByTo {
   '/indicacoes': typeof AuthenticatedIndicacoesRoute
   '/indique': typeof AuthenticatedIndiqueRoute
   '/lucratividade': typeof AuthenticatedLucratividadeRoute
+  '/marketing-winback': typeof AuthenticatedMarketingWinbackRoute
   '/mesas': typeof AuthenticatedMesasRoute
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -462,6 +478,7 @@ export interface FileRoutesByTo {
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
+  '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesById {
@@ -498,6 +515,7 @@ export interface FileRoutesById {
   '/_authenticated/indicacoes': typeof AuthenticatedIndicacoesRoute
   '/_authenticated/indique': typeof AuthenticatedIndiqueRoute
   '/_authenticated/lucratividade': typeof AuthenticatedLucratividadeRoute
+  '/_authenticated/marketing-winback': typeof AuthenticatedMarketingWinbackRoute
   '/_authenticated/mesas': typeof AuthenticatedMesasRoute
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -520,6 +538,7 @@ export interface FileRoutesById {
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
+  '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRouteTypes {
@@ -556,6 +575,7 @@ export interface FileRouteTypes {
     | '/indicacoes'
     | '/indique'
     | '/lucratividade'
+    | '/marketing-winback'
     | '/mesas'
     | '/modelos'
     | '/notificacoes'
@@ -578,6 +598,7 @@ export interface FileRouteTypes {
     | '/rastrear/$orderId'
     | '/api/public/cash-close-cron'
     | '/api/public/whatsapp-webhook'
+    | '/api/public/winback-cron'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -612,6 +633,7 @@ export interface FileRouteTypes {
     | '/indicacoes'
     | '/indique'
     | '/lucratividade'
+    | '/marketing-winback'
     | '/mesas'
     | '/modelos'
     | '/notificacoes'
@@ -634,6 +656,7 @@ export interface FileRouteTypes {
     | '/rastrear/$orderId'
     | '/api/public/cash-close-cron'
     | '/api/public/whatsapp-webhook'
+    | '/api/public/winback-cron'
     | '/api/public/whatsapp-webhook/$event'
   id:
     | '__root__'
@@ -669,6 +692,7 @@ export interface FileRouteTypes {
     | '/_authenticated/indicacoes'
     | '/_authenticated/indique'
     | '/_authenticated/lucratividade'
+    | '/_authenticated/marketing-winback'
     | '/_authenticated/mesas'
     | '/_authenticated/modelos'
     | '/_authenticated/notificacoes'
@@ -691,6 +715,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rastrear/$orderId'
     | '/api/public/cash-close-cron'
     | '/api/public/whatsapp-webhook'
+    | '/api/public/winback-cron'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesById: FileRoutesById
 }
@@ -711,6 +736,7 @@ export interface RootRouteChildren {
   RastrearTokenRoute: typeof RastrearTokenRoute
   ApiPublicCashCloseCronRoute: typeof ApiPublicCashCloseCronRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
+  ApiPublicWinbackCronRoute: typeof ApiPublicWinbackCronRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -904,6 +930,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMesasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/marketing-winback': {
+      id: '/_authenticated/marketing-winback'
+      path: '/marketing-winback'
+      fullPath: '/marketing-winback'
+      preLoaderRoute: typeof AuthenticatedMarketingWinbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lucratividade': {
       id: '/_authenticated/lucratividade'
       path: '/lucratividade'
@@ -1065,6 +1098,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/winback-cron': {
+      id: '/api/public/winback-cron'
+      path: '/api/public/winback-cron'
+      fullPath: '/api/public/winback-cron'
+      preLoaderRoute: typeof ApiPublicWinbackCronRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/whatsapp-webhook': {
       id: '/api/public/whatsapp-webhook'
       path: '/api/public/whatsapp-webhook'
@@ -1127,6 +1167,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndicacoesRoute: typeof AuthenticatedIndicacoesRoute
   AuthenticatedIndiqueRoute: typeof AuthenticatedIndiqueRoute
   AuthenticatedLucratividadeRoute: typeof AuthenticatedLucratividadeRoute
+  AuthenticatedMarketingWinbackRoute: typeof AuthenticatedMarketingWinbackRoute
   AuthenticatedMesasRoute: typeof AuthenticatedMesasRoute
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
@@ -1168,6 +1209,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndicacoesRoute: AuthenticatedIndicacoesRoute,
   AuthenticatedIndiqueRoute: AuthenticatedIndiqueRoute,
   AuthenticatedLucratividadeRoute: AuthenticatedLucratividadeRoute,
+  AuthenticatedMarketingWinbackRoute: AuthenticatedMarketingWinbackRoute,
   AuthenticatedMesasRoute: AuthenticatedMesasRoute,
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
@@ -1219,6 +1261,7 @@ const rootRouteChildren: RootRouteChildren = {
   RastrearTokenRoute: RastrearTokenRoute,
   ApiPublicCashCloseCronRoute: ApiPublicCashCloseCronRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
+  ApiPublicWinbackCronRoute: ApiPublicWinbackCronRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
