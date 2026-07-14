@@ -30,7 +30,7 @@ function Switch({ checked, onCheckedChange }: { checked: boolean; onCheckedChang
       type="button"
       onClick={() => onCheckedChange(!checked)}
       className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
-        checked ? "bg-rose-600" : "bg-slate-300"
+        checked ? "bg-rose-600" : "bg-muted"
       }`}
     >
       <span
@@ -47,7 +47,7 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       {...rest}
-      className={`w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 ${className}`}
+      className={`w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 ${className}`}
     />
   );
 }
@@ -202,7 +202,7 @@ function WinbackPage() {
                 key={t.id}
                 onClick={() => setTab(t.id as Tab)}
                 className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition ${
-                  active ? "bg-white text-rose-600 shadow-sm" : "text-slate-600 hover:text-slate-900"
+                  active ? "bg-card text-rose-500 shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Ic className="h-4 w-4" />
@@ -244,8 +244,8 @@ function OverviewTab({ settings, stats }: { settings: Settings | null; stats: Re
         ))}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="text-lg font-semibold text-slate-900">Status da automação</h2>
+      <section className="rounded-2xl border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold text-foreground">Status da automação</h2>
         <dl className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 text-sm">
           <Row label="Estado" value={s?.enabled ? "🟢 Ativa" : "⏸️ Pausada"} />
           <Row label="Dias sem pedir" value={`${s?.days_inactive ?? "—"} dias`} />
@@ -276,9 +276,9 @@ function OverviewTab({ settings, stats }: { settings: Settings | null; stats: Re
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="text-lg font-semibold text-slate-900">Como funciona</h2>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-600">
+      <section className="rounded-2xl border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold text-foreground">Como funciona</h2>
+        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
           <li>
             Um cron verifica a cada 15 min se está no horário/dia configurado.
           </li>
@@ -297,9 +297,9 @@ function OverviewTab({ settings, stats }: { settings: Settings | null; stats: Re
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+    <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
       <dt className="text-slate-500">{label}</dt>
-      <dd className="font-medium text-slate-900">{value}</dd>
+      <dd className="font-medium text-foreground">{value}</dd>
     </div>
   );
 }
@@ -426,9 +426,9 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-slate-600">
+          <thead className="bg-muted/40 text-left text-muted-foreground">
             <tr>
               <th className="px-3 py-2">
                 <input
@@ -457,12 +457,12 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
               </tr>
             )}
             {filtered.map((r) => (
-              <tr key={r.user_id} className="border-t border-slate-100 hover:bg-slate-50">
+              <tr key={r.user_id} className="border-t border-border/60 hover:bg-muted/40">
                 <td className="px-3 py-2">
                   <input type="checkbox" checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} />
                 </td>
                 <td className="px-3 py-2">
-                  <div className="font-medium text-slate-900">{r.full_name || "(sem nome)"}</div>
+                  <div className="font-medium text-foreground">{r.full_name || "(sem nome)"}</div>
                   <div className="text-xs text-slate-500">{r.email}</div>
                 </td>
                 <td className="px-3 py-2 font-mono text-xs">{r.phone || "—"}</td>
@@ -541,7 +541,7 @@ function ConfigTab({
           </Field>
           <Field label="Tipo de desconto">
             <select
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               value={settings.discount_type}
               onChange={(e) => patch({ discount_type: e.target.value as "percent" | "fixed" })}
             >
@@ -599,7 +599,7 @@ function ConfigTab({
                   className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                     active
                       ? "border-rose-500 bg-rose-500 text-white"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted/40"
                   }`}
                 >
                   {d.label}
@@ -621,8 +621,8 @@ function ConfigTab({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
-      <h3 className="mb-4 text-base font-semibold text-slate-900">{title}</h3>
+    <section className="rounded-2xl border border-border bg-card p-5">
+      <h3 className="mb-4 text-base font-semibold text-foreground">{title}</h3>
       {children}
     </section>
   );
@@ -630,7 +630,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={`space-y-1 ${className}`}>
-      <Label className="text-xs text-slate-600">{label}</Label>
+      <Label className="text-xs text-muted-foreground">{label}</Label>
       {children}
     </div>
   );
@@ -658,14 +658,14 @@ function HistoryTab() {
   return (
     <div className="space-y-3">
       <div className="flex justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">Últimos envios</h2>
+        <h2 className="text-lg font-semibold text-foreground">Últimos envios</h2>
         <Button variant="outline" onClick={load} disabled={loading}>
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Atualizar
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-slate-600">
+          <thead className="bg-muted/40 text-left text-muted-foreground">
             <tr>
               <th className="px-3 py-2">Quando</th>
               <th className="px-3 py-2">Status</th>
@@ -685,7 +685,7 @@ function HistoryTab() {
               </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100 align-top">
+              <tr key={r.id} className="border-t border-border/60 align-top">
                 <td className="px-3 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
                 <td className="px-3 py-2">
                   <StatusPill status={r.status} />
@@ -709,9 +709,9 @@ function StatusPill({ status }: { status: string }) {
     sent: { c: "bg-emerald-100 text-emerald-700", ic: CheckCircle2, l: "Enviado" },
     partial: { c: "bg-amber-100 text-amber-700", ic: AlertTriangle, l: "Parcial" },
     failed: { c: "bg-rose-100 text-rose-700", ic: XCircle, l: "Falhou" },
-    skipped: { c: "bg-slate-100 text-slate-600", ic: AlertTriangle, l: "Ignorado" },
+    skipped: { c: "bg-slate-100 text-muted-foreground", ic: AlertTriangle, l: "Ignorado" },
   };
-  const meta = map[status] ?? { c: "bg-slate-100 text-slate-600", ic: AlertTriangle, l: status };
+  const meta = map[status] ?? { c: "bg-slate-100 text-muted-foreground", ic: AlertTriangle, l: status };
   const Ic = meta.ic;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${meta.c}`}>
