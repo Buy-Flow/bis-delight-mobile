@@ -2510,6 +2510,145 @@ export type Database = {
           },
         ]
       }
+      route_optimization_settings: {
+        Row: {
+          auto_optimize: boolean
+          avoid_ferries: boolean
+          avoid_highways: boolean
+          avoid_tolls: boolean
+          created_at: string
+          enabled: boolean
+          extra_time_per_stop_min: number
+          id: number
+          max_stops: number
+          min_stops: number
+          notify_courier: boolean
+          provider: string
+          return_to_store: boolean
+          traffic_mode: string
+          travel_mode: string
+          units: string
+          updated_at: string
+        }
+        Insert: {
+          auto_optimize?: boolean
+          avoid_ferries?: boolean
+          avoid_highways?: boolean
+          avoid_tolls?: boolean
+          created_at?: string
+          enabled?: boolean
+          extra_time_per_stop_min?: number
+          id?: number
+          max_stops?: number
+          min_stops?: number
+          notify_courier?: boolean
+          provider?: string
+          return_to_store?: boolean
+          traffic_mode?: string
+          travel_mode?: string
+          units?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_optimize?: boolean
+          avoid_ferries?: boolean
+          avoid_highways?: boolean
+          avoid_tolls?: boolean
+          created_at?: string
+          enabled?: boolean
+          extra_time_per_stop_min?: number
+          id?: number
+          max_stops?: number
+          min_stops?: number
+          notify_courier?: boolean
+          provider?: string
+          return_to_store?: boolean
+          traffic_mode?: string
+          travel_mode?: string
+          units?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      route_optimizations: {
+        Row: {
+          courier_id: string | null
+          created_at: string
+          encoded_polyline: string | null
+          id: string
+          legs: Json | null
+          naive_distance_km: number | null
+          order_ids: string[]
+          origin_lat: number | null
+          origin_lng: number | null
+          provider_used: string | null
+          return_to_store: boolean
+          saved_km: number | null
+          saved_min: number | null
+          sequence: string[]
+          total_distance_km: number | null
+          total_duration_min: number | null
+        }
+        Insert: {
+          courier_id?: string | null
+          created_at?: string
+          encoded_polyline?: string | null
+          id?: string
+          legs?: Json | null
+          naive_distance_km?: number | null
+          order_ids: string[]
+          origin_lat?: number | null
+          origin_lng?: number | null
+          provider_used?: string | null
+          return_to_store?: boolean
+          saved_km?: number | null
+          saved_min?: number | null
+          sequence: string[]
+          total_distance_km?: number | null
+          total_duration_min?: number | null
+        }
+        Update: {
+          courier_id?: string | null
+          created_at?: string
+          encoded_polyline?: string | null
+          id?: string
+          legs?: Json | null
+          naive_distance_km?: number | null
+          order_ids?: string[]
+          origin_lat?: number | null
+          origin_lng?: number | null
+          provider_used?: string | null
+          return_to_store?: boolean
+          saved_km?: number | null
+          saved_min?: number | null
+          sequence?: string[]
+          total_distance_km?: number | null
+          total_duration_min?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_optimizations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_optimizations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers_live"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_optimizations_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "order_tracking_public"
+            referencedColumns: ["courier_id"]
+          },
+        ]
+      }
       shared_carts: {
         Row: {
           created_at: string

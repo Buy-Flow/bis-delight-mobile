@@ -1,5 +1,6 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import L from "leaflet";
@@ -8,8 +9,10 @@ import {
   Bike, Power, MapPin, Navigation, Check, X, Package, Clock, DollarSign,
   Phone, LogOut, Star, TrendingUp, Wifi, Target, Award, Flame, Timer,
   Loader2, Home, User, Calendar, XCircle, CheckCircle2, BarChart3,
+  Sparkles, Route as RouteIcon, ArrowRight, PlayCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { optimizeRoute, type OptimizeResult } from "@/lib/route-optimization.functions";
 
 export const Route = createFileRoute("/motoboy")({
   head: () => ({
@@ -524,6 +527,15 @@ function MotoboyPortal() {
                     : "Ative o modo online para receber corridas."}
                 </div>
               )}
+
+              {activeOrders.length >= 2 && (
+                <OptimizeRouteWidget
+                  courierId={courier.id}
+                  gpsCoord={gpsCoord}
+                  count={activeOrders.length}
+                />
+              )}
+
               {activeOrders.map((o) => (
                 <ActiveOrderCard
                   key={o.id}
@@ -915,3 +927,146 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
   const a = Math.sin(dLat/2) ** 2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(a));
 }
+
+function OptimizeRouteWidget({
+  courierId,
+  gpsCoord,
+  count,
+}: {
+  courierId: string;
+  gpsCoord: { lat: number; lng: number } | null;
+  count: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<OptimizeResult | null>(null);
+  const [enabled, setEnabled] = useState(true);
+  const [minStops, setMinStops] = useState(2);
+  const optimize = useServerFn(optimizeRoute);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("route_optimization_settings")
+        .select("enabled, min_stops")
+        .eq("id", 1)
+        .maybeSingle();
+      if (data) {
+        setEnabled(!!data.enabled);
+        setMinStops(data.min_stops ?? 2);
+      }
+    })();
+  }, []);
+
+  const run = async () => {
+    setLoading(true);
+    try {
+      const res = await optimize({
+        data: {
+          courier_id: courierId,
+          save: true,
+          origin: gpsCoord ?? undefined,
+        },
+      });
+      setResult(res);
+      setOpen(true);
+      if (res.saved_km > 0.1) {
+        toast.success(`Economia de ${res.saved_km.toFixed(1)} km 🎯`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao otimizar rota");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!enabled || count < minStops) return null;
+
+  const navUrl = useMemo(() => {
+    if (!result || result.stops.length === 0) return null;
+    const origin = `${result.origin.lat},${result.origin.lng}`;
+    const dest = result.stops[result.stops.length - 1];
+    const waypoints = result.stops
+      .slice(0, -1)
+      .map((s) => `${s.lat},${s.lng}`)
+      .join("|");
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest.lat},${dest.lng}${waypoints ? `&waypoints=${encodeURIComponent(waypoints)}` : ""}&travelmode=driving`;
+  }, [result]);
+
+  return (
+    <div className="rounded-2xl border-2 border-fuchsia-500/50 bg-gradient-to-br from-fuchsia-500/15 via-purple-800/10 to-transparent p-4 shadow-lg shadow-fuchsia-500/10">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-black uppercase tracking-widest text-fuchsia-300">
+            Rota inteligente
+          </div>
+          <div className="font-black text-white flex items-center gap-2 mt-0.5">
+            <RouteIcon className="h-4 w-4" /> {count} paradas — otimize a ordem
+          </div>
+          <div className="text-[11px] text-white/60">
+            Menos km rodado, entregas mais rápidas e clientes satisfeitos.
+          </div>
+        </div>
+        <button
+          onClick={run}
+          disabled={loading}
+          className="rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 px-3 py-2 text-xs font-black text-white shadow disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="mr-1 inline h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-1 inline h-3.5 w-3.5" />}
+          {result ? "Recalcular" : "Otimizar"}
+        </button>
+      </div>
+
+      {result && open && (
+        <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2">
+          <div className="grid grid-cols-3 gap-2">
+            <MiniStat label="Total" value={`${result.total_distance_km.toFixed(1)} km`} tone="cyan" />
+            <MiniStat label="ETA" value={`${result.total_duration_min.toFixed(0)} min`} tone="emerald" />
+            <MiniStat label="Economia" value={`−${result.saved_km.toFixed(1)} km`} tone={result.saved_km > 0.5 ? "emerald" : "white"} />
+          </div>
+
+          <div className="space-y-2">
+            {result.stops.map((s, i) => (
+              <div key={s.order_id} className="flex items-start gap-2 rounded-xl bg-white/5 p-2.5">
+                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-fuchsia-500 text-white text-xs font-black">{i + 1}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-sm font-bold text-white truncate">{s.customer_name ?? "Cliente"}</div>
+                    <div className="text-[10px] text-white/50 shrink-0">
+                      ETA {s.eta_at ? new Date(s.eta_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—"}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-white/60 flex items-start gap-1">
+                    <MapPin className="h-3 w-3 mt-0.5 shrink-0 text-fuchsia-400" />
+                    <span className="truncate">{s.address ?? "—"}</span>
+                  </div>
+                  <div className="flex gap-2 mt-1 text-[10px]">
+                    <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-white/60">{s.distance_from_prev_km?.toFixed(1)} km</span>
+                    <span className="rounded-full bg-white/5 px-1.5 py-0.5 text-white/60">{s.duration_from_prev_min?.toFixed(0)} min</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {navUrl && (
+            <a
+              href={navUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 py-3 text-center text-sm font-black text-white shadow-lg"
+            >
+              <PlayCircle className="mr-1 inline h-4 w-4" /> Iniciar navegação no Google Maps
+            </a>
+          )}
+
+          <div className="text-[10px] text-white/40 text-center">
+            {result.provider_used === "google_directions" ? "Rota via Google Directions" : "Rota via vizinho mais próximo"}
+            {result.return_to_store && " • retorno à loja incluído"}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
