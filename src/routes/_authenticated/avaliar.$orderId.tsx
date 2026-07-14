@@ -304,7 +304,7 @@ function AvaliarPage() {
       } catch { /* ignore */ }
       navigate({ to: "/recompensas" as never });
     } catch (e) {
-      toast.error("Não foi possível salvar: " + (e instanceof Error ? e.message : String(e)));
+      toast.error("Não foi possível salvar sua avaliação", { description: friendlyError(e, "Tente novamente em instantes.") });
     } finally {
       setSaving(false);
     }
