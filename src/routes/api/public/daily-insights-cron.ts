@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/public/daily-insights-cron")({
         const weekdayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
         const weekday = weekdayMap[parts.weekday ?? "Mon"] ?? 1;
 
-        const weekdays: number[] = Array.isArray(s.weekdays) ? s.weekdays : [1, 2, 3, 4, 5, 6];
+        const weekdays: number[] = Array.isArray(s.weekdays) ? (s.weekdays as unknown[]).map((v) => Number(v)) : [1, 2, 3, 4, 5, 6];
         if (!weekdays.includes(weekday)) return Response.json({ ok: true, skipped: "weekday" });
 
         const targetMinutes = (s.send_hour ?? 9) * 60 + (s.send_minute ?? 0);
