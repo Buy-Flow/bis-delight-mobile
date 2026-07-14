@@ -24,6 +24,7 @@ import {
   Undo2,
   X,
 } from "lucide-react";
+import { VoiceMicButton } from "@/components/VoiceMicButton";
 import { z } from "zod";
 import {
   listCopilotThreads,
