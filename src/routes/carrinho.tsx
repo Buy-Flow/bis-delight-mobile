@@ -44,8 +44,12 @@ function CartPage() {
     editingItem,
     closeEdit,
     requestOpenProduct,
+    shareMode,
+    setShareMode,
   } = useCart();
   const { data: allProducts = [] } = useProducts();
+
+  const [shareOpen, setShareOpen] = useState(false);
 
   const suggestions = usePersonalizedSuggestions(items, allProducts);
 
