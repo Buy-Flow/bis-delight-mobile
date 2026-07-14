@@ -53,6 +53,7 @@ import { markAdminShellMounted } from "@/lib/admin-shell-flag";
 import { usePermissions, labelForRole } from "@/lib/permissions";
 import { FloatingAssistant } from "@/components/admin/FloatingAssistant";
 import { CommandPalette } from "@/components/admin/CommandPalette";
+import { useSoundAlertsListener } from "@/hooks/useSoundAlertsListener";
 
 type AdminTab =
   | "products"
