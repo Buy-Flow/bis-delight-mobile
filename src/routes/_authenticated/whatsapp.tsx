@@ -20,7 +20,6 @@ import {
   Send,
   Settings,
   Smartphone,
-  Wifi,
   WifiOff,
   Wrench,
   X,
