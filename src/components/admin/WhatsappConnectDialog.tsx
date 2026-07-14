@@ -31,9 +31,12 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   const [webhook, setWebhookState] = useState<{ url: string; currentUrl: string | null; configured: boolean; hasToken: boolean } | null>(null);
   const [wbSaving, setWbSaving] = useState(false);
   const [diag, setDiag] = useState<{
-    ok: number; skipped: number; error: number; total: number;
+    ok: number; skipped: number; error: number; noise: number; total: number;
     lastEventAt: string | null; lastSyncAt: string | null; lastErrorAt: string | null; lastError: string | null;
+    skipReasons: Array<{ reason: string; count: number }>;
+    errorReasons: Array<{ reason: string; count: number; lastAt: string | null }>;
   } | null>(null);
+
   const pollRef = useRef<number | null>(null);
   const diagRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
