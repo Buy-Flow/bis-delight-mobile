@@ -61,7 +61,7 @@ function Page() {
   useEffect(() => { refresh(); /* eslint-disable-next-line */ }, []);
 
   const open = async (id: string) => {
-    try { const r = await _get({ data: { id } }); setSelected(r as FullAnalysis); }
+    try { const r = await _get({ data: { id } }); setSelected(r as unknown as FullAnalysis); }
     catch (e) { toast.error((e as Error).message); }
   };
   const remove = async (id: string) => {
