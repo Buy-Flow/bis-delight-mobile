@@ -10,6 +10,8 @@ import {
   Cake, Save, Gift, Users, CalendarDays, BellRing, Sparkles,
   Search, Send, CheckCircle2, Clock,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 
 export const Route = createFileRoute("/_authenticated/aniversariantes")({
   head: () => ({ meta: [{ title: "Aniversariantes — Admin" }] }),
