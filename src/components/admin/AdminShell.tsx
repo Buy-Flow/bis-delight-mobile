@@ -158,6 +158,7 @@ const groups: NavGroup[] = [
     label: "Inteligência",
     items: [
       { to: "/copiloto", label: "Copiloto (IA)", icon: Bot },
+      { to: "/insights-diarios", label: "Insights Proativos", icon: Sparkles },
       { to: "/ai-growth", label: "AI Growth Engine", icon: TrendingUp },
       { to: "/previsao", label: "Previsão de demanda", icon: BarChart3 },
       { to: "/pre-preparo", label: "Pré-preparo IA", icon: ChefHat },
