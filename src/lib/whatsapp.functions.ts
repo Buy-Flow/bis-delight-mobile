@@ -241,8 +241,40 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             linkPreview: false,
           };
           const sendReports: string[] = [];
+          const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+          const getHistoryStatus = async (messageId: string | null) => {
+            if (!messageId) return null;
+            await sleep(1200);
+            try {
+              const history = await fetchEvolutionWithTimeout(
+                `${base}/chat/findMessages/${encodeURIComponent(instance)}`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", apikey: key },
+                  body: JSON.stringify({ page: 1, offset: 5, where: { key: { id: messageId } } }),
+                },
+                8_000,
+              );
+              const historyBody = await history.text();
+              if (!history.ok) return null;
+              const parsedHistory = JSON.parse(historyBody) as Record<string, unknown>;
+              const messages = parsedHistory.messages && typeof parsedHistory.messages === "object"
+                ? (parsedHistory.messages as Record<string, unknown>)
+                : {};
+              const records = Array.isArray(messages.records) ? messages.records : [];
+              const first = records[0] && typeof records[0] === "object" ? records[0] as Record<string, unknown> : null;
+              const updates = first && Array.isArray(first.MessageUpdate) ? first.MessageUpdate : [];
+              const latest = updates[updates.length - 1] as Record<string, unknown> | undefined;
+              return typeof latest?.status === "string" ? latest.status.toUpperCase() : null;
+            } catch {
+              return null;
+            }
+          };
           try {
             let resp: Response | null = null;
+            let accepted = false;
+            let acceptedParsed: Json | null = null;
+            let acceptedStatus = "pending";
             for (const attemptNumber of sendAttempts) {
               sendReq = {
                 number: attemptNumber,
@@ -263,7 +295,32 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                   `← status: ${sendStatus}\n` +
                   `← body: ${sendBody.slice(0, 600) || "(vazio)"}`,
               );
-              if (resp.ok) break;
+              if (!resp.ok) continue;
+
+              try {
+                const j = JSON.parse(sendBody) as Record<string, unknown>;
+                const dataRec = (j.data ?? {}) as Record<string, unknown>;
+                const attemptEvoId = extractEvolutionMessageId(j);
+                const evoStatus = String(j.status ?? dataRec.status ?? "pending").toLowerCase();
+                const historyStatus = await getHistoryStatus(attemptEvoId);
+                if (historyStatus === "ERROR") {
+                  sendReports.push(
+                    `checagem pós-envio: mensagem ${attemptEvoId ?? "sem-id"} já voltou ERROR no histórico da Evolution; tentando próxima variante do número.`,
+                  );
+                  continue;
+                }
+                evoId = attemptEvoId;
+                acceptedParsed = j as Json;
+                acceptedStatus = evoStatus;
+                accepted = true;
+                break;
+              } catch {
+                evoId = null;
+                acceptedParsed = null;
+                acceptedStatus = "pending";
+                accepted = true;
+                break;
+              }
             }
             if (!resp) throw new Error("Nenhum número válido para envio.");
             sendStatus = resp.status;
@@ -283,34 +340,27 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 `[etapa 1: verificação de número]\n${checkReport}\n\n` +
                 `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
               status = "failed";
+            } else if (!accepted) {
+              evoError =
+                `❌ O WhatsApp rejeitou todas as variantes testadas deste número.\n\n` +
+                `[etapa 1: verificação de número]\n${checkReport}\n\n` +
+                `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
+              status = "failed";
             } else {
-              let parsed: Json | null = null;
-              try {
-                const j = JSON.parse(sendBody) as Record<string, unknown>;
-                parsed = j as Json;
-                const dataRec = (j.data ?? {}) as Record<string, unknown>;
-                evoId = extractEvolutionMessageId(j);
-                const evoStatus = String(j.status ?? dataRec.status ?? "sent").toLowerCase();
-                // HTTP 2xx da Evolution só confirma que a API aceitou a
-                // chamada. Enquanto o próprio histórico vier como PENDING,
-                // não marcamos como enviada de verdade.
-                status = evoStatus === "error" || evoStatus === "failed"
+              const parsed = acceptedParsed;
+              // HTTP 2xx da Evolution só confirma que a API aceitou a
+              // chamada. Enquanto o próprio histórico vier como PENDING,
+              // não marcamos como enviada de verdade.
+              status = acceptedStatus === "error" || acceptedStatus === "failed"
                   ? "failed"
-                  : evoStatus === "pending"
+                  : acceptedStatus === "pending"
                     ? "pending"
                     : "sent";
-                if (status === "failed") {
-                  evoError =
-                    `❌ Evolution aceitou a chamada mas retornou status ${evoStatus}.\n\n` +
-                    `[etapa 1: verificação de número]\n${checkReport}\n\n` +
-                    `[etapa 2: envio da mensagem]\nPOST ${sendUrl}\n` +
-                    `→ payload: ${JSON.stringify(sendReq)}\n` +
-                    `← status: ${sendStatus}\n` +
-                    `← body: ${sendBody.slice(0, 900) || "(vazio)"}`;
-                }
-              } catch {
-                evoId = null;
-                status = "sent";
+              if (status === "failed") {
+                evoError =
+                  `❌ Evolution aceitou a chamada mas retornou status ${acceptedStatus}.\n\n` +
+                  `[etapa 1: verificação de número]\n${checkReport}\n\n` +
+                  `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
               }
               if (!evoId && !evoError) {
                 evoError =
