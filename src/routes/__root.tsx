@@ -276,6 +276,10 @@ function RootComponent() {
         <Toaster
           position="top-center"
           theme="dark"
+          visibleToasts={3}
+          expand={false}
+          duration={4000}
+          gap={8}
           toastOptions={{
             style: {
               background: "oklch(0.24 0.14 305)",
