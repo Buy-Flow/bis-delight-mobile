@@ -393,7 +393,16 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const freeDelivery =
     mode === "entrega" && freeThreshold > 0 && subtotal >= freeThreshold;
   const fee = freeDelivery ? 0 : rawFee;
-  const discount = couponApplied?.discount ?? 0;
+  // Recomputa o desconto quando o subtotal muda:
+  // - promo em %: recalcula sobre o subtotal atual;
+  // - fixo/loyalty: nunca desconta mais do que o subtotal.
+  const discount = (() => {
+    if (!couponApplied) return 0;
+    if (couponApplied.discountType === "percent" && couponApplied.discountValue) {
+      return Math.round((subtotal * couponApplied.discountValue) / 100 * 100) / 100;
+    }
+    return Math.min(couponApplied.discount, subtotal);
+  })();
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
