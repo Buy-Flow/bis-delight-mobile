@@ -29,6 +29,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { WhatsappConnectDialog } from "@/components/admin/WhatsappConnectDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { formatPhone } from "@/lib/phone";
 import {
   configureWhatsappWebhook,
   createWhatsappConversation,
