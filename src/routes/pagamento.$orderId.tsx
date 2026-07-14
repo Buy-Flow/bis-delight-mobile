@@ -160,7 +160,7 @@ function PaidCard({ order }: { order: Order }) {
         Recebemos {brl(Number(order.total))}. Já estamos preparando o seu pedido 🍧
       </div>
       <Link
-        to="/meus-pedidos"
+        to="/conta"
         className="mt-5 inline-flex rounded-2xl bg-neon-cyan px-5 py-3 text-sm font-extrabold text-[oklch(0.18_0.11_305)]"
       >
         Ver meus pedidos

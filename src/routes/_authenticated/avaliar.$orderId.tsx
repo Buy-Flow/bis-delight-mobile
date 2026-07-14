@@ -141,12 +141,12 @@ function AvaliarPage() {
       if (cancelled) return;
       if (eOrd || !ord) {
         toast.error("Pedido não encontrado.");
-        navigate({ to: "/meus-pedidos" as never });
+        navigate({ to: "/conta" });
         return;
       }
       if (ord.user_id !== uid) {
         toast.error("Este pedido não é seu.");
-        navigate({ to: "/meus-pedidos" as never });
+        navigate({ to: "/conta" });
         return;
       }
       setOrder(ord as OrderRow);
@@ -323,7 +323,7 @@ function AvaliarPage() {
       <header className="sticky top-0 z-30 border-b border-white/5 bg-[#0e0a1a]/95 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <Link
-            to="/meus-pedidos"
+            to="/conta"
             className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5"
             aria-label="Voltar"
           >
