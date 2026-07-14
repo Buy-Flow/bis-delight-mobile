@@ -371,7 +371,7 @@ export async function ingestEvolutionPayload(
       result.skipped += 1;
       await logRow({
         status: "skipped",
-        error: "group or broadcast jid",
+        error: "mensagem de grupo ou status broadcast",
         evolution_id: key?.id ?? item.id ?? null,
         payload: item,
       });
@@ -431,7 +431,7 @@ export async function ingestEvolutionPayload(
         result.skipped += 1;
         await logRow({
           status: "skipped",
-          error: "duplicate evolution_id",
+          error: "duplicata (mensagem já recebida)",
           phone,
           evolution_id: evoId,
           from_me: fromMe,
