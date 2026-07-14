@@ -11,7 +11,7 @@ import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { logSilent } from "@/lib/silent-errors";
 import { CheckoutUpsellStrip } from "@/components/menu/CheckoutUpsellStrip";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
-import { useStoreStatus } from "@/lib/store-status";
+import { useStoreStatus, STORE_COPY } from "@/lib/store-status";
 import { useSiteSettings } from "@/lib/menu-data";
 import {
   calcDeliveryFee,
@@ -461,11 +461,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     };
     setActionError(null);
     if (storeStatus.isClosed) {
-      fail(
-        storeStatus.nextOpenLabel
-          ? `Loja fechada. Reabrimos ${storeStatus.nextOpenLabel}.`
-          : "A loja está fechada no momento.",
-      );
+      fail(STORE_COPY.closedShort(storeStatus));
       return;
     }
     if (authLoading) {
@@ -785,9 +781,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-black text-white">
-                    {storeStatus.reason === "override-closed"
-                      ? "Estamos temporariamente fechados"
-                      : "Loja fechada no momento"}
+                    {STORE_COPY.closedHeadline(storeStatus)}
                   </div>
                   <div className="mt-1 text-[12px] leading-snug text-white/80">
                     {storeStatus.nextOpenLabel
@@ -1652,9 +1646,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             ) : storeStatus.isClosed ? (
               <>
                 <MoonStar className="h-4 w-4 text-red-300" />
-                {storeStatus.nextOpenLabel
-                  ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
-                  : "Loja fechada no momento"}
+                {STORE_COPY.closedButtonLabel(storeStatus)}
               </>
             ) : mode === "entrega" && outsideRadius ? (
               <>

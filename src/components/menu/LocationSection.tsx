@@ -4,6 +4,7 @@ import { useSiteSettings, DEFAULT_HOURS, type WeekDay, type DayHours } from "@/l
 import { useEffect, useState } from "react";
 import { AdminEditButton } from "./AdminEditButton";
 import { formatPhone } from "@/lib/phone";
+import { STORE_COPY } from "@/lib/store-status";
 
 
 const DAY_ORDER: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -85,7 +86,7 @@ export function LocationSection() {
   const todayLabel =
     todayHours && !todayHours.closed
       ? `${todayHours.open.slice(0, 5)} às ${todayHours.close.slice(0, 5)}`
-      : "Fechado hoje";
+      : STORE_COPY.dayScheduleClosed;
 
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá! Quero fazer um pedido 🍧")}`;
 
