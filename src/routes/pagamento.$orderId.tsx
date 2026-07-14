@@ -173,12 +173,14 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
   const genPix = useServerFn(createAsaasPixForOrder);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [pixError, setPixError] = useState<string | null>(null);
 
   useEffect(() => {
     if (order.pix_qr_code_base64 || generating) return;
     setGenerating(true);
     (async () => {
       try {
+        setPixError(null);
         const saved = safeLoadCustomer();
         await genPix({
           data: {
@@ -200,7 +202,9 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
           .maybeSingle();
         if (data) setOrder(data as Order);
       } catch (e: any) {
-        toast.error("Não foi possível gerar o PIX", { description: e?.message || "Tente novamente." });
+        const message = e?.message || "Tente novamente.";
+        setPixError(message);
+        toast.error("Não foi possível gerar o PIX", { description: message, duration: 8000 });
       } finally {
         setGenerating(false);
       }
@@ -259,7 +263,8 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center text-sm text-white/60">
-          QR Code indisponível.
+          {pixError ? "Não foi possível gerar o QR Code." : "QR Code indisponível."}
+          {pixError && <div className="mt-2 text-xs text-red-200">{pixError}</div>}
         </div>
       )}
 
