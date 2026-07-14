@@ -111,22 +111,6 @@ export async function tryConsumeStoredReferralCode(): Promise<void> {
   }
 }
 
-async function _legacyUnused() {
-  // placeholder to keep patch aligned
-
-  clearStoredReferralCode();
-  const row = Array.isArray(data) ? (data[0] as Record<string, unknown>) : (data as Record<string, unknown>);
-  const couponCode = row?.coupon_code as string | undefined;
-  const discountType = row?.discount_type as string | undefined;
-  const discountValue = Number(row?.discount_value ?? 0);
-  if (couponCode) {
-    const val = discountType === "percent" ? `${discountValue}%` : `R$ ${discountValue.toFixed(2)}`;
-    toast.success(`🎁 Cupom ${val} liberado!`, {
-      description: `Use ${couponCode} no seu primeiro pedido.`,
-      duration: 8000,
-    });
-  }
-}
 
 export async function getMyReferralCode(): Promise<string | null> {
   const { data, error } = await sb.rpc("get_or_create_my_referral_code");
