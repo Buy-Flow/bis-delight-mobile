@@ -43,6 +43,24 @@ export function ProductCard({
     return `Volta ${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
   })();
   const blocked = outOfStock || paused;
+
+  const statusLabel = (() => {
+    if (paused) {
+      const parts = ["produto pausado"];
+      if (product.pauseReason) parts.push(product.pauseReason);
+      if (pausedLabel) parts.push(pausedLabel.toLowerCase());
+      else parts.push("indisponível no momento");
+      return parts.join(", ");
+    }
+    if (outOfStock) return "esgotado, indisponível para pedido";
+    if (lowStock) return `estoque baixo, restam ${stock}`;
+    return "disponível";
+  })();
+
+  const ariaLabel = `${product.name}. ${statusLabel}. A partir de ${brl(product.basePrice)}.${
+    blocked ? "" : " Toque para personalizar e adicionar ao carrinho."
+  }`;
+
   return (
 
     <div
@@ -56,13 +74,16 @@ export function ProductCard({
           onOpen(product);
         }
       }}
+      aria-label={ariaLabel}
       aria-disabled={blocked || undefined}
+      data-status={paused ? "paused" : outOfStock ? "out-of-stock" : lowStock ? "low-stock" : "available"}
       className={cn(
-        "group relative flex h-full w-full cursor-pointer flex-col overflow-visible rounded-[22px] text-left select-none",
+        "group relative flex h-full w-full flex-col overflow-visible rounded-[22px] text-left select-none",
+        blocked ? "cursor-not-allowed" : "cursor-pointer",
         "touch-manipulation [-webkit-tap-highlight-color:transparent]",
         "transition-transform duration-150 ease-out will-change-transform",
-        "active:scale-[.97] active:duration-75",
-        "[@media(hover:hover)]:hover:-translate-y-0.5",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(0.14_0.09_300)]",
+        !blocked && "active:scale-[.97] active:duration-75 [@media(hover:hover)]:hover:-translate-y-0.5",
       )}
       style={{
         background:
@@ -71,6 +92,7 @@ export function ProductCard({
           "0 20px 38px -18px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.06)",
       }}
     >
+
       {/* Full-bleed product image top */}
       <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px]">
         <div
@@ -98,7 +120,9 @@ export function ProductCard({
             const imgEl = (
               <img
                 src={product.image}
-                alt={product.name}
+                alt=""
+                aria-hidden="true"
+
                 loading="lazy"
                 decoding="async"
                 draggable={false}
@@ -147,14 +171,14 @@ export function ProductCard({
           </div>
         )}
         {outOfStock && !paused && (
-          <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/70 backdrop-blur-sm">
+          <div aria-hidden="true" className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/70 backdrop-blur-sm">
             <span className="rounded-full border border-white/30 bg-black/60 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white">
               Esgotado
             </span>
           </div>
         )}
         {paused && (
-          <div className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/72 backdrop-blur-sm">
+          <div aria-hidden="true" className="absolute inset-0 z-30 grid place-items-center rounded-t-[22px] bg-black/72 backdrop-blur-sm">
             <div className="flex max-w-[85%] flex-col items-center gap-1.5 text-center">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-500/20 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-100">
                 <Pause className="h-3 w-3" strokeWidth={3} />
@@ -173,6 +197,7 @@ export function ProductCard({
             </div>
           </div>
         )}
+
         {/* Favorite heart top-right */}
         <div className="absolute right-2 top-2 z-20">
           <FavoriteButton productId={product.id} />
@@ -259,7 +284,8 @@ export function ProductCard({
           </div>
 
           <div
-            aria-label="Adicionar"
+            aria-hidden="true"
+
             className={cn(
               "grid h-10 w-10 shrink-0 place-items-center rounded-full",
               "transition-transform duration-150 ease-out will-change-transform",
