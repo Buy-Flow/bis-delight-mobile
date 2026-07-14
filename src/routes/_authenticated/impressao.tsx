@@ -139,6 +139,7 @@ function PrintCenterPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [items, setItems] = useState<Record<string, OrderItemRow[]>>({});
   const [jobs, setJobs] = useState<PrintJob[]>([]);
+  const [printers, setPrinters] = useState<Printer[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
