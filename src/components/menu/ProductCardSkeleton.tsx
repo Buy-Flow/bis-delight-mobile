@@ -20,8 +20,10 @@ export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
     <div
       aria-hidden="true"
       className={cn(
-        "relative flex h-full w-full flex-col overflow-hidden rounded-[22px]",
-        "animate-pulse",
+        // Usa o sistema unificado `.sk` (shimmer/pulse/motion vindos do
+        // SkeletonProvider). O container inteiro é o skeleton — as caixas
+        // internas apenas desenham a silhueta do card real.
+        "sk relative flex h-full w-full flex-col overflow-hidden rounded-[22px]",
       )}
       style={{
         background:
@@ -29,19 +31,10 @@ export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
         boxShadow:
           "inset 0 1px 0 rgba(255,255,255,0.05), 0 0 0 1px rgba(255,255,255,0.05)",
         animationDelay: `${delay}ms`,
+        // Radius local vence o `--sk-radius` global só neste card.
+        borderRadius: 22,
       }}
     >
-      {/* Shimmer sweep sobre o card inteiro */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)",
-          animation: "skeleton-shimmer 1.6s ease-in-out infinite",
-          animationDelay: `${delay}ms`,
-        }}
-      />
-
       {/* Imagem — mesmo bloco `h-[175px]` do ProductCard real */}
       <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px] bg-white/[0.05]">
         {/* placeholder do círculo do favorito (top-right) */}
@@ -71,3 +64,4 @@ export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
     </div>
   );
 }
+
