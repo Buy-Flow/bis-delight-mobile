@@ -719,6 +719,209 @@ function PrintCenterPage() {
               </div>
             </Section>
 
+            {/* Impressoras cadastradas */}
+            <Section title="Impressoras cadastradas" icon={Printer}>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs text-white/60">
+                  Cada impressora recebe automaticamente os tipos marcados. Use "bridge" para
+                  falar com um agente local que envia direto ao ESC/POS sem diálogo do navegador.
+                </p>
+                <button
+                  onClick={addPrinter}
+                  className="rounded-lg bg-neon-pink px-3 py-1.5 text-xs font-bold hover:brightness-110"
+                >
+                  + Adicionar
+                </button>
+              </div>
+              {printers.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
+                  Nenhuma impressora cadastrada. Adicione ao menos uma.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {printers.map((p) => (
+                    <div key={p.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                      <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input
+                              value={p.name}
+                              onChange={(e) => updatePrinter(p.id, { name: e.target.value })}
+                              className={cn(inputCls, "max-w-[240px] py-1.5 text-sm font-bold")}
+                            />
+                            <select
+                              value={p.target}
+                              onChange={(e) => updatePrinter(p.id, { target: e.target.value as Printer["target"] })}
+                              className={cn(inputCls, "max-w-[160px] py-1.5 text-xs")}
+                            >
+                              <option value="browser">Navegador</option>
+                              <option value="bridge">Bridge (HTTP)</option>
+                              <option value="escpos">ESC/POS</option>
+                            </select>
+                            <label className="inline-flex cursor-pointer items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/60">
+                              <input
+                                type="checkbox"
+                                checked={p.active}
+                                onChange={(e) => updatePrinter(p.id, { active: e.target.checked })}
+                                className="accent-neon-pink"
+                              />
+                              Ativa
+                            </label>
+                            {p.last_error && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold text-red-300">
+                                <XCircle className="h-3 w-3" /> {p.last_error.slice(0, 40)}
+                              </span>
+                            )}
+                            {p.last_ok_at && !p.last_error && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                                <CheckCircle2 className="h-3 w-3" /> OK
+                              </span>
+                            )}
+                          </div>
+                          {p.target === "bridge" && (
+                            <input
+                              value={p.bridge_url ?? ""}
+                              placeholder="http://localhost:9100/print"
+                              onChange={(e) => updatePrinter(p.id, { bridge_url: e.target.value })}
+                              className={cn(inputCls, "py-1.5 text-xs")}
+                            />
+                          )}
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Cópias</span>
+                              <input
+                                type="number" min={1} max={9}
+                                value={p.copies}
+                                onChange={(e) => updatePrinter(p.id, { copies: Number(e.target.value) })}
+                                className={cn(inputCls, "w-16 py-1.5 text-xs")}
+                              />
+                              <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/50">Papel</span>
+                              <select
+                                value={String(p.paper_width ?? "")}
+                                onChange={(e) => updatePrinter(p.id, { paper_width: e.target.value ? Number(e.target.value) : null })}
+                                className={cn(inputCls, "max-w-[110px] py-1.5 text-xs")}
+                              >
+                                <option value="">Padrão</option>
+                                <option value="58">58mm</option>
+                                <option value="80">80mm</option>
+                              </select>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {(["cliente", "cozinha", "entrega"] as const).map((k) => {
+                                const on = p.kinds.includes(k);
+                                const Icon = KIND_ICON[k];
+                                return (
+                                  <button
+                                    key={k}
+                                    onClick={() => {
+                                      const next = on ? p.kinds.filter((x) => x !== k) : [...p.kinds, k];
+                                      updatePrinter(p.id, { kinds: next });
+                                    }}
+                                    className={cn(
+                                      "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest transition",
+                                      on
+                                        ? "border-neon-pink/50 bg-neon-pink/15 text-neon-pink"
+                                        : "border-white/10 bg-white/5 text-white/50 hover:text-white",
+                                    )}
+                                  >
+                                    <Icon className="h-3 w-3" /> {k}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <button
+                            onClick={() => testPrinter(p)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold hover:bg-white/10"
+                          >
+                            <Play className="h-3 w-3" /> Testar
+                          </button>
+                          <button
+                            onClick={() => deletePrinter(p.id)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-red-500/10 px-3 py-1.5 text-[11px] font-bold text-red-300 hover:bg-red-500/20"
+                          >
+                            <XCircle className="h-3 w-3" /> Remover
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Section>
+
+            {/* Automação */}
+            <Section title="Automação de novos pedidos" icon={Zap}>
+              <div className="grid gap-2 md:grid-cols-2">
+                <Toggle
+                  label="Imprimir automaticamente ao entrar pedido"
+                  hint="Assim que o pedido é criado, dispara para todas as impressoras ativas."
+                  checked={S.auto_print_new_orders}
+                  onChange={(v) => setSettings({ ...S, auto_print_new_orders: v })}
+                  icon={S.auto_print_new_orders ? Zap : ZapOff}
+                />
+                <Toggle
+                  label="Somente pedidos pagos/confirmados"
+                  hint="Ignora pedidos ainda pendentes de pagamento."
+                  checked={S.only_paid_orders}
+                  onChange={(v) => setSettings({ ...S, only_paid_orders: v })}
+                />
+                <Toggle
+                  label="Modo silencioso (kiosk)"
+                  hint="Requer Chrome com --kiosk-printing. Pula o diálogo do navegador."
+                  checked={S.silent_mode}
+                  onChange={(v) => setSettings({ ...S, silent_mode: v })}
+                />
+                <Toggle
+                  label="Bipe em novo pedido"
+                  checked={S.beep_on_new}
+                  onChange={(v) => setSettings({ ...S, beep_on_new: v })}
+                  icon={S.beep_on_new ? Volume2 : VolumeX}
+                />
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-4">
+                <Field label="Atraso antes de imprimir (ms)">
+                  <input
+                    type="number" min={0} max={30000} step={100}
+                    value={S.auto_delay_ms}
+                    onChange={(e) => setSettings({ ...S, auto_delay_ms: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Máx. tentativas em erro">
+                  <input
+                    type="number" min={0} max={5}
+                    value={S.max_retries}
+                    onChange={(e) => setSettings({ ...S, max_retries: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Volume do bipe (%)">
+                  <input
+                    type="number" min={0} max={100}
+                    value={S.beep_volume}
+                    onChange={(e) => setSettings({ ...S, beep_volume: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Repetições do bipe">
+                  <input
+                    type="number" min={1} max={5}
+                    value={S.beep_repeat}
+                    onChange={(e) => setSettings({ ...S, beep_repeat: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-[11px] text-amber-200/80">
+                Deixe esta página aberta em um computador do estabelecimento para receber e imprimir os pedidos em tempo real.
+                Para impressão silenciosa, abra o Chrome com <code className="rounded bg-black/40 px-1">--kiosk-printing</code> ou use uma impressora com "target = bridge" apontando para um agente local (QZ Tray, node-thermal-printer, etc.).
+              </div>
+            </Section>
+
+
             {/* Reimprimir */}
             <Section title="Reimprimir pedido" icon={RefreshCw}>
               <div className="grid gap-3 md:grid-cols-[1fr_auto]">
