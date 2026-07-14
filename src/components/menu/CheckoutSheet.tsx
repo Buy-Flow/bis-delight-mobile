@@ -25,7 +25,7 @@ import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/A
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { useServerFn } from "@tanstack/react-start";
-import { createAsaasCardForOrder } from "@/lib/asaas.functions";
+import { createAsaasCardForOrder, createAsaasCheckoutForOrder } from "@/lib/asaas.functions";
 
 function formatCardNumber(v: string) {
   const d = v.replace(/\D/g, "").slice(0, 19);
