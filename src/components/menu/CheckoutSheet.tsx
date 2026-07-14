@@ -141,6 +141,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [cardAddrNumber, setCardAddrNumber] = useState("");
   const [cardEmail, setCardEmail] = useState("");
   const [installments, setInstallments] = useState(1);
+  const [savedCard, setSavedCard] = useState<{ last4: string; brand: string } | null>(null);
+  const [useSavedCard, setUseSavedCard] = useState(true);
+  const [saveCard, setSaveCard] = useState(true);
   const runCardCharge = useServerFn(createAsaasCardForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
@@ -225,18 +228,26 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     if (user) {
       supabase
         .from("profiles")
-        .select("full_name, phone, address, reference")
+        .select("full_name, phone, address, reference, asaas_card_last4, asaas_card_brand, asaas_card_token")
         .eq("id", user.id)
         .maybeSingle()
         .then(({ data }) => {
           if (!data) return;
-          // Profile is authoritative when logged in — overwrite cached values
-          // so phone/name edits in "Dados pessoais" propagate everywhere.
           if (data.full_name) setName(data.full_name);
           if (data.phone) setPhone(data.phone);
           if (data.address && !address) setAddress(data.address);
           if (data.reference && !reference) setReference(data.reference);
+          if (data.asaas_card_token && data.asaas_card_last4) {
+            setSavedCard({ last4: String(data.asaas_card_last4), brand: String(data.asaas_card_brand || "Cartão") });
+            setUseSavedCard(true);
+          } else {
+            setSavedCard(null);
+            setUseSavedCard(false);
+          }
         });
+    } else {
+      setSavedCard(null);
+      setUseSavedCard(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCheckoutOpen, user?.id]);
@@ -463,18 +474,20 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     }
     if (paymentMethod === "cartao") {
       if (!isValidCpf(cpf)) { toast.error("CPF inválido — obrigatório para pagamento com cartão."); return; }
-      const numDigits = cardNumber.replace(/\D/g, "");
-      const exp = cardExpiry.replace(/\D/g, "");
-      const effEmail = (cardEmail || user?.email || "").trim();
-      const effCep = (cardCep || cep).replace(/\D/g, "");
-      const effAddrNumber = (cardAddrNumber || addrNumber).trim();
-      if (!cardHolder.trim()) { toast.error("Informe o nome como está no cartão."); return; }
-      if (numDigits.length < 13) { toast.error("Número do cartão inválido."); return; }
-      if (exp.length !== 4) { toast.error("Validade inválida (use MM/AA)."); return; }
-      if (cardCcv.length < 3) { toast.error("CVV inválido."); return; }
-      if (effCep.length !== 8) { toast.error("CEP inválido."); return; }
-      if (!effAddrNumber) { toast.error("Informe o número do endereço do titular."); return; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(effEmail)) { toast.error("E-mail inválido."); return; }
+      if (!(savedCard && useSavedCard)) {
+        const numDigits = cardNumber.replace(/\D/g, "");
+        const exp = cardExpiry.replace(/\D/g, "");
+        const effEmail = (cardEmail || user?.email || "").trim();
+        const effCep = (cardCep || cep).replace(/\D/g, "");
+        const effAddrNumber = (cardAddrNumber || addrNumber).trim();
+        if (!cardHolder.trim()) { toast.error("Informe o nome como está no cartão."); return; }
+        if (numDigits.length < 13) { toast.error("Número do cartão inválido."); return; }
+        if (exp.length !== 4) { toast.error("Validade inválida (use MM/AA)."); return; }
+        if (cardCcv.length < 3) { toast.error("CVV inválido."); return; }
+        if (effCep.length !== 8) { toast.error("CEP inválido."); return; }
+        if (!effAddrNumber) { toast.error("Informe o número do endereço do titular."); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(effEmail)) { toast.error("E-mail inválido."); return; }
+      }
     }
     if (mode === "entrega" && outsideRadius) {
       toast.error(
@@ -582,6 +595,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         let expiryYear = exp.slice(2);
         if (expiryYear.length === 2) expiryYear = `20${expiryYear}`;
         try {
+          const usingSaved = Boolean(savedCard && useSavedCard);
           const result = await runCardCharge({
             data: {
               orderId: order.id,
@@ -593,13 +607,17 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 postalCode: (cardCep || cep).replace(/\D/g, ""),
                 addressNumber: (cardAddrNumber || addrNumber).trim(),
               },
-              card: {
-                holderName: cardHolder.trim(),
-                number: cardNumber.replace(/\D/g, ""),
-                expiryMonth,
-                expiryYear,
-                ccv: cardCcv,
-              },
+              ...(usingSaved ? {} : {
+                card: {
+                  holderName: cardHolder.trim(),
+                  number: cardNumber.replace(/\D/g, ""),
+                  expiryMonth,
+                  expiryYear,
+                  ccv: cardCcv,
+                },
+              }),
+              useSavedCard: usingSaved || undefined,
+              saveCard: !usingSaved && saveCard && !!user ? true : undefined,
               installmentCount: installments > 1 ? installments : undefined,
             },
           });
@@ -1402,6 +1420,27 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     </span>
                   )}
                 </div>
+
+                {savedCard && (
+                  <button
+                    type="button"
+                    onClick={() => setUseSavedCard((v) => !v)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition",
+                      useSavedCard
+                        ? "border-emerald-400/40 bg-emerald-400/10"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/25",
+                    )}
+                  >
+                    <CreditCard className={cn("h-5 w-5", useSavedCard ? "text-emerald-300" : "text-white/50")} />
+                    <div className="flex-1">
+                      <div className="text-[12px] font-bold text-white">{savedCard.brand} •••• {savedCard.last4}</div>
+                      <div className="text-[10px] text-white/50">{useSavedCard ? "Cobrar neste cartão (1-clique)" : "Toque para usar cartão salvo"}</div>
+                    </div>
+                    <div className={cn("h-4 w-4 rounded-full border-2", useSavedCard ? "border-emerald-400 bg-emerald-400" : "border-white/30")} />
+                  </button>
+                )}
+
                 <div className="grid grid-cols-2 gap-2">
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF do titular *</label>
@@ -1413,6 +1452,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                       className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
                     />
                   </div>
+                  {!(savedCard && useSavedCard) && (
+                    <>
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nome no cartão *</label>
                     <input
@@ -1486,6 +1527,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                       className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
                     />
                   </div>
+                    </>
+                  )}
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Parcelas</label>
                     <select
@@ -1501,6 +1544,19 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     </select>
                   </div>
                 </div>
+
+                {!!user && !(savedCard && useSavedCard) && (
+                  <label className="flex items-center gap-2 pt-1 text-[11px] text-white/70 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={saveCard}
+                      onChange={(e) => setSaveCard(e.target.checked)}
+                      className="h-4 w-4 accent-neon-pink"
+                    />
+                    Salvar cartão para próximas compras (1-clique)
+                  </label>
+                )}
+
                 <div className="flex items-center gap-1.5 pt-1 text-[10px] text-white/50">
                   <Check className="h-3 w-3 text-emerald-400" /> Pagamento processado com criptografia pela Asaas.
                 </div>
