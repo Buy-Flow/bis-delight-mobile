@@ -59,7 +59,7 @@ async function asaasFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     const firstErr = Array.isArray(body?.errors) ? body.errors[0] : null;
     const msg = firstErr?.description ?? firstErr?.code ?? body?.message ?? body?.error ?? `HTTP ${res.status}`;
-    console.error("[asaas] api error", { url, status: res.status, body });
+    console.error("[asaas] api error", { url, status: res.status, body: JSON.stringify(body) });
     throw new Error(`[asaas ${res.status}] ${msg}`);
   }
   return body as T;
