@@ -512,10 +512,15 @@ function BirthdayAdmin() {
                     colSpan={6}
                     icon={Gift}
                     title="Nenhum brinde emitido ainda"
-                    description="Assim que um aniversariante ganhar cupom, ele aparece aqui."
-                    size="sm"
+                    description="Assim que um aniversariante ganhar cupom, o histórico aparece aqui — com código, validade e uso."
+                    action={
+                      <Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>
+                        Ver próximos aniversariantes
+                      </Button>
+                    }
                   />
                 )}
+
 
               </tbody>
             </table>
