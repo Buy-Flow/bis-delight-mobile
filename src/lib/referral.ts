@@ -42,21 +42,78 @@ export async function tryConsumeStoredReferralCode(): Promise<void> {
   const { data: sess } = await supabase.auth.getSession();
   if (!sess.session) return;
 
-  const { data, error } = await sb.rpc("apply_referral_code", { _code: code });
-  if (error) {
-    const known = new Set([
-      "already_referred",
-      "not_new_customer",
-      "self_referral",
-      "invalid_code",
-      "program_disabled",
-      "referrer_limit_reached",
-    ]);
-    if (known.has(error.message)) {
-      clearStoredReferralCode();
+  const KNOWN_MESSAGES: Record<string, { title: string; description?: string; kind: "info" | "error" }> = {
+    already_referred: { title: "Cupom de indicação já utilizado", description: "Você já resgatou uma indicação anteriormente.", kind: "info" },
+    not_new_customer: { title: "Indicação disponível só para novos clientes", description: "Este benefício é exclusivo do primeiro pedido.", kind: "info" },
+    self_referral: { title: "Não é possível se autoindicar", description: "Compartilhe seu código com amigos para ganhar recompensas.", kind: "info" },
+    invalid_code: { title: "Código de indicação inválido", description: "Confira o código com quem te indicou.", kind: "error" },
+    program_disabled: { title: "Programa de indicação indisponível", description: "Tente novamente mais tarde.", kind: "info" },
+    referrer_limit_reached: { title: "Limite de indicações atingido", description: "Este código não aceita mais novas indicações.", kind: "info" },
+  };
+
+  const tryApply = async (attempt: number): Promise<void> => {
+    const { data, error } = await sb.rpc("apply_referral_code", { _code: code });
+    if (error) {
+      const known = KNOWN_MESSAGES[error.message];
+      if (known) {
+        clearStoredReferralCode();
+        if (known.kind === "error") {
+          toast.error(known.title, { description: known.description });
+        } else {
+          toast(known.title, { description: known.description });
+        }
+        return;
+      }
+      // Unknown error — likely network/transient. Retry once, then surface a friendly toast.
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 1200));
+        return tryApply(1);
+      }
+      toast.error("Não foi possível aplicar seu cupom de indicação", {
+        description: friendlyError(error) + " Tocamos automaticamente na próxima vez que você abrir o app.",
+        action: {
+          label: "Tentar de novo",
+          onClick: () => {
+            void tryConsumeStoredReferralCode();
+          },
+        },
+        duration: 10000,
+      });
+      return;
     }
-    return;
+    clearStoredReferralCode();
+    const row = Array.isArray(data) ? (data[0] as Record<string, unknown>) : (data as Record<string, unknown>);
+    const couponCode = row?.coupon_code as string | undefined;
+    const discountType = row?.discount_type as string | undefined;
+    const discountValue = Number(row?.discount_value ?? 0);
+    if (couponCode) {
+      const val = discountType === "percent" ? `${discountValue}%` : `R$ ${discountValue.toFixed(2)}`;
+      toast.success(`🎁 Cupom ${val} liberado!`, {
+        description: `Use ${couponCode} no seu primeiro pedido.`,
+        duration: 8000,
+      });
+    }
+  };
+
+  try {
+    await tryApply(0);
+  } catch (e) {
+    toast.error("Não foi possível aplicar seu cupom de indicação", {
+      description: friendlyError(e) + " Vamos tentar de novo automaticamente.",
+      action: {
+        label: "Tentar agora",
+        onClick: () => {
+          void tryConsumeStoredReferralCode();
+        },
+      },
+      duration: 10000,
+    });
   }
+}
+
+async function _legacyUnused() {
+  // placeholder to keep patch aligned
+
   clearStoredReferralCode();
   const row = Array.isArray(data) ? (data[0] as Record<string, unknown>) : (data as Record<string, unknown>);
   const couponCode = row?.coupon_code as string | undefined;
