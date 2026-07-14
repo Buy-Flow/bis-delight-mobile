@@ -2,8 +2,10 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles, Gift, Copy, MessageCircle, X, Users } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
-import { BRAND } from "@/data/menu";
-import { useProducts } from "@/lib/menu-data";
+import { useProducts, useSiteSettings } from "@/lib/menu-data";
+import { useAuth } from "@/lib/use-auth";
+import { useUserAddresses } from "@/lib/user-addresses";
+import { computeDeliveryPreview } from "@/lib/delivery-preview";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
 import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, type RecentShare } from "@/lib/shared-cart";
@@ -13,6 +15,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 import { useComboDiscounts } from "@/lib/use-combo-discounts";
+
 
 const ProductModal = lazy(() =>
   import("@/components/menu/ProductModal").then((m) => ({ default: m.ProductModal })),
@@ -72,8 +75,25 @@ function CartPage() {
     : null;
 
   const combo = useComboDiscounts(items, allProducts);
-  const fee = items.length ? BRAND.deliveryFee : 0;
-  const total = subtotal + fee - combo.discount;
+  const { data: settings } = useSiteSettings();
+  const { user } = useAuth();
+  const { items: addresses } = useUserAddresses(user?.id);
+  const defaultAddress = addresses.find((a) => a.is_default) ?? addresses[0] ?? null;
+
+  const preview = computeDeliveryPreview({
+    subtotal,
+    flatFee: settings?.deliveryFee ?? 0,
+    freeThreshold: settings?.freeDeliveryThreshold ?? 0,
+    zone: settings?.deliveryZone ?? null,
+    storeLat: settings?.storeLat ?? null,
+    storeLng: settings?.storeLng ?? null,
+    addressLat: defaultAddress?.lat ?? null,
+    addressLng: defaultAddress?.lng ?? null,
+    mode: "entrega",
+  });
+  const fee = items.length ? preview.fee : 0;
+  const total = Math.max(0, subtotal + fee - combo.discount);
+
 
 
 
@@ -358,7 +378,42 @@ function CartPage() {
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-5">
             <div className="mb-4 space-y-2.5">
               <SummaryRow icon={ShoppingBag} label="Subtotal" value={brl(subtotal)} />
-              <SummaryRow icon={Truck} label="Entrega" value={fee > 0 ? brl(fee) : "R$ 0,00"} />
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5 text-white/85">
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-white/5 text-neon-cyan">
+                    <Truck className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold leading-tight">Entrega</div>
+                    {preview.kind === "estimate" && (
+                      <div className="text-[11px] text-white/50">calculada no checkout</div>
+                    )}
+                    {preview.kind === "exact" && preview.km != null && (
+                      <div className="text-[11px] text-white/50">
+                        {preview.km.toFixed(1)} km · endereço padrão
+                      </div>
+                    )}
+                    {preview.kind === "outside" && (
+                      <div className="text-[11px] text-neon-pink/80">
+                        fora do raio — só retirada
+                      </div>
+                    )}
+                    {preview.kind === "free" && (
+                      <div className="text-[11px] text-neon-cyan">frete grátis desbloqueado</div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-sm font-black ${preview.kind === "free" ? "text-neon-cyan" : "text-white"}`}>
+                    {preview.kind === "free"
+                      ? "Grátis"
+                      : preview.kind === "outside"
+                        ? "—"
+                        : `${preview.isEstimate ? "a partir de " : ""}${brl(preview.fee)}`}
+                  </div>
+                </div>
+              </div>
+
               {combo.discount > 0 && combo.matches[0] && (
                 <div className="flex items-center justify-between rounded-xl border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-2">
                   <div className="flex items-center gap-2.5">
@@ -378,14 +433,20 @@ function CartPage() {
                 </div>
               )}
               <div className="mt-2 flex items-end justify-between border-t border-white/10 pt-3">
-                <span className="font-display text-2xl font-extrabold text-white">Total</span>
+                <div>
+                  <div className="font-display text-2xl font-extrabold text-white">Total</div>
+                  {preview.isEstimate && (
+                    <div className="text-[11px] text-white/50">valor final no checkout</div>
+                  )}
+                </div>
                 <div className="text-right">
                   <div className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">
-                    {brl(total)}
+                    {preview.isEstimate ? "≈ " : ""}{brl(total)}
                   </div>
                   <div className="ml-auto mt-1 h-1 w-20 rounded-full bg-gradient-to-r from-transparent to-neon-pink" />
                 </div>
               </div>
+
             </div>
             <button
               onClick={() => navigate({ to: "/finalizar" })}
