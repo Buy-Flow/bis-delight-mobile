@@ -84,7 +84,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // hydrate from localStorage on mount
   useEffect(() => {
-    setItems(loadCart());
+    const loaded = loadCart();
+    setItems(loaded);
+    lastPersistedRef.current = loaded;
     setHydrated(true);
     // auto-resume checkout after login
     if (sessionStorage.getItem("querobis:resume_checkout") === "1") {
@@ -112,26 +114,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // persist to localStorage
-  const quotaWarned = useRef(false);
+  // persist to localStorage — em caso de quota, reverte o estado para o último
+  // snapshot persistido com sucesso, garantindo que UI e storage nunca divirjam
+  // (item que não coube não continua na cesta e some silenciosamente no reload).
+  const lastPersistedRef = useRef<CartItem[]>([]);
   useEffect(() => {
     if (!hydrated) return;
     if (skipPersistRef.current) {
       // Estado veio de outra aba via evento storage — não re-persistir para
       // não disparar loop de storage → setState → setItem em cadeia.
       skipPersistRef.current = false;
+      lastPersistedRef.current = items;
       return;
     }
     try {
       localStorage.setItem(CART_KEY, JSON.stringify(items));
+      lastPersistedRef.current = items;
     } catch (e) {
       const { quota } = logSilent("cart:persist", e);
-      if (quota && !quotaWarned.current) {
-        quotaWarned.current = true;
+      const rollback = lastPersistedRef.current;
+      if (quota) {
+        toast.error("Cesta cheia — item removido", {
+          description:
+            "Sem espaço no navegador para salvar mais itens. Finalize o pedido ou libere espaço para continuar adicionando.",
+          id: "cart-quota",
+        });
+      } else {
         toast.error("Não foi possível salvar seu carrinho", {
-          description: "O armazenamento local está cheio. Limpe o histórico do navegador para não perder itens.",
+          description: "Tente novamente ou finalize o pedido agora.",
+          id: "cart-persist",
         });
       }
+      // Reverte para o último estado que coube no storage, evitando divergência
+      // entre UI (mostra o item) e storage (perde no próximo reload).
+      skipPersistRef.current = true;
+      setItems(rollback);
     }
   }, [items, hydrated]);
 
