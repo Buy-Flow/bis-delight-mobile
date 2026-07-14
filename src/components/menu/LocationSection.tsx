@@ -85,7 +85,7 @@ export function LocationSection() {
   const todayLabel =
     todayHours && !todayHours.closed
       ? `${todayHours.open.slice(0, 5)} às ${todayHours.close.slice(0, 5)}`
-      : "Fechado hoje";
+      : STORE_COPY.dayScheduleClosed;
 
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá! Quero fazer um pedido 🍧")}`;
 
