@@ -63,6 +63,8 @@ import { usePermissions, labelForRole } from "@/lib/permissions";
 import { FloatingAssistant } from "@/components/admin/FloatingAssistant";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { useSoundAlertsListener } from "@/hooks/useSoundAlertsListener";
+import { useAdminNotificationsListener } from "@/hooks/useAdminNotificationsListener";
+import { NotificationCenter } from "@/components/admin/NotificationCenter";
 
 type AdminTab =
   | "products"
