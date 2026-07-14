@@ -444,8 +444,16 @@ function BirthdayAdmin() {
                     </tr>
                   ))}
                   {filteredUpcoming.length === 0 && (
-                    <tr><td colSpan={6} className="px-3 py-8 text-center text-sm text-white/40">Nenhum aniversariante nesse período.</td></tr>
+                    <EmptyState
+                      variant="table"
+                      colSpan={6}
+                      icon={Cake}
+                      title="Nenhum aniversariante nesse período"
+                      description="Ajuste a janela de datas ou aguarde novos cadastros."
+                      size="sm"
+                    />
                   )}
+
                 </tbody>
               </table>
             </div>
