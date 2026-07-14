@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { addSharedItem, readShareMode, writeShareMode, type ShareMode } from "@/lib/shared-cart";
 import { logSilent } from "@/lib/silent-errors";
+import { shortUid } from "@/lib/uid";
 
 export type CartItem = {
   uid: string;
@@ -162,7 +163,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal,
       count,
       add: (item) => {
-        const uid = Math.random().toString(36).slice(2, 10);
+        const uid = shortUid(8);
         const full = { ...item, uid };
         setItems((prev) => [...prev, full]);
         if (shareMode?.token) {

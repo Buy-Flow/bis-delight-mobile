@@ -53,6 +53,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { confirmDialog } from "@/lib/confirm";
+import { shortUid } from "@/lib/uid";
 
 import {
   useIsAdmin,
@@ -5809,7 +5810,7 @@ function slugify(s: string) {
 /* ============================== Produto personalizado ============================== */
 
 function shortId() {
-  return Math.random().toString(36).slice(2, 8);
+  return shortUid(6);
 }
 
 function CustomTab({

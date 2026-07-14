@@ -3,6 +3,7 @@
 
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { shortUid } from "@/lib/uid";
 import {
   fetchAlerts,
   fetchGlobal,
@@ -28,7 +29,7 @@ export function useSoundAlertsListener() {
   const globalRef = useRef<SoundGlobalSettings | null>(null);
   const firedLateRef = useRef<Set<string>>(new Set());
   const initialFillRef = useRef(false);
-  const channelSuffixRef = useRef(`sound-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const channelSuffixRef = useRef(`sound-${shortUid(12)}`);
 
   useEffect(() => {
     let cancelled = false;

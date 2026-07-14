@@ -26,6 +26,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { shortUid } from "@/lib/uid";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   useCategories,
@@ -624,7 +625,7 @@ function ApplyDialog({
     setBusy(true);
     try {
       const baseId = slugify(name);
-      const id = `${baseId}-${Math.random().toString(36).slice(2, 6)}`;
+      const id = `${baseId}-${shortUid(6)}`;
       const payload: ProductInput = {
         id,
         name: name.trim(),
