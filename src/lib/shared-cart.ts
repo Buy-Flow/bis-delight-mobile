@@ -189,6 +189,38 @@ export async function getSharedCart(token: string): Promise<SharedCart | null> {
   return (data as unknown as SharedCart) ?? null;
 }
 
+export type SharedCartStatus = SharedCart["status"] | "not_found" | "unknown";
+
+/**
+ * Consulta em paralelo o status de cada token. Não lança em erro individual —
+ * um token que falhar entra como "unknown" e a UI decide se mantém ou não.
+ * Também classifica como "expired" quando `expires_at` já passou, mesmo que
+ * o servidor ainda retorne "open" (defesa contra job de expiração atrasado).
+ */
+export async function getSharedCartStatuses(
+  tokens: string[],
+): Promise<Record<string, SharedCartStatus>> {
+  const unique = Array.from(new Set(tokens.filter(Boolean)));
+  const now = Date.now();
+  const entries = await Promise.all(
+    unique.map(async (token): Promise<[string, SharedCartStatus]> => {
+      try {
+        const cart = await getSharedCart(token);
+        if (!cart) return [token, "not_found"];
+        if (cart.status === "open" && cart.expires_at) {
+          const exp = Date.parse(cart.expires_at);
+          if (Number.isFinite(exp) && exp <= now) return [token, "expired"];
+        }
+        return [token, cart.status];
+      } catch (err) {
+        console.warn("[shared-cart] status fetch falhou", token, err);
+        return [token, "unknown"];
+      }
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
 export async function addSharedItem(token: string, participant: string, item: CartItem) {
   const { error } = await supabase.rpc("add_shared_cart_item", {
     _token: token,
