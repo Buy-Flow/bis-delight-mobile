@@ -162,6 +162,7 @@ const groups: NavGroup[] = [
       { to: "/ai-growth", label: "AI Growth Engine", icon: TrendingUp },
       { to: "/previsao", label: "Previsão de demanda", icon: BarChart3 },
       { to: "/pre-preparo", label: "Pré-preparo IA", icon: ChefHat },
+      { to: "/analise-concorrentes", label: "Análise concorrentes", icon: ScanSearch },
     ],
   },
   {
