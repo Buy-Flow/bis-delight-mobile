@@ -34,18 +34,17 @@ export type DeliveryZoneConfig = {
 };
 
 export const DEFAULT_DELIVERY_ZONE: DeliveryZoneConfig = {
-  enabled: false,
+  enabled: true,
   maxKm: 10,
   pricingMode: "tiers",
-  baseFee: 3,
-  perKm: 1.5,
-  minFee: 3,
+  baseFee: 2,
+  perKm: 1,
+  minFee: 2,
   maxFee: 0,
   tiers: [
-    { upToKm: 2, fee: 4 },
-    { upToKm: 4, fee: 6 },
-    { upToKm: 7, fee: 9 },
-    { upToKm: 10, fee: 14 },
+    { upToKm: 2, fee: 2 },
+    { upToKm: 5, fee: 5 },
+    { upToKm: 10, fee: 10 },
   ],
   outsideMessage:
     "Que pena! Seu endereço está fora do nosso raio de entrega. Você pode escolher retirada na loja.",
