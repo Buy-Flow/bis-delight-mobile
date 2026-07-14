@@ -433,14 +433,20 @@ function CartPage() {
                 </div>
               )}
               <div className="mt-2 flex items-end justify-between border-t border-white/10 pt-3">
-                <span className="font-display text-2xl font-extrabold text-white">Total</span>
+                <div>
+                  <div className="font-display text-2xl font-extrabold text-white">Total</div>
+                  {preview.isEstimate && (
+                    <div className="text-[11px] text-white/50">valor final no checkout</div>
+                  )}
+                </div>
                 <div className="text-right">
                   <div className="font-display text-3xl font-extrabold text-neon-yellow glow-yellow-text">
-                    {brl(total)}
+                    {preview.isEstimate ? "≈ " : ""}{brl(total)}
                   </div>
                   <div className="ml-auto mt-1 h-1 w-20 rounded-full bg-gradient-to-r from-transparent to-neon-pink" />
                 </div>
               </div>
+
             </div>
             <button
               onClick={() => navigate({ to: "/finalizar" })}
