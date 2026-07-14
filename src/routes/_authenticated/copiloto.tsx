@@ -188,7 +188,7 @@ function CopilotoPage() {
       {activeThreadId && (
         <button
           type="button"
-          onClick={() => {
+          onClick={async () => {
             if ((await confirmDialog({ message: "Reverter todas as alterações desta conversa?\n\nIsto desativa cupons, popups, banners criados e restaura preços/pausas alteradas." }))) {
               revertMut.mutate(activeThreadId);
             }
