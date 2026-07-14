@@ -125,14 +125,28 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         // Importante: a Evolution pode responder 400 quando UM item do array
         // não existe. Por isso testamos cada variante separadamente; assim um
         // telefone salvo sem o 9 não bloqueia a tentativa correta com o 9.
-        const phoneCandidates = /^55\d{2}\d{8}$/.test(normalized)
-          ? [normalized.slice(0, 4) + "9" + normalized.slice(4), normalized]
-          : /^55\d{2}9\d{8}$/.test(normalized)
-            ? [normalized, normalized.slice(0, 4) + normalized.slice(5)]
-            : [normalized];
+        const brazilCandidates = (phone: string) => {
+          const withNine = phone.match(/^55(\d{2})9(\d{8})$/);
+          if (withNine) {
+            const ddd = Number(withNine[1]);
+            const withoutNine = `55${withNine[1]}${withNine[2]}`;
+            // Em DDDs fora de 11–29, a Evolution/Baileys costuma registrar
+            // o WhatsApp no JID sem o nono dígito. Se enviarmos primeiro com
+            // o 9, a API pode devolver 201/PENDING, mas o celular nunca envia.
+            return ddd >= 11 && ddd <= 29 ? [phone, withoutNine] : [withoutNine, phone];
+          }
+          const withoutNine = phone.match(/^55(\d{2})(\d{8})$/);
+          if (withoutNine) {
+            const ddd = Number(withoutNine[1]);
+            const candidateWithNine = `55${withoutNine[1]}9${withoutNine[2]}`;
+            return ddd >= 11 && ddd <= 29 ? [candidateWithNine, phone] : [phone, candidateWithNine];
+          }
+          return [phone];
+        };
+        const phoneCandidates = brazilCandidates(normalized);
         const candidates = Array.from(new Set([
-          ...phoneCandidates,
           ...(knownPhoneDigits ? [knownPhoneDigits] : []),
+          ...phoneCandidates,
         ])).filter((candidate) => !candidate.includes("@lid"));
 
         let sendNumber: string | null = null;
@@ -185,7 +199,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               // Mesmo quando a verificação devolve um JID @lid, o endpoint
               // sendText deve receber o telefone. Enviar para @lid deixa a
               // mensagem presa em PENDING/ERROR em várias versões da Evolution.
-              sendNumber = numberDigits || jidDigits || candidate;
+              // O campo `number` repete o que perguntamos; o `jid` é o
+              // destino real resolvido pelo WhatsApp. Para BR, especialmente
+              // DDD 30+, isso evita o falso 201/PENDING que não sai do celular.
+              sendNumber = jidDigits || numberDigits || candidate;
               verifiedJid = jid || null;
               break;
             }
@@ -274,11 +291,14 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 const dataRec = (j.data ?? {}) as Record<string, unknown>;
                 evoId = extractEvolutionMessageId(j);
                 const evoStatus = String(j.status ?? dataRec.status ?? "sent").toLowerCase();
-                // HTTP 2xx da Evolution significa que o aparelho aceitou a
-                // mensagem para envio. O status "PENDING" é o estado interno
-                // inicial da Evolution, não deve ficar como pendente infinito
-                // no painel. Webhooks de ack atualizam depois para entregue/lida.
-                status = evoStatus === "error" || evoStatus === "failed" ? "failed" : "sent";
+                // HTTP 2xx da Evolution só confirma que a API aceitou a
+                // chamada. Enquanto o próprio histórico vier como PENDING,
+                // não marcamos como enviada de verdade.
+                status = evoStatus === "error" || evoStatus === "failed"
+                  ? "failed"
+                  : evoStatus === "pending"
+                    ? "pending"
+                    : "sent";
                 if (status === "failed") {
                   evoError =
                     `❌ Evolution aceitou a chamada mas retornou status ${evoStatus}.\n\n` +
