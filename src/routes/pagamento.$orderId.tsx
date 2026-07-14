@@ -10,6 +10,7 @@ import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
 import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatSP } from "@/lib/tz";
 
 const searchSchema = z.object({
   m: z.enum(["pix", "cartao"]).catch("pix"),
@@ -286,7 +287,7 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
       {expires && (
         <div className="mt-3 flex items-center justify-center gap-1.5 text-[11.5px] text-white/60">
           <Clock className="h-3.5 w-3.5" />
-          Válido até {expires.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+          Válido até {formatSP(expires)}
         </div>
       )}
 
