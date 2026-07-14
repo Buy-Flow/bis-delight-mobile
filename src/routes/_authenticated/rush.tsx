@@ -783,6 +783,8 @@ function RushPage() {
                 tick={tick}
                 busy={busyId === o.id}
                 expanded={expandedId === o.id}
+                slaSettings={slaSettings}
+                slaHistory={slaHistory}
                 onToggle={() => setExpandedId((cur) => (cur === o.id ? null : o.id))}
                 onAdvance={() => advance(o)}
                 onCancel={() => setStatus(o, "cancelado")}
