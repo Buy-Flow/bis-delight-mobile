@@ -645,6 +645,30 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           setSending(false);
           return;
         }
+      } else if (paymentMethod === "asaas_checkout") {
+        try {
+          const res = await runAsaasCheckout({
+            data: {
+              orderId: order.id,
+              customer: {
+                name: name.trim(),
+                email: (cardEmail || user?.email || "").trim() || undefined,
+                cpfCnpj: cpf ? cpfDigits(cpf) : undefined,
+                phone: phone.replace(/\D/g, "") || undefined,
+              },
+              origin: window.location.origin,
+            },
+          });
+          clear();
+          closeCheckout();
+          window.location.href = res.url;
+          return;
+        } catch (chkErr: any) {
+          console.error("[checkout] asaas checkout failed", chkErr);
+          toast.error("Não foi possível abrir o checkout Asaas", { description: chkErr?.message ?? "Tente novamente." });
+          setSending(false);
+          return;
+        }
       } else {
         // PIX
         clear();
