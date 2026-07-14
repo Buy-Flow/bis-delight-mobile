@@ -63,6 +63,8 @@ import { usePermissions, labelForRole } from "@/lib/permissions";
 import { FloatingAssistant } from "@/components/admin/FloatingAssistant";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { useSoundAlertsListener } from "@/hooks/useSoundAlertsListener";
+import { useAdminNotificationsListener } from "@/hooks/useAdminNotificationsListener";
+import { NotificationCenter } from "@/components/admin/NotificationCenter";
 
 type AdminTab =
   | "products"
@@ -366,6 +368,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   // Mount the global sound-alerts listener (differentiated per event).
   useSoundAlertsListener();
+  useAdminNotificationsListener();
 
   const toggleGroup = (id: string) =>
     setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
@@ -556,6 +559,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <NotificationCenter />
+
             {(() => {
               const primary =
                 (["admin", "manager", "staff", "kitchen"] as const).find((r) =>
