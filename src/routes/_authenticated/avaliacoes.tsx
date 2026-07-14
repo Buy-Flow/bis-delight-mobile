@@ -24,6 +24,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ReviewSettingsPanel } from "@/components/reviews/ReviewSettingsPanel";
+import { Settings2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/avaliacoes")({
   component: AvaliacoesPage,
@@ -66,6 +68,7 @@ function AvaliacoesPage() {
   const [sort, setSort] = useState<SortKey>("recent");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<Review | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -291,6 +294,13 @@ function AvaliacoesPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
+              onClick={() => setSettingsOpen(true)}
+              className="inline-flex items-center gap-2 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-4 py-2 text-xs font-bold text-neon-pink transition hover:bg-neon-pink/20"
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              Configurações
+            </button>
+            <button
               onClick={exportCSV}
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white/80 transition hover:bg-white/10"
             >
@@ -299,6 +309,19 @@ function AvaliacoesPage() {
             </button>
           </div>
         </header>
+
+        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto border-white/10 bg-[#0e0a1a] text-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl font-black">
+                <Settings2 className="h-5 w-5 text-neon-pink" />
+                Configurações de Avaliações
+              </DialogTitle>
+            </DialogHeader>
+            <ReviewSettingsPanel />
+          </DialogContent>
+        </Dialog>
+
 
         {/* KPIs */}
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
