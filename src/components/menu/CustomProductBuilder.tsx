@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { X, Check, Sparkles, Minus, Plus, ChevronsUpDown } from "lucide-react";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
+import { AcaiStackPreview } from "@/components/menu/AcaiStackPreview";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
