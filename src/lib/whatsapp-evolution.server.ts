@@ -459,6 +459,7 @@ export async function sendEvolutionText(phone: string, text: string): Promise<Ev
   const attempts: Array<{ number: string; status: number; ok: boolean; response: unknown }> = [];
   const verifications: Array<{ number: string; evolutionId: string | null; failed: boolean; status: string | null; checks: unknown[] }> = [];
   let last: EvolutionCall | null = null;
+  let lastAccepted: { number: string; evolutionId: string | null; status: number; error: string | null } | null = null;
   const orderedNumbers = Array.from(new Set([...resolved.candidates, resolved.number]));
   for (const number of orderedNumbers) {
     const result = await evolutionRequest(`/message/sendText/${encodeURIComponent(instance)}`, {
@@ -473,6 +474,8 @@ export async function sendEvolutionText(phone: string, text: string): Promise<Ev
       const failed = appStatusFromEvolutionPayload(result.json) === "failed";
       const evolutionId = extractEvolutionMessageId(result.json);
       const remoteJid = typeof objectRecord(root?.key)?.remoteJid === "string" ? String(objectRecord(root?.key)?.remoteJid) : `${number}@s.whatsapp.net`;
+      lastAccepted = { number, evolutionId, status: result.status, error: failed ? `Evolution retornou status ${evoStatus ?? "ERROR"}` : null };
+      if (failed) continue;
       if (!failed) {
         const verification = await verifyAcceptedSend(evolutionId, remoteJid);
         verifications.push({ number, evolutionId, failed: verification.failed, status: verification.status, checks: verification.checks });
@@ -492,11 +495,13 @@ export async function sendEvolutionText(phone: string, text: string): Promise<Ev
   }
   return {
     ok: false,
-    status: last?.status ?? 0,
+    status: lastAccepted?.status ?? last?.status ?? 0,
     appStatus: "failed",
-    evolutionId: null,
-    selectedNumber: resolved.number,
-    error: last
+    evolutionId: lastAccepted?.evolutionId ?? null,
+    selectedNumber: lastAccepted?.number ?? resolved.number,
+    error: lastAccepted?.error
+      ? `${lastAccepted.error}. Todas as variantes foram testadas.`
+      : last
       ? `A Evolution aceitou a requisição, mas não confirmou a entrega em nenhuma variante deste número. Último retorno: Evolution ${last.status}: ${evolutionErrorMessage(last)}`
       : "Evolution não respondeu.",
     raw: { verification: resolved, attempts, verifications },
