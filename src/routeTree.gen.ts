@@ -59,6 +59,7 @@ import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authenticated/automacoes'
 import { Route as AuthenticatedAniversariantesRouteImport } from './routes/_authenticated/aniversariantes'
+import { Route as AuthenticatedAnaliseConcorrentesRouteImport } from './routes/_authenticated/analise-concorrentes'
 import { Route as AuthenticatedAlertasSonorosRouteImport } from './routes/_authenticated/alertas-sonoros'
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -328,6 +329,12 @@ const AuthenticatedAniversariantesRoute =
     path: '/aniversariantes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAnaliseConcorrentesRoute =
+  AuthenticatedAnaliseConcorrentesRouteImport.update({
+    id: '/analise-concorrentes',
+    path: '/analise-concorrentes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAlertasSonorosRoute =
   AuthenticatedAlertasSonorosRouteImport.update({
     id: '/alertas-sonoros',
@@ -397,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/alertas-sonoros': typeof AuthenticatedAlertasSonorosRoute
+  '/analise-concorrentes': typeof AuthenticatedAnaliseConcorrentesRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
@@ -458,6 +466,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/alertas-sonoros': typeof AuthenticatedAlertasSonorosRoute
+  '/analise-concorrentes': typeof AuthenticatedAnaliseConcorrentesRoute
   '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
@@ -521,6 +530,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
   '/_authenticated/alertas-sonoros': typeof AuthenticatedAlertasSonorosRoute
+  '/_authenticated/analise-concorrentes': typeof AuthenticatedAnaliseConcorrentesRoute
   '/_authenticated/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
@@ -584,6 +594,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ai-growth'
     | '/alertas-sonoros'
+    | '/analise-concorrentes'
     | '/aniversariantes'
     | '/automacoes'
     | '/avaliacoes'
@@ -645,6 +656,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ai-growth'
     | '/alertas-sonoros'
+    | '/analise-concorrentes'
     | '/aniversariantes'
     | '/automacoes'
     | '/avaliacoes'
@@ -707,6 +719,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/ai-growth'
     | '/_authenticated/alertas-sonoros'
+    | '/_authenticated/analise-concorrentes'
     | '/_authenticated/aniversariantes'
     | '/_authenticated/automacoes'
     | '/_authenticated/avaliacoes'
@@ -1130,6 +1143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAniversariantesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/analise-concorrentes': {
+      id: '/_authenticated/analise-concorrentes'
+      path: '/analise-concorrentes'
+      fullPath: '/analise-concorrentes'
+      preLoaderRoute: typeof AuthenticatedAnaliseConcorrentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/alertas-sonoros': {
       id: '/_authenticated/alertas-sonoros'
       path: '/alertas-sonoros'
@@ -1207,6 +1227,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiGrowthRoute: typeof AuthenticatedAiGrowthRoute
   AuthenticatedAlertasSonorosRoute: typeof AuthenticatedAlertasSonorosRoute
+  AuthenticatedAnaliseConcorrentesRoute: typeof AuthenticatedAnaliseConcorrentesRoute
   AuthenticatedAniversariantesRoute: typeof AuthenticatedAniversariantesRoute
   AuthenticatedAutomacoesRoute: typeof AuthenticatedAutomacoesRoute
   AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
@@ -1251,6 +1272,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiGrowthRoute: AuthenticatedAiGrowthRoute,
   AuthenticatedAlertasSonorosRoute: AuthenticatedAlertasSonorosRoute,
+  AuthenticatedAnaliseConcorrentesRoute: AuthenticatedAnaliseConcorrentesRoute,
   AuthenticatedAniversariantesRoute: AuthenticatedAniversariantesRoute,
   AuthenticatedAutomacoesRoute: AuthenticatedAutomacoesRoute,
   AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
