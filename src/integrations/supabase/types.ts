@@ -1451,7 +1451,10 @@ export type Database = {
           kind: string
           note: string | null
           order_id: string | null
+          payload: Json | null
           printed_by: string | null
+          printer_id: string | null
+          retries: number
           status: string
         }
         Insert: {
@@ -1460,7 +1463,10 @@ export type Database = {
           kind: string
           note?: string | null
           order_id?: string | null
+          payload?: Json | null
           printed_by?: string | null
+          printer_id?: string | null
+          retries?: number
           status?: string
         }
         Update: {
@@ -1469,7 +1475,10 @@ export type Database = {
           kind?: string
           note?: string | null
           order_id?: string | null
+          payload?: Json | null
           printed_by?: string | null
+          printer_id?: string | null
+          retries?: number
           status?: string
         }
         Relationships: [
@@ -1487,12 +1496,73 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "print_jobs_printer_id_fkey"
+            columns: ["printer_id"]
+            isOneToOne: false
+            referencedRelation: "print_printers"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      print_printers: {
+        Row: {
+          active: boolean
+          bridge_url: string | null
+          copies: number
+          created_at: string
+          id: string
+          is_default: boolean
+          kinds: string[]
+          last_error: string | null
+          last_ok_at: string | null
+          name: string
+          paper_width: number | null
+          sort_index: number
+          target: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bridge_url?: string | null
+          copies?: number
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          kinds?: string[]
+          last_error?: string | null
+          last_ok_at?: string | null
+          name: string
+          paper_width?: number | null
+          sort_index?: number
+          target?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bridge_url?: string | null
+          copies?: number
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          kinds?: string[]
+          last_error?: string | null
+          last_ok_at?: string | null
+          name?: string
+          paper_width?: number | null
+          sort_index?: number
+          target?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       print_settings: {
         Row: {
+          auto_delay_ms: number
           auto_print_new_orders: boolean
           beep_on_new: boolean
+          beep_repeat: number
+          beep_volume: number
           cnpj: string
           copies: number
           cut_after: boolean
@@ -1501,6 +1571,8 @@ export type Database = {
           header_text: string
           id: number
           kitchen_group_by_category: boolean
+          max_retries: number
+          only_paid_orders: boolean
           paper_width: number
           print_customer_copy: boolean
           print_delivery_label: boolean
@@ -1509,12 +1581,16 @@ export type Database = {
           show_logo: boolean
           show_pix: boolean
           show_qr: boolean
+          silent_mode: boolean
           tax_note: string
           updated_at: string
         }
         Insert: {
+          auto_delay_ms?: number
           auto_print_new_orders?: boolean
           beep_on_new?: boolean
+          beep_repeat?: number
+          beep_volume?: number
           cnpj?: string
           copies?: number
           cut_after?: boolean
@@ -1523,6 +1599,8 @@ export type Database = {
           header_text?: string
           id?: number
           kitchen_group_by_category?: boolean
+          max_retries?: number
+          only_paid_orders?: boolean
           paper_width?: number
           print_customer_copy?: boolean
           print_delivery_label?: boolean
@@ -1531,12 +1609,16 @@ export type Database = {
           show_logo?: boolean
           show_pix?: boolean
           show_qr?: boolean
+          silent_mode?: boolean
           tax_note?: string
           updated_at?: string
         }
         Update: {
+          auto_delay_ms?: number
           auto_print_new_orders?: boolean
           beep_on_new?: boolean
+          beep_repeat?: number
+          beep_volume?: number
           cnpj?: string
           copies?: number
           cut_after?: boolean
@@ -1545,6 +1627,8 @@ export type Database = {
           header_text?: string
           id?: number
           kitchen_group_by_category?: boolean
+          max_retries?: number
+          only_paid_orders?: boolean
           paper_width?: number
           print_customer_copy?: boolean
           print_delivery_label?: boolean
@@ -1553,6 +1637,7 @@ export type Database = {
           show_logo?: boolean
           show_pix?: boolean
           show_qr?: boolean
+          silent_mode?: boolean
           tax_note?: string
           updated_at?: string
         }

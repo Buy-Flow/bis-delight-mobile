@@ -52,6 +52,27 @@ type PrintSettings = {
   cut_after: boolean;
   beep_on_new: boolean;
   kitchen_group_by_category: boolean;
+  silent_mode: boolean;
+  auto_delay_ms: number;
+  max_retries: number;
+  beep_volume: number;
+  beep_repeat: number;
+  only_paid_orders: boolean;
+};
+
+type Printer = {
+  id: string;
+  name: string;
+  kinds: string[];
+  target: "browser" | "bridge" | "escpos";
+  bridge_url: string | null;
+  copies: number;
+  paper_width: number | null;
+  active: boolean;
+  is_default: boolean;
+  sort_index: number;
+  last_ok_at: string | null;
+  last_error: string | null;
 };
 
 type SiteSettings = {
@@ -118,6 +139,7 @@ function PrintCenterPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [items, setItems] = useState<Record<string, OrderItemRow[]>>({});
   const [jobs, setJobs] = useState<PrintJob[]>([]);
+  const [printers, setPrinters] = useState<Printer[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
@@ -129,7 +151,7 @@ function PrintCenterPage() {
 
   const load = async () => {
     setLoading(true);
-    const [ps, ss, ord, jb] = await Promise.all([
+    const [ps, ss, ord, jb, pr] = await Promise.all([
       supabase.from("print_settings").select("*").eq("id", 1).maybeSingle(),
       supabase
         .from("site_settings")
@@ -148,8 +170,13 @@ function PrintCenterPage() {
         .select("id,order_id,kind,status,created_at")
         .order("created_at", { ascending: false })
         .limit(50),
+      supabase
+        .from("print_printers")
+        .select("*")
+        .order("sort_index", { ascending: true }),
     ]);
     if (ps.data) setSettings(ps.data as PrintSettings);
+    if (pr.data) setPrinters(pr.data as Printer[]);
     if (ss.data) {
       // Load admin-only pix_key via RPC and merge in
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,10 +223,65 @@ function PrintCenterPage() {
     [items, selectedOrderId],
   );
 
+  // Dispatch a print kind to every matching active printer
+  const dispatchKind = async (
+    kind: "cliente" | "cozinha" | "entrega",
+    order: OrderRow,
+    its: OrderItemRow[],
+  ) => {
+    if (!settings) return;
+    const targets = printers.filter((p) => p.active && p.kinds.includes(kind));
+    if (targets.length === 0) {
+      // Fallback: browser dialog with default settings
+      openPrintWindow(renderReceipt(kind, order, its, settings, site), settings);
+      logJob(order.id, kind, "ok", null);
+      return;
+    }
+    for (const p of targets) {
+      const localSettings: PrintSettings = {
+        ...settings,
+        copies: p.copies || settings.copies,
+        paper_width: p.paper_width ?? settings.paper_width,
+      };
+      const html = renderReceipt(kind, order, its, localSettings, site);
+      try {
+        if (p.target === "bridge" && p.bridge_url) {
+          const r = await fetch(p.bridge_url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              printer: p.name,
+              kind,
+              copies: p.copies,
+              paper_width: localSettings.paper_width,
+              order_id: order.id,
+              html,
+            }),
+          });
+          if (!r.ok) throw new Error(`bridge ${r.status}`);
+          await supabase
+            .from("print_printers")
+            .update({ last_ok_at: new Date().toISOString(), last_error: null })
+            .eq("id", p.id);
+        } else {
+          openPrintWindow(html, localSettings);
+        }
+        logJob(order.id, kind, "ok", p.id);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        await supabase
+          .from("print_printers")
+          .update({ last_error: msg })
+          .eq("id", p.id);
+        logJob(order.id, kind, "erro", p.id);
+        toast.error(`Falha em ${p.name}: ${msg}`);
+      }
+    }
+  };
+
   // Auto-print realtime subscription
   useEffect(() => {
     if (!settings?.auto_print_new_orders) return;
-    // Seed with current orders
     for (const o of orders) seenOrdersRef.current.add(o.id);
     const ch = supabase
       .channel("print-orders")
@@ -210,20 +292,20 @@ function PrintCenterPage() {
           const order = payload.new as OrderRow;
           if (seenOrdersRef.current.has(order.id)) return;
           seenOrdersRef.current.add(order.id);
+          if (settings.only_paid_orders && order.status !== "pago" && order.status !== "confirmado") return;
           if (settings.beep_on_new) beep();
-          // Fetch items and auto-print
+          if (settings.auto_delay_ms > 0) {
+            await new Promise((r) => setTimeout(r, settings.auto_delay_ms));
+          }
           const { data } = await supabase
             .from("order_items")
             .select("id,order_id,name,quantity,unit_price,extras")
             .eq("order_id", order.id);
           const its = (data ?? []) as OrderItemRow[];
-          if (settings.print_customer_copy)
-            openPrintWindow(renderReceipt("cliente", order, its, settings, site), settings);
-          if (settings.print_kitchen_copy)
-            openPrintWindow(renderReceipt("cozinha", order, its, settings, site), settings);
+          if (settings.print_customer_copy) await dispatchKind("cliente", order, its);
+          if (settings.print_kitchen_copy) await dispatchKind("cozinha", order, its);
           if (settings.print_delivery_label && order.mode === "entrega")
-            openPrintWindow(renderReceipt("entrega", order, its, settings, site), settings);
-          logJob(order.id, "cliente", "ok");
+            await dispatchKind("entrega", order, its);
           toast.success(`Novo pedido de ${order.customer_name || "cliente"} impresso`);
         },
       )
@@ -231,28 +313,40 @@ function PrintCenterPage() {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [settings, orders, site]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings, orders, site, printers]);
 
   const beep = () => {
+    if (!settings) return;
+    const repeats = Math.max(1, settings.beep_repeat);
+    const vol = Math.min(1, Math.max(0, settings.beep_volume / 100));
     try {
       const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioCtxRef.current ||= new AC();
       const ctx = audioCtxRef.current;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = 880;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.6);
+      for (let i = 0; i < repeats; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const t0 = ctx.currentTime + i * 0.75;
+        gain.gain.setValueAtTime(vol * 0.4, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
+        osc.start(t0);
+        osc.stop(t0 + 0.6);
+      }
     } catch { /* noop */ }
   };
 
-  const logJob = async (orderId: string | null, kind: string, status: "ok" | "erro") => {
-    await supabase.from("print_jobs").insert({ order_id: orderId, kind, status });
+  const logJob = async (
+    orderId: string | null,
+    kind: string,
+    status: "ok" | "erro",
+    printerId: string | null = null,
+  ) => {
+    await supabase.from("print_jobs").insert({ order_id: orderId, kind, status, printer_id: printerId });
     load();
   };
 
@@ -264,11 +358,7 @@ function PrintCenterPage() {
       return;
     }
     if (!selectedOrder) return toast.error("Selecione um pedido");
-    openPrintWindow(
-      renderReceipt(kind, selectedOrder, selectedItems, settings, site),
-      settings,
-    );
-    logJob(selectedOrder.id, kind, "ok");
+    void dispatchKind(kind, selectedOrder, selectedItems);
   };
 
   const printAll = () => {
@@ -289,6 +379,62 @@ function PrintCenterPage() {
     if (error) return toast.error(error.message);
     toast.success("Configurações salvas");
   };
+
+  const addPrinter = async () => {
+    const { data, error } = await supabase
+      .from("print_printers")
+      .insert({
+        name: `Impressora ${printers.length + 1}`,
+        kinds: ["cliente", "cozinha", "entrega"],
+        target: "browser",
+        copies: 1,
+        active: true,
+        sort_index: printers.length,
+      })
+      .select("*")
+      .single();
+    if (error) return toast.error(error.message);
+    setPrinters([...printers, data as Printer]);
+  };
+
+  const updatePrinter = async (id: string, patch: Partial<Printer>) => {
+    setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const { error } = await supabase.from("print_printers").update(patch).eq("id", id);
+    if (error) toast.error(error.message);
+  };
+
+  const deletePrinter = async (id: string) => {
+    if (!confirm("Remover impressora?")) return;
+    const { error } = await supabase.from("print_printers").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    setPrinters((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const testPrinter = async (p: Printer) => {
+    if (!settings) return;
+    const html = renderTest({ ...settings, paper_width: p.paper_width ?? settings.paper_width, copies: p.copies }, site);
+    try {
+      if (p.target === "bridge" && p.bridge_url) {
+        const r = await fetch(p.bridge_url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ printer: p.name, kind: "teste", copies: p.copies, html }),
+        });
+        if (!r.ok) throw new Error(`bridge ${r.status}`);
+        await updatePrinter(p.id, { last_ok_at: new Date().toISOString(), last_error: null });
+        toast.success(`Teste enviado para ${p.name}`);
+      } else {
+        openPrintWindow(html, { ...settings, copies: p.copies });
+      }
+      logJob(null, "teste", "ok", p.id);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      await updatePrinter(p.id, { last_error: msg });
+      logJob(null, "teste", "erro", p.id);
+      toast.error(msg);
+    }
+  };
+
 
   const kpis = useMemo(() => {
     const today = new Date();
@@ -572,6 +718,209 @@ function PrintCenterPage() {
                 />
               </div>
             </Section>
+
+            {/* Impressoras cadastradas */}
+            <Section title="Impressoras cadastradas" icon={Printer}>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs text-white/60">
+                  Cada impressora recebe automaticamente os tipos marcados. Use "bridge" para
+                  falar com um agente local que envia direto ao ESC/POS sem diálogo do navegador.
+                </p>
+                <button
+                  onClick={addPrinter}
+                  className="rounded-lg bg-neon-pink px-3 py-1.5 text-xs font-bold hover:brightness-110"
+                >
+                  + Adicionar
+                </button>
+              </div>
+              {printers.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
+                  Nenhuma impressora cadastrada. Adicione ao menos uma.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {printers.map((p) => (
+                    <div key={p.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                      <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input
+                              value={p.name}
+                              onChange={(e) => updatePrinter(p.id, { name: e.target.value })}
+                              className={cn(inputCls, "max-w-[240px] py-1.5 text-sm font-bold")}
+                            />
+                            <select
+                              value={p.target}
+                              onChange={(e) => updatePrinter(p.id, { target: e.target.value as Printer["target"] })}
+                              className={cn(inputCls, "max-w-[160px] py-1.5 text-xs")}
+                            >
+                              <option value="browser">Navegador</option>
+                              <option value="bridge">Bridge (HTTP)</option>
+                              <option value="escpos">ESC/POS</option>
+                            </select>
+                            <label className="inline-flex cursor-pointer items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/60">
+                              <input
+                                type="checkbox"
+                                checked={p.active}
+                                onChange={(e) => updatePrinter(p.id, { active: e.target.checked })}
+                                className="accent-neon-pink"
+                              />
+                              Ativa
+                            </label>
+                            {p.last_error && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold text-red-300">
+                                <XCircle className="h-3 w-3" /> {p.last_error.slice(0, 40)}
+                              </span>
+                            )}
+                            {p.last_ok_at && !p.last_error && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                                <CheckCircle2 className="h-3 w-3" /> OK
+                              </span>
+                            )}
+                          </div>
+                          {p.target === "bridge" && (
+                            <input
+                              value={p.bridge_url ?? ""}
+                              placeholder="http://localhost:9100/print"
+                              onChange={(e) => updatePrinter(p.id, { bridge_url: e.target.value })}
+                              className={cn(inputCls, "py-1.5 text-xs")}
+                            />
+                          )}
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Cópias</span>
+                              <input
+                                type="number" min={1} max={9}
+                                value={p.copies}
+                                onChange={(e) => updatePrinter(p.id, { copies: Number(e.target.value) })}
+                                className={cn(inputCls, "w-16 py-1.5 text-xs")}
+                              />
+                              <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/50">Papel</span>
+                              <select
+                                value={String(p.paper_width ?? "")}
+                                onChange={(e) => updatePrinter(p.id, { paper_width: e.target.value ? Number(e.target.value) : null })}
+                                className={cn(inputCls, "max-w-[110px] py-1.5 text-xs")}
+                              >
+                                <option value="">Padrão</option>
+                                <option value="58">58mm</option>
+                                <option value="80">80mm</option>
+                              </select>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {(["cliente", "cozinha", "entrega"] as const).map((k) => {
+                                const on = p.kinds.includes(k);
+                                const Icon = KIND_ICON[k];
+                                return (
+                                  <button
+                                    key={k}
+                                    onClick={() => {
+                                      const next = on ? p.kinds.filter((x) => x !== k) : [...p.kinds, k];
+                                      updatePrinter(p.id, { kinds: next });
+                                    }}
+                                    className={cn(
+                                      "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest transition",
+                                      on
+                                        ? "border-neon-pink/50 bg-neon-pink/15 text-neon-pink"
+                                        : "border-white/10 bg-white/5 text-white/50 hover:text-white",
+                                    )}
+                                  >
+                                    <Icon className="h-3 w-3" /> {k}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <button
+                            onClick={() => testPrinter(p)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold hover:bg-white/10"
+                          >
+                            <Play className="h-3 w-3" /> Testar
+                          </button>
+                          <button
+                            onClick={() => deletePrinter(p.id)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-red-500/10 px-3 py-1.5 text-[11px] font-bold text-red-300 hover:bg-red-500/20"
+                          >
+                            <XCircle className="h-3 w-3" /> Remover
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Section>
+
+            {/* Automação */}
+            <Section title="Automação de novos pedidos" icon={Zap}>
+              <div className="grid gap-2 md:grid-cols-2">
+                <Toggle
+                  label="Imprimir automaticamente ao entrar pedido"
+                  hint="Assim que o pedido é criado, dispara para todas as impressoras ativas."
+                  checked={S.auto_print_new_orders}
+                  onChange={(v) => setSettings({ ...S, auto_print_new_orders: v })}
+                  icon={S.auto_print_new_orders ? Zap : ZapOff}
+                />
+                <Toggle
+                  label="Somente pedidos pagos/confirmados"
+                  hint="Ignora pedidos ainda pendentes de pagamento."
+                  checked={S.only_paid_orders}
+                  onChange={(v) => setSettings({ ...S, only_paid_orders: v })}
+                />
+                <Toggle
+                  label="Modo silencioso (kiosk)"
+                  hint="Requer Chrome com --kiosk-printing. Pula o diálogo do navegador."
+                  checked={S.silent_mode}
+                  onChange={(v) => setSettings({ ...S, silent_mode: v })}
+                />
+                <Toggle
+                  label="Bipe em novo pedido"
+                  checked={S.beep_on_new}
+                  onChange={(v) => setSettings({ ...S, beep_on_new: v })}
+                  icon={S.beep_on_new ? Volume2 : VolumeX}
+                />
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-4">
+                <Field label="Atraso antes de imprimir (ms)">
+                  <input
+                    type="number" min={0} max={30000} step={100}
+                    value={S.auto_delay_ms}
+                    onChange={(e) => setSettings({ ...S, auto_delay_ms: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Máx. tentativas em erro">
+                  <input
+                    type="number" min={0} max={5}
+                    value={S.max_retries}
+                    onChange={(e) => setSettings({ ...S, max_retries: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Volume do bipe (%)">
+                  <input
+                    type="number" min={0} max={100}
+                    value={S.beep_volume}
+                    onChange={(e) => setSettings({ ...S, beep_volume: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Repetições do bipe">
+                  <input
+                    type="number" min={1} max={5}
+                    value={S.beep_repeat}
+                    onChange={(e) => setSettings({ ...S, beep_repeat: Number(e.target.value) })}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-[11px] text-amber-200/80">
+                Deixe esta página aberta em um computador do estabelecimento para receber e imprimir os pedidos em tempo real.
+                Para impressão silenciosa, abra o Chrome com <code className="rounded bg-black/40 px-1">--kiosk-printing</code> ou use uma impressora com "target = bridge" apontando para um agente local (QZ Tray, node-thermal-printer, etc.).
+              </div>
+            </Section>
+
 
             {/* Reimprimir */}
             <Section title="Reimprimir pedido" icon={RefreshCw}>
