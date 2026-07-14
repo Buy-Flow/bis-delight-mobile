@@ -68,7 +68,8 @@ function loadSaved(): SavedCustomer {
   if (typeof window === "undefined") return {};
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch {
+  } catch (e) {
+    logSilent("checkout:load-saved", e);
     return {};
   }
 }
