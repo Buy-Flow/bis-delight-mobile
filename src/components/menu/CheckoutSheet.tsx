@@ -627,6 +627,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           return;
         }
       } else {
+        // PIX
+        clear();
+        closeCheckout();
+        navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
+      }
     } catch (err: any) {
       console.error("[checkout] send failed", err);
       const detail =
