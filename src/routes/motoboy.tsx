@@ -1070,16 +1070,3 @@ function OptimizeRouteWidget({
   );
 }
 
-function MiniStat({ label, value, tone }: { label: string; value: string; tone: "emerald" | "cyan" | "red" | "white" }) {
-  const toneCls =
-    tone === "emerald" ? "text-emerald-300" :
-    tone === "cyan" ? "text-cyan-300" :
-    tone === "red" ? "text-red-300" :
-    "text-white";
-  return (
-    <div className="rounded-lg bg-white/[0.04] p-2 text-center">
-      <div className="text-[9px] font-bold uppercase text-white/50">{label}</div>
-      <div className={cn("text-sm font-black mt-0.5", toneCls)}>{value}</div>
-    </div>
-  );
-}
