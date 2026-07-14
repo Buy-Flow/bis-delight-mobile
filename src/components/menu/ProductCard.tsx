@@ -279,13 +279,20 @@ export function ProductCard({
             </span>
           </div>
 
-          <div
-            aria-hidden="true"
-
+          <button
+            type="button"
+            disabled={blocked}
+            aria-label={ariaLabel}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!blocked) onOpen(product);
+            }}
             className={cn(
-              "grid h-10 w-10 shrink-0 place-items-center rounded-full",
+              "hit-target grid h-10 w-10 shrink-0 place-items-center rounded-full",
               "transition-transform duration-150 ease-out will-change-transform",
-              "group-active:scale-90",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(0.14_0.09_300)]",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              !blocked && "active:scale-90 [@media(hover:hover)]:hover:scale-105",
             )}
             style={{
               background:
@@ -294,8 +301,9 @@ export function ProductCard({
                 "0 8px 18px -6px oklch(0.60 0.28 350 / 0.75), inset 0 1px 0 rgba(255,255,255,0.35)",
             }}
           >
-            <Plus className="h-5 w-5 text-white" strokeWidth={3.4} />
-          </div>
+            <Plus className="h-5 w-5 text-white" strokeWidth={3.4} aria-hidden="true" />
+          </button>
+
         </div>
 
       </div>
