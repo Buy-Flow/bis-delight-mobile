@@ -24,6 +24,32 @@ import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/AddressMapInline";
 import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
+import { useServerFn } from "@tanstack/react-start";
+import { createAsaasCardForOrder } from "@/lib/asaas.functions";
+
+function formatCardNumber(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 19);
+  return d.replace(/(.{4})/g, "$1 ").trim();
+}
+function formatCardExpiry(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 4);
+  if (d.length <= 2) return d;
+  return `${d.slice(0, 2)}/${d.slice(2)}`;
+}
+function formatCep(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 5) return d;
+  return `${d.slice(0, 5)}-${d.slice(5)}`;
+}
+function detectCardBrand(num: string): string | null {
+  const n = num.replace(/\D/g, "");
+  if (/^4/.test(n)) return "Visa";
+  if (/^(5[1-5]|2[2-7])/.test(n)) return "Mastercard";
+  if (/^3[47]/.test(n)) return "Amex";
+  if (/^(4011|4312|4389|4514|4573|5041|5066|5067|6277|6362|6363|6516|6550)/.test(n)) return "Elo";
+  if (/^(606282|3841)/.test(n)) return "Hipercard";
+  return null;
+}
 
 
 type Mode = "entrega" | "retirada";
@@ -107,6 +133,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [sending, setSending] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao">("whatsapp");
   const [cpf, setCpf] = useState("");
+  const [cardHolder, setCardHolder] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCcv, setCardCcv] = useState("");
+  const [cardCep, setCardCep] = useState("");
+  const [cardAddrNumber, setCardAddrNumber] = useState("");
+  const [cardEmail, setCardEmail] = useState("");
+  const [installments, setInstallments] = useState(1);
+  const runCardCharge = useServerFn(createAsaasCardForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
@@ -426,9 +461,20 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
-    if (paymentMethod === "cartao" && !isValidCpf(cpf)) {
-      toast.error("CPF inválido — obrigatório para pagamento com cartão.");
-      return;
+    if (paymentMethod === "cartao") {
+      if (!isValidCpf(cpf)) { toast.error("CPF inválido — obrigatório para pagamento com cartão."); return; }
+      const numDigits = cardNumber.replace(/\D/g, "");
+      const exp = cardExpiry.replace(/\D/g, "");
+      const effEmail = (cardEmail || user?.email || "").trim();
+      const effCep = (cardCep || cep).replace(/\D/g, "");
+      const effAddrNumber = (cardAddrNumber || addrNumber).trim();
+      if (!cardHolder.trim()) { toast.error("Informe o nome como está no cartão."); return; }
+      if (numDigits.length < 13) { toast.error("Número do cartão inválido."); return; }
+      if (exp.length !== 4) { toast.error("Validade inválida (use MM/AA)."); return; }
+      if (cardCcv.length < 3) { toast.error("CVV inválido."); return; }
+      if (effCep.length !== 8) { toast.error("CEP inválido."); return; }
+      if (!effAddrNumber) { toast.error("Informe o número do endereço do titular."); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(effEmail)) { toast.error("E-mail inválido."); return; }
     }
     if (mode === "entrega" && outsideRadius) {
       toast.error(
@@ -529,13 +575,59 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           clear();
           closeCheckout();
         }, 400);
-      } else {
+      } else if (paymentMethod === "cartao") {
+        // Processa cartão via Asaas AGORA, mostrando erro claro se algo falhar
+        const exp = cardExpiry.replace(/\D/g, "");
+        const expiryMonth = exp.slice(0, 2);
+        let expiryYear = exp.slice(2);
+        if (expiryYear.length === 2) expiryYear = `20${expiryYear}`;
         try {
-          sessionStorage.setItem(
-            "querobis:pending_payment_cpf",
-            JSON.stringify({ cpf: cpfDigits(cpf), name: name.trim(), phone: phone.trim(), email: user?.email ?? "" }),
-          );
-        } catch {}
+          const result = await runCardCharge({
+            data: {
+              orderId: order.id,
+              customer: {
+                name: name.trim(),
+                email: (cardEmail || user?.email || "").trim(),
+                cpfCnpj: cpfDigits(cpf),
+                phone: phone.replace(/\D/g, ""),
+                postalCode: (cardCep || cep).replace(/\D/g, ""),
+                addressNumber: (cardAddrNumber || addrNumber).trim(),
+              },
+              card: {
+                holderName: cardHolder.trim(),
+                number: cardNumber.replace(/\D/g, ""),
+                expiryMonth,
+                expiryYear,
+                ccv: cardCcv,
+              },
+              installmentCount: installments > 1 ? installments : undefined,
+            },
+          });
+          const st = String(result?.status ?? "").toUpperCase();
+          if (["CONFIRMED", "RECEIVED", "AUTHORIZED"].includes(st)) {
+            toast.success("Pagamento aprovado! 🎉");
+          } else if (st === "PENDING") {
+            toast.info("Pagamento em processamento — vamos avisar assim que confirmar.");
+          } else {
+            toast.warning(`Status: ${st}`);
+          }
+          clear();
+          closeCheckout();
+          navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
+        } catch (payErr: any) {
+          console.error("[checkout] card charge failed", payErr);
+          const raw = payErr?.message || payErr?.error_description || (typeof payErr === "string" ? payErr : "");
+          const friendly = raw.includes("invalid_credit_card") ? "Cartão recusado — verifique os dados."
+            : raw.includes("insufficient_funds") ? "Cartão sem saldo suficiente."
+            : raw.includes("expired") ? "Cartão expirado."
+            : raw || "Não foi possível processar o cartão.";
+          toast.error("Pagamento recusado", { description: friendly, duration: 10000 });
+          // Não apaga o pedido — usuário pode tentar de novo em /pagamento/:orderId
+          setSending(false);
+          return;
+        }
+      } else {
+        // PIX
         clear();
         closeCheckout();
         navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
@@ -1301,19 +1393,116 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               ))}
             </div>
             {paymentMethod === "cartao" && (
-              <div className="mt-3">
-                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-white/50">
-                  CPF do titular <span className="text-neon-pink">*</span>
-                </label>
-                <input
-                  value={formatCpf(cpf)}
-                  onChange={(e) => setCpf(e.target.value)}
-                  inputMode="numeric"
-                  placeholder="000.000.000-00"
-                  className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                />
-                <div className="mt-1 text-[10.5px] text-white/50">
-                  Exigido pela operadora para autenticar a compra.
+              <div className="mt-3 space-y-2.5 rounded-2xl border border-neon-pink/20 bg-neon-pink/[0.04] p-3">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-neon-pink/80">
+                  <CreditCard className="h-3.5 w-3.5" /> Dados do cartão
+                  {detectCardBrand(cardNumber) && (
+                    <span className="ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/80">
+                      {detectCardBrand(cardNumber)}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="col-span-2">
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF do titular *</label>
+                    <input
+                      value={formatCpf(cpf)}
+                      onChange={(e) => setCpf(e.target.value)}
+                      inputMode="numeric"
+                      placeholder="000.000.000-00"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nome no cartão *</label>
+                    <input
+                      value={cardHolder}
+                      onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
+                      placeholder="COMO ESTÁ NO CARTÃO"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm uppercase text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Número do cartão *</label>
+                    <input
+                      value={formatCardNumber(cardNumber)}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                      inputMode="numeric"
+                      autoComplete="cc-number"
+                      placeholder="0000 0000 0000 0000"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm tracking-wider text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Validade *</label>
+                    <input
+                      value={formatCardExpiry(cardExpiry)}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                      inputMode="numeric"
+                      autoComplete="cc-exp"
+                      placeholder="MM/AA"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CVV *</label>
+                    <input
+                      value={cardCcv}
+                      onChange={(e) => setCardCcv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
+                      placeholder="123"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CEP *</label>
+                    <input
+                      value={formatCep(cardCep || cep)}
+                      onChange={(e) => setCardCep(e.target.value)}
+                      inputMode="numeric"
+                      placeholder="00000-000"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nº endereço *</label>
+                    <input
+                      value={cardAddrNumber || addrNumber}
+                      onChange={(e) => setCardAddrNumber(e.target.value)}
+                      inputMode="numeric"
+                      placeholder="123"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">E-mail *</label>
+                    <input
+                      value={cardEmail || (user?.email ?? "")}
+                      onChange={(e) => setCardEmail(e.target.value)}
+                      inputMode="email"
+                      autoComplete="email"
+                      placeholder="voce@email.com"
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Parcelas</label>
+                    <select
+                      value={installments}
+                      onChange={(e) => setInstallments(Number(e.target.value))}
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink/60"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                        <option key={n} value={n} className="bg-neutral-900">
+                          {n}x de {brl(total / n)}{n === 1 ? " (à vista)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 pt-1 text-[10px] text-white/50">
+                  <Check className="h-3 w-3 text-emerald-400" /> Pagamento processado com criptografia pela Asaas.
                 </div>
               </div>
             )}
