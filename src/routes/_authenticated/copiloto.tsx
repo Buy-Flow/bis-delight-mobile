@@ -639,6 +639,10 @@ function ChatWindow({
             placeholder="Peça algo pro Copiloto..."
             className="flex-1 resize-none rounded-xl border border-purple-500/30 bg-black/60 px-3 py-2.5 text-base text-white placeholder:text-white/30 focus:border-neon-yellow/60 focus:outline-none md:text-sm"
           />
+          <VoiceMicButton
+            onTranscript={(t) => setInput((prev) => (prev ? prev + " " + t : t))}
+            autoSubmit={(t) => { if (token && !isLoading) sendMessage({ text: t }); }}
+          />
           <button
             type="button"
             onClick={submit}
