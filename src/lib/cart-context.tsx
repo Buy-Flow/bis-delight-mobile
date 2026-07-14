@@ -40,6 +40,8 @@ type CartCtx = {
   pendingProductId: string | null;
   requestOpenProduct: (productId: string) => void;
   consumePendingProduct: () => void;
+  shareMode: ShareMode;
+  setShareMode: (m: ShareMode) => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
