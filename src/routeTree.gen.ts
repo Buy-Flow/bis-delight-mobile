@@ -28,6 +28,7 @@ import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedRotasRouteImport } from './routes/_authenticated/rotas'
+import { Route as AuthenticatedRankingVipRouteImport } from './routes/_authenticated/ranking-vip'
 import { Route as AuthenticatedProvaEntregaRouteImport } from './routes/_authenticated/prova-entrega'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authenticated/precificacao'
@@ -159,6 +160,11 @@ const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
 const AuthenticatedRotasRoute = AuthenticatedRotasRouteImport.update({
   id: '/rotas',
   path: '/rotas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRankingVipRoute = AuthenticatedRankingVipRouteImport.update({
+  id: '/ranking-vip',
+  path: '/ranking-vip',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProvaEntregaRoute =
@@ -406,6 +412,7 @@ export interface FileRoutesByFullPath {
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/prova-entrega': typeof AuthenticatedProvaEntregaRoute
+  '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
   '/sla': typeof AuthenticatedSlaRoute
@@ -464,6 +471,7 @@ export interface FileRoutesByTo {
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/prova-entrega': typeof AuthenticatedProvaEntregaRoute
+  '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
   '/sla': typeof AuthenticatedSlaRoute
@@ -524,6 +532,7 @@ export interface FileRoutesById {
   '/_authenticated/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/prova-entrega': typeof AuthenticatedProvaEntregaRoute
+  '/_authenticated/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/_authenticated/rotas': typeof AuthenticatedRotasRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
   '/_authenticated/sla': typeof AuthenticatedSlaRoute
@@ -584,6 +593,7 @@ export interface FileRouteTypes {
     | '/precificacao'
     | '/previsao'
     | '/prova-entrega'
+    | '/ranking-vip'
     | '/rotas'
     | '/rush'
     | '/sla'
@@ -642,6 +652,7 @@ export interface FileRouteTypes {
     | '/precificacao'
     | '/previsao'
     | '/prova-entrega'
+    | '/ranking-vip'
     | '/rotas'
     | '/rush'
     | '/sla'
@@ -701,6 +712,7 @@ export interface FileRouteTypes {
     | '/_authenticated/precificacao'
     | '/_authenticated/previsao'
     | '/_authenticated/prova-entrega'
+    | '/_authenticated/ranking-vip'
     | '/_authenticated/rotas'
     | '/_authenticated/rush'
     | '/_authenticated/sla'
@@ -872,6 +884,13 @@ declare module '@tanstack/react-router' {
       path: '/rotas'
       fullPath: '/rotas'
       preLoaderRoute: typeof AuthenticatedRotasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ranking-vip': {
+      id: '/_authenticated/ranking-vip'
+      path: '/ranking-vip'
+      fullPath: '/ranking-vip'
+      preLoaderRoute: typeof AuthenticatedRankingVipRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/prova-entrega': {
@@ -1176,6 +1195,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrecificacaoRoute: typeof AuthenticatedPrecificacaoRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedProvaEntregaRoute: typeof AuthenticatedProvaEntregaRoute
+  AuthenticatedRankingVipRoute: typeof AuthenticatedRankingVipRoute
   AuthenticatedRotasRoute: typeof AuthenticatedRotasRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
   AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
@@ -1218,6 +1238,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrecificacaoRoute: AuthenticatedPrecificacaoRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedProvaEntregaRoute: AuthenticatedProvaEntregaRoute,
+  AuthenticatedRankingVipRoute: AuthenticatedRankingVipRoute,
   AuthenticatedRotasRoute: AuthenticatedRotasRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
   AuthenticatedSlaRoute: AuthenticatedSlaRoute,

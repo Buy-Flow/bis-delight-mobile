@@ -3564,6 +3564,60 @@ export type Database = {
         }
         Relationships: []
       }
+      vip_ranking_settings: {
+        Row: {
+          enabled: boolean
+          hero_subtitle: string
+          hero_title: string
+          id: string
+          leaderboard_size: number
+          mask_leaderboard_names: boolean
+          metric: string
+          min_orders_to_rank: number
+          show_leaderboard: boolean
+          show_percentile: boolean
+          show_rank: boolean
+          singleton: boolean
+          tiers: Json
+          top_badge_percent: number
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          hero_subtitle?: string
+          hero_title?: string
+          id?: string
+          leaderboard_size?: number
+          mask_leaderboard_names?: boolean
+          metric?: string
+          min_orders_to_rank?: number
+          show_leaderboard?: boolean
+          show_percentile?: boolean
+          show_rank?: boolean
+          singleton?: boolean
+          tiers?: Json
+          top_badge_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          hero_subtitle?: string
+          hero_title?: string
+          id?: string
+          leaderboard_size?: number
+          mask_leaderboard_names?: boolean
+          metric?: string
+          min_orders_to_rank?: number
+          show_leaderboard?: boolean
+          show_percentile?: boolean
+          show_rank?: boolean
+          singleton?: boolean
+          tiers?: Json
+          top_badge_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       waiters: {
         Row: {
           active: boolean
@@ -4709,6 +4763,7 @@ export type Database = {
         }
         Returns: Json
       }
+      get_customer_ranking: { Args: never; Returns: Json }
       get_loyalty_status: {
         Args: never
         Returns: {
@@ -4775,6 +4830,30 @@ export type Database = {
         }[]
       }
       get_tracking_by_token: { Args: { _token: string }; Returns: Json }
+      get_vip_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          display_name: string
+          is_me: boolean
+          ltv: number
+          orders_ct: number
+          rank_pos: number
+        }[]
+      }
+      get_vip_leaderboard_admin: {
+        Args: { _limit?: number }
+        Returns: {
+          email: string
+          last_order: string
+          ltv: number
+          name: string
+          orders_ct: number
+          phone: string
+          rank_pos: number
+          tier_key: string
+          user_id: string
+        }[]
+      }
       get_winback_candidates: {
         Args: {
           _cooldown_days?: number

@@ -136,6 +136,7 @@ const groups: NavGroup[] = [
       { to: "/clientes", label: "Clientes", icon: Users },
       { to: "/avaliacoes", label: "Avaliações", icon: Star },
       { to: "/admin", tab: "loyalty", label: "Fidelidade", icon: Award },
+      { to: "/ranking-vip", label: "Ranking VIP", icon: TrendingUp },
       { to: "/carrinhos", label: "Carrinhos abandonados", icon: ShoppingCart },
     ],
   },
