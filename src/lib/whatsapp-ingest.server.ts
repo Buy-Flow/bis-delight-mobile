@@ -196,7 +196,7 @@ export async function ingestEvolutionPayload(
   const result: IngestResult = { processed: 0, inserted: 0, skipped: 0, errors: 0 };
 
   const logRow = async (row: {
-    status: "ok" | "skipped" | "error";
+    status: "ok" | "skipped" | "error" | "noise";
     phone?: string | null;
     evolution_id?: string | null;
     from_me?: boolean | null;
