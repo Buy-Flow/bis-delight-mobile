@@ -142,7 +142,12 @@ function InsightsPage() {
   };
 
   return (
-    <AdminShell title="Copiloto Proativo" subtitle="Insights diários automáticos com sugestões de ação">
+    <AdminShell>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-slate-800">Copiloto Proativo</h1>
+        <p className="text-sm text-slate-500">Insights diários automáticos com sugestões de ação</p>
+      </div>
+
       <div className="mb-6 grid gap-3 sm:grid-cols-4">
         {[
           { label: "Total gerados", value: stats?.total ?? "—", icon: Sparkles, color: "violet" },
