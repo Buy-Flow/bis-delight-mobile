@@ -586,7 +586,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             })()}
           </div>
         </header>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <div className="mx-auto w-full max-w-[1600px] 2xl:max-w-[1760px]">
+            {children}
+          </div>
+        </main>
       </div>
       <FloatingAssistant />
       <CommandPalette />
