@@ -1025,9 +1025,7 @@ function WhatsappPage() {
             )}
           </section>
 
-              </>
-            )}
-          </section>
+
         </div>
         )}
     </div>
