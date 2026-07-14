@@ -12,6 +12,10 @@ function normalizeBrazilianPhone(value?: string) {
   let digits = onlyDigits(value);
   if (digits.startsWith("55") && digits.length > 11) digits = digits.slice(2);
   if (digits.length < 10 || digits.length > 11) return undefined;
+  const ddd = digits.slice(0, 2);
+  const local = digits.slice(2);
+  if (ddd === "00" || /^0+$/.test(ddd)) return undefined;
+  if (/^(\d)\1+$/.test(local)) return undefined;
   return digits;
 }
 
