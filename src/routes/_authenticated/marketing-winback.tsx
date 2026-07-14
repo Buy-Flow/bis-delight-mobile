@@ -164,13 +164,13 @@ function WinbackPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Reativação de Clientes</h1>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 Traga de volta quem sumiu — cupom automático via WhatsApp após X dias sem pedir.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
               <span>{settings?.enabled ? "Ativo" : "Pausado"}</span>
               <Switch
                 checked={!!settings?.enabled}
@@ -188,7 +188,7 @@ function WinbackPage() {
           </div>
         </header>
 
-        <nav className="flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
+        <nav className="flex gap-1 overflow-x-auto rounded-xl bg-muted/50 p-1">
           {[
             { id: "overview", label: "Visão geral", icon: Sparkles },
             { id: "candidatos", label: "Candidatos", icon: Users },
@@ -298,7 +298,7 @@ function OverviewTab({ settings, stats }: { settings: Settings | null; stats: Re
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
-      <dt className="text-slate-500">{label}</dt>
+      <dt className="text-muted-foreground">{label}</dt>
       <dd className="font-medium text-foreground">{value}</dd>
     </div>
   );
@@ -398,7 +398,7 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Buscar por nome, e-mail ou telefone" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
         </div>
         <div className="flex items-center gap-2">
@@ -451,7 +451,7 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-slate-500">
+                <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
                   {loading ? "Carregando…" : "Nenhum candidato elegível no momento. 🎉"}
                 </td>
               </tr>
@@ -463,13 +463,13 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
                 </td>
                 <td className="px-3 py-2">
                   <div className="font-medium text-foreground">{r.full_name || "(sem nome)"}</div>
-                  <div className="text-xs text-slate-500">{r.email}</div>
+                  <div className="text-xs text-muted-foreground">{r.email}</div>
                 </td>
                 <td className="px-3 py-2 font-mono text-xs">{r.phone || "—"}</td>
                 <td className="px-3 py-2 text-right">{r.orders_count}</td>
                 <td className="px-3 py-2 text-right">{BRL(r.lifetime_spent)}</td>
                 <td className="px-3 py-2 text-right font-medium text-rose-600">{r.days_since_last_order}d</td>
-                <td className="px-3 py-2 text-xs text-slate-500">
+                <td className="px-3 py-2 text-xs text-muted-foreground">
                   {r.last_winback_at ? new Date(r.last_winback_at).toLocaleDateString("pt-BR") : "—"}
                 </td>
               </tr>
@@ -562,7 +562,7 @@ function ConfigTab({
       </Card>
 
       <Card title="Mensagem no WhatsApp">
-        <p className="text-xs text-slate-500 mb-2">
+        <p className="text-xs text-muted-foreground mb-2">
           Variáveis: <code>{"{nome}"}</code>, <code>{"{cupom}"}</code>, <code>{"{desconto}"}</code>, <code>{"{validade}"}</code>, <code>{"{link}"}</code>
         </p>
         <Textarea rows={4} value={settings.message_template} onChange={(e) => patch({ message_template: e.target.value })} />
@@ -679,7 +679,7 @@ function HistoryTab() {
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-slate-500">
+                <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
                   {loading ? "Carregando…" : "Nenhum envio ainda."}
                 </td>
               </tr>
@@ -709,9 +709,9 @@ function StatusPill({ status }: { status: string }) {
     sent: { c: "bg-emerald-100 text-emerald-700", ic: CheckCircle2, l: "Enviado" },
     partial: { c: "bg-amber-100 text-amber-700", ic: AlertTriangle, l: "Parcial" },
     failed: { c: "bg-rose-100 text-rose-700", ic: XCircle, l: "Falhou" },
-    skipped: { c: "bg-slate-100 text-muted-foreground", ic: AlertTriangle, l: "Ignorado" },
+    skipped: { c: "bg-muted/50 text-muted-foreground", ic: AlertTriangle, l: "Ignorado" },
   };
-  const meta = map[status] ?? { c: "bg-slate-100 text-muted-foreground", ic: AlertTriangle, l: status };
+  const meta = map[status] ?? { c: "bg-muted/50 text-muted-foreground", ic: AlertTriangle, l: status };
   const Ic = meta.ic;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${meta.c}`}>
