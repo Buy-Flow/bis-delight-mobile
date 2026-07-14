@@ -1420,6 +1420,27 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     </span>
                   )}
                 </div>
+
+                {savedCard && (
+                  <button
+                    type="button"
+                    onClick={() => setUseSavedCard((v) => !v)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition",
+                      useSavedCard
+                        ? "border-emerald-400/40 bg-emerald-400/10"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/25",
+                    )}
+                  >
+                    <CreditCard className={cn("h-5 w-5", useSavedCard ? "text-emerald-300" : "text-white/50")} />
+                    <div className="flex-1">
+                      <div className="text-[12px] font-bold text-white">{savedCard.brand} •••• {savedCard.last4}</div>
+                      <div className="text-[10px] text-white/50">{useSavedCard ? "Cobrar neste cartão (1-clique)" : "Toque para usar cartão salvo"}</div>
+                    </div>
+                    <div className={cn("h-4 w-4 rounded-full border-2", useSavedCard ? "border-emerald-400 bg-emerald-400" : "border-white/30")} />
+                  </button>
+                )}
+
                 <div className="grid grid-cols-2 gap-2">
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF do titular *</label>
@@ -1431,6 +1452,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                       className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
                     />
                   </div>
+                  {!(savedCard && useSavedCard) && (
+                    <>
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nome no cartão *</label>
                     <input
@@ -1504,6 +1527,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                       className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
                     />
                   </div>
+                    </>
+                  )}
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Parcelas</label>
                     <select
@@ -1519,6 +1544,19 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                     </select>
                   </div>
                 </div>
+
+                {!!user && !(savedCard && useSavedCard) && (
+                  <label className="flex items-center gap-2 pt-1 text-[11px] text-white/70 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={saveCard}
+                      onChange={(e) => setSaveCard(e.target.checked)}
+                      className="h-4 w-4 accent-neon-pink"
+                    />
+                    Salvar cartão para próximas compras (1-clique)
+                  </label>
+                )}
+
                 <div className="flex items-center gap-1.5 pt-1 text-[10px] text-white/50">
                   <Check className="h-3 w-3 text-emerald-400" /> Pagamento processado com criptografia pela Asaas.
                 </div>
