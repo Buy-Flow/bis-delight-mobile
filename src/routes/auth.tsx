@@ -118,7 +118,9 @@ function AuthPage() {
   const search = useSearch({ from: "/auth" });
   const next = safeNext(search.next);
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(
+    search.mode === "signup" ? "signup" : "signin",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -131,9 +133,19 @@ function AuthPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
+  // Store referral code if present in URL
+  useEffect(() => {
+    if (search.ref) {
+      import("@/lib/referral").then((m) => m.storeReferralCode(search.ref!));
+    }
+  }, [search.ref]);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: next });
+      if (data.user) {
+        import("@/lib/referral").then((m) => m.tryConsumeStoredReferralCode());
+        navigate({ to: next });
+      }
     });
   }, [navigate, next]);
 
