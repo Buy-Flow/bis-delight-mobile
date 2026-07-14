@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/lib/cart-context";
+import { toast } from "sonner";
 
 export type Participant = { name: string; joined_at?: string; is_owner?: boolean };
 export type SharedItem = CartItem & { participant: string; added_at?: string };
@@ -23,40 +24,113 @@ const RECENT_KEY = "querobis:share_recent";
 export type ShareMode = { token: string; name: string; ownerName?: string } | null;
 export type RecentShare = { token: string; name: string; ownerName?: string; lastAt: number };
 
+/** Remove uma chave corrompida com segurança e loga o motivo. */
+function purgeCorruptedKey(key: string, err: unknown, opts?: { silent?: boolean }) {
+  // eslint-disable-next-line no-console
+  console.warn(`[shared-cart] chave "${key}" corrompida — limpando`, err);
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.warn("[shared-cart] falha ao remover chave corrompida", e);
+  }
+  try {
+    sessionStorage.removeItem(key);
+  } catch (e) {
+    console.warn("[shared-cart] falha ao remover chave corrompida (session)", e);
+  }
+  if (!opts?.silent && typeof window !== "undefined") {
+    // Avisa o usuário só quando afeta o modo de compartilhar ativo.
+    if (key === PARTICIPATE_KEY) {
+      toast.error("Sessão de carrinho compartilhado foi perdida", {
+        description: "Dados locais estavam corrompidos. Entre novamente pelo link do convite.",
+      });
+      window.dispatchEvent(new Event("querobis:share_mode"));
+    }
+  }
+}
+
+/** Reporta erros de escrita (quota cheia, modo privado, etc). */
+function reportStorageWriteError(key: string, err: unknown) {
+  // eslint-disable-next-line no-console
+  console.warn(`[shared-cart] falha ao gravar "${key}"`, err);
+  const name = (err as { name?: string } | null)?.name;
+  const quota = name === "QuotaExceededError" || name === "NS_ERROR_DOM_QUOTA_REACHED";
+  toast.error(
+    quota
+      ? "Sem espaço para salvar o carrinho compartilhado"
+      : "Não foi possível salvar o carrinho compartilhado",
+    {
+      description: quota
+        ? "Libere espaço do navegador (limpe dados de sites) e tente novamente."
+        : "O modo compartilhado pode não persistir ao recarregar. Verifique se o navegador permite armazenamento local.",
+    },
+  );
+}
+
 export function readShareMode(): ShareMode {
   if (typeof window === "undefined") return null;
+  let raw: string | null = null;
   try {
     // Migração: aceita tanto localStorage (novo) quanto sessionStorage (legado)
-    const raw =
-      localStorage.getItem(PARTICIPATE_KEY) || sessionStorage.getItem(PARTICIPATE_KEY);
-    return raw ? (JSON.parse(raw) as ShareMode) : null;
-  } catch {
+    raw = localStorage.getItem(PARTICIPATE_KEY) || sessionStorage.getItem(PARTICIPATE_KEY);
+  } catch (e) {
+    console.warn("[shared-cart] localStorage indisponível", e);
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as ShareMode;
+    // Validação de shape: precisa ter token + name
+    if (!parsed || typeof parsed !== "object" || !parsed.token || !parsed.name) {
+      purgeCorruptedKey(PARTICIPATE_KEY, new Error("shape inválido"));
+      return null;
+    }
+    return parsed;
+  } catch (e) {
+    purgeCorruptedKey(PARTICIPATE_KEY, e);
     return null;
   }
 }
 
 export function writeShareMode(mode: ShareMode) {
   if (typeof window === "undefined") return;
-  if (mode) {
-    localStorage.setItem(PARTICIPATE_KEY, JSON.stringify(mode));
-    sessionStorage.removeItem(PARTICIPATE_KEY);
-    pushRecentShare({ token: mode.token, name: mode.name, ownerName: mode.ownerName, lastAt: Date.now() });
-  } else {
-    localStorage.removeItem(PARTICIPATE_KEY);
-    sessionStorage.removeItem(PARTICIPATE_KEY);
+  try {
+    if (mode) {
+      localStorage.setItem(PARTICIPATE_KEY, JSON.stringify(mode));
+      sessionStorage.removeItem(PARTICIPATE_KEY);
+      pushRecentShare({ token: mode.token, name: mode.name, ownerName: mode.ownerName, lastAt: Date.now() });
+    } else {
+      localStorage.removeItem(PARTICIPATE_KEY);
+      sessionStorage.removeItem(PARTICIPATE_KEY);
+    }
+  } catch (e) {
+    reportStorageWriteError(PARTICIPATE_KEY, e);
   }
   window.dispatchEvent(new Event("querobis:share_mode"));
 }
 
 export function readRecentShares(): RecentShare[] {
   if (typeof window === "undefined") return [];
+  let raw: string | null = null;
   try {
-    const raw = localStorage.getItem(RECENT_KEY);
-    const list = raw ? (JSON.parse(raw) as RecentShare[]) : [];
-    // Mantém apenas 7 dias
+    raw = localStorage.getItem(RECENT_KEY);
+  } catch (e) {
+    console.warn("[shared-cart] localStorage indisponível (recent)", e);
+    return [];
+  }
+  if (!raw) return [];
+  try {
+    const list = JSON.parse(raw) as RecentShare[];
+    if (!Array.isArray(list)) {
+      purgeCorruptedKey(RECENT_KEY, new Error("não é array"), { silent: true });
+      return [];
+    }
     const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    return list.filter((r) => r.lastAt > cutoff).sort((a, b) => b.lastAt - a.lastAt);
-  } catch {
+    return list
+      .filter((r) => r && typeof r === "object" && r.token && typeof r.lastAt === "number" && r.lastAt > cutoff)
+      .sort((a, b) => b.lastAt - a.lastAt);
+  } catch (e) {
+    purgeCorruptedKey(RECENT_KEY, e, { silent: true });
     return [];
   }
 }
@@ -67,7 +141,10 @@ function pushRecentShare(entry: RecentShare) {
     const cur = readRecentShares().filter((r) => r.token !== entry.token);
     const next = [entry, ...cur].slice(0, 5);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-  } catch {}
+  } catch (e) {
+    // Recentes são acessórios — não spamma toast, só loga.
+    console.warn("[shared-cart] falha ao gravar recentes", e);
+  }
 }
 
 export function removeRecentShare(token: string) {
@@ -76,8 +153,13 @@ export function removeRecentShare(token: string) {
     const next = readRecentShares().filter((r) => r.token !== token);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
     window.dispatchEvent(new Event("querobis:share_mode"));
-  } catch {}
+  } catch (e) {
+    console.warn("[shared-cart] falha ao remover recente", e);
+    // Ainda dispara evento para que UI atualize com estado remoto
+    window.dispatchEvent(new Event("querobis:share_mode"));
+  }
 }
+
 
 export async function createSharedCart(input: {
   title?: string;
