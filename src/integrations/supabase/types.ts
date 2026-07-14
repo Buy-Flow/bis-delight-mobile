@@ -1269,9 +1269,17 @@ export type Database = {
           customer_name: string
           customer_rating: number | null
           delivered_at: string | null
+          delivery_contact_type: string | null
           delivery_fee: number
           delivery_lat: number | null
           delivery_lng: number | null
+          delivery_photo_at: string | null
+          delivery_photo_lat: number | null
+          delivery_photo_lng: number | null
+          delivery_photo_url: string | null
+          delivery_proof_notes: string | null
+          delivery_proof_skipped_reason: string | null
+          delivery_signature_url: string | null
           delivery_started_at: string | null
           dispatched_at: string | null
           distance_km: number | null
@@ -1306,9 +1314,17 @@ export type Database = {
           customer_name: string
           customer_rating?: number | null
           delivered_at?: string | null
+          delivery_contact_type?: string | null
           delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
+          delivery_photo_at?: string | null
+          delivery_photo_lat?: number | null
+          delivery_photo_lng?: number | null
+          delivery_photo_url?: string | null
+          delivery_proof_notes?: string | null
+          delivery_proof_skipped_reason?: string | null
+          delivery_signature_url?: string | null
           delivery_started_at?: string | null
           dispatched_at?: string | null
           distance_km?: number | null
@@ -1343,9 +1359,17 @@ export type Database = {
           customer_name?: string
           customer_rating?: number | null
           delivered_at?: string | null
+          delivery_contact_type?: string | null
           delivery_fee?: number
           delivery_lat?: number | null
           delivery_lng?: number | null
+          delivery_photo_at?: string | null
+          delivery_photo_lat?: number | null
+          delivery_photo_lng?: number | null
+          delivery_photo_url?: string | null
+          delivery_proof_notes?: string | null
+          delivery_proof_skipped_reason?: string | null
+          delivery_signature_url?: string | null
           delivery_started_at?: string | null
           dispatched_at?: string | null
           distance_km?: number | null
@@ -2007,6 +2031,93 @@ export type Database = {
           per_user_limit?: number
           updated_at?: string
           uses?: number
+        }
+        Relationships: []
+      }
+      proof_of_delivery_settings: {
+        Row: {
+          alert_on_skip: boolean
+          allow_skip: boolean
+          allowed_skip_reasons: string[]
+          block_completion_without_proof: boolean
+          blur_faces: boolean
+          contact_types: string[]
+          enabled: boolean
+          id: number
+          max_photo_kb: number
+          max_photos: number
+          min_photos: number
+          notify_channels: string[]
+          notify_customer: boolean
+          photo_quality: number
+          require_gps: boolean
+          require_notes: boolean
+          require_photo: boolean
+          require_signature: boolean
+          require_skip_reason: boolean
+          retention_days: number
+          updated_at: string
+          updated_by: string | null
+          watermark: boolean
+          watermark_show_courier: boolean
+          watermark_show_order: boolean
+          watermark_show_time: boolean
+        }
+        Insert: {
+          alert_on_skip?: boolean
+          allow_skip?: boolean
+          allowed_skip_reasons?: string[]
+          block_completion_without_proof?: boolean
+          blur_faces?: boolean
+          contact_types?: string[]
+          enabled?: boolean
+          id?: number
+          max_photo_kb?: number
+          max_photos?: number
+          min_photos?: number
+          notify_channels?: string[]
+          notify_customer?: boolean
+          photo_quality?: number
+          require_gps?: boolean
+          require_notes?: boolean
+          require_photo?: boolean
+          require_signature?: boolean
+          require_skip_reason?: boolean
+          retention_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          watermark?: boolean
+          watermark_show_courier?: boolean
+          watermark_show_order?: boolean
+          watermark_show_time?: boolean
+        }
+        Update: {
+          alert_on_skip?: boolean
+          allow_skip?: boolean
+          allowed_skip_reasons?: string[]
+          block_completion_without_proof?: boolean
+          blur_faces?: boolean
+          contact_types?: string[]
+          enabled?: boolean
+          id?: number
+          max_photo_kb?: number
+          max_photos?: number
+          min_photos?: number
+          notify_channels?: string[]
+          notify_customer?: boolean
+          photo_quality?: number
+          require_gps?: boolean
+          require_notes?: boolean
+          require_photo?: boolean
+          require_signature?: boolean
+          require_skip_reason?: boolean
+          retention_days?: number
+          updated_at?: string
+          updated_by?: string | null
+          watermark?: boolean
+          watermark_show_courier?: boolean
+          watermark_show_order?: boolean
+          watermark_show_time?: boolean
         }
         Relationships: []
       }
@@ -4129,7 +4240,21 @@ export type Database = {
         }
       }
       close_shared_cart: { Args: { _token: string }; Returns: Json }
-      complete_delivery: { Args: { _order_id: string }; Returns: Json }
+      complete_delivery:
+        | { Args: { _order_id: string }; Returns: Json }
+        | {
+            Args: {
+              _contact_type?: string
+              _lat?: number
+              _lng?: number
+              _notes?: string
+              _order_id: string
+              _photo_url?: string
+              _signature_url?: string
+              _skipped_reason?: string
+            }
+            Returns: Json
+          }
       compute_expected_cash: { Args: { _session_id: string }; Returns: number }
       courier_heartbeat: {
         Args: {
@@ -4225,6 +4350,7 @@ export type Database = {
       }
       get_or_create_my_referral_code: { Args: never; Returns: string }
       get_pix_key: { Args: never; Returns: string }
+      get_proof_of_delivery_stats: { Args: { _days?: number }; Returns: Json }
       get_shared_cart: { Args: { _token: string }; Returns: Json }
       get_sla_history: {
         Args: { lookback_days?: number }
@@ -4247,6 +4373,10 @@ export type Database = {
       link_courier_to_user: {
         Args: { _courier_id: string; _user_id: string }
         Returns: Json
+      }
+      list_delivery_proofs: {
+        Args: { _limit?: number; _offset?: number; _only_skipped?: boolean }
+        Returns: Json[]
       }
       loyalty_min_order: { Args: { _tier: string }; Returns: number }
       loyalty_reward_value: { Args: { _tier: string }; Returns: number }

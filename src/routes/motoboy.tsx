@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { optimizeRoute, type OptimizeResult } from "@/lib/route-optimization.functions";
+import { DeliveryProofDialog } from "@/components/courier/DeliveryProofDialog";
 
 export const Route = createFileRoute("/motoboy")({
   head: () => ({
@@ -65,6 +66,7 @@ type Order = {
   picked_up_at: string | null;
   payment_method?: string | null;
   note: string | null;
+  order_number?: number | string | null;
   order_items?: Array<{ name: string; quantity: number; size: string | null; flavor: string | null; unit_price: number }>;
 };
 
@@ -291,10 +293,55 @@ function MotoboyPortal() {
     await load();
   };
 
+  const [proofOrder, setProofOrder] = useState<Order | null>(null);
+
   const markDelivered = async (orderId: string) => {
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) return;
+    // Check settings — if photo required, open proof dialog
+    const { data: pod } = await supabase
+      .from("proof_of_delivery_settings")
+      .select("enabled, require_photo, block_completion_without_proof")
+      .eq("id", 1)
+      .maybeSingle();
+    if (pod?.enabled && pod.require_photo) {
+      setProofOrder(order);
+      return;
+    }
     if (!confirm("Confirmar entrega deste pedido?")) return;
-    const { data } = await supabase.rpc("complete_delivery", { _order_id: orderId });
+    const { data } = await supabase.rpc("complete_delivery", { _order_id: orderId } as any);
     if ((data as { ok: boolean })?.ok) toast.success("Entrega concluída! 🎉");
+    await load();
+  };
+
+  const submitProof = async (payload: {
+    photo_url: string | null;
+    lat: number | null;
+    lng: number | null;
+    notes: string | null;
+    skipped_reason: string | null;
+    contact_type: string | null;
+  }) => {
+    if (!proofOrder) return;
+    const { data, error } = await supabase.rpc("complete_delivery", {
+      _order_id: proofOrder.id,
+      _photo_url: payload.photo_url,
+      _lat: payload.lat,
+      _lng: payload.lng,
+      _notes: payload.notes,
+      _skipped_reason: payload.skipped_reason,
+      _contact_type: payload.contact_type,
+    } as any);
+    if (error) throw error;
+    const res = data as { ok: boolean; error?: string };
+    if (!res?.ok) {
+      const msg =
+        res?.error === "photo_required" ? "Foto é obrigatória" :
+        res?.error === "skip_reason_required" ? "Informe um motivo válido" :
+        res?.error ?? "Falha ao concluir";
+      throw new Error(msg);
+    }
+    toast.success(payload.photo_url ? "Entrega registrada com foto! 📸" : "Entrega concluída");
     await load();
   };
 
@@ -679,6 +726,17 @@ function MotoboyPortal() {
           <NavBtn active={tab === "profile"} onClick={() => setTab("profile")} icon={User} label="Perfil" />
         </div>
       </nav>
+
+      {proofOrder && (
+        <DeliveryProofDialog
+          open={!!proofOrder}
+          onClose={() => setProofOrder(null)}
+          onConfirm={submitProof}
+          orderId={proofOrder.id}
+          orderNumber={proofOrder.order_number ?? proofOrder.id.slice(0, 6)}
+          courierName={courier.name}
+        />
+      )}
     </div>
   );
 }
