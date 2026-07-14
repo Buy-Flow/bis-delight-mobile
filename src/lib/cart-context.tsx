@@ -45,6 +45,8 @@ type CartCtx = {
   consumePendingProduct: () => void;
   shareMode: ShareMode;
   setShareMode: (m: ShareMode) => void;
+  /** true once localStorage has been read on mount — before this, items[] is a placeholder empty array. */
+  hydrated: boolean;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
