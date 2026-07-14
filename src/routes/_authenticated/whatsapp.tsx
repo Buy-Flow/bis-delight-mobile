@@ -1021,10 +1021,10 @@ function WhatsappPage() {
           </section>
         </div>
         )}
-      </div>
     </div>
   );
 }
+
 
 const QUICK_REPLIES = [
   "Oi! Como posso te ajudar? 🍫",
