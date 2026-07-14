@@ -457,6 +457,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   };
 
   const send = async () => {
+    let whatsappTab: Window | null = null;
     console.log("[checkout] send() clicked", {
       paymentMethod,
       mode,
@@ -510,6 +511,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       );
       return;
     }
+
+    if (paymentMethod === "whatsapp") {
+      // Abrir imediatamente no gesto do clique evita bloqueio de pop-up após os awaits do banco.
+      whatsappTab = window.open("", "_blank");
+    }
+
     setSending(true);
     try {
       const { data: order, error: orderErr } = await supabase
@@ -596,12 +603,20 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       if (paymentMethod === "whatsapp") {
         const msg = buildMessage({ items, name, phone, address, reference, note, mode, fee, total, coupon: couponApplied ? { code: couponApplied.code, discount: couponApplied.discount } : null });
         const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
-        window.open(url, "_blank");
+        clear();
+        closeCheckout();
+        if (whatsappTab && !whatsappTab.closed) {
+          try {
+            whatsappTab.opener = null;
+            whatsappTab.location.href = url;
+          } catch {
+            window.location.href = url;
+          }
+        } else {
+          window.location.href = url;
+        }
         toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
-        setTimeout(() => {
-          clear();
-          closeCheckout();
-        }, 400);
+        return;
       } else if (paymentMethod === "cartao") {
         // Processa cartão via Asaas AGORA, mostrando erro claro se algo falhar
         const exp = cardExpiry.replace(/\D/g, "");
@@ -684,11 +699,23 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         }
       } else {
         // PIX
+        try {
+          sessionStorage.setItem(
+            "querobis:pending_payment_cpf",
+            JSON.stringify({
+              name: name.trim(),
+              phone: phone.trim(),
+              email: (cardEmail || user?.email || "").trim(),
+              cpf: cpf ? cpfDigits(cpf) : "",
+            }),
+          );
+        } catch {}
         clear();
         closeCheckout();
         navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
       }
     } catch (err: any) {
+      if (whatsappTab && !whatsappTab.closed) whatsappTab.close();
       console.error("[checkout] send failed", err);
       const detail =
         err?.message ||
@@ -1265,47 +1292,6 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               </div>
             </div>
 
-            {pageMode && (
-              <button
-                type="button"
-                onClick={send}
-                disabled={
-                  sending ||
-                  authLoading ||
-                  storeStatus.isClosed ||
-                  (mode === "entrega" && outsideRadius)
-                }
-                className={cn(
-                  "mt-4 flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
-                  storeStatus.isClosed || (mode === "entrega" && outsideRadius)
-                    ? "bg-white/10 ring-1 ring-white/15"
-                    : "bg-neon-pink glow-pink",
-                )}
-              >
-                {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-                {storeStatus.isClosed ? (
-                  <>
-                    <MoonStar className="h-4 w-4 text-red-300" />
-                    {storeStatus.nextOpenLabel
-                      ? `Fechado · reabrimos ${storeStatus.nextOpenLabel}`
-                      : "Loja fechada no momento"}
-                  </>
-                ) : mode === "entrega" && outsideRadius ? (
-                  <>
-                    <AlertTriangle className="h-4 w-4 text-red-300" />
-                    Endereço fora do raio de entrega
-                  </>
-                ) : isAuthenticated ? (
-                  paymentMethod === "pix"
-                    ? `Gerar PIX · ${brl(total)}`
-                    : paymentMethod === "cartao"
-                      ? `Pagar com cartão · ${brl(total)}`
-                      : `Enviar pedido no WhatsApp · ${brl(total)}`
-                ) : (
-                  `Entrar para finalizar · ${brl(total)}`
-                )}
-              </button>
-            )}
           </div>
 
 
@@ -1619,14 +1605,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           <button type="submit" className="sr-only" aria-hidden>Enviar</button>
         </form>
 
-        <div className={pageMode ? "hidden" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
+        <div className={pageMode ? "sticky bottom-0 z-20 border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
           <button
             onClick={send}
             disabled={
               sending ||
-              authLoading ||
-              storeStatus.isClosed ||
-              (mode === "entrega" && outsideRadius)
+              authLoading
             }
             className={cn(
               "flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
@@ -1653,7 +1637,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 ? `Gerar PIX · ${brl(total)}`
                 : paymentMethod === "cartao"
                   ? `Pagar com cartão · ${brl(total)}`
-                  : `Enviar pedido no WhatsApp · ${brl(total)}`
+                  : paymentMethod === "asaas_checkout"
+                    ? `Abrir Checkout Asaas · ${brl(total)}`
+                    : `Enviar pedido no WhatsApp · ${brl(total)}`
             ) : (
               `Entrar para finalizar · ${brl(total)}`
             )}

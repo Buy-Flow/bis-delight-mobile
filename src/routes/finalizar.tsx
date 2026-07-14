@@ -22,7 +22,10 @@ function FinalizarPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (items.length === 0) navigate({ to: "/" });
+    const timer = window.setTimeout(() => {
+      if (items.length === 0) navigate({ to: "/" });
+    }, 350);
+    return () => window.clearTimeout(timer);
   }, [items.length, navigate]);
 
   return (
