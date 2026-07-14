@@ -223,10 +223,65 @@ function PrintCenterPage() {
     [items, selectedOrderId],
   );
 
+  // Dispatch a print kind to every matching active printer
+  const dispatchKind = async (
+    kind: "cliente" | "cozinha" | "entrega",
+    order: OrderRow,
+    its: OrderItemRow[],
+  ) => {
+    if (!settings) return;
+    const targets = printers.filter((p) => p.active && p.kinds.includes(kind));
+    if (targets.length === 0) {
+      // Fallback: browser dialog with default settings
+      openPrintWindow(renderReceipt(kind, order, its, settings, site), settings);
+      logJob(order.id, kind, "ok", null);
+      return;
+    }
+    for (const p of targets) {
+      const localSettings: PrintSettings = {
+        ...settings,
+        copies: p.copies || settings.copies,
+        paper_width: p.paper_width ?? settings.paper_width,
+      };
+      const html = renderReceipt(kind, order, its, localSettings, site);
+      try {
+        if (p.target === "bridge" && p.bridge_url) {
+          const r = await fetch(p.bridge_url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              printer: p.name,
+              kind,
+              copies: p.copies,
+              paper_width: localSettings.paper_width,
+              order_id: order.id,
+              html,
+            }),
+          });
+          if (!r.ok) throw new Error(`bridge ${r.status}`);
+          await supabase
+            .from("print_printers")
+            .update({ last_ok_at: new Date().toISOString(), last_error: null })
+            .eq("id", p.id);
+        } else {
+          openPrintWindow(html, localSettings);
+        }
+        logJob(order.id, kind, "ok", p.id);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        await supabase
+          .from("print_printers")
+          .update({ last_error: msg })
+          .eq("id", p.id);
+        logJob(order.id, kind, "erro", p.id);
+        toast.error(`Falha em ${p.name}: ${msg}`);
+      }
+    }
+  };
+
   // Auto-print realtime subscription
   useEffect(() => {
     if (!settings?.auto_print_new_orders) return;
-    // Seed with current orders
     for (const o of orders) seenOrdersRef.current.add(o.id);
     const ch = supabase
       .channel("print-orders")
@@ -237,20 +292,20 @@ function PrintCenterPage() {
           const order = payload.new as OrderRow;
           if (seenOrdersRef.current.has(order.id)) return;
           seenOrdersRef.current.add(order.id);
+          if (settings.only_paid_orders && order.status !== "pago" && order.status !== "confirmado") return;
           if (settings.beep_on_new) beep();
-          // Fetch items and auto-print
+          if (settings.auto_delay_ms > 0) {
+            await new Promise((r) => setTimeout(r, settings.auto_delay_ms));
+          }
           const { data } = await supabase
             .from("order_items")
             .select("id,order_id,name,quantity,unit_price,extras")
             .eq("order_id", order.id);
           const its = (data ?? []) as OrderItemRow[];
-          if (settings.print_customer_copy)
-            openPrintWindow(renderReceipt("cliente", order, its, settings, site), settings);
-          if (settings.print_kitchen_copy)
-            openPrintWindow(renderReceipt("cozinha", order, its, settings, site), settings);
+          if (settings.print_customer_copy) await dispatchKind("cliente", order, its);
+          if (settings.print_kitchen_copy) await dispatchKind("cozinha", order, its);
           if (settings.print_delivery_label && order.mode === "entrega")
-            openPrintWindow(renderReceipt("entrega", order, its, settings, site), settings);
-          logJob(order.id, "cliente", "ok");
+            await dispatchKind("entrega", order, its);
           toast.success(`Novo pedido de ${order.customer_name || "cliente"} impresso`);
         },
       )
@@ -258,28 +313,40 @@ function PrintCenterPage() {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [settings, orders, site]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings, orders, site, printers]);
 
   const beep = () => {
+    if (!settings) return;
+    const repeats = Math.max(1, settings.beep_repeat);
+    const vol = Math.min(1, Math.max(0, settings.beep_volume / 100));
     try {
       const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioCtxRef.current ||= new AC();
       const ctx = audioCtxRef.current;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = 880;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.6);
+      for (let i = 0; i < repeats; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const t0 = ctx.currentTime + i * 0.75;
+        gain.gain.setValueAtTime(vol * 0.4, t0);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
+        osc.start(t0);
+        osc.stop(t0 + 0.6);
+      }
     } catch { /* noop */ }
   };
 
-  const logJob = async (orderId: string | null, kind: string, status: "ok" | "erro") => {
-    await supabase.from("print_jobs").insert({ order_id: orderId, kind, status });
+  const logJob = async (
+    orderId: string | null,
+    kind: string,
+    status: "ok" | "erro",
+    printerId: string | null = null,
+  ) => {
+    await supabase.from("print_jobs").insert({ order_id: orderId, kind, status, printer_id: printerId });
     load();
   };
 
@@ -291,11 +358,7 @@ function PrintCenterPage() {
       return;
     }
     if (!selectedOrder) return toast.error("Selecione um pedido");
-    openPrintWindow(
-      renderReceipt(kind, selectedOrder, selectedItems, settings, site),
-      settings,
-    );
-    logJob(selectedOrder.id, kind, "ok");
+    void dispatchKind(kind, selectedOrder, selectedItems);
   };
 
   const printAll = () => {
@@ -316,6 +379,62 @@ function PrintCenterPage() {
     if (error) return toast.error(error.message);
     toast.success("Configurações salvas");
   };
+
+  const addPrinter = async () => {
+    const { data, error } = await supabase
+      .from("print_printers")
+      .insert({
+        name: `Impressora ${printers.length + 1}`,
+        kinds: ["cliente", "cozinha", "entrega"],
+        target: "browser",
+        copies: 1,
+        active: true,
+        sort_index: printers.length,
+      })
+      .select("*")
+      .single();
+    if (error) return toast.error(error.message);
+    setPrinters([...printers, data as Printer]);
+  };
+
+  const updatePrinter = async (id: string, patch: Partial<Printer>) => {
+    setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const { error } = await supabase.from("print_printers").update(patch).eq("id", id);
+    if (error) toast.error(error.message);
+  };
+
+  const deletePrinter = async (id: string) => {
+    if (!confirm("Remover impressora?")) return;
+    const { error } = await supabase.from("print_printers").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    setPrinters((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const testPrinter = async (p: Printer) => {
+    if (!settings) return;
+    const html = renderTest({ ...settings, paper_width: p.paper_width ?? settings.paper_width, copies: p.copies }, site);
+    try {
+      if (p.target === "bridge" && p.bridge_url) {
+        const r = await fetch(p.bridge_url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ printer: p.name, kind: "teste", copies: p.copies, html }),
+        });
+        if (!r.ok) throw new Error(`bridge ${r.status}`);
+        await updatePrinter(p.id, { last_ok_at: new Date().toISOString(), last_error: null });
+        toast.success(`Teste enviado para ${p.name}`);
+      } else {
+        openPrintWindow(html, { ...settings, copies: p.copies });
+      }
+      logJob(null, "teste", "ok", p.id);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      await updatePrinter(p.id, { last_error: msg });
+      logJob(null, "teste", "erro", p.id);
+      toast.error(msg);
+    }
+  };
+
 
   const kpis = useMemo(() => {
     const today = new Date();
