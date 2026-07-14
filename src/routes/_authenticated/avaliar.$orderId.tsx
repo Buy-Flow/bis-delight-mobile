@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/friendly-error";
 
 export const Route = createFileRoute("/_authenticated/avaliar/$orderId")({
   component: AvaliarPage,
@@ -238,7 +239,7 @@ function AvaliarPage() {
       }
       setPhotos((p) => [...p, ...urls].slice(0, 3));
     } catch (e) {
-      toast.error("Falha ao enviar foto: " + (e instanceof Error ? e.message : String(e)));
+      toast.error("Falha ao enviar foto", { description: friendlyError(e, "Tente novamente em instantes.") });
     } finally {
       setUploading(false);
     }
@@ -303,7 +304,7 @@ function AvaliarPage() {
       } catch { /* ignore */ }
       navigate({ to: "/recompensas" as never });
     } catch (e) {
-      toast.error("Não foi possível salvar: " + (e instanceof Error ? e.message : String(e)));
+      toast.error("Não foi possível salvar sua avaliação", { description: friendlyError(e, "Tente novamente em instantes.") });
     } finally {
       setSaving(false);
     }
