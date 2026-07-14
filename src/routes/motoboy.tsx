@@ -80,6 +80,8 @@ type Offer = {
   expires_at: string;
   offered_at: string;
   responded_at: string | null;
+  broadcast: boolean | null;
+  courier_id: string | null;
   order?: Order;
 };
 
