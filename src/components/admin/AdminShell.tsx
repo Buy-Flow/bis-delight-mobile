@@ -53,6 +53,7 @@ import {
   ScanSearch,
   Mic,
   WifiOff,
+  Stethoscope,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -151,6 +152,7 @@ const groups: NavGroup[] = [
       { to: "/admin", tab: "popup", label: "Pop-up", icon: Sparkles },
       { to: "/admin", tab: "notifications", label: "Notificações", icon: BellRing },
       { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
+      { to: "/whatsapp-diagnostico", label: "Diagnóstico WhatsApp", icon: Stethoscope },
       { to: "/indicacoes", label: "Indique um amigo", icon: Gift },
       { to: "/aniversariantes", label: "Aniversariantes", icon: Cake },
       { to: "/marketing-winback", label: "Reativação de clientes", icon: HeartHandshake },

@@ -699,3 +699,175 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
     return { ok: true, url };
   });
 
+
+/**
+ * Diagnóstico completo do WhatsApp:
+ * - Config (secrets)
+ * - Estado da instância Evolution
+ * - Webhook configurado?
+ * - Últimas 24h: enviadas, entregues, lidas, com erro
+ * - Últimas falhas (10 mais recentes)
+ * - Ingest logs: total e classificação (últimas 6h)
+ */
+export const runWhatsappDiagnostics = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdminRole(context.supabase, context.userId);
+    const started = Date.now();
+    const { base, key, instance } = evolutionConfig();
+    const hasToken = !!process.env.EVOLUTION_WEBHOOK_TOKEN;
+
+    const config = {
+      hasBase: !!base,
+      hasKey: !!key,
+      hasInstance: !!instance,
+      hasToken,
+      instance,
+      configured: !!(base && key && instance && hasToken),
+    };
+
+    // 1) Estado da instância
+    let connection: {
+      state: string;
+      ownerJid: string | null;
+      profileName: string | null;
+      disconnectionAt: string | null;
+      disconnectionCode: number | null;
+      error: string | null;
+    } = {
+      state: "unknown",
+      ownerJid: null,
+      profileName: null,
+      disconnectionAt: null,
+      disconnectionCode: null,
+      error: null,
+    };
+    if (config.configured) {
+      try {
+        const j = await evolutionFetch(`/instance/connectionState/${encodeURIComponent(instance)}`);
+        connection.state =
+          ((j?.instance as Record<string, unknown> | undefined)?.state as string | undefined) ??
+          (j?.state as string | undefined) ??
+          "unknown";
+        try {
+          const list = await evolutionFetch(
+            `/instance/fetchInstances?instanceName=${encodeURIComponent(instance)}`,
+          );
+          const arr = Array.isArray(list)
+            ? list
+            : Array.isArray((list as { data?: unknown })?.data)
+              ? ((list as { data: unknown[] }).data)
+              : [];
+          const inst = (arr as Array<Record<string, unknown>>)[0] ?? null;
+          if (inst) {
+            connection.ownerJid = (inst.ownerJid as string | null) ?? null;
+            connection.profileName = (inst.profileName as string | null) ?? null;
+            connection.disconnectionAt = (inst.disconnectionAt as string | null) ?? null;
+            connection.disconnectionCode = (inst.disconnectionReasonCode as number | null) ?? null;
+            const connStatus = (inst.connectionStatus as string | undefined) ?? null;
+            if (connStatus === "open") connection.state = "open";
+            else if (connStatus === "close") connection.state = "close";
+            if (connection.state === "open") {
+              connection.disconnectionAt = null;
+              connection.disconnectionCode = null;
+            }
+          }
+        } catch { /* ok */ }
+      } catch (e) {
+        connection.error = e instanceof Error ? e.message : String(e);
+      }
+    }
+
+    // 2) Webhook
+    let webhook: {
+      expected: string;
+      current: string | null;
+      configured: boolean;
+      error: string | null;
+    } = { expected: "", current: null, configured: false, error: null };
+    try {
+      const host = await publicWhatsappHostFromRequest();
+      const token = process.env.EVOLUTION_WEBHOOK_TOKEN ?? "";
+      webhook.expected = host ? `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}` : "";
+      if (config.configured) {
+        const j = await evolutionFetch(`/webhook/find/${encodeURIComponent(instance)}`);
+        const rec = (j ?? {}) as Record<string, unknown>;
+        const w = (rec.webhook as Record<string, unknown> | undefined) ?? rec;
+        webhook.current = (w.url as string | undefined) ?? null;
+        webhook.configured = !!webhook.current && webhook.current === webhook.expected;
+      }
+    } catch (e) {
+      webhook.error = e instanceof Error ? e.message : String(e);
+    }
+
+    // 3) Métricas de mensagens (últimas 24h — apenas out/humano+IA)
+    const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: msgs24 } = await context.supabase
+      .from("whatsapp_messages")
+      .select("status,error,read_at,created_at")
+      .eq("direction", "out")
+      .gte("created_at", since24)
+      .limit(5000);
+    const outbound = Array.isArray(msgs24) ? msgs24 : [];
+    type Msg = { status: string | null; error: string | null; read_at: string | null };
+    const total = outbound.length;
+    let delivered = 0, read = 0, errored = 0, pending = 0;
+    for (const m of outbound as Msg[]) {
+      const s = (m.status ?? "").toLowerCase();
+      if (m.read_at || s === "read") read++;
+      if (s === "delivered" || s === "read" || m.read_at) delivered++;
+      if (s === "error" || m.error) errored++;
+      if (s === "sent" || s === "pending") pending++;
+    }
+    const deliveryRate = total ? Math.round((delivered / total) * 100) : null;
+    const errorRate = total ? Math.round((errored / total) * 100) : null;
+
+    // 4) Últimas falhas
+    const { data: failuresRaw } = await context.supabase
+      .from("whatsapp_messages")
+      .select("id,created_at,error,status,conversation_id,content")
+      .eq("direction", "out")
+      .or("status.eq.error,error.not.is.null")
+      .order("created_at", { ascending: false })
+      .limit(10);
+    const failures = (failuresRaw ?? []).map((f: Record<string, unknown>) => ({
+      id: String(f.id),
+      created_at: String(f.created_at),
+      error: (f.error as string | null) ?? null,
+      status: (f.status as string | null) ?? null,
+      preview: String(f.content ?? "").slice(0, 120),
+    }));
+
+    // 5) Ingest logs — últimas 6h
+    const since6 = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+    const { data: ingestRaw } = await context.supabase
+      .from("whatsapp_ingest_logs")
+      .select("status,error,created_at")
+      .gte("created_at", since6)
+      .limit(5000);
+    const ingest = Array.isArray(ingestRaw) ? ingestRaw : [];
+    const ingestByStatus: Record<string, number> = {};
+    for (const row of ingest as Array<{ status: string | null }>) {
+      const k = String(row.status ?? "unknown");
+      ingestByStatus[k] = (ingestByStatus[k] ?? 0) + 1;
+    }
+
+    // 6) Últimos erros de ingest
+    const { data: ingestErrors } = await context.supabase
+      .from("whatsapp_ingest_logs")
+      .select("created_at,event,status,phone,error")
+      .eq("status", "error")
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    return {
+      generatedAt: new Date().toISOString(),
+      elapsedMs: Date.now() - started,
+      config,
+      connection,
+      webhook,
+      metrics24h: { total, delivered, read, errored, pending, deliveryRate, errorRate },
+      failures,
+      ingest6h: { total: ingest.length, byStatus: ingestByStatus, recentErrors: ingestErrors ?? [] },
+    };
+  });
