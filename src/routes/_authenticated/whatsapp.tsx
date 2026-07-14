@@ -1031,8 +1031,11 @@ function WhatsappPage() {
         </div>
         )}
     </div>
+    </div>
+    </AdminShell>
   );
 }
+
 
 
 const QUICK_REPLIES = [
