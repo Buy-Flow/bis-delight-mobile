@@ -268,6 +268,7 @@ function CartPage() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (it.quantity <= 1) {
@@ -277,9 +278,18 @@ function CartPage() {
                           }
                         }}
                         className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white active:scale-95"
-                        aria-label="Diminuir"
+                        aria-label={
+                          it.quantity <= 1
+                            ? `Remover ${it.name} do carrinho`
+                            : `Diminuir quantidade de ${it.name}`
+                        }
+                        title={it.quantity <= 1 ? "Remover do carrinho" : "Diminuir quantidade"}
                       >
-                        {it.quantity <= 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+                        {it.quantity <= 1 ? (
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        ) : (
+                          <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                        )}
                       </button>
                       <div className="w-5 text-center text-sm font-extrabold text-white">{it.quantity}</div>
                       <button
