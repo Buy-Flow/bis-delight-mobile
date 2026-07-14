@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
 import { X, Check, Sparkles, Minus, Plus, ChevronsUpDown } from "lucide-react";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
+import { AcaiStackPreview } from "@/components/menu/AcaiStackPreview";
 import { brl, useCart, type CartItem } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -75,11 +76,16 @@ export function CustomProductBuilder({
   const [sel, setSel] = useState<Selection>(seededSelection);
   const [qty, setQty] = useState(editItem?.quantity ?? 1);
   const [collapsed, setCollapsed] = useState(false);
+  const [bump, setBump] = useState(0);
 
   const unit = useMemo(() => computeUnit(groups, sel), [groups, sel]);
   const total = unit * qty;
 
   const toggle = (g: OptionGroup, optId: string) => {
+    setBump((b) => b + 1);
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate?.(8); } catch {}
+    }
     setSel((prev) => {
       const cur = prev[g.id] ?? [];
       if (g.type === "single") {
@@ -150,17 +156,31 @@ export function CustomProductBuilder({
         <div
           className={cn(
             "relative shrink-0 overflow-hidden transition-[height] duration-300 ease-out",
-            collapsed ? "h-[72px]" : "h-[220px]",
+            collapsed ? "h-[72px]" : "h-[260px]",
           )}
         >
           <div className="absolute inset-0 noise-purple" />
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_60%,oklch(0.86_0.18_200_/_0.3),transparent_65%)]" />
-          {product.image && !collapsed && (
-            <img
-              src={product.image}
-              alt={product.name}
-              className="absolute inset-0 mx-auto h-full w-full object-contain p-4 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
-            />
+          {!collapsed && (
+            groups.length > 0 ? (
+              <div className="absolute inset-0 flex items-center justify-center p-2">
+                <AcaiStackPreview
+                  product={product}
+                  groups={groups}
+                  selection={sel}
+                  bump={bump}
+                  className="h-full w-[min(320px,90%)]"
+                />
+              </div>
+            ) : (
+              product.image && (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="absolute inset-0 mx-auto h-full w-full object-contain p-4 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
+                />
+              )
+            )
           )}
           <div className="absolute left-3 top-3 z-10 flex items-center gap-2">
             <button
