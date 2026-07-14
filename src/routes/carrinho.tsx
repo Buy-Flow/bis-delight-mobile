@@ -50,6 +50,20 @@ function CartPage() {
   const { data: allProducts = [] } = useProducts();
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [recentShares, setRecentShares] = useState<RecentShare[]>([]);
+
+  useEffect(() => {
+    const refresh = () => setRecentShares(readRecentShares());
+    refresh();
+    window.addEventListener("querobis:share_mode", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("querobis:share_mode", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
+  const rejoinable = recentShares.filter((r) => !shareMode || r.token !== shareMode.token);
 
   const suggestions = usePersonalizedSuggestions(items, allProducts);
 
