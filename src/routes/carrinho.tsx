@@ -334,6 +334,15 @@ function CartPage() {
             >
               Continuar para finalização
             </button>
+            {!shareMode && (
+              <button
+                onClick={() => setShareOpen(true)}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-neon-cyan/40 bg-neon-cyan/10 px-4 py-3 text-sm font-extrabold text-neon-cyan active:scale-[.98]"
+              >
+                <Users className="h-4 w-4" />
+                Compartilhar carrinho — dividir a conta
+              </button>
+            )}
           </div>
         </div>
       )}
