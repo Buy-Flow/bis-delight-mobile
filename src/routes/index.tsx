@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Toaster } from "sonner";
 import { useCart } from "@/lib/cart-context";
 import { TopBar } from "@/components/menu/TopBar";
 import { Hero } from "@/components/menu/Hero";
@@ -80,27 +79,8 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Page,
+  component: Content,
 });
-
-function Page() {
-  return (
-    <>
-      <Content />
-      <Toaster
-        position="top-center"
-        theme="dark"
-        toastOptions={{
-          style: {
-            background: "oklch(0.24 0.14 305)",
-            border: "1px solid oklch(0.86 0.18 200 / 0.35)",
-            color: "white",
-          },
-        }}
-      />
-    </>
-  );
-}
 
 
 function Content() {

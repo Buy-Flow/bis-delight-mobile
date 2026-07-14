@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
+import type { LatLng, Map as LeafletMap, Marker as LeafletMarker } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Crosshair, Loader2, MapPin, Search, X, Check, Info } from "lucide-react";
 import { toast } from "sonner";
@@ -10,16 +10,6 @@ import { cn } from "@/lib/utils";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-
-const DefaultIcon = L.icon({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
 
 export type PickedLocation = {
   lat: number;
@@ -41,8 +31,8 @@ export function AddressMapPicker({
   storeOrigin?: { lat: number | null; lng: number | null } | null;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const markerRef = useRef<LeafletMarker | null>(null);
   const [address, setAddress] = useState(initial?.address ?? "");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     initial?.lat != null && initial?.lng != null
@@ -57,55 +47,69 @@ export function AddressMapPicker({
   // Initialize map once when opened
   useEffect(() => {
     if (!open || !containerRef.current || mapRef.current) return;
+    let disposed = false;
 
-    const startLat = coords?.lat ?? storeOrigin?.lat ?? -8.7619;
-    const startLng = coords?.lng ?? storeOrigin?.lng ?? -63.9039;
-    const startZoom = coords ? 17 : 15;
+    void import("leaflet").then((L) => {
+      if (disposed || !containerRef.current || mapRef.current) return;
+      const startLat = coords?.lat ?? storeOrigin?.lat ?? -8.7619;
+      const startLng = coords?.lng ?? storeOrigin?.lng ?? -63.9039;
+      const startZoom = coords ? 17 : 15;
+      const defaultIcon = L.icon({
+        iconRetinaUrl: markerIcon2x,
+        iconUrl: markerIcon,
+        shadowUrl: markerShadow,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
 
-    const map = L.map(containerRef.current, {
-      zoomControl: false,
-      attributionControl: false,
-    }).setView([startLat, startLng], startZoom);
-    L.control.zoom({ position: "bottomleft" }).addTo(map);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-    }).addTo(map);
+      const map = L.map(containerRef.current, {
+        zoomControl: false,
+        attributionControl: false,
+      }).setView([startLat, startLng], startZoom);
+      L.control.zoom({ position: "bottomleft" }).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+      }).addTo(map);
 
-    const marker = L.marker([startLat, startLng], {
-      draggable: true,
-      icon: DefaultIcon,
-    }).addTo(map);
+      const marker = L.marker([startLat, startLng], {
+        draggable: true,
+        icon: defaultIcon,
+      }).addTo(map);
 
-    const applyMove = async (latlng: L.LatLng) => {
-      setCoords({ lat: latlng.lat, lng: latlng.lng });
-      setReversing(true);
-      try {
-        const text = await reverseGeocode(latlng.lat, latlng.lng);
-        if (text) setAddress(text);
-      } finally {
-        setReversing(false);
+      const applyMove = async (latlng: LatLng) => {
+        setCoords({ lat: latlng.lat, lng: latlng.lng });
+        setReversing(true);
+        try {
+          const text = await reverseGeocode(latlng.lat, latlng.lng);
+          if (text) setAddress(text);
+        } finally {
+          setReversing(false);
+        }
+      };
+
+      marker.on("dragend", () => applyMove(marker.getLatLng()));
+      map.on("click", (e) => {
+        marker.setLatLng(e.latlng);
+        void applyMove(e.latlng);
+      });
+
+      if (!coords) {
+        // If we opened without initial coords, capture a first reverse-geocode of the center marker
+        void applyMove(marker.getLatLng());
       }
-    };
 
-    marker.on("dragend", () => applyMove(marker.getLatLng()));
-    map.on("click", (e) => {
-      marker.setLatLng(e.latlng);
-      void applyMove(e.latlng);
+      mapRef.current = map;
+      markerRef.current = marker;
+
+      // Give the browser a tick to size the container correctly.
+      setTimeout(() => map.invalidateSize(), 50);
     });
 
-    if (!coords) {
-      // If we opened without initial coords, capture a first reverse-geocode of the center marker
-      void applyMove(marker.getLatLng());
-    }
-
-    mapRef.current = map;
-    markerRef.current = marker;
-
-    // Give the browser a tick to size the container correctly.
-    setTimeout(() => map.invalidateSize(), 50);
-
     return () => {
-      map.remove();
+      disposed = true;
+      mapRef.current?.remove();
       mapRef.current = null;
       markerRef.current = null;
     };

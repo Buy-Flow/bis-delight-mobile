@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import caveatFontUrl from "@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2?url";
@@ -272,6 +273,17 @@ function RootComponent() {
         <InstallPWAButton />
         <BottomNav />
         <ReviewPromptPopup />
+        <Toaster
+          position="top-center"
+          theme="dark"
+          toastOptions={{
+            style: {
+              background: "oklch(0.24 0.14 305)",
+              border: "1px solid oklch(0.86 0.18 200 / 0.35)",
+              color: "white",
+            },
+          }}
+        />
       </CartProvider>
     </QueryClientProvider>
 
