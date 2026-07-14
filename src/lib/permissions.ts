@@ -12,7 +12,8 @@
  * - delivery→ motoboy; apenas portal /motoboy.
  * - user    → cliente comum; apenas rotas públicas / conta.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type Role =
@@ -152,6 +153,7 @@ export function isTeamMember(roles: Role[]): boolean {
 
 /** Hook: papéis do usuário logado. */
 export function usePermissions() {
+  const qc = useQueryClient();
   const q = useQuery({
     queryKey: ["user_roles"],
     queryFn: async (): Promise<Role[]> => {
@@ -164,8 +166,52 @@ export function usePermissions() {
       if (error) return [];
       return (data ?? []).map((r) => r.role as Role);
     },
-    staleTime: 60_000,
+    // Rebaixamento/elevação de papel precisa refletir na UI imediatamente.
+    // Mantemos um staleTime curto como fallback e a fonte da verdade é o
+    // Realtime abaixo + eventos de auth/foco.
+    staleTime: 5_000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const attach = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid || cancelled) return;
+      channel = supabase
+        .channel(`user_roles:${uid}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "user_roles",
+            filter: `user_id=eq.${uid}`,
+          },
+          () => {
+            qc.invalidateQueries({ queryKey: ["user_roles"] });
+          },
+        )
+        .subscribe();
+    };
+    attach();
+
+    // Auth changes (login/logout/refresh) → recarrega papéis.
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      qc.invalidateQueries({ queryKey: ["user_roles"] });
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+      sub.subscription.unsubscribe();
+    };
+  }, [qc]);
+
   const roles = q.data ?? [];
   return {
     roles,
