@@ -61,7 +61,8 @@ export const updateWinbackSettings = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => SettingsPatch.parse(raw))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { data: row, error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
       .from("winback_settings")
       .update({ ...data, updated_at: new Date().toISOString() })
       .eq("id", 1)
