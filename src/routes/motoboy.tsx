@@ -490,7 +490,7 @@ function MotoboyPortal() {
     );
     const rejectedByMe = todayMissedMine.filter((m) => m.status === "rejected").length;
     const directExpired = todayMissedMine.filter(
-      (m) => m.status === "expired" && m.broadcast === false,
+      (m) => m.status === "expired" && m.broadcast !== true,
     ).length;
     // Numerador: usa entregas de hoje como proxy conservador (todo pedido
     // entregue passou por aceitação). Se um dia expusermos accepted_at no
