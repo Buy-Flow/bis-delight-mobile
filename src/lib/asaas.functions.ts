@@ -1,7 +1,6 @@
 // Server functions for Asaas checkout (called from the client checkout UI).
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP } from "@tanstack/react-start/server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 async function resolveOrCreateAsaasCustomer(opts: {
