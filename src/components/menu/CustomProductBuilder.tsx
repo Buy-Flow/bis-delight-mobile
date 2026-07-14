@@ -161,12 +161,26 @@ export function CustomProductBuilder({
         >
           <div className="absolute inset-0 noise-purple" />
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_60%,oklch(0.86_0.18_200_/_0.3),transparent_65%)]" />
-          {product.image && !collapsed && (
-            <img
-              src={product.image}
-              alt={product.name}
-              className="absolute inset-0 mx-auto h-full w-full object-contain p-4 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
-            />
+          {!collapsed && (
+            groups.length > 0 ? (
+              <div className="absolute inset-0 flex items-center justify-center p-2">
+                <AcaiStackPreview
+                  product={product}
+                  groups={groups}
+                  selection={sel}
+                  bump={bump}
+                  className="h-full w-[min(320px,90%)]"
+                />
+              </div>
+            ) : (
+              product.image && (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="absolute inset-0 mx-auto h-full w-full object-contain p-4 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)] animate-float-slow"
+                />
+              )
+            )
           )}
           <div className="absolute left-3 top-3 z-10 flex items-center gap-2">
             <button
