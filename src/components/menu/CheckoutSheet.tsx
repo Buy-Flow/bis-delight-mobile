@@ -145,6 +145,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [useSavedCard, setUseSavedCard] = useState(true);
   const [saveCard, setSaveCard] = useState(true);
   const runCardCharge = useServerFn(createAsaasCardForOrder);
+  const runAsaasCheckout = useServerFn(createAsaasCheckoutForOrder);
   const [couponInput, setCouponInput] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
   const [couponApplied, setCouponApplied] = useState<{ id: string; code: string; discount: number; kind: "loyalty" | "promo" } | null>(null);
