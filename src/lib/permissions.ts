@@ -1,157 +1,41 @@
 /**
- * Role-based access control for the admin/staff area.
- *
- * Roles:
- * - admin   → dono; acesso total (inclui gestão de usuários, IA, configurações).
- * - manager → gerente; acesso a tudo exceto gestão de usuários e IA sensível.
- *             (Escrita em produtos/config continua bloqueada por RLS admin-only.)
- * - staff   → funcionário/garçom; opera cozinha, PDV, mesas, entregas,
- *             WhatsApp, garçons, impressão, caixa e avaliações. NÃO edita
- *             cardápio, configurações, financeiro ou usuários.
- * - kitchen → cozinha; apenas painel de pedidos ao vivo e impressão.
- * - delivery→ motoboy; apenas portal /motoboy.
- * - user    → cliente comum; apenas rotas públicas / conta.
+ * RBAC — camada React/Supabase. Toda a lógica pura vive em
+ * `permissions-core.ts` (testada em `__tests__/permissions.test.ts`).
+ * Este arquivo apenas expõe o hook e reexporta os símbolos para consumidores
+ * existentes.
  */
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  ADMIN_ONLY_ROUTES,
+  ADMIN_ROUTES,
+  ROLE_ROUTES,
+  canAccessRoute,
+  canManage,
+  isAdminOnlyRoute,
+  isAdminRoute,
+  isTeamMember,
+  labelForRole,
+  landingForRoles,
+  type Role,
+} from "./permissions-core";
 
-export type Role =
-  | "admin"
-  | "manager"
-  | "staff"
-  | "kitchen"
-  | "delivery"
-  | "user";
-
-/**
- * Rotas administrativas EXCLUSIVAS de admin (gestão de usuários, IA sensível,
- * automações com custo/envio de mensagens e configuração global de preços).
- * Manager herda `*` MENOS estas rotas.
- */
-export const ADMIN_ONLY_ROUTES = [
-  "/usuarios",
-  "/ai-growth",
-  "/copiloto",
-  "/automacoes",
-  "/modelos",
-  "/previsao",
-  "/importar",
-  "/precificacao",
-];
-
-export function isAdminOnlyRoute(pathname: string) {
-  return ADMIN_ONLY_ROUTES.some(
-    (p) => pathname === p || pathname.startsWith(p + "/"),
-  );
-}
-
-/**
- * Rotas permitidas por papel. `*` = acesso total à área administrativa.
- * Ordem importa: a primeira rota da lista é usada como "landing" quando o
- * usuário tenta acessar algo fora do seu escopo.
- */
-export const ROLE_ROUTES: Record<Exclude<Role, "user">, string[]> = {
-  admin: ["*"],
-  manager: ["*"], // com exclusão automática de ADMIN_ONLY_ROUTES em canAccessRoute
-  staff: [
-    "/rush",
-    "/pdv",
-    "/mesas",
-    "/entregas",
-    "/whatsapp",
-    "/garcons",
-    "/impressao",
-    "/caixa",
-    "/avaliacoes",
-    "/conta",
-  ],
-  kitchen: ["/rush", "/impressao", "/conta"],
-  delivery: ["/motoboy", "/conta"],
+export type { Role };
+export {
+  ADMIN_ONLY_ROUTES,
+  ADMIN_ROUTES,
+  ROLE_ROUTES,
+  canAccessRoute,
+  canManage,
+  isAdminOnlyRoute,
+  isAdminRoute,
+  isTeamMember,
+  labelForRole,
+  landingForRoles,
 };
 
-/** Rotas administrativas (área com AdminShell). Precisa estar sincronizado com
- *  ADMIN_PREFIXES em `_authenticated/route.tsx`. */
-export const ADMIN_ROUTES = [
-  "/admin",
-  "/rush",
-  "/ai-growth",
-  "/avaliacoes",
-  "/carrinhos",
-  "/clientes",
-  "/copiloto",
-  "/financeiro",
-  "/notificacoes",
-  "/precificacao",
-  "/lucratividade",
-  "/previsao",
-  "/modelos",
-  "/biblioteca",
-  "/pdv",
-  "/garcons",
-  "/impressao",
-  "/mesas",
-  "/entregas",
-  "/caixa",
-  "/importar",
-  "/estoque",
-  "/ficha-tecnica",
-  "/usuarios",
-  "/whatsapp",
-  "/automacoes",
-];
-
-export function isAdminRoute(pathname: string) {
-  return ADMIN_ROUTES.some(
-    (p) => pathname === p || pathname.startsWith(p + "/"),
-  );
-}
-
-/** Verifica se um conjunto de papéis pode acessar uma rota. */
-export function canAccessRoute(pathname: string, roles: Role[]): boolean {
-  // Cliente pode navegar por rotas não-admin livremente.
-  if (!isAdminRoute(pathname)) return true;
-  // Rotas admin-only: apenas admin entra.
-  if (isAdminOnlyRoute(pathname)) return roles.includes("admin");
-  for (const r of roles) {
-    if (r === "user") continue;
-    const allowed = ROLE_ROUTES[r as Exclude<Role, "user">];
-    if (!allowed) continue;
-    if (allowed.includes("*")) return true;
-    if (
-      allowed.some(
-        (p) => pathname === p || pathname.startsWith(p + "/"),
-      )
-    )
-      return true;
-  }
-  return false;
-}
-
-/** Landing page adequada para o papel efetivo. */
-export function landingForRoles(roles: Role[]): string {
-  if (roles.includes("admin") || roles.includes("manager")) return "/admin";
-  if (roles.includes("staff")) return "/rush";
-  if (roles.includes("kitchen")) return "/rush";
-  if (roles.includes("delivery")) return "/motoboy";
-  return "/conta";
-}
-
-/** Escrita em cardápio/configuração/usuários é restrita a admin (garantido
- *  também por RLS). Manager tem acesso operacional amplo mas usamos admin
- *  como gate na UI para evitar tentativas que a RLS rejeitaria. */
-export function canManage(roles: Role[]): boolean {
-  return roles.includes("admin");
-}
-
-/** Qualquer papel operacional (staff, kitchen, manager, admin, delivery). */
-export function isTeamMember(roles: Role[]): boolean {
-  return roles.some((r) =>
-    ["admin", "manager", "staff", "kitchen", "delivery"].includes(r),
-  );
-}
-
-/** Hook: papéis do usuário logado. */
+/** Hook: papéis do usuário logado, com Realtime + refetch em auth change. */
 export function usePermissions() {
   const qc = useQueryClient();
   const q = useQuery({
@@ -166,9 +50,6 @@ export function usePermissions() {
       if (error) return [];
       return (data ?? []).map((r) => r.role as Role);
     },
-    // Rebaixamento/elevação de papel precisa refletir na UI imediatamente.
-    // Mantemos um staleTime curto como fallback e a fonte da verdade é o
-    // Realtime abaixo + eventos de auth/foco.
     staleTime: 5_000,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -200,7 +81,6 @@ export function usePermissions() {
     };
     attach();
 
-    // Auth changes (login/logout/refresh) → recarrega papéis.
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
       qc.invalidateQueries({ queryKey: ["user_roles"] });
     });
@@ -225,21 +105,4 @@ export function usePermissions() {
     canAccess: (path: string) => canAccessRoute(path, roles),
     landing: landingForRoles(roles),
   };
-}
-
-export function labelForRole(role: Role): string {
-  switch (role) {
-    case "admin":
-      return "Administrador";
-    case "manager":
-      return "Gerente";
-    case "staff":
-      return "Atendente";
-    case "kitchen":
-      return "Cozinha";
-    case "delivery":
-      return "Motoboy";
-    case "user":
-      return "Cliente";
-  }
 }
