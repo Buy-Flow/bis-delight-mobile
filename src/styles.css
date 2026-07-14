@@ -55,10 +55,13 @@
   --color-acai-500: var(--acai-500);
   --color-neon-pink: var(--neon-pink);
   --color-neon-pink-glow: var(--neon-pink-glow);
+  --color-neon-purple: var(--neon-purple);
+  --color-neon-purple-glow: var(--neon-purple-glow);
   --color-neon-cyan: var(--neon-cyan);
   --color-neon-cyan-glow: var(--neon-cyan-glow);
   --color-neon-yellow: var(--neon-yellow);
   --color-neon-yellow-soft: var(--neon-yellow-soft);
+
 
   /* -------------------------------------------------------------------------
    * Legacy palette re-tokenization (themeable escape hatch)
