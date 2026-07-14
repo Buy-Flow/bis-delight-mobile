@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
+  ArrowLeft,
   Bot,
   BotOff,
   Check,
