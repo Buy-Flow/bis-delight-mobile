@@ -662,21 +662,34 @@ function MessageBubble({ message }: { message: Message }) {
   const inbound = isInbound(message);
   const meta = statusMeta(message);
   const StatusIcon = meta.icon;
+  const hasError = Boolean(message.error);
   return (
     <div className={cn("flex", inbound ? "justify-start" : "justify-end")}>
-      <div className={cn("group max-w-[78%] rounded-lg px-3 py-2 text-sm shadow-md", inbound ? "rounded-tl-none bg-[#202c33] text-white" : "rounded-tr-none bg-[#005c4b] text-white", message.error && "ring-1 ring-red-400/50")} title={message.error ?? undefined}>
+      <div className={cn("group max-w-[78%] rounded-lg px-3 py-2 text-sm shadow-md", inbound ? "rounded-tl-none bg-[#202c33] text-white" : "rounded-tr-none bg-[#005c4b] text-white", hasError && "ring-1 ring-red-400/40")}>
         {message.type !== "text" && <div className="mb-1 rounded bg-black/15 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-white/55">{message.type}</div>}
         {message.media_url && <a href={message.media_url} target="_blank" rel="noreferrer" className="mb-2 block text-xs font-bold text-emerald-100 underline">Abrir mídia</a>}
         <div className="whitespace-pre-wrap break-words">{message.content || message.transcript || "Mensagem sem texto"}</div>
-        {message.error && <div className="mt-2 whitespace-pre-wrap break-words rounded bg-red-950/70 p-2 text-xs text-red-100">{message.error}</div>}
-        <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-white/55">
+        <div className="mt-1 flex items-center justify-end gap-1.5 text-[10px] text-white/55">
           <span>{formatTime(message.created_at)}</span>
           {!inbound && <StatusIcon className={cn("h-3.5 w-3.5", meta.className)} />}
+          {hasError && (
+            <details className="group/err ml-1">
+              <summary className="flex cursor-pointer list-none items-center gap-1 rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-200 hover:bg-red-500/25 [&::-webkit-details-marker]:hidden">
+                <AlertTriangle className="h-3 w-3" />
+                <span>falhou</span>
+                <ChevronDown className="h-3 w-3 transition group-open/err:rotate-180" />
+              </summary>
+              <div className="mt-1.5 max-w-[280px] whitespace-pre-wrap break-words rounded-md bg-red-950/70 px-2 py-1.5 text-left text-[11px] leading-snug text-red-100">
+                {message.error}
+              </div>
+            </details>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
 
 function ConversationSkeleton() {
   return (
