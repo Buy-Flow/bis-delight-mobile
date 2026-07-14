@@ -216,12 +216,16 @@
 
   .text-neon-yellow { color: var(--neon-yellow); }
   .text-neon-pink { color: var(--neon-pink); }
+  .text-neon-purple { color: var(--neon-purple); }
   .text-neon-cyan { color: var(--neon-cyan); }
   .bg-neon-pink { background-color: var(--neon-pink); }
+  .bg-neon-purple { background-color: var(--neon-purple); }
   .bg-neon-cyan { background-color: var(--neon-cyan); }
   .bg-neon-yellow { background-color: var(--neon-yellow); }
   .border-neon-cyan { border-color: var(--neon-cyan); }
   .border-neon-pink { border-color: var(--neon-pink); }
+  .border-neon-purple { border-color: var(--neon-purple); }
+
 
   .glow-pink {
     box-shadow:
