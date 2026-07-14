@@ -284,7 +284,8 @@ export function ProductCard({
           </div>
 
           <div
-            aria-label="Adicionar"
+            aria-hidden="true"
+
             className={cn(
               "grid h-10 w-10 shrink-0 place-items-center rounded-full",
               "transition-transform duration-150 ease-out will-change-transform",
