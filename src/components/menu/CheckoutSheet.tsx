@@ -781,9 +781,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-black text-white">
-                    {storeStatus.reason === "override-closed"
-                      ? "Estamos temporariamente fechados"
-                      : "Loja fechada no momento"}
+                    {STORE_COPY.closedHeadline(storeStatus)}
                   </div>
                   <div className="mt-1 text-[12px] leading-snug text-white/80">
                     {storeStatus.nextOpenLabel
