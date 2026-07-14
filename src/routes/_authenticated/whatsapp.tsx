@@ -424,10 +424,13 @@ function WhatsappPage() {
 
   return (
     <AdminShell>
-      <div className="h-[calc(100dvh-3.5rem)] overflow-hidden bg-[#0b141a] text-white">
-        <div className="flex h-full">
-          <aside className="flex w-full min-w-0 flex-col border-r border-white/10 bg-[#111b21] md:w-[390px] md:min-w-[390px]">
-            <div className="border-b border-white/10 bg-[#202c33] px-4 py-3">
+      <div className="h-[calc(100dvh-3.5rem)] w-full min-w-0 overflow-hidden bg-[#0b141a] text-white">
+        <div className="flex h-full w-full min-w-0">
+          <aside className={cn(
+            "flex min-w-0 flex-col border-r border-white/10 bg-[#111b21]",
+            selected ? "hidden md:flex md:w-[340px] md:shrink-0 lg:w-[360px]" : "flex w-full md:w-[340px] md:shrink-0 lg:w-[360px]"
+          )}>
+            <div className="border-b border-white/10 bg-[#202c33] px-3 py-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 text-lg font-bold">
