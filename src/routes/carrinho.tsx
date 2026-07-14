@@ -293,14 +293,16 @@ function CartPage() {
                       </button>
                       <div className="w-5 text-center text-sm font-extrabold text-white">{it.quantity}</div>
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           update(it.uid, { quantity: it.quantity + 1 });
                         }}
                         className="grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white glow-pink active:scale-95"
-                        aria-label="Aumentar"
+                        aria-label={`Aumentar quantidade de ${it.name}`}
+                        title="Aumentar quantidade"
                       >
-                        <Plus className="h-3.5 w-3.5" />
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
