@@ -31,6 +31,7 @@ import { Route as AuthenticatedRotasRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedProvaEntregaRouteImport } from './routes/_authenticated/prova-entrega'
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authenticated/precificacao'
+import { Route as AuthenticatedPrePreparoRouteImport } from './routes/_authenticated/pre-preparo'
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated/modelos'
@@ -173,6 +174,11 @@ const AuthenticatedPrecificacaoRoute =
     path: '/precificacao',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPrePreparoRoute = AuthenticatedPrePreparoRouteImport.update({
+  id: '/pre-preparo',
+  path: '/pre-preparo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
   id: '/pdv',
   path: '/pdv',
@@ -368,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/pre-preparo': typeof AuthenticatedPrePreparoRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/prova-entrega': typeof AuthenticatedProvaEntregaRoute
@@ -421,6 +428,7 @@ export interface FileRoutesByTo {
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/pre-preparo': typeof AuthenticatedPrePreparoRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
   '/prova-entrega': typeof AuthenticatedProvaEntregaRoute
@@ -476,6 +484,7 @@ export interface FileRoutesById {
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
+  '/_authenticated/pre-preparo': typeof AuthenticatedPrePreparoRoute
   '/_authenticated/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
   '/_authenticated/prova-entrega': typeof AuthenticatedProvaEntregaRoute
@@ -531,6 +540,7 @@ export interface FileRouteTypes {
     | '/modelos'
     | '/notificacoes'
     | '/pdv'
+    | '/pre-preparo'
     | '/precificacao'
     | '/previsao'
     | '/prova-entrega'
@@ -584,6 +594,7 @@ export interface FileRouteTypes {
     | '/modelos'
     | '/notificacoes'
     | '/pdv'
+    | '/pre-preparo'
     | '/precificacao'
     | '/previsao'
     | '/prova-entrega'
@@ -638,6 +649,7 @@ export interface FileRouteTypes {
     | '/_authenticated/modelos'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pdv'
+    | '/_authenticated/pre-preparo'
     | '/_authenticated/precificacao'
     | '/_authenticated/previsao'
     | '/_authenticated/prova-entrega'
@@ -829,6 +841,13 @@ declare module '@tanstack/react-router' {
       path: '/precificacao'
       fullPath: '/precificacao'
       preLoaderRoute: typeof AuthenticatedPrecificacaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pre-preparo': {
+      id: '/_authenticated/pre-preparo'
+      path: '/pre-preparo'
+      fullPath: '/pre-preparo'
+      preLoaderRoute: typeof AuthenticatedPrePreparoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pdv': {
@@ -1071,6 +1090,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
+  AuthenticatedPrePreparoRoute: typeof AuthenticatedPrePreparoRoute
   AuthenticatedPrecificacaoRoute: typeof AuthenticatedPrecificacaoRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
   AuthenticatedProvaEntregaRoute: typeof AuthenticatedProvaEntregaRoute
@@ -1110,6 +1130,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
+  AuthenticatedPrePreparoRoute: AuthenticatedPrePreparoRoute,
   AuthenticatedPrecificacaoRoute: AuthenticatedPrecificacaoRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
   AuthenticatedProvaEntregaRoute: AuthenticatedProvaEntregaRoute,
