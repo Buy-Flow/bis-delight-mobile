@@ -6,14 +6,11 @@ import { cn } from "@/lib/utils";
  *
  * Espelho fiel de ProductCard.tsx:
  *  - Container: `rounded-2xl`, flex-col, altura conduzida pelo conteúdo.
- *  - Imagem: bloco fixo `h-[175px]` no topo (idêntico ao card real).
+ *  - Imagem: `aspect-square` (token de tile compartilhado com o card real).
  *  - Conteúdo: `px-3 pt-3 pb-3`, título (~2 linhas 13.5px), linha de
  *    ingredientes, e rodapé com stack de preço + botão redondo `h-10 w-10`.
  *
- * Não usa `aspect-*` porque o card real NÃO tem aspect fixo — a altura
- * total varia conforme o número de linhas do título/ingredientes. Reservar
- * um aspect-ratio arbitrário faria o layout "pular" quando o card real
- * renderizasse com altura diferente.
+ * NewsCarousel usa `aspect-[3/4]` (hero) — divergência intencional.
  */
 export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
   return (
@@ -35,8 +32,8 @@ export function ProductCardSkeleton({ delay = 0 }: { delay?: number }) {
         borderRadius: 22,
       }}
     >
-      {/* Imagem — mesmo bloco `h-[175px]` do ProductCard real */}
-      <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px] bg-white/[0.05]">
+      {/* Imagem — aspect-square, mesmo token do ProductCard real */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-t-[22px] bg-white/[0.05]">
         {/* placeholder do círculo do favorito (top-right) */}
         <div className="absolute right-2 top-2 h-8 w-8 rounded-full bg-white/[0.08]" />
       </div>

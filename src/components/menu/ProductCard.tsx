@@ -95,8 +95,8 @@ export function ProductCard({
     >
 
 
-      {/* Full-bleed product image top */}
-      <div className="relative h-[175px] w-full overflow-hidden rounded-t-[22px]">
+      {/* Media do card — aspect 1:1 (token de tile). Cards de hero (NewsCarousel) usam 3:4 propositalmente. */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-t-[22px]">
         <div
           className="absolute inset-0"
           style={{
