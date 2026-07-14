@@ -249,11 +249,15 @@ function AuthPage() {
           return;
         }
         toast.success("Bem-vindo à Quero Bis!");
+        const { tryConsumeStoredReferralCode } = await import("@/lib/referral");
+        await tryConsumeStoredReferralCode();
         navigate({ to: next });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Bem-vindo de volta!");
+        const { tryConsumeStoredReferralCode } = await import("@/lib/referral");
+        await tryConsumeStoredReferralCode();
         navigate({ to: next });
       }
     } catch (err) {
