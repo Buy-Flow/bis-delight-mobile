@@ -1468,6 +1468,81 @@ export type Database = {
         }
         Relationships: []
       }
+      prep_forecast_settings: {
+        Row: {
+          ai_context: string | null
+          ai_model: string
+          ai_temperature: number
+          auto_notify: boolean
+          auto_refresh_minutes: number
+          categories_excluded: string[]
+          categories_included: string[]
+          created_at: string
+          enabled: boolean
+          history_days: number
+          horizon_hours: number
+          id: number
+          include_paused: boolean
+          min_batch_hint: number
+          min_confidence_pct: number
+          notify_channels: string[]
+          round_up: boolean
+          safety_stock_pct: number
+          updated_at: string
+          waste_target_pct: number
+          weather_boost_pct: number
+          weekend_boost_pct: number
+        }
+        Insert: {
+          ai_context?: string | null
+          ai_model?: string
+          ai_temperature?: number
+          auto_notify?: boolean
+          auto_refresh_minutes?: number
+          categories_excluded?: string[]
+          categories_included?: string[]
+          created_at?: string
+          enabled?: boolean
+          history_days?: number
+          horizon_hours?: number
+          id?: number
+          include_paused?: boolean
+          min_batch_hint?: number
+          min_confidence_pct?: number
+          notify_channels?: string[]
+          round_up?: boolean
+          safety_stock_pct?: number
+          updated_at?: string
+          waste_target_pct?: number
+          weather_boost_pct?: number
+          weekend_boost_pct?: number
+        }
+        Update: {
+          ai_context?: string | null
+          ai_model?: string
+          ai_temperature?: number
+          auto_notify?: boolean
+          auto_refresh_minutes?: number
+          categories_excluded?: string[]
+          categories_included?: string[]
+          created_at?: string
+          enabled?: boolean
+          history_days?: number
+          horizon_hours?: number
+          id?: number
+          include_paused?: boolean
+          min_batch_hint?: number
+          min_confidence_pct?: number
+          notify_channels?: string[]
+          round_up?: boolean
+          safety_stock_pct?: number
+          updated_at?: string
+          waste_target_pct?: number
+          weather_boost_pct?: number
+          weekend_boost_pct?: number
+        }
+        Relationships: []
+      }
       print_jobs: {
         Row: {
           created_at: string
@@ -1815,13 +1890,20 @@ export type Database = {
           is_custom: boolean
           is_upsell: boolean
           low_stock_threshold: number
+          max_batches: number
+          min_batches: number
           name: string
           option_groups: Json | null
           original_price: number | null
           packaging_cost: number | null
           pause_reason: string | null
           paused_until: string | null
+          prep_enabled: boolean
+          prep_priority: number
+          prep_time_min: number
+          prep_yield_per_batch: number
           removable: Json | null
+          shelf_life_min: number
           sizes: Json
           sort_order: number
           stock: number | null
@@ -1853,13 +1935,20 @@ export type Database = {
           is_custom?: boolean
           is_upsell?: boolean
           low_stock_threshold?: number
+          max_batches?: number
+          min_batches?: number
           name: string
           option_groups?: Json | null
           original_price?: number | null
           packaging_cost?: number | null
           pause_reason?: string | null
           paused_until?: string | null
+          prep_enabled?: boolean
+          prep_priority?: number
+          prep_time_min?: number
+          prep_yield_per_batch?: number
           removable?: Json | null
+          shelf_life_min?: number
           sizes?: Json
           sort_order?: number
           stock?: number | null
@@ -1891,13 +1980,20 @@ export type Database = {
           is_custom?: boolean
           is_upsell?: boolean
           low_stock_threshold?: number
+          max_batches?: number
+          min_batches?: number
           name?: string
           option_groups?: Json | null
           original_price?: number | null
           packaging_cost?: number | null
           pause_reason?: string | null
           paused_until?: string | null
+          prep_enabled?: boolean
+          prep_priority?: number
+          prep_time_min?: number
+          prep_yield_per_batch?: number
           removable?: Json | null
+          shelf_life_min?: number
           sizes?: Json
           sort_order?: number
           stock?: number | null
