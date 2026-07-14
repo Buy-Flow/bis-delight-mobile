@@ -272,7 +272,7 @@ function WhatsappPage() {
     syncFromPhone(false);
     const stateTimer = window.setInterval(loadConfigAndState, 30_000);
     const channel = supabase
-      .channel(`whatsapp-page-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+      .channel(`whatsapp-page:${channelId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_conversations" }, () => loadConversations())
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "whatsapp_messages" }, (payload) => {
         const message = payload.new as Message;
