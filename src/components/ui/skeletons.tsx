@@ -2,38 +2,31 @@ import { cn } from "@/lib/utils";
 import { ProductCardSkeleton } from "@/components/menu/ProductCardSkeleton";
 
 /* =========================================================================
- * Skeleton primitives
+ * Skeleton primitives — wrappers sobre o sistema unificado `.sk`.
  *
- * Todos usam a mesma linguagem visual: fundo translúcido sobre o tema roxo
- * escuro do app + shimmer diagonal (`skeleton-shimmer` keyframe já existente
- * em `src/styles.css`). O objetivo é reservar o layout com a mesma
- * silhueta do conteúdo real para eliminar CLS/flicker.
+ * Fonte única de verdade:
+ *  - CSS: `src/styles.css` (`.sk`, `.sk--pulse`, `.sk--wave`, `.sk--static`,
+ *    keyframes `sk-shimmer`/`sk-pulse`, vars `--sk-*`).
+ *  - Provider: `src/components/skeleton/SkeletonProvider.tsx` (aplica as
+ *    vars em `:root` a partir de `skeleton_settings`, com realtime).
+ *  - Primitives: `src/components/skeleton/Sk.tsx` (Sk/SkCircle/SkText).
+ *
+ * Estes `Skel*` são mantidos apenas para não quebrar imports legados;
+ * NÃO reimplementam shimmer nem timing. Qualquer ajuste (velocidade, tom,
+ * variante, motion) muda TUDO de uma vez pelo provider.
  * ========================================================================= */
 
 type BaseProps = React.HTMLAttributes<HTMLDivElement> & { delay?: number };
 
-/** Retângulo base com shimmer. */
+/** Retângulo base — delega para `.sk`. */
 export function SkelBox({ className, delay = 0, style, ...props }: BaseProps) {
   return (
     <div
       aria-hidden="true"
-      className={cn(
-        "relative overflow-hidden rounded-lg bg-white/[0.06] animate-pulse",
-        className,
-      )}
+      className={cn("sk", className)}
       style={{ animationDelay: `${delay}ms`, ...style }}
       {...props}
-    >
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.09) 50%, transparent 70%)",
-          animation: "skeleton-shimmer 1.6s ease-in-out infinite",
-          animationDelay: `${delay}ms`,
-        }}
-      />
-    </div>
+    />
   );
 }
 
@@ -53,7 +46,7 @@ export function SkelLine({
     <SkelBox
       delay={delay}
       className={cn("rounded-full", className)}
-      style={{ width: w, height: h }}
+      style={{ width: w, height: h, borderRadius: 999 }}
     />
   );
 }
@@ -72,10 +65,12 @@ export function SkelCircle({
     <SkelBox
       delay={delay}
       className={cn("rounded-full", className)}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, borderRadius: 9999 }}
     />
   );
 }
+
+
 
 /* =========================================================================
  * Skeletons compostos por tela
