@@ -256,6 +256,7 @@ function RushPage() {
   const [testBusy, setTestBusy] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const { settings: slaSettings, history: slaHistory } = useSlaSettings();
 
   // sound preference
   const [soundOn, setSoundOn] = useState(() => {
