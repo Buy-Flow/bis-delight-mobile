@@ -348,14 +348,15 @@ export async function ingestEvolutionPayload(
   }
 
   if (!isMessageEvent) {
-    await logRow({ status: "skipped", error: `event ignored: ${event}`, payload });
+    await logRow({ status: "noise", error: `evento de plataforma: ${event}`, payload });
     return result;
   }
 
   if (items.length === 0) {
-    await logRow({ status: "skipped", error: "no items extracted from payload", payload });
+    await logRow({ status: "noise", error: "payload sem itens de mensagem", payload });
     return result;
   }
+
 
   for (const item of items) {
     result.processed += 1;
