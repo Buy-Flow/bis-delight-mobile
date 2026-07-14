@@ -258,7 +258,10 @@ export type Database = {
           claimed_at: string
           coupon_code: string
           coupon_id: string | null
+          granted_by: string | null
           id: string
+          notes: string | null
+          push_sent_at: string | null
           used_at: string | null
           user_id: string
           year: number
@@ -267,7 +270,10 @@ export type Database = {
           claimed_at?: string
           coupon_code: string
           coupon_id?: string | null
+          granted_by?: string | null
           id?: string
+          notes?: string | null
+          push_sent_at?: string | null
           used_at?: string | null
           user_id: string
           year: number
@@ -276,7 +282,10 @@ export type Database = {
           claimed_at?: string
           coupon_code?: string
           coupon_id?: string | null
+          granted_by?: string | null
           id?: string
+          notes?: string | null
+          push_sent_at?: string | null
           used_at?: string | null
           user_id?: string
           year?: number
@@ -290,6 +299,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      birthday_settings: {
+        Row: {
+          banner_cta: string
+          banner_emoji: string
+          banner_message: string
+          banner_title: string
+          coupon_prefix: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          enabled: boolean
+          id: number
+          min_order: number
+          notify_days_before: number
+          per_user_yearly: number
+          push_auto: boolean
+          push_body: string
+          push_title: string
+          updated_at: string
+          validity_days: number
+          validity_mode: string
+        }
+        Insert: {
+          banner_cta?: string
+          banner_emoji?: string
+          banner_message?: string
+          banner_title?: string
+          coupon_prefix?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          enabled?: boolean
+          id?: number
+          min_order?: number
+          notify_days_before?: number
+          per_user_yearly?: number
+          push_auto?: boolean
+          push_body?: string
+          push_title?: string
+          updated_at?: string
+          validity_days?: number
+          validity_mode?: string
+        }
+        Update: {
+          banner_cta?: string
+          banner_emoji?: string
+          banner_message?: string
+          banner_title?: string
+          coupon_prefix?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          enabled?: boolean
+          id?: number
+          min_order?: number
+          notify_days_before?: number
+          per_user_yearly?: number
+          push_auto?: boolean
+          push_body?: string
+          push_title?: string
+          updated_at?: string
+          validity_days?: number
+          validity_mode?: string
+        }
+        Relationships: []
       }
       cash_movements: {
         Row: {
@@ -3398,7 +3473,38 @@ export type Database = {
         Args: { _item: Json; _participant: string; _token: string }
         Returns: Json
       }
+      admin_birthday_stats: { Args: never; Returns: Json }
       admin_cancel_pending_grant: { Args: { _id: string }; Returns: undefined }
+      admin_get_birthday_settings: {
+        Args: never
+        Returns: {
+          banner_cta: string
+          banner_emoji: string
+          banner_message: string
+          banner_title: string
+          coupon_prefix: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          enabled: boolean
+          id: number
+          min_order: number
+          notify_days_before: number
+          per_user_yearly: number
+          push_auto: boolean
+          push_body: string
+          push_title: string
+          updated_at: string
+          validity_days: number
+          validity_mode: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "birthday_settings"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_grant_role: {
         Args: {
           _note?: string
@@ -3406,6 +3512,22 @@ export type Database = {
           _target: string
         }
         Returns: undefined
+      }
+      admin_list_birthday_history: {
+        Args: { _limit?: number }
+        Returns: {
+          coupon_code: string
+          coupon_expires_at: string
+          created_at: string
+          email: string
+          full_name: string
+          gift_id: string
+          granted_by_email: string
+          push_sent_at: string
+          used_at: string
+          user_id: string
+          year: number
+        }[]
       }
       admin_list_pending_grants: {
         Args: never
@@ -3474,6 +3596,20 @@ export type Database = {
           target_name: string
         }[]
       }
+      admin_list_upcoming_birthdays: {
+        Args: { _days?: number }
+        Returns: {
+          birthday: string
+          days_until: number
+          email: string
+          full_name: string
+          gift_claimed: boolean
+          gift_code: string
+          phone: string
+          push_sent: boolean
+          user_id: string
+        }[]
+      }
       admin_list_users: {
         Args: never
         Returns: {
@@ -3499,6 +3635,43 @@ export type Database = {
           _target: string
         }
         Returns: undefined
+      }
+      admin_send_birthday_gift: {
+        Args: { _note?: string; _user_id: string }
+        Returns: {
+          code: string
+          expires_at: string
+        }[]
+      }
+      admin_update_birthday_settings: {
+        Args: { _patch: Json }
+        Returns: {
+          banner_cta: string
+          banner_emoji: string
+          banner_message: string
+          banner_title: string
+          coupon_prefix: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          enabled: boolean
+          id: number
+          min_order: number
+          notify_days_before: number
+          per_user_yearly: number
+          push_auto: boolean
+          push_body: string
+          push_title: string
+          updated_at: string
+          validity_days: number
+          validity_mode: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "birthday_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_update_referral_settings: {
         Args: { _payload: Json }
@@ -3600,12 +3773,20 @@ export type Database = {
       get_birthday_gift_status: {
         Args: never
         Returns: {
+          banner_cta: string
+          banner_emoji: string
+          banner_message: string
+          banner_title: string
           birthday: string
+          discount_type: string
           discount_value: number
           gift_code: string
           gift_expires_at: string
           gift_used: boolean
           is_birthday_month: boolean
+          is_birthday_today: boolean
+          min_order: number
+          program_enabled: boolean
         }[]
       }
       get_loyalty_status: {
@@ -3678,6 +3859,10 @@ export type Database = {
       loyalty_reward_value: { Args: { _tier: string }; Returns: number }
       loyalty_stamp_bonus: { Args: { _tier: string }; Returns: number }
       loyalty_tier: { Args: { _lifetime: number }; Returns: string }
+      mark_birthday_push_sent: {
+        Args: { _gift_id: string }
+        Returns: undefined
+      }
       mark_push_opened: { Args: { _delivery_id: string }; Returns: undefined }
       merge_shared_cart: {
         Args: { _order_id: string; _token: string }
