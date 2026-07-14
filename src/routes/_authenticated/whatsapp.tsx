@@ -1058,23 +1058,21 @@ function MessageBubble({ m }: { m: Message }) {
   const meta = messageStatusMeta(m);
   const hasMedia = !!m.media_url || ["audio", "image", "video", "document", "sticker"].includes(m.type);
   return (
-    <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-1")}>
+    <div className={cn("flex", out ? "justify-end" : "justify-start", "mb-0.5")}>
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm sm:max-w-[75%]",
+          "relative max-w-[85%] rounded-lg px-2 py-1.5 text-[14.2px] shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] sm:max-w-[65%]",
           out
             ? isAi
-              ? "bg-gradient-to-br from-purple-500/30 to-fuchsia-500/20 border border-purple-400/30 text-white"
+              ? "bg-[#005c4b] text-[#e9edef] ring-1 ring-purple-400/30"
               : meta.kind === "failed"
-                ? "bg-red-500/15 border border-red-500/40 text-white"
-                : meta.kind === "sending"
-                  ? "border border-amber-400/40 bg-amber-500/15 text-white"
-                  : "bg-emerald-500/90 text-black"
-            : "bg-white/10 text-white border border-white/10",
+                ? "bg-red-900/60 text-[#e9edef]"
+                : "bg-[#005c4b] text-[#e9edef]"
+            : "bg-[#202c33] text-[#e9edef]",
         )}
       >
         {isAi && (
-          <div className="mb-0.5 inline-flex items-center gap-1 rounded-full bg-purple-500/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white">
+          <div className="mb-0.5 inline-flex items-center gap-1 rounded bg-purple-500/30 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-purple-100">
             <Sparkles className="h-2.5 w-2.5" /> IA
           </div>
         )}
@@ -1083,13 +1081,10 @@ function MessageBubble({ m }: { m: Message }) {
           <div className="whitespace-pre-wrap break-words">{m.content}</div>
         )}
         {!m.content && !hasMedia && m.transcript && (
-          <div className="whitespace-pre-wrap break-words">🎤 {m.transcript}</div>
+          <div className="whitespace-pre-wrap break-words italic text-[#e9edef]/80">🎤 {m.transcript}</div>
         )}
         <div
-          className={cn(
-            "mt-1 flex items-center justify-end gap-1 text-[10px]",
-            out && !isAi && meta.kind !== "failed" && meta.kind !== "sending" ? "text-black/60" : "text-white/60",
-          )}
+          className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-[#e9edef]/60"
           title={out ? meta.label : undefined}
           aria-label={out ? `Status: ${meta.label}` : undefined}
         >
@@ -1100,11 +1095,11 @@ function MessageBubble({ m }: { m: Message }) {
             })}
           </span>
           {out && (
-            <span className={cn("inline-flex items-center gap-0.5", meta.className)}>
+            <span className={cn("inline-flex items-center", meta.className)}>
               {meta.icon}
-              <span className="hidden sm:inline">{meta.label}</span>
             </span>
           )}
+
         </div>
         {meta.kind === "failed" && (m.error || m._optimistic) && (
           <FailedDetail error={m.error ?? "Não foi possível gravar a mensagem no banco de dados."} />
