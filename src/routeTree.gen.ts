@@ -75,6 +75,7 @@ import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicDailyInsightsCronRouteImport } from './routes/api/public/daily-insights-cron'
 import { Route as ApiPublicCashCloseCronRouteImport } from './routes/api/public/cash-close-cron'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
+import { Route as ApiPublicAsaasCheckRouteImport } from './routes/api/public/asaas-check'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 import { Route as ApiPublicWhatsappWebhookEventRouteImport } from './routes/api/public/whatsapp-webhook.$event'
@@ -424,6 +425,11 @@ const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   path: '/api/public/asaas-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAsaasCheckRoute = ApiPublicAsaasCheckRouteImport.update({
+  id: '/api/public/asaas-check',
+  path: '/api/public/asaas-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRastrearOrderIdRoute =
   AuthenticatedRastrearOrderIdRouteImport.update({
     id: '/rastrear/$orderId',
@@ -506,6 +512,7 @@ export interface FileRoutesByFullPath {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
@@ -576,6 +583,7 @@ export interface FileRoutesByTo {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
@@ -648,6 +656,7 @@ export interface FileRoutesById {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
@@ -720,6 +729,7 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
@@ -790,6 +800,7 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
@@ -861,6 +872,7 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
+    | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
@@ -886,6 +898,7 @@ export interface RootRouteChildren {
   ProdutoIdRoute: typeof ProdutoIdRoute
   RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
+  ApiPublicAsaasCheckRoute: typeof ApiPublicAsaasCheckRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicCashCloseCronRoute: typeof ApiPublicCashCloseCronRoute
   ApiPublicDailyInsightsCronRoute: typeof ApiPublicDailyInsightsCronRoute
@@ -1357,6 +1370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/asaas-check': {
+      id: '/api/public/asaas-check'
+      path: '/api/public/asaas-check'
+      fullPath: '/api/public/asaas-check'
+      preLoaderRoute: typeof ApiPublicAsaasCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/rastrear/$orderId': {
       id: '/_authenticated/rastrear/$orderId'
       path: '/rastrear/$orderId'
@@ -1515,6 +1535,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutoIdRoute: ProdutoIdRoute,
   RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
+  ApiPublicAsaasCheckRoute: ApiPublicAsaasCheckRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicCashCloseCronRoute: ApiPublicCashCloseCronRoute,
   ApiPublicDailyInsightsCronRoute: ApiPublicDailyInsightsCronRoute,
