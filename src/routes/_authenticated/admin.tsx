@@ -6414,7 +6414,7 @@ function PopupSection({
           previewLabel="Preview (como o cliente vê) — arraste a imagem pra posicionar"
           previewHint="Arraste dentro do celular pra mover · use o zoom abaixo"
           renderPreview={(v) => (
-            <div className="relative mx-auto aspect-[9/16] w-full overflow-hidden rounded-3xl border border-white/15 bg-[url('https://lcntjixsisawwblcgwry.supabase.co/storage/v1/object/public/product-images/hero-bg-preview.png')] bg-cover bg-center">
+            <div className="relative mx-auto aspect-story w-full overflow-hidden rounded-3xl border border-white/15 bg-[url('https://lcntjixsisawwblcgwry.supabase.co/storage/v1/object/public/product-images/hero-bg-preview.png')] bg-cover bg-center">
               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
               <div className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white shadow">
                 <X className="h-3.5 w-3.5" />
