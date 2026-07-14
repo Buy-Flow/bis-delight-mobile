@@ -31,6 +31,7 @@ import {
   Megaphone,
   MessageCircle,
   Gift,
+  Cake,
   BarChart3,
   Star,
   Archive,
