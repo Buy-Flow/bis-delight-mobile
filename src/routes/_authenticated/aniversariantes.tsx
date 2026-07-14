@@ -448,11 +448,26 @@ function BirthdayAdmin() {
                       variant="table"
                       colSpan={6}
                       icon={Cake}
-                      title="Nenhum aniversariante nesse período"
-                      description="Ajuste a janela de datas ou aguarde novos cadastros."
-                      size="sm"
+                      title={q ? "Nenhum resultado para essa busca" : "Nenhum aniversariante nesse período"}
+                      description={
+                        q
+                          ? "Tente outro termo ou amplie a janela de datas."
+                          : "Amplie a janela de datas ou aguarde novos cadastros com data de nascimento."
+                      }
+                      action={
+                        q ? (
+                          <Button size="sm" variant="outline" onClick={() => setQ("")}>
+                            Limpar busca
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="outline" onClick={() => setRange(365)}>
+                            Ver o ano todo
+                          </Button>
+                        )
+                      }
                     />
                   )}
+
 
                 </tbody>
               </table>
@@ -497,10 +512,15 @@ function BirthdayAdmin() {
                     colSpan={6}
                     icon={Gift}
                     title="Nenhum brinde emitido ainda"
-                    description="Assim que um aniversariante ganhar cupom, ele aparece aqui."
-                    size="sm"
+                    description="Assim que um aniversariante ganhar cupom, o histórico aparece aqui — com código, validade e uso."
+                    action={
+                      <Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>
+                        Ver próximos aniversariantes
+                      </Button>
+                    }
                   />
                 )}
+
 
               </tbody>
             </table>
