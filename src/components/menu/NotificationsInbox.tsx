@@ -326,8 +326,17 @@ export function useUnreadNotifications() {
       .channel("inbox-count-" + user.id)
       .on("postgres_changes", { event: "*", schema: "public", table: "push_deliveries" }, () => refresh())
       .subscribe();
+    const onLocal = () => refresh();
+    window.addEventListener("querobis:notifications_refresh", onLocal);
+    // Refresca ao voltar o foco/aba (fallback caso realtime esteja atrasado).
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
     return () => {
       supabase.removeChannel(ch);
+      window.removeEventListener("querobis:notifications_refresh", onLocal);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
