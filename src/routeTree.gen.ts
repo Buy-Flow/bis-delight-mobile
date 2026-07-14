@@ -50,6 +50,7 @@ import { Route as AuthenticatedCaixaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedAutomacoesRouteImport } from './routes/_authenticated/automacoes'
+import { Route as AuthenticatedAniversariantesRouteImport } from './routes/_authenticated/aniversariantes'
 import { Route as AuthenticatedAiGrowthRouteImport } from './routes/_authenticated/ai-growth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
@@ -265,6 +266,12 @@ const AuthenticatedAutomacoesRoute = AuthenticatedAutomacoesRouteImport.update({
   path: '/automacoes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAniversariantesRoute =
+  AuthenticatedAniversariantesRouteImport.update({
+    id: '/aniversariantes',
+    path: '/aniversariantes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAiGrowthRoute = AuthenticatedAiGrowthRouteImport.update({
   id: '/ai-growth',
   path: '/ai-growth',
@@ -311,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
@@ -359,6 +367,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/automacoes': typeof AuthenticatedAutomacoesRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
@@ -409,6 +418,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
+  '/_authenticated/aniversariantes': typeof AuthenticatedAniversariantesRoute
   '/_authenticated/automacoes': typeof AuthenticatedAutomacoesRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
@@ -459,6 +469,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/aniversariantes'
     | '/automacoes'
     | '/avaliacoes'
     | '/biblioteca'
@@ -507,6 +518,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
+    | '/aniversariantes'
     | '/automacoes'
     | '/avaliacoes'
     | '/biblioteca'
@@ -556,6 +568,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/ai-growth'
+    | '/_authenticated/aniversariantes'
     | '/_authenticated/automacoes'
     | '/_authenticated/avaliacoes'
     | '/_authenticated/biblioteca'
@@ -901,6 +914,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAutomacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/aniversariantes': {
+      id: '/_authenticated/aniversariantes'
+      path: '/aniversariantes'
+      fullPath: '/aniversariantes'
+      preLoaderRoute: typeof AuthenticatedAniversariantesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ai-growth': {
       id: '/_authenticated/ai-growth'
       path: '/ai-growth'
@@ -949,6 +969,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiGrowthRoute: typeof AuthenticatedAiGrowthRoute
+  AuthenticatedAniversariantesRoute: typeof AuthenticatedAniversariantesRoute
   AuthenticatedAutomacoesRoute: typeof AuthenticatedAutomacoesRoute
   AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
@@ -983,6 +1004,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiGrowthRoute: AuthenticatedAiGrowthRoute,
+  AuthenticatedAniversariantesRoute: AuthenticatedAniversariantesRoute,
   AuthenticatedAutomacoesRoute: AuthenticatedAutomacoesRoute,
   AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
