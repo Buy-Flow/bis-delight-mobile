@@ -338,11 +338,22 @@ export async function ingestEvolutionPayload(
         continue;
       }
       result.updated = (result.updated ?? 0) + 1;
+      // Auto-retry BR 9-digit variant on delivery failure.
+      // Muitas linhas antigas de WhatsApp guardam o JID sem o "9" extra,
+      // então quando Evolution devolve ack=-1 tentamos o outro formato uma vez.
+      if (appStatus === "failed") {
+        try {
+          await retryAlt9DigitOnFailure(supabase, upd.id);
+        } catch (retryErr) {
+          console.error("[wa-ingest] auto-retry error", retryErr);
+        }
+      }
       await logRow({
         status: "ok",
         evolution_id: evoId,
         preview: `status=${statusName}→${appStatus}`,
       });
+
     }
     return result;
   }
