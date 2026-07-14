@@ -546,6 +546,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           delivery_fee: fee,
           total,
           coupon_code: couponApplied?.code ?? null,
+          coupon_discount: couponApplied?.discount ?? 0,
           distance_km: mode === "entrega" && quote ? Number(quote.km.toFixed(3)) : null,
           delivery_lat: mode === "entrega" && quote ? quote.lat : null,
           delivery_lng: mode === "entrega" && quote ? quote.lng : null,

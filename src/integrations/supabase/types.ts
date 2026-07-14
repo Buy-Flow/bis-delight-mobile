@@ -1654,6 +1654,7 @@ export type Database = {
           card_brand: string | null
           card_last4: string | null
           coupon_code: string | null
+          coupon_discount: number
           courier_id: string | null
           courier_rating: number | null
           created_at: string
@@ -1708,6 +1709,7 @@ export type Database = {
           card_brand?: string | null
           card_last4?: string | null
           coupon_code?: string | null
+          coupon_discount?: number
           courier_id?: string | null
           courier_rating?: number | null
           created_at?: string
@@ -1762,6 +1764,7 @@ export type Database = {
           card_brand?: string | null
           card_last4?: string | null
           coupon_code?: string | null
+          coupon_discount?: number
           courier_id?: string | null
           courier_rating?: number | null
           created_at?: string
