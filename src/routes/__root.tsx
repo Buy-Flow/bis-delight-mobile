@@ -17,6 +17,7 @@ import { ConfirmDialogHost } from "@/lib/confirm";
 import { InstallPWAButton } from "@/components/InstallPWAButton";
 import { BottomNav } from "@/components/menu/BottomNav";
 import { ReviewPromptPopup } from "@/components/reviews/ReviewPromptPopup";
+import { SkeletonProvider } from "@/components/skeleton/SkeletonProvider";
 import heroBgLeft from "@/assets/hero-bg-left.png.asset.json";
 import heroBgRight from "@/assets/hero-bg-right.png.asset.json";
 
@@ -262,6 +263,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
+        <SkeletonProvider />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <ConfirmDialogHost />

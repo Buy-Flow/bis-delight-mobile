@@ -28,6 +28,7 @@ import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedVozCopilotoRouteImport } from './routes/_authenticated/voz-copiloto'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
+import { Route as AuthenticatedSkeletonLoadingRouteImport } from './routes/_authenticated/skeleton-loading'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedRotasRouteImport } from './routes/_authenticated/rotas'
 import { Route as AuthenticatedRankingVipRouteImport } from './routes/_authenticated/ranking-vip'
@@ -168,6 +169,12 @@ const AuthenticatedSlaRoute = AuthenticatedSlaRouteImport.update({
   path: '/sla',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSkeletonLoadingRoute =
+  AuthenticatedSkeletonLoadingRouteImport.update({
+    id: '/skeleton-loading',
+    path: '/skeleton-loading',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
   id: '/rush',
   path: '/rush',
@@ -451,6 +458,7 @@ export interface FileRoutesByFullPath {
   '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
@@ -515,6 +523,7 @@ export interface FileRoutesByTo {
   '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
@@ -581,6 +590,7 @@ export interface FileRoutesById {
   '/_authenticated/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/_authenticated/rotas': typeof AuthenticatedRotasRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
+  '/_authenticated/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/_authenticated/sla': typeof AuthenticatedSlaRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
@@ -647,6 +657,7 @@ export interface FileRouteTypes {
     | '/ranking-vip'
     | '/rotas'
     | '/rush'
+    | '/skeleton-loading'
     | '/sla'
     | '/usuarios'
     | '/voz-copiloto'
@@ -711,6 +722,7 @@ export interface FileRouteTypes {
     | '/ranking-vip'
     | '/rotas'
     | '/rush'
+    | '/skeleton-loading'
     | '/sla'
     | '/usuarios'
     | '/voz-copiloto'
@@ -776,6 +788,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ranking-vip'
     | '/_authenticated/rotas'
     | '/_authenticated/rush'
+    | '/_authenticated/skeleton-loading'
     | '/_authenticated/sla'
     | '/_authenticated/usuarios'
     | '/_authenticated/voz-copiloto'
@@ -949,6 +962,13 @@ declare module '@tanstack/react-router' {
       path: '/sla'
       fullPath: '/sla'
       preLoaderRoute: typeof AuthenticatedSlaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/skeleton-loading': {
+      id: '/_authenticated/skeleton-loading'
+      path: '/skeleton-loading'
+      fullPath: '/skeleton-loading'
+      preLoaderRoute: typeof AuthenticatedSkeletonLoadingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rush': {
@@ -1300,6 +1320,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRankingVipRoute: typeof AuthenticatedRankingVipRoute
   AuthenticatedRotasRoute: typeof AuthenticatedRotasRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
+  AuthenticatedSkeletonLoadingRoute: typeof AuthenticatedSkeletonLoadingRoute
   AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedVozCopilotoRoute: typeof AuthenticatedVozCopilotoRoute
@@ -1347,6 +1368,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRankingVipRoute: AuthenticatedRankingVipRoute,
   AuthenticatedRotasRoute: AuthenticatedRotasRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
+  AuthenticatedSkeletonLoadingRoute: AuthenticatedSkeletonLoadingRoute,
   AuthenticatedSlaRoute: AuthenticatedSlaRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedVozCopilotoRoute: AuthenticatedVozCopilotoRoute,
