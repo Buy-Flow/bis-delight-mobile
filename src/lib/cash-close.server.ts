@@ -155,9 +155,6 @@ export function buildTextSummary(agg: Aggregate, header: string, footer: string)
 
 // ---------- PDF ----------
 
-function drawText(page: import("pdf-lib").PDFPage, text: string, x: number, y: number, size: number, font: import("pdf-lib").PDFFont, color = rgb(0.12, 0.12, 0.14)) {
-  page.drawText(sanitize(text), { x, y, size, font, color });
-}
 function sanitize(s: string) {
   // pdf-lib WinAnsi encoder doesn't support all UTF-8 glyphs (emojis) — strip them.
   return s.replace(/[^\x00-\xff]/g, "");
