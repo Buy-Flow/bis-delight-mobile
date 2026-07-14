@@ -74,7 +74,7 @@ function loadSaved(): SavedCustomer {
   }
 }
 
-import { maskPhoneInput as formatPhone } from "@/lib/phone";
+
 
 function parseAddressParts(full: string): { street: string; number: string; neighborhood: string; city: string } {
   const s = (full || "").trim();
