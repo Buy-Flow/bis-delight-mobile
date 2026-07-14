@@ -13,6 +13,7 @@ import {
   getEvolutionWebhook,
   normalizeWhatsappPhone,
   publicWhatsappHostFromRequest,
+  repairEvolutionInstance,
   sendEvolutionText,
   setEvolutionWebhook,
 } from "./whatsapp-evolution.server";
@@ -101,6 +102,26 @@ export const configureWhatsappWebhook = createServerFn({ method: "POST" })
     const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
     await setEvolutionWebhook({ url });
     return { ok: true, url };
+  });
+
+export const repairWhatsappConnection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdminRole(context.supabase, context.userId);
+    const repair = await repairEvolutionInstance();
+    let webhook: { ok: boolean; url?: string; error?: string } = { ok: false };
+    const token = process.env.EVOLUTION_WEBHOOK_TOKEN;
+    if (token) {
+      try {
+        const host = await publicWhatsappHostFromRequest();
+        const url = `${host}/api/public/whatsapp-webhook?token=${encodeURIComponent(token)}`;
+        await setEvolutionWebhook({ url });
+        webhook = { ok: true, url };
+      } catch (error) {
+        webhook = { ok: false, error: error instanceof Error ? error.message : String(error) };
+      }
+    }
+    return { ok: repair.ok || webhook.ok, repair, webhook };
   });
 
 export const testWhatsappConnection = createServerFn({ method: "POST" })

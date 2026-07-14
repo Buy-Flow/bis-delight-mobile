@@ -36,6 +36,16 @@ export type ResolvedNumber = {
   }>;
 };
 
+type EvolutionSendResult = {
+  ok: boolean;
+  status: number;
+  appStatus: "sent" | "failed";
+  evolutionId: string | null;
+  selectedNumber: string;
+  error: string | null;
+  raw: EvolutionJson;
+};
+
 const WEBHOOK_EVENTS = [
   "APPLICATION_STARTUP",
   "QRCODE_UPDATED",
@@ -201,6 +211,10 @@ export async function resolveEvolutionSendNumber(phone: string): Promise<Resolve
       const rows = unwrapArray(result.json);
       const found = rows.find((row) => row.exists === true || row.exists === "true") ?? null;
       const jid = found ? String(found.jid ?? found.remoteJid ?? found.id ?? "") : null;
+      // A Evolution pode dizer que o número digitado com 9 existe, mas devolver
+      // um JID sem o 9. Guardamos o JID verificado, porém NÃO descartamos a
+      // variante digitada: em versões recentes com @lid, uma delas pode aceitar
+      // o POST e a outra realmente sair no celular.
       const resolved = digitsFromJid(jid) ?? digitsFromJid(found?.number) ?? (found ? candidate : null);
       reports.push({ candidate, status: result.status, exists: !!found, jid, response: result.json ?? result.text.slice(0, 800) });
       if (resolved) return { number: resolved, candidates, verifiedJid: jid, reports };
@@ -210,6 +224,64 @@ export async function resolveEvolutionSendNumber(phone: string): Promise<Resolve
   }
 
   return { number: candidates[0], candidates, verifiedJid: null, reports };
+}
+
+function evolutionStatusFromPayload(value: unknown): string | null {
+  const rec = objectRecord(value);
+  if (!rec) return null;
+  const data = objectRecord(rec.data);
+  const response = objectRecord(rec.response);
+  const message = objectRecord(rec.message);
+  for (const candidate of [rec.status, data?.status, response?.status, message?.status]) {
+    if (candidate != null && String(candidate).trim()) return String(candidate).trim().toUpperCase();
+  }
+  return null;
+}
+
+function appStatusFromEvolutionPayload(value: unknown): "sent" | "failed" {
+  const status = evolutionStatusFromPayload(value);
+  return status === "ERROR" || status === "FAILED" ? "failed" : "sent";
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function findMessageStatusById(evolutionId: string, remoteJid?: string | null) {
+  const { instance } = evolutionConfig();
+  const where = remoteJid
+    ? { key: { id: evolutionId, remoteJid } }
+    : { key: { id: evolutionId } };
+  const result = await evolutionRequest(
+    `/chat/findMessages/${encodeURIComponent(instance)}`,
+    { method: "POST", body: JSON.stringify({ page: 1, offset: 10, where }) },
+    12_000,
+  );
+  if (!result.ok) return { status: null as string | null, raw: result.json ?? result.text.slice(0, 800) };
+  const rows = unwrapArray(result.json);
+  const row = rows.find((candidate) => {
+    const key = objectRecord(candidate.key);
+    return key?.id === evolutionId || candidate.id === evolutionId || candidate.keyId === evolutionId;
+  }) ?? rows[0] ?? null;
+  return { status: row ? evolutionStatusFromPayload(row) : null, raw: result.json };
+}
+
+async function verifyAcceptedSend(evolutionId: string | null, remoteJid?: string | null) {
+  if (!evolutionId) return { failed: false, status: null as string | null, checks: [] as Array<{ status: string | null; raw: unknown }> };
+  const checks: Array<{ status: string | null; raw: unknown }> = [];
+  for (const delay of [900, 2200]) {
+    await sleep(delay);
+    const check = await findMessageStatusById(evolutionId, remoteJid).catch((error) => ({
+      status: null,
+      raw: error instanceof Error ? error.message : String(error),
+    }));
+    checks.push(check);
+    if (check.status === "ERROR" || check.status === "FAILED") return { failed: true, status: check.status, checks };
+    if (check.status === "DELIVERY_ACK" || check.status === "READ" || check.status === "PLAYED" || check.status === "SERVER_ACK") {
+      return { failed: false, status: check.status, checks };
+    }
+  }
+  return { failed: false, status: checks.at(-1)?.status ?? null, checks };
 }
 
 export function extractEvolutionMessageId(value: unknown): string | null {
@@ -282,6 +354,36 @@ export async function getEvolutionConnectionSnapshot(): Promise<EvolutionConnect
   return { state, exists: true, ownerJid, profileName, disconnectionAt, disconnectionCode, raw: stateCall.json };
 }
 
+export async function repairEvolutionInstance() {
+  const { instance } = evolutionConfig();
+  if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
+  const actions: Array<{ name: string; ok: boolean; status?: number; detail?: string }> = [];
+
+  const settings = await evolutionRequest(`/settings/set/${encodeURIComponent(instance)}`, {
+    method: "POST",
+    body: JSON.stringify({
+      rejectCall: true,
+      msgCall: "No momento não atendemos ligações por este WhatsApp. Envie uma mensagem por texto, por favor.",
+      groupsIgnore: true,
+      alwaysOnline: true,
+      readMessages: false,
+      readStatus: false,
+      syncFullHistory: false,
+    }),
+  }).catch((error) => ({ ok: false, status: 0, json: null, text: error instanceof Error ? error.message : String(error) }));
+  actions.push({ name: "Configurações da instância", ok: settings.ok, status: settings.status, detail: settings.ok ? "Aplicadas" : evolutionErrorMessage(settings) });
+
+  const restart = await evolutionRequest(`/instance/restart/${encodeURIComponent(instance)}`, { method: "PUT" }, 20_000).catch((error) => ({
+    ok: false,
+    status: 0,
+    json: null,
+    text: error instanceof Error ? error.message : String(error),
+  }));
+  actions.push({ name: "Reinício da conexão", ok: restart.ok, status: restart.status, detail: restart.ok ? "Solicitado" : evolutionErrorMessage(restart) });
+
+  return { ok: actions.some((action) => action.ok), actions };
+}
+
 export async function connectEvolutionInstance() {
   const { instance } = evolutionConfig();
   if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
@@ -350,43 +452,58 @@ export async function getEvolutionWebhook() {
   };
 }
 
-export async function sendEvolutionText(phone: string, text: string) {
+export async function sendEvolutionText(phone: string, text: string): Promise<EvolutionSendResult> {
   const { instance } = evolutionConfig();
   if (!instance) throw new Error("EVOLUTION_INSTANCE não configurado.");
   const resolved = await resolveEvolutionSendNumber(phone);
   const attempts: Array<{ number: string; status: number; ok: boolean; response: unknown }> = [];
+  const verifications: Array<{ number: string; evolutionId: string | null; failed: boolean; status: string | null; checks: unknown[] }> = [];
   let last: EvolutionCall | null = null;
-  for (const number of Array.from(new Set([resolved.number, ...resolved.candidates]))) {
+  let lastAccepted: { number: string; evolutionId: string | null; status: number; error: string | null } | null = null;
+  const orderedNumbers = Array.from(new Set([...resolved.candidates, resolved.number]));
+  for (const number of orderedNumbers) {
     const result = await evolutionRequest(`/message/sendText/${encodeURIComponent(instance)}`, {
       method: "POST",
-      body: JSON.stringify({ number, text, delay: 0, linkPreview: false }),
+      body: JSON.stringify({ number, text, delay: 0, linkPreview: false, encoding: true }),
     });
     attempts.push({ number, status: result.status, ok: result.ok, response: result.json ?? result.text.slice(0, 1200) });
     last = result;
     if (result.ok) {
       const root = objectRecord(result.json);
-      const statusRaw = root?.status ?? objectRecord(root?.data)?.status;
-      const evoStatus = String(statusRaw ?? "sent").toLowerCase();
-      const failed = evoStatus === "error" || evoStatus === "failed";
+      const evoStatus = evolutionStatusFromPayload(result.json);
+      const failed = appStatusFromEvolutionPayload(result.json) === "failed";
+      const evolutionId = extractEvolutionMessageId(result.json);
+      const remoteJid = typeof objectRecord(root?.key)?.remoteJid === "string" ? String(objectRecord(root?.key)?.remoteJid) : `${number}@s.whatsapp.net`;
+      lastAccepted = { number, evolutionId, status: result.status, error: failed ? `Evolution retornou status ${evoStatus ?? "ERROR"}` : null };
+      if (failed) continue;
+      if (!failed) {
+        const verification = await verifyAcceptedSend(evolutionId, remoteJid);
+        verifications.push({ number, evolutionId, failed: verification.failed, status: verification.status, checks: verification.checks });
+        if (verification.failed) continue;
+      }
       return {
         ok: !failed,
         status: result.status,
         appStatus: failed ? "failed" : "sent",
-        evolutionId: extractEvolutionMessageId(result.json),
+        evolutionId,
         selectedNumber: number,
-        error: failed ? `Evolution retornou status ${evoStatus}` : null,
-        raw: { verification: resolved, attempts },
+        error: failed ? `Evolution retornou status ${evoStatus ?? "ERROR"}` : null,
+        raw: { verification: resolved, attempts, verifications },
       };
     }
     if (![400, 404, 422].includes(result.status)) break;
   }
   return {
     ok: false,
-    status: last?.status ?? 0,
+    status: lastAccepted?.status ?? last?.status ?? 0,
     appStatus: "failed",
-    evolutionId: null,
-    selectedNumber: resolved.number,
-    error: last ? `Evolution ${last.status}: ${evolutionErrorMessage(last)}` : "Evolution não respondeu.",
-    raw: { verification: resolved, attempts },
+    evolutionId: lastAccepted?.evolutionId ?? null,
+    selectedNumber: lastAccepted?.number ?? resolved.number,
+    error: lastAccepted?.error
+      ? `${lastAccepted.error}. Todas as variantes foram testadas.`
+      : last
+      ? `A Evolution aceitou a requisição, mas não confirmou a entrega em nenhuma variante deste número. Último retorno: Evolution ${last.status}: ${evolutionErrorMessage(last)}`
+      : "Evolution não respondeu.",
+    raw: { verification: resolved, attempts, verifications },
   };
 }

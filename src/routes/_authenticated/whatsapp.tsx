@@ -20,6 +20,7 @@ import {
   Smartphone,
   Wifi,
   WifiOff,
+  Wrench,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -33,6 +34,7 @@ import {
   getWhatsappConfigStatus,
   getWhatsappConnectionState,
   markConversationRead,
+  repairWhatsappConnection,
   sendWhatsappMessage,
   setAiPaused,
   syncWhatsappRecentMessages,
@@ -151,6 +153,7 @@ function WhatsappPage() {
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [webhookSaving, setWebhookSaving] = useState(false);
+  const [repairing, setRepairing] = useState(false);
   const [config, setConfig] = useState<ConfigStatus | null>(null);
   const [connection, setConnection] = useState<ConnectionState | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
@@ -173,6 +176,7 @@ function WhatsappPage() {
   const createFn = useServerFn(createWhatsappConversation);
   const phoneFn = useServerFn(updateWhatsappConversationPhone);
   const webhookFn = useServerFn(configureWhatsappWebhook);
+  const repairFn = useServerFn(repairWhatsappConnection);
 
   const selected = useMemo(() => conversations.find((conversation) => conversation.id === selectedId) ?? null, [conversations, selectedId]);
 
@@ -402,6 +406,20 @@ function WhatsappPage() {
     }
   }
 
+  async function handleRepairConnection() {
+    setRepairing(true);
+    try {
+      await repairFn();
+      loadConfigAndState();
+      await syncFromPhone(false);
+      toast.success("Conexão reparada. Aguarde alguns segundos e teste o envio novamente.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao reparar conexão");
+    } finally {
+      setRepairing(false);
+    }
+  }
+
   const connected = connection?.state === "open";
 
   return (
@@ -483,6 +501,10 @@ function WhatsappPage() {
                 <button type="button" onClick={handleConfigureWebhook} disabled={webhookSaving} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-50">
                   {webhookSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
                   webhook
+                </button>
+                <button type="button" onClick={handleRepairConnection} disabled={repairing} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-50">
+                  {repairing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wrench className="h-3.5 w-3.5" />}
+                  reparar
                 </button>
                 <button type="button" onClick={() => syncFromPhone(true)} disabled={syncing} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-50">
                   {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
