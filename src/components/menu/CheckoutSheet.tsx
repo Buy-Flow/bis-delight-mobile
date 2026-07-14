@@ -131,6 +131,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [geoLoading, setGeoLoading] = useState(false);
 
   const [sending, setSending] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("whatsapp");
   const [cpf, setCpf] = useState("");
   const [cardHolder, setCardHolder] = useState("");
@@ -219,7 +220,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
 
 
   useEffect(() => {
-    if (!isCheckoutOpen) return;
+    if (!isCheckoutOpen && !pageMode) return;
     const saved = loadSaved();
     if (saved.name && !name) setName(saved.name);
     if (saved.phone && !phone) setPhone(saved.phone);
@@ -251,7 +252,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       setUseSavedCard(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCheckoutOpen, user?.id]);
+  }, [isCheckoutOpen, pageMode, user?.id]);
 
 
   const zone = settings?.deliveryZone;
@@ -457,6 +458,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   };
 
   const send = async () => {
+    const fail = (message: string) => {
+      setActionError(message);
+      toast.error(message, { id: "checkout-validation", duration: 9000 });
+    };
+    setActionError(null);
     console.log("[checkout] send() clicked", {
       paymentMethod,
       mode,
@@ -470,46 +476,51 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       address: !!address.trim(),
     });
     if (storeStatus.isClosed) {
-      toast.error(
+      fail(
         storeStatus.nextOpenLabel
           ? `Loja fechada. Reabrimos ${storeStatus.nextOpenLabel}.`
           : "A loja está fechada no momento.",
       );
       return;
     }
+    if (authLoading) {
+      fail("Ainda estamos carregando sua conta. Tente novamente em alguns segundos.");
+      return;
+    }
     if (!isAuthenticated || !user) {
+      setActionError("Entre ou crie sua conta para finalizar o pedido.");
       goLogin();
       return;
     }
     if (!name.trim() || !phone.trim() || (mode === "entrega" && !address.trim())) {
-      toast.error("Preencha os campos obrigatórios: nome, telefone" + (mode === "entrega" ? " e endereço" : "") + ".");
+      fail("Preencha os campos obrigatórios: nome, telefone" + (mode === "entrega" ? " e endereço" : "") + ".");
       return;
     }
 
     if ((paymentMethod === "pix" || paymentMethod === "asaas_checkout") && !isValidCpf(cpf)) {
-      toast.error("CPF válido obrigatório para gerar PIX ou abrir o checkout Asaas.");
+      fail("CPF válido obrigatório para gerar PIX ou abrir o checkout Asaas.");
       return;
     }
 
     if (paymentMethod === "cartao") {
-      if (!isValidCpf(cpf)) { toast.error("CPF inválido — obrigatório para pagamento com cartão."); return; }
+      if (!isValidCpf(cpf)) { fail("CPF inválido — obrigatório para pagamento com cartão."); return; }
       if (!(savedCard && useSavedCard)) {
         const numDigits = cardNumber.replace(/\D/g, "");
         const exp = cardExpiry.replace(/\D/g, "");
         const effEmail = (cardEmail || user?.email || "").trim();
         const effCep = (cardCep || cep).replace(/\D/g, "");
         const effAddrNumber = (cardAddrNumber || addrNumber).trim();
-        if (!cardHolder.trim()) { toast.error("Informe o nome como está no cartão."); return; }
-        if (numDigits.length < 13) { toast.error("Número do cartão inválido."); return; }
-        if (exp.length !== 4) { toast.error("Validade inválida (use MM/AA)."); return; }
-        if (cardCcv.length < 3) { toast.error("CVV inválido."); return; }
-        if (effCep.length !== 8) { toast.error("CEP inválido."); return; }
-        if (!effAddrNumber) { toast.error("Informe o número do endereço do titular."); return; }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(effEmail)) { toast.error("E-mail inválido."); return; }
+        if (!cardHolder.trim()) { fail("Informe o nome como está no cartão."); return; }
+        if (numDigits.length < 13) { fail("Número do cartão inválido."); return; }
+        if (exp.length !== 4) { fail("Validade inválida (use MM/AA)."); return; }
+        if (cardCcv.length < 3) { fail("CVV inválido."); return; }
+        if (effCep.length !== 8) { fail("CEP inválido."); return; }
+        if (!effAddrNumber) { fail("Informe o número do endereço do titular."); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(effEmail)) { fail("E-mail inválido."); return; }
       }
     }
     if (mode === "entrega" && outsideRadius) {
-      toast.error(
+      fail(
         zone?.outsideMessage ||
           "Endereço fora do nosso raio de entrega. Tente retirada na loja.",
       );
@@ -1623,11 +1634,16 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         </form>
 
         <div className={pageMode ? "fixed inset-x-0 bottom-0 z-50 mx-auto max-w-2xl border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur" : "border-t border-white/10 bg-[oklch(0.14_0.09_305)]/95 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]"}>
+          {actionError && (
+            <div className="mb-2 rounded-xl border border-red-400/40 bg-red-500/15 px-3 py-2 text-center text-[12px] font-bold leading-snug text-red-100">
+              {actionError}
+            </div>
+          )}
           <button
+            type="button"
             onClick={send}
             disabled={
-              sending ||
-              authLoading
+              sending
             }
             className={cn(
               "flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
@@ -1636,8 +1652,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 : "bg-neon-pink",
             )}
           >
-            {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {storeStatus.isClosed ? (
+            {(sending || authLoading) && <Loader2 className="h-4 w-4 animate-spin" />}
+            {sending ? (
+              "Criando pedido…"
+            ) : authLoading ? (
+              "Preparando checkout…"
+            ) : storeStatus.isClosed ? (
               <>
                 <MoonStar className="h-4 w-4 text-red-300" />
                 {storeStatus.nextOpenLabel
