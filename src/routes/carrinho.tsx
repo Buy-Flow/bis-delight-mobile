@@ -6,7 +6,7 @@ import { BRAND } from "@/data/menu";
 import { useProducts } from "@/lib/menu-data";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
-import { createSharedCart, shareUrlFor } from "@/lib/shared-cart";
+import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, type RecentShare } from "@/lib/shared-cart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
