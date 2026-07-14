@@ -682,6 +682,54 @@ export type Database = {
         }
         Relationships: []
       }
+      competitor_analyses: {
+        Row: {
+          ai_model: string | null
+          competitor_name: string
+          created_at: string
+          created_by: string
+          error_message: string | null
+          id: string
+          items: Json
+          notes: string | null
+          photo_paths: string[]
+          region: string | null
+          status: string
+          summary: Json
+          updated_at: string
+        }
+        Insert: {
+          ai_model?: string | null
+          competitor_name: string
+          created_at?: string
+          created_by: string
+          error_message?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          photo_paths?: string[]
+          region?: string | null
+          status?: string
+          summary?: Json
+          updated_at?: string
+        }
+        Update: {
+          ai_model?: string | null
+          competitor_name?: string
+          created_at?: string
+          created_by?: string
+          error_message?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          photo_paths?: string[]
+          region?: string | null
+          status?: string
+          summary?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       copilot_actions: {
         Row: {
           action_type: string
