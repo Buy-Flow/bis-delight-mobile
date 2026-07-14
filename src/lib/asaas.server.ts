@@ -1,8 +1,9 @@
 // Asaas API adapter — server-only. Docs: https://docs.asaas.com/reference
 // Env: ASAAS_API_KEY, ASAAS_ENV ("sandbox" | "production", default sandbox)
 
-const SANDBOX_URL = "https://sandbox.asaas.com/api/v3";
+const SANDBOX_URL = "https://api-sandbox.asaas.com/v3";
 const PROD_URL = "https://api.asaas.com/v3";
+
 
 function getConfig() {
   const key = process.env.ASAAS_API_KEY;
