@@ -8,6 +8,7 @@ import {
   BotOff,
   Check,
   CheckCheck,
+  ChevronDown,
   Clock,
   Loader2,
   MessageCircle,
@@ -19,7 +20,6 @@ import {
   Send,
   Settings,
   Smartphone,
-  Wifi,
   WifiOff,
   Wrench,
   X,
@@ -431,37 +431,40 @@ function WhatsappPage() {
             "flex min-w-0 flex-col border-r border-white/10 bg-[#111b21]",
             selected ? "hidden md:flex md:w-[340px] md:shrink-0 lg:w-[360px]" : "flex w-full md:w-[340px] md:shrink-0 lg:w-[360px]"
           )}>
-            <div className="border-b border-white/10 bg-[#202c33] px-3 py-3">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 text-lg font-bold">
-                    <MessageCircle className="h-5 w-5 text-emerald-400" />
-                    WhatsApp
+            <div className="border-b border-white/10 bg-[#202c33] px-3 py-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-500/15 text-emerald-400">
+                    <MessageCircle className="h-4.5 w-4.5" />
                   </div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-white/55">
-                    {connected ? <Wifi className="h-3.5 w-3.5 text-emerald-400" /> : <WifiOff className="h-3.5 w-3.5 text-red-300" />}
-                    <span>{connected ? "Conectado" : `Estado: ${connection?.state ?? "carregando"}`}</span>
-                    {config?.instance && <span>· {config.instance}</span>}
+                  <div className="min-w-0 leading-tight">
+                    <div className="truncate text-[15px] font-bold">WhatsApp</div>
+                    <div className="flex items-center gap-1.5 text-[11px] text-white/55">
+                      {connected ? (
+                        <>
+                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          <span>Conectado</span>
+                        </>
+                      ) : (
+                        <>
+                          <WifiOff className="h-3 w-3 text-red-300" />
+                          <span>{connection?.state ?? "carregando"}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <button type="button" onClick={() => setNewOpen(true)} className="grid h-9 w-9 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Nova conversa">
+                <div className="flex shrink-0 items-center gap-1">
+                  <button type="button" onClick={() => setNewOpen(true)} className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Nova conversa">
                     <Plus className="h-4 w-4" />
                   </button>
-                  <button type="button" onClick={() => setConnectOpen(true)} className="grid h-9 w-9 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Configurar conexão">
+                  <button type="button" onClick={() => setConnectOpen(true)} className="grid h-8 w-8 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white" aria-label="Configurar conexão">
                     <Settings className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                <Kpi label="Conversas" value={kpis.total} />
-                <Kpi label="Não lidas" value={kpis.unread} accent={kpis.unread > 0} />
-                <Kpi label="Hoje" value={kpis.today} />
-                <Kpi label="IA pausa" value={kpis.paused} />
-              </div>
-
-              <div className="mt-3 flex items-center gap-2 rounded-lg bg-[#0b141a] px-3 py-2">
+              <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-[#0b141a] px-3 py-2">
                 <Search className="h-4 w-4 text-white/45" />
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pesquisar conversa" className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35" />
                 {query && (
@@ -471,19 +474,24 @@ function WhatsappPage() {
                 )}
               </div>
 
-              <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px]">
                 {[
-                  ["todas", "Todas"],
-                  ["nao_lidas", "Não lidas"],
-                  ["hoje", "Hoje"],
-                  ["ia_pausada", "IA pausada"],
-                ].map(([key, label]) => (
-                  <button key={key} type="button" onClick={() => setFilter(key as FilterKey)} className={cn("shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition", filter === key ? "bg-emerald-500 text-[#06140f]" : "bg-white/5 text-white/65 hover:bg-white/10 hover:text-white")}>
-                    {label}
-                  </button>
-                ))}
+                  ["todas", "Todas", kpis.total],
+                  ["nao_lidas", "Não lidas", kpis.unread],
+                  ["hoje", "Hoje", kpis.today],
+                  ["ia_pausada", "IA pausada", kpis.paused],
+                ].map(([key, label, count]) => {
+                  const active = filter === key;
+                  return (
+                    <button key={key as string} type="button" onClick={() => setFilter(key as FilterKey)} className={cn("inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold transition", active ? "bg-emerald-500 text-[#06140f]" : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white")}>
+                      <span>{label as string}</span>
+                      <span className={cn("min-w-4 rounded-full px-1 text-[10px] font-black", active ? "bg-[#06140f]/25 text-[#06140f]" : "bg-white/10 text-white/80")}>{count as number}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
 
             {!connected && (
               <div className="border-b border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
@@ -636,14 +644,6 @@ function WhatsappPage() {
   );
 }
 
-function Kpi({ label, value, accent = false }: { label: string; value: number; accent?: boolean }) {
-  return (
-    <div className="rounded-lg bg-[#0b141a] px-2 py-2">
-      <div className={cn("text-base font-black", accent ? "text-emerald-300" : "text-white")}>{value}</div>
-      <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-white/35">{label}</div>
-    </div>
-  );
-}
 
 function Avatar({ conversation }: { conversation: Conversation }) {
   if (conversation.profile_pic_url) return <img src={conversation.profile_pic_url} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" loading="lazy" />;
@@ -654,21 +654,34 @@ function MessageBubble({ message }: { message: Message }) {
   const inbound = isInbound(message);
   const meta = statusMeta(message);
   const StatusIcon = meta.icon;
+  const hasError = Boolean(message.error);
   return (
     <div className={cn("flex", inbound ? "justify-start" : "justify-end")}>
-      <div className={cn("group max-w-[78%] rounded-lg px-3 py-2 text-sm shadow-md", inbound ? "rounded-tl-none bg-[#202c33] text-white" : "rounded-tr-none bg-[#005c4b] text-white", message.error && "ring-1 ring-red-400/50")} title={message.error ?? undefined}>
+      <div className={cn("group max-w-[78%] rounded-lg px-3 py-2 text-sm shadow-md", inbound ? "rounded-tl-none bg-[#202c33] text-white" : "rounded-tr-none bg-[#005c4b] text-white", hasError && "ring-1 ring-red-400/40")}>
         {message.type !== "text" && <div className="mb-1 rounded bg-black/15 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-white/55">{message.type}</div>}
         {message.media_url && <a href={message.media_url} target="_blank" rel="noreferrer" className="mb-2 block text-xs font-bold text-emerald-100 underline">Abrir mídia</a>}
         <div className="whitespace-pre-wrap break-words">{message.content || message.transcript || "Mensagem sem texto"}</div>
-        {message.error && <div className="mt-2 whitespace-pre-wrap break-words rounded bg-red-950/70 p-2 text-xs text-red-100">{message.error}</div>}
-        <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-white/55">
+        <div className="mt-1 flex items-center justify-end gap-1.5 text-[10px] text-white/55">
           <span>{formatTime(message.created_at)}</span>
           {!inbound && <StatusIcon className={cn("h-3.5 w-3.5", meta.className)} />}
+          {hasError && (
+            <details className="group/err ml-1">
+              <summary className="flex cursor-pointer list-none items-center gap-1 rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-200 hover:bg-red-500/25 [&::-webkit-details-marker]:hidden">
+                <AlertTriangle className="h-3 w-3" />
+                <span>falhou</span>
+                <ChevronDown className="h-3 w-3 transition group-open/err:rotate-180" />
+              </summary>
+              <div className="mt-1.5 max-w-[280px] whitespace-pre-wrap break-words rounded-md bg-red-950/70 px-2 py-1.5 text-left text-[11px] leading-snug text-red-100">
+                {message.error}
+              </div>
+            </details>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
 
 function ConversationSkeleton() {
   return (
