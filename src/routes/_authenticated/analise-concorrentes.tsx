@@ -11,8 +11,10 @@ import { toast } from "sonner";
 import {
   Camera, Upload, Sparkles, X, Trash2, Play, TrendingUp, TrendingDown,
   Minus, ScanSearch, Store, Lightbulb, DollarSign, Image as ImgIcon,
-  Check, RefreshCw, AlertTriangle, Loader2,
+  Check, RefreshCw, AlertTriangle, Loader2, Inbox,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 import {
   runCompetitorAnalysis, listCompetitorAnalyses, getCompetitorAnalysis,
   deleteCompetitorAnalysis, applyCompetitorPrice,
