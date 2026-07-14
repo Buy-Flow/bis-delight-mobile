@@ -130,9 +130,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         if (items.length === 0) {
           // Cart emptied: mark recovered (or leave if already gone)
-          await supabase.from("abandoned_carts").delete().eq("user_id", userId);
+          const { error } = await supabase.from("abandoned_carts").delete().eq("user_id", userId);
+          if (error) throw error;
         } else {
-          await supabase.from("abandoned_carts").upsert({
+          const { error } = await supabase.from("abandoned_carts").upsert({
             user_id: userId,
             items: items as unknown as never,
             subtotal,
@@ -140,8 +141,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
             notified_at: null,
             recovered_at: null,
           });
+          if (error) throw error;
         }
-      } catch {}
+      } catch (e) {
+        // Não é fatal para o usuário: o carrinho continua no localStorage.
+        // Registramos para diagnóstico (RLS, rede, schema drift).
+        logSilent("cart:abandoned-sync", e);
+      }
     }, 1500);
     return () => {
       if (syncTimer.current) clearTimeout(syncTimer.current);
