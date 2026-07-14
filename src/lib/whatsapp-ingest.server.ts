@@ -36,6 +36,7 @@ type EvoData = {
   messageTimestamp?: number | string;
   status?: string | number;
   ack?: string | number;
+  MessageUpdate?: Array<{ status?: string | number }>;
 };
 
 type IngestResult = {
@@ -65,6 +66,15 @@ function normalizeStatus(raw: unknown): string | null {
   if (typeof raw === "number") return ACK_MAP[raw] ?? null;
   const s = String(raw).trim().toUpperCase();
   return s || null;
+}
+
+function latestMessageUpdateStatus(item: EvoData): string | number | null {
+  const updates = Array.isArray(item.MessageUpdate) ? item.MessageUpdate : [];
+  for (let i = updates.length - 1; i >= 0; i -= 1) {
+    const status = updates[i]?.status;
+    if (normalizeStatus(status)) return status ?? null;
+  }
+  return null;
 }
 
 function appMessageStatus(raw: unknown, fromMe: boolean): string {
@@ -435,14 +445,26 @@ export async function ingestEvolutionPayload(
     if (evoId) {
       const { data: dup } = await supabase
         .from("whatsapp_messages")
-        .select("id")
+        .select("id,direction")
         .eq("evolution_id", evoId)
         .maybeSingle();
       if (dup) {
+        const updateStatus = latestMessageUpdateStatus(item);
+        const updateAppStatus = updateStatus ? appMessageStatus(updateStatus, fromMe) : null;
+        if (updateAppStatus && dup.direction !== "in") {
+          const patch: Record<string, unknown> = { status: updateAppStatus };
+          if (updateAppStatus === "failed") {
+            patch.error = "Evolution retornou ERROR para esta mensagem. O WhatsApp não confirmou a entrega.";
+          }
+          if (updateAppStatus === "read") patch.read_at = new Date().toISOString();
+          await supabase.from("whatsapp_messages").update(patch).eq("id", dup.id);
+        }
         result.skipped += 1;
         await logRow({
           status: "skipped",
-          error: "duplicata (mensagem já recebida)",
+          error: updateAppStatus
+            ? `duplicata (status atualizado: ${normalizeStatus(updateStatus)}→${updateAppStatus})`
+            : "duplicata (mensagem já recebida)",
           phone,
           evolution_id: evoId,
           from_me: fromMe,
@@ -545,7 +567,10 @@ export async function ingestEvolutionPayload(
       content: text,
       media_url: media,
       sent_by: fromMe ? "human" : "customer",
-      status: appMessageStatus(item.status ?? item.ack, fromMe),
+      status: appMessageStatus(latestMessageUpdateStatus(item) ?? item.status ?? item.ack, fromMe),
+      error: appMessageStatus(latestMessageUpdateStatus(item) ?? item.status ?? item.ack, fromMe) === "failed"
+        ? "Evolution retornou ERROR para esta mensagem. O WhatsApp não confirmou a entrega."
+        : null,
       created_at: nowIso,
       raw: item,
     });

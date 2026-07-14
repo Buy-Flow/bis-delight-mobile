@@ -125,14 +125,28 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
         // Importante: a Evolution pode responder 400 quando UM item do array
         // não existe. Por isso testamos cada variante separadamente; assim um
         // telefone salvo sem o 9 não bloqueia a tentativa correta com o 9.
-        const phoneCandidates = /^55\d{2}\d{8}$/.test(normalized)
-          ? [normalized.slice(0, 4) + "9" + normalized.slice(4), normalized]
-          : /^55\d{2}9\d{8}$/.test(normalized)
-            ? [normalized, normalized.slice(0, 4) + normalized.slice(5)]
-            : [normalized];
+        const brazilCandidates = (phone: string) => {
+          const withNine = phone.match(/^55(\d{2})9(\d{8})$/);
+          if (withNine) {
+            const ddd = Number(withNine[1]);
+            const withoutNine = `55${withNine[1]}${withNine[2]}`;
+            // Em DDDs fora de 11–29, a Evolution/Baileys costuma registrar
+            // o WhatsApp no JID sem o nono dígito. Se enviarmos primeiro com
+            // o 9, a API pode devolver 201/PENDING, mas o celular nunca envia.
+            return ddd >= 11 && ddd <= 29 ? [phone, withoutNine] : [withoutNine, phone];
+          }
+          const withoutNine = phone.match(/^55(\d{2})(\d{8})$/);
+          if (withoutNine) {
+            const ddd = Number(withoutNine[1]);
+            const candidateWithNine = `55${withoutNine[1]}9${withoutNine[2]}`;
+            return ddd >= 11 && ddd <= 29 ? [candidateWithNine, phone] : [phone, candidateWithNine];
+          }
+          return [phone];
+        };
+        const phoneCandidates = brazilCandidates(normalized);
         const candidates = Array.from(new Set([
-          ...phoneCandidates,
           ...(knownPhoneDigits ? [knownPhoneDigits] : []),
+          ...phoneCandidates,
         ])).filter((candidate) => !candidate.includes("@lid"));
 
         let sendNumber: string | null = null;
@@ -185,7 +199,10 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
               // Mesmo quando a verificação devolve um JID @lid, o endpoint
               // sendText deve receber o telefone. Enviar para @lid deixa a
               // mensagem presa em PENDING/ERROR em várias versões da Evolution.
-              sendNumber = numberDigits || jidDigits || candidate;
+              // O campo `number` repete o que perguntamos; o `jid` é o
+              // destino real resolvido pelo WhatsApp. Para BR, especialmente
+              // DDD 30+, isso evita o falso 201/PENDING que não sai do celular.
+              sendNumber = jidDigits || numberDigits || candidate;
               verifiedJid = jid || null;
               break;
             }
@@ -224,8 +241,46 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
             linkPreview: false,
           };
           const sendReports: string[] = [];
+          const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+          const getHistoryStatus = async (messageId: string | null) => {
+            if (!messageId) return null;
+            let lastStatus: string | null = null;
+            for (const delayMs of [1000, 2200, 3800]) {
+              await sleep(delayMs);
+              try {
+                const history = await fetchEvolutionWithTimeout(
+                  `${base}/chat/findMessages/${encodeURIComponent(instance)}`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", apikey: key },
+                    body: JSON.stringify({ page: 1, offset: 5, where: { key: { id: messageId } } }),
+                  },
+                  8_000,
+                );
+                const historyBody = await history.text();
+                if (!history.ok) continue;
+                const parsedHistory = JSON.parse(historyBody) as Record<string, unknown>;
+                const messages = parsedHistory.messages && typeof parsedHistory.messages === "object"
+                  ? (parsedHistory.messages as Record<string, unknown>)
+                  : {};
+                const records = Array.isArray(messages.records) ? messages.records : [];
+                const first = records[0] && typeof records[0] === "object" ? records[0] as Record<string, unknown> : null;
+                const updates = first && Array.isArray(first.MessageUpdate) ? first.MessageUpdate : [];
+                const latest = updates[updates.length - 1] as Record<string, unknown> | undefined;
+                const statusText = typeof latest?.status === "string" ? latest.status.toUpperCase() : null;
+                if (statusText) lastStatus = statusText;
+                if (statusText === "ERROR" || statusText === "DELIVERY_ACK" || statusText === "READ") return statusText;
+              } catch {
+                // tenta de novo; a Evolution pode demorar para gravar o MessageUpdate
+              }
+            }
+            return lastStatus;
+          };
           try {
             let resp: Response | null = null;
+            let accepted = false;
+            let acceptedParsed: Json | null = null;
+            let acceptedStatus = "pending";
             for (const attemptNumber of sendAttempts) {
               sendReq = {
                 number: attemptNumber,
@@ -246,7 +301,32 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                   `← status: ${sendStatus}\n` +
                   `← body: ${sendBody.slice(0, 600) || "(vazio)"}`,
               );
-              if (resp.ok) break;
+              if (!resp.ok) continue;
+
+              try {
+                const j = JSON.parse(sendBody) as Record<string, unknown>;
+                const dataRec = (j.data ?? {}) as Record<string, unknown>;
+                const attemptEvoId = extractEvolutionMessageId(j);
+                const evoStatus = String(j.status ?? dataRec.status ?? "pending").toLowerCase();
+                const historyStatus = await getHistoryStatus(attemptEvoId);
+                if (historyStatus === "ERROR") {
+                  sendReports.push(
+                    `checagem pós-envio: mensagem ${attemptEvoId ?? "sem-id"} já voltou ERROR no histórico da Evolution; tentando próxima variante do número.`,
+                  );
+                  continue;
+                }
+                evoId = attemptEvoId;
+                acceptedParsed = j as Json;
+                acceptedStatus = evoStatus;
+                accepted = true;
+                break;
+              } catch {
+                evoId = null;
+                acceptedParsed = null;
+                acceptedStatus = "pending";
+                accepted = true;
+                break;
+              }
             }
             if (!resp) throw new Error("Nenhum número válido para envio.");
             sendStatus = resp.status;
@@ -266,31 +346,27 @@ export const sendWhatsappMessage = createServerFn({ method: "POST" })
                 `[etapa 1: verificação de número]\n${checkReport}\n\n` +
                 `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
               status = "failed";
+            } else if (!accepted) {
+              evoError =
+                `❌ O WhatsApp rejeitou todas as variantes testadas deste número.\n\n` +
+                `[etapa 1: verificação de número]\n${checkReport}\n\n` +
+                `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
+              status = "failed";
             } else {
-              let parsed: Json | null = null;
-              try {
-                const j = JSON.parse(sendBody) as Record<string, unknown>;
-                parsed = j as Json;
-                const dataRec = (j.data ?? {}) as Record<string, unknown>;
-                evoId = extractEvolutionMessageId(j);
-                const evoStatus = String(j.status ?? dataRec.status ?? "sent").toLowerCase();
-                // HTTP 2xx da Evolution significa que o aparelho aceitou a
-                // mensagem para envio. O status "PENDING" é o estado interno
-                // inicial da Evolution, não deve ficar como pendente infinito
-                // no painel. Webhooks de ack atualizam depois para entregue/lida.
-                status = evoStatus === "error" || evoStatus === "failed" ? "failed" : "sent";
-                if (status === "failed") {
-                  evoError =
-                    `❌ Evolution aceitou a chamada mas retornou status ${evoStatus}.\n\n` +
-                    `[etapa 1: verificação de número]\n${checkReport}\n\n` +
-                    `[etapa 2: envio da mensagem]\nPOST ${sendUrl}\n` +
-                    `→ payload: ${JSON.stringify(sendReq)}\n` +
-                    `← status: ${sendStatus}\n` +
-                    `← body: ${sendBody.slice(0, 900) || "(vazio)"}`;
-                }
-              } catch {
-                evoId = null;
-                status = "sent";
+              const parsed = acceptedParsed;
+              // HTTP 2xx da Evolution só confirma que a API aceitou a
+              // chamada. Enquanto o próprio histórico vier como PENDING,
+              // não marcamos como enviada de verdade.
+              status = acceptedStatus === "error" || acceptedStatus === "failed"
+                  ? "failed"
+                  : acceptedStatus === "pending"
+                    ? "pending"
+                    : "sent";
+              if (status === "failed") {
+                evoError =
+                  `❌ Evolution aceitou a chamada mas retornou status ${acceptedStatus}.\n\n` +
+                  `[etapa 1: verificação de número]\n${checkReport}\n\n` +
+                  `[etapa 2: envio da mensagem]\n${sendReports.join("\n\n---\n\n")}`;
               }
               if (!evoId && !evoError) {
                 evoError =
