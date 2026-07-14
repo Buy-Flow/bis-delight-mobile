@@ -149,7 +149,7 @@ function CartPage() {
   };
 
   return (
-    <div className="min-h-dvh  text-white">
+    <div className="min-h-dvh text-white">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-background via-background/70 to-transparent pb-4 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 pr-4">
