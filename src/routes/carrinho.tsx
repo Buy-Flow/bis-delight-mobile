@@ -337,12 +337,39 @@ function CartPage() {
             {!shareMode && (
               <button
                 onClick={() => setShareOpen(true)}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-neon-cyan/40 bg-neon-cyan/10 px-4 py-3 text-sm font-extrabold text-neon-cyan active:scale-[.98]"
+                className="group relative mt-3 w-full overflow-hidden rounded-2xl p-[1.5px] active:scale-[.985] transition-transform"
+                style={{
+                  background:
+                    "linear-gradient(135deg, hsl(320 100% 62%), hsl(280 100% 65%), hsl(190 100% 55%))",
+                }}
               >
-                <Users className="h-4 w-4" />
-                Compartilhar carrinho — dividir a conta
+                <span className="relative flex items-center justify-center gap-3 rounded-[14px] bg-[#1a0b2e] px-4 py-3.5">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 opacity-30 blur-2xl"
+                    style={{
+                      background:
+                        "radial-gradient(60% 80% at 20% 50%, hsl(320 100% 62% / .55), transparent 60%), radial-gradient(60% 80% at 80% 50%, hsl(190 100% 55% / .55), transparent 60%)",
+                    }}
+                  />
+                  <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-neon-pink to-neon-cyan text-white shadow-[0_0_18px_rgba(255,60,180,.55)]">
+                    <Users className="h-4.5 w-4.5" strokeWidth={2.6} />
+                  </span>
+                  <span className="relative flex-1 text-left leading-tight">
+                    <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-neon-cyan/90">
+                      Bora dividir? 🎉
+                    </span>
+                    <span className="block text-[15px] font-black text-white">
+                      Compartilhar carrinho com a galera
+                    </span>
+                  </span>
+                  <span className="relative rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black text-white/80 ring-1 ring-white/15 group-hover:bg-white/15">
+                    →
+                  </span>
+                </span>
               </button>
             )}
+
           </div>
         </div>
       )}
@@ -374,10 +401,12 @@ function ShareDialog({
   onOpenChange: (v: boolean) => void;
   items: import("@/lib/cart-context").CartItem[];
 }) {
+  const navigate = useNavigate();
   const [ownerName, setOwnerName] = useState("");
   const [message, setMessage] = useState("");
   const [creating, setCreating] = useState(false);
   const [result, setResult] = useState<{ url: string; token: string } | null>(null);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -455,46 +484,61 @@ function ShareDialog({
                 maxLength={120}
               />
             </div>
-            <div className="rounded-xl bg-muted/40 p-3 text-xs text-muted-foreground">
-              A galera abre o link, entra com o nome deles e adiciona os próprios itens. O link vale
-              por 24 horas.
+            <div className="rounded-xl bg-gradient-to-br from-neon-pink/15 via-neon-purple/10 to-neon-cyan/15 border border-neon-cyan/25 p-3 text-xs text-white/85 leading-relaxed space-y-1.5">
+              <div className="font-black text-white flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5 text-neon-cyan" /> Como funciona
+              </div>
+              <div>1. Você manda o link pra galera 📲</div>
+              <div>2. Cada um entra com o nome e adiciona seus itens 🍨</div>
+              <div>3. <b>Você (dono)</b> vê tudo junto e fecha o pedido — pagamento único no final 💳</div>
+              <div className="text-white/60">O link vale 24h.</div>
             </div>
             <button
               onClick={handleCreate}
               disabled={creating}
-              className="w-full rounded-xl bg-primary px-4 py-3 font-bold text-primary-foreground disabled:opacity-60"
+              className="w-full rounded-xl bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan px-4 py-3 font-black text-white shadow-[0_0_24px_rgba(255,60,180,.35)] disabled:opacity-60"
             >
-              {creating ? "Gerando link…" : "Gerar link do carrinho"}
+              {creating ? "Gerando link…" : "🚀 Gerar link do carrinho"}
             </button>
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="rounded-xl border border-border/60 bg-muted/30 p-3 text-sm break-all">
+            <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 p-3 text-sm break-all font-mono text-white/90">
               {result.url}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={copy}
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary px-3 py-2.5 text-sm font-semibold"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-bold text-white ring-1 ring-white/15"
               >
                 <Copy className="h-4 w-4" /> Copiar
               </button>
               <button
                 onClick={whats}
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 px-3 py-2.5 text-sm font-bold text-white"
               >
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </button>
             </div>
-            <p className="text-xs text-muted-foreground text-center">
-              Você é o dono do carrinho. Só você pode finalizar o pedido.
-            </p>
+            <button
+              onClick={() => {
+                onOpenChange(false);
+                navigate({ to: "/c/$token", params: { token: result.token } });
+              }}
+              className="w-full rounded-xl bg-gradient-to-r from-neon-pink to-neon-purple px-4 py-3 font-black text-white shadow-[0_0_20px_rgba(255,60,180,.4)]"
+            >
+              👀 Ver carrinho compartilhado
+            </button>
+            <div className="rounded-lg bg-white/5 p-2.5 text-[11px] text-white/70 leading-relaxed">
+              💡 Você é o dono e paga <b>tudo junto</b> no fim. A tela do carrinho mostra o que cada um pediu e a divisão da conta (ex.: pra você cobrar depois via PIX).
+            </div>
           </div>
         )}
       </DialogContent>
     </Dialog>
   );
 }
+
 
 function SummaryRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
