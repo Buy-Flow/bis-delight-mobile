@@ -119,10 +119,14 @@ function Page() {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_1fr]">
           <div className="space-y-2">
             {rows.length === 0 && (
-              <div className="rounded-xl border bg-white p-6 text-center text-sm text-slate-500">
-                Nenhuma análise ainda.
-              </div>
+              <EmptyState
+                icon={ScanSearch}
+                title="Nenhuma análise ainda"
+                description="Envie uma foto do cardápio do concorrente para gerar a primeira análise."
+                size="sm"
+              />
             )}
+
             {rows.map((r) => {
               const s = r.summary as AnalysisSummary;
               const active = selected?.id === r.id;
