@@ -359,7 +359,141 @@ function CartPage() {
         )}
         {isCheckoutOpen && <CheckoutSheet />}
       </Suspense>
+
+      <ShareDialog open={shareOpen} onOpenChange={setShareOpen} items={items} />
     </div>
+  );
+}
+
+function ShareDialog({
+  open,
+  onOpenChange,
+  items,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  items: import("@/lib/cart-context").CartItem[];
+}) {
+  const [ownerName, setOwnerName] = useState("");
+  const [message, setMessage] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [result, setResult] = useState<{ url: string; token: string } | null>(null);
+
+  useState(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const meta = data.user?.user_metadata as { full_name?: string; name?: string } | undefined;
+      const raw =
+        meta?.full_name ||
+        meta?.name ||
+        data.user?.email?.split("@")[0] ||
+        localStorage.getItem("querobis:share_name") ||
+        "";
+      if (raw) setOwnerName(raw.split(" ")[0]);
+    });
+    return undefined;
+  });
+
+  async function handleCreate() {
+    if (ownerName.trim().length < 2) {
+      toast.error("Digite seu nome");
+      return;
+    }
+    if (items.length === 0) {
+      toast.error("Adicione itens primeiro");
+      return;
+    }
+    setCreating(true);
+    try {
+      const token = await createSharedCart({
+        ownerName: ownerName.trim(),
+        message,
+        items,
+      });
+      const url = shareUrlFor(token);
+      setResult({ url, token });
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao gerar link");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  function copy() {
+    if (!result) return;
+    navigator.clipboard.writeText(result.url);
+    toast.success("Link copiado!");
+  }
+
+  function whats() {
+    if (!result) return;
+    const msg = `Bora dividir esse pedido? Tô montando um carrinho no Quero Bis 🍨\n${result.url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setResult(null); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            {result ? "Link pronto!" : "Compartilhar carrinho"}
+          </DialogTitle>
+        </DialogHeader>
+        {!result ? (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground">Seu nome</label>
+              <Input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} maxLength={30} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground">
+                Recado (opcional)
+              </label>
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Ex: bora fechar antes das 20h!"
+                maxLength={120}
+              />
+            </div>
+            <div className="rounded-xl bg-muted/40 p-3 text-xs text-muted-foreground">
+              A galera abre o link, entra com o nome deles e adiciona os próprios itens. O link vale
+              por 24 horas.
+            </div>
+            <button
+              onClick={handleCreate}
+              disabled={creating}
+              className="w-full rounded-xl bg-primary px-4 py-3 font-bold text-primary-foreground disabled:opacity-60"
+            >
+              {creating ? "Gerando link…" : "Gerar link do carrinho"}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="rounded-xl border border-border/60 bg-muted/30 p-3 text-sm break-all">
+              {result.url}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={copy}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary px-3 py-2.5 text-sm font-semibold"
+              >
+                <Copy className="h-4 w-4" /> Copiar
+              </button>
+              <button
+                onClick={whats}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground"
+              >
+                <MessageCircle className="h-4 w-4" /> WhatsApp
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Você é o dono do carrinho. Só você pode finalizar o pedido.
+            </p>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
