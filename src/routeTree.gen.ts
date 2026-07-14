@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RastrearTokenRouteImport } from './routes/rastrear.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as PagamentoOrderIdRouteImport } from './routes/pagamento.$orderId'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as AuthenticatedWhatsappIaRouteImport } from './routes/_authenticated/whatsapp-ia'
@@ -140,6 +141,11 @@ const RCodeRoute = RCodeRouteImport.update({
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagamentoOrderIdRoute = PagamentoOrderIdRouteImport.update({
+  id: '/pagamento/$orderId',
+  path: '/pagamento/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CTokenRoute = CTokenRouteImport.update({
@@ -494,6 +500,7 @@ export interface FileRoutesByFullPath {
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
+  '/pagamento/$orderId': typeof PagamentoOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
@@ -563,6 +570,7 @@ export interface FileRoutesByTo {
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
+  '/pagamento/$orderId': typeof PagamentoOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
@@ -634,6 +642,7 @@ export interface FileRoutesById {
   '/_authenticated/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/c/$token': typeof CTokenRoute
+  '/pagamento/$orderId': typeof PagamentoOrderIdRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
@@ -705,6 +714,7 @@ export interface FileRouteTypes {
     | '/whatsapp-ia'
     | '/api/copilot-chat'
     | '/c/$token'
+    | '/pagamento/$orderId'
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
@@ -774,6 +784,7 @@ export interface FileRouteTypes {
     | '/whatsapp-ia'
     | '/api/copilot-chat'
     | '/c/$token'
+    | '/pagamento/$orderId'
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
@@ -844,6 +855,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whatsapp-ia'
     | '/api/copilot-chat'
     | '/c/$token'
+    | '/pagamento/$orderId'
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
@@ -870,6 +882,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   CTokenRoute: typeof CTokenRoute
+  PagamentoOrderIdRoute: typeof PagamentoOrderIdRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
@@ -971,6 +984,13 @@ declare module '@tanstack/react-router' {
       path: '/produto/$id'
       fullPath: '/produto/$id'
       preLoaderRoute: typeof ProdutoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pagamento/$orderId': {
+      id: '/pagamento/$orderId'
+      path: '/pagamento/$orderId'
+      fullPath: '/pagamento/$orderId'
+      preLoaderRoute: typeof PagamentoOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$token': {
@@ -1491,6 +1511,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
   CTokenRoute: CTokenRoute,
+  PagamentoOrderIdRoute: PagamentoOrderIdRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
