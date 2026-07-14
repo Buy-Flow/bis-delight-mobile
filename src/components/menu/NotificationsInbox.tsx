@@ -299,7 +299,8 @@ export function useUnreadNotifications() {
     }
     const { data } = await supabase
       .from("push_deliveries")
-      .select("id, campaign_id, campaign:push_campaigns(expires_at)")
+      .select("id, campaign_id, subscription:push_subscriptions!inner(user_id), campaign:push_campaigns(expires_at)")
+      .eq("subscription.user_id", user.id)
       .is("opened_at", null)
       .limit(200);
     const now = Date.now();
