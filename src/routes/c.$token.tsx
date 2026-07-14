@@ -14,7 +14,13 @@ import {
 import { useCart, brl } from "@/lib/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// simple inline badge — project has no shadcn Badge component
+const Badge = ({ children, variant, className = "" }: { children: React.ReactNode; variant?: "secondary" | "outline"; className?: string }) => {
+  const base = "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium";
+  const style = variant === "outline"
+    ? "border border-border/60 text-foreground/80"
+    : "bg-primary/15 text-primary";
+  return <span className={`${base} ${style} ${className}`}>{children}</span>;
+};
 import { toast } from "sonner";
 import {
   Users,
