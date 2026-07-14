@@ -3,40 +3,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
 
-async function resolveOrCreateAsaasCustomer(opts: {
-  userId?: string | null;
-  name: string;
-  email?: string;
-  cpfCnpj?: string;
-  phone?: string;
-}): Promise<{ id: string }> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { upsertAsaasCustomer } = await import("@/lib/asaas.server");
-
-  // Reuse cached customer id from profile
-  if (opts.userId) {
-    const { data: p } = await supabaseAdmin
-      .from("profiles")
-      .select("asaas_customer_id")
-      .eq("id", opts.userId)
-      .maybeSingle();
-    if (p?.asaas_customer_id) return { id: p.asaas_customer_id };
-  }
-
-  const c = await upsertAsaasCustomer({
-    name: opts.name,
-    email: opts.email,
-    cpfCnpj: opts.cpfCnpj,
-    phone: opts.phone,
-    externalReference: opts.userId ?? undefined,
-  });
-
-  if (opts.userId) {
-    await supabaseAdmin.from("profiles").update({ asaas_customer_id: c.id }).eq("id", opts.userId);
-  }
-  return { id: c.id };
-}
-
 const pixInput = z.object({
   orderId: z.string().uuid(),
   customer: z.object({
@@ -54,6 +20,7 @@ export const createAsaasPixForOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createPixCharge } = await import("@/lib/asaas.server");
+    const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
 
     const { data: order, error } = await supabaseAdmin
       .from("orders")
@@ -127,6 +94,7 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCardCharge } = await import("@/lib/asaas.server");
+    const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
 
     const { data: order, error } = await supabaseAdmin
       .from("orders")
@@ -265,6 +233,7 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCheckoutSession } = await import("@/lib/asaas.server");
+    const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
 
     const { data: order, error } = await supabaseAdmin
       .from("orders")
@@ -279,6 +248,14 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
     const cancelUrl = `${origin}/pagamento/${order.id}?checkout=cancel`;
     const expiredUrl = `${origin}/pagamento/${order.id}?checkout=expired`;
 
+    const customer = await resolveOrCreateAsaasCustomer({
+      userId: order.user_id ?? null,
+      name: data.customer.name || order.customer_name || "Cliente",
+      email: data.customer.email,
+      cpfCnpj: data.customer.cpfCnpj,
+      phone: data.customer.phone ?? order.phone ?? undefined,
+    });
+
     const session = await createCheckoutSession({
       value: Number(order.total),
       externalReference: order.id,
@@ -288,12 +265,7 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
       expiredUrl,
       minutesToExpire: 60,
       billingTypes: ["CREDIT_CARD", "PIX"],
-      customer: {
-        name: data.customer.name || order.customer_name || "Cliente",
-        email: data.customer.email,
-        cpfCnpj: data.customer.cpfCnpj,
-        phone: data.customer.phone ?? order.phone ?? undefined,
-      },
+      customerId: customer.id,
     });
 
     await supabaseAdmin
