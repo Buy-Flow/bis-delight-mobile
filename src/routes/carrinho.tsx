@@ -337,36 +337,10 @@ function CartPage() {
             {!shareMode && (
               <button
                 onClick={() => setShareOpen(true)}
-                className="group relative mt-3 w-full overflow-hidden rounded-2xl p-[1.5px] active:scale-[.985] transition-transform"
-                style={{
-                  background:
-                    "linear-gradient(135deg, hsl(320 100% 62%), hsl(280 100% 65%), hsl(190 100% 55%))",
-                }}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-[13px] font-semibold text-white/70 hover:bg-white/[0.06] hover:text-white/90 transition-colors"
               >
-                <span className="relative flex items-center justify-center gap-3 rounded-[14px] bg-[#1a0b2e] px-4 py-3.5">
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-30 blur-2xl"
-                    style={{
-                      background:
-                        "radial-gradient(60% 80% at 20% 50%, hsl(320 100% 62% / .55), transparent 60%), radial-gradient(60% 80% at 80% 50%, hsl(190 100% 55% / .55), transparent 60%)",
-                    }}
-                  />
-                  <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-neon-pink to-neon-cyan text-white shadow-[0_0_18px_rgba(255,60,180,.55)]">
-                    <Users className="h-4.5 w-4.5" strokeWidth={2.6} />
-                  </span>
-                  <span className="relative flex-1 text-left leading-tight">
-                    <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-neon-cyan/90">
-                      Bora dividir? 🎉
-                    </span>
-                    <span className="block text-[15px] font-black text-white">
-                      Compartilhar carrinho com a galera
-                    </span>
-                  </span>
-                  <span className="relative rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black text-white/80 ring-1 ring-white/15 group-hover:bg-white/15">
-                    →
-                  </span>
-                </span>
+                <Users className="h-4 w-4" strokeWidth={2} />
+                Dividir carrinho com amigos
               </button>
             )}
 
