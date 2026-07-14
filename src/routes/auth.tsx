@@ -22,6 +22,7 @@ import {
   X as XIcon,
 } from "lucide-react";
 import { z } from "zod";
+import { formatCpf, isValidCpf } from "@/lib/cpf";
 
 const searchSchema = z.object({
   next: z.string().optional(),
@@ -44,20 +45,6 @@ function safeNext(next: string | undefined): string {
   if (!next) return "/conta";
   if (next.startsWith("/") && !next.startsWith("//")) return next;
   return "/conta";
-}
-
-/** Máscara 000.000.000-00 enquanto o usuário digita. */
-function maskCpf(v: string): string {
-  const d = v.replace(/\D/g, "").slice(0, 11);
-  const p1 = d.slice(0, 3);
-  const p2 = d.slice(3, 6);
-  const p3 = d.slice(6, 9);
-  const p4 = d.slice(9, 11);
-  let out = p1;
-  if (p2) out += "." + p2;
-  if (p3) out += "." + p3;
-  if (p4) out += "-" + p4;
-  return out;
 }
 
 /** Máscara DD/MM/AAAA enquanto o usuário digita. */
@@ -88,30 +75,6 @@ function birthdayToIso(v: string): string | null {
   return `${m[3]}-${m[2]}-${m[1]}`;
 }
 
-/**
- * Valida CPF pelo algoritmo oficial dos dígitos verificadores.
- * Rejeita CPFs com todos dígitos iguais (111.111.111-11) e formatos inválidos.
- *
- * NOTA: Isto NÃO verifica se o CPF pertence à pessoa que está se cadastrando —
- * essa consulta exige integração paga com Serpro/BigDataCorp/Idwall. Ponto de
- * integração futura: após passar por esta validação, chamar uma server function
- * que consulte o provedor e compare o nome retornado com `fullName`.
- */
-function isValidCpf(raw: string): boolean {
-  const cpf = raw.replace(/\D/g, "");
-  if (cpf.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(cpf)) return false;
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i], 10) * (10 - i);
-  let d1 = 11 - (sum % 11);
-  if (d1 >= 10) d1 = 0;
-  if (d1 !== parseInt(cpf[9], 10)) return false;
-  sum = 0;
-  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i], 10) * (11 - i);
-  let d2 = 11 - (sum % 11);
-  if (d2 >= 10) d2 = 0;
-  return d2 === parseInt(cpf[10], 10);
-}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -445,7 +408,7 @@ function AuthPage() {
                       inputMode="numeric"
                       autoComplete="off"
                       value={cpf}
-                      onChange={(e) => setCpf(maskCpf(e.target.value))}
+                      onChange={(e) => setCpf(formatCpf(e.target.value))}
                       placeholder="CPF (000.000.000-00)"
                       maxLength={14}
                       className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
