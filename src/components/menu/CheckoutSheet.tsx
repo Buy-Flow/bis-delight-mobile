@@ -465,18 +465,6 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       toast.error(message, { id: "checkout-validation", duration: 9000 });
     };
     setActionError(null);
-    console.log("[checkout] send() clicked", {
-      paymentMethod,
-      mode,
-      isAuthenticated,
-      hasUser: !!user,
-      storeClosed: storeStatus.isClosed,
-      outsideRadius,
-      itemsCount: items.length,
-      name: !!name.trim(),
-      phone: !!phone.trim(),
-      address: !!address.trim(),
-    });
     if (storeStatus.isClosed) {
       fail(
         storeStatus.nextOpenLabel
