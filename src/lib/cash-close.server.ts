@@ -168,6 +168,10 @@ export async function buildPdf(agg: Aggregate, settings: CashCloseSettings): Pro
   const marginX = 40;
   let y = 800;
 
+  const drawText = (text: string, x: number, yPos: number, size: number, f: import("pdf-lib").PDFFont, color = rgb(0.12, 0.12, 0.14)) => {
+    page.drawText(sanitize(text), { x, y: yPos, size, font: f, color });
+  };
+
   const purple = rgb(0.42, 0.16, 0.78);
   const gray = rgb(0.4, 0.42, 0.5);
 
