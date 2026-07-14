@@ -461,9 +461,20 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       toast.error("Preencha os campos obrigatórios.");
       return;
     }
-    if (paymentMethod === "cartao" && !isValidCpf(cpf)) {
-      toast.error("CPF inválido — obrigatório para pagamento com cartão.");
-      return;
+    if (paymentMethod === "cartao") {
+      if (!isValidCpf(cpf)) { toast.error("CPF inválido — obrigatório para pagamento com cartão."); return; }
+      const numDigits = cardNumber.replace(/\D/g, "");
+      const exp = cardExpiry.replace(/\D/g, "");
+      const effEmail = (cardEmail || user?.email || "").trim();
+      const effCep = (cardCep || cep).replace(/\D/g, "");
+      const effAddrNumber = (cardAddrNumber || addrNumber).trim();
+      if (!cardHolder.trim()) { toast.error("Informe o nome como está no cartão."); return; }
+      if (numDigits.length < 13) { toast.error("Número do cartão inválido."); return; }
+      if (exp.length !== 4) { toast.error("Validade inválida (use MM/AA)."); return; }
+      if (cardCcv.length < 3) { toast.error("CVV inválido."); return; }
+      if (effCep.length !== 8) { toast.error("CEP inválido."); return; }
+      if (!effAddrNumber) { toast.error("Informe o número do endereço do titular."); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(effEmail)) { toast.error("E-mail inválido."); return; }
     }
     if (mode === "entrega" && outsideRadius) {
       toast.error(
