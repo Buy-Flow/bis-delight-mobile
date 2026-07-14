@@ -920,6 +920,8 @@ function RushOrderCard({
   tick,
   busy,
   expanded,
+  slaSettings,
+  slaHistory,
   onToggle,
   onAdvance,
   onCancel,
@@ -930,6 +932,8 @@ function RushOrderCard({
   tick: number;
   busy: boolean;
   expanded: boolean;
+  slaSettings: SlaSettings;
+  slaHistory: Record<string, SlaHistoryRow> | null;
   onToggle: () => void;
   onAdvance: () => void;
   onCancel: () => void;
@@ -941,6 +945,7 @@ function RushOrderCard({
   const critical = min >= 25 && !["entregue", "cancelado"].includes(order.status);
 
   const done = order.status === "entregue" || order.status === "cancelado";
+  const sla = computeSla(order, Date.now() + tick * 0, slaSettings, slaHistory);
 
   const primaryLabel: string =
     order.status === "pendente"
