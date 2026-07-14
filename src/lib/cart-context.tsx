@@ -45,6 +45,8 @@ type CartCtx = {
   consumePendingProduct: () => void;
   shareMode: ShareMode;
   setShareMode: (m: ShareMode) => void;
+  /** true once localStorage has been read on mount — before this, items[] is a placeholder empty array. */
+  hydrated: boolean;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
@@ -281,8 +283,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         writeShareMode(m);
         setShareModeState(m);
       },
+      hydrated,
     };
-  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId, shareMode]);
+  }, [items, isCartOpen, isCheckoutOpen, isAcaiOpen, editingItem, pendingProductId, shareMode, hydrated]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
