@@ -10,8 +10,18 @@ export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
   const name = settings?.name || BRAND.name;
 
   return (
-    <header className="sticky top-0 z-40 bg-transparent">
-      <div className="relative flex items-center justify-between px-4 py-3">
+    <header
+      className="sticky top-0 z-40 bg-transparent"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
+      <div
+        className="relative flex items-center justify-between py-3"
+        style={{
+          paddingLeft: "max(1rem, env(safe-area-inset-left))",
+          paddingRight: "max(1rem, env(safe-area-inset-right))",
+        }}
+      >
+
         <button
           onClick={onOpenCategories}
           aria-label="Categorias"
