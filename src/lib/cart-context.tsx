@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { addSharedItem, readShareMode, writeShareMode, type ShareMode } from "@/lib/shared-cart";
+import { logSilent } from "@/lib/silent-errors";
 
 export type CartItem = {
   uid: string;
