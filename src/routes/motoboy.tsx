@@ -65,6 +65,7 @@ type Order = {
   picked_up_at: string | null;
   payment_method?: string | null;
   note: string | null;
+  order_number?: number | string | null;
   order_items?: Array<{ name: string; quantity: number; size: string | null; flavor: string | null; unit_price: number }>;
 };
 
