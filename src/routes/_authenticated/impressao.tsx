@@ -52,6 +52,27 @@ type PrintSettings = {
   cut_after: boolean;
   beep_on_new: boolean;
   kitchen_group_by_category: boolean;
+  silent_mode: boolean;
+  auto_delay_ms: number;
+  max_retries: number;
+  beep_volume: number;
+  beep_repeat: number;
+  only_paid_orders: boolean;
+};
+
+type Printer = {
+  id: string;
+  name: string;
+  kinds: string[];
+  target: "browser" | "bridge" | "escpos";
+  bridge_url: string | null;
+  copies: number;
+  paper_width: number | null;
+  active: boolean;
+  is_default: boolean;
+  sort_index: number;
+  last_ok_at: string | null;
+  last_error: string | null;
 };
 
 type SiteSettings = {
