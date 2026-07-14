@@ -196,7 +196,7 @@ export async function ingestEvolutionPayload(
   const result: IngestResult = { processed: 0, inserted: 0, skipped: 0, errors: 0 };
 
   const logRow = async (row: {
-    status: "ok" | "skipped" | "error";
+    status: "ok" | "skipped" | "error" | "noise";
     phone?: string | null;
     evolution_id?: string | null;
     from_me?: boolean | null;
@@ -237,9 +237,10 @@ export async function ingestEvolutionPayload(
   // mensagem já persistida. Fonte: whatsapp.baileys.service.ts:1258-1350.
   if (isStatusUpdate) {
     if (items.length === 0) {
-      await logRow({ status: "skipped", error: "no items in status update", payload });
+      await logRow({ status: "noise", error: "status update sem itens", payload });
       return result;
     }
+
     for (const item of items) {
       result.processed += 1;
       const rec = item as unknown as Record<string, unknown>;
@@ -347,14 +348,15 @@ export async function ingestEvolutionPayload(
   }
 
   if (!isMessageEvent) {
-    await logRow({ status: "skipped", error: `event ignored: ${event}`, payload });
+    await logRow({ status: "noise", error: `evento de plataforma: ${event}`, payload });
     return result;
   }
 
   if (items.length === 0) {
-    await logRow({ status: "skipped", error: "no items extracted from payload", payload });
+    await logRow({ status: "noise", error: "payload sem itens de mensagem", payload });
     return result;
   }
+
 
   for (const item of items) {
     result.processed += 1;
@@ -369,7 +371,7 @@ export async function ingestEvolutionPayload(
       result.skipped += 1;
       await logRow({
         status: "skipped",
-        error: "group or broadcast jid",
+        error: "mensagem de grupo ou status broadcast",
         evolution_id: key?.id ?? item.id ?? null,
         payload: item,
       });
@@ -429,7 +431,7 @@ export async function ingestEvolutionPayload(
         result.skipped += 1;
         await logRow({
           status: "skipped",
-          error: "duplicate evolution_id",
+          error: "duplicata (mensagem já recebida)",
           phone,
           evolution_id: evoId,
           from_me: fromMe,
@@ -513,7 +515,7 @@ export async function ingestEvolutionPayload(
         result.skipped += 1;
         await logRow({
           status: "skipped",
-          error: "duplicate content within 10s window",
+          error: "duplicata por conteúdo (janela 10s)",
           phone,
           evolution_id: null,
           from_me: fromMe,
@@ -547,7 +549,7 @@ export async function ingestEvolutionPayload(
         result.skipped += 1;
         await logRow({
           status: "skipped",
-          error: "duplicate on insert (unique violation)",
+          error: "duplicata detectada ao gravar",
           phone,
           evolution_id: evoId,
           from_me: fromMe,

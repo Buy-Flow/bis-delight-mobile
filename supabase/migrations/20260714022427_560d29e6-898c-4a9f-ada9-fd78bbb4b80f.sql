@@ -1,0 +1,1 @@
+UPDATE public.whatsapp_ingest_logs SET status='noise' WHERE status='skipped' AND (error LIKE 'event ignored:%' OR error IN ('no items in status update','no items extracted from payload'));

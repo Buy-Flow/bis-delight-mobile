@@ -31,9 +31,12 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   const [webhook, setWebhookState] = useState<{ url: string; currentUrl: string | null; configured: boolean; hasToken: boolean } | null>(null);
   const [wbSaving, setWbSaving] = useState(false);
   const [diag, setDiag] = useState<{
-    ok: number; skipped: number; error: number; total: number;
+    ok: number; skipped: number; error: number; noise: number; total: number;
     lastEventAt: string | null; lastSyncAt: string | null; lastErrorAt: string | null; lastError: string | null;
+    skipReasons: Array<{ reason: string; count: number }>;
+    errorReasons: Array<{ reason: string; count: number; lastAt: string | null }>;
   } | null>(null);
+
   const pollRef = useRef<number | null>(null);
   const diagRef = useRef<number | null>(null);
   const wasConnectedRef = useRef(false);
@@ -111,24 +114,50 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
   async function refreshDiagnostics() {
     try {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const [okRes, skipRes, errRes, lastEvt, lastSync, lastErr] = await Promise.all([
+      const [okRes, skipRes, errRes, noiseRes, lastEvt, lastSync, lastErr, skipList, errList] = await Promise.all([
         supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "ok").gte("created_at", since),
         supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "skipped").gte("created_at", since),
         supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "error").gte("created_at", since),
+        supabase.from("whatsapp_ingest_logs").select("*", { count: "exact", head: true }).eq("status", "noise").gte("created_at", since),
         supabase.from("whatsapp_ingest_logs").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("whatsapp_ingest_logs").select("created_at").eq("source", "sync").order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("whatsapp_ingest_logs").select("created_at,error").eq("status", "error").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("whatsapp_ingest_logs").select("error").eq("status", "skipped").gte("created_at", since).limit(500),
+        supabase.from("whatsapp_ingest_logs").select("error,created_at").eq("status", "error").gte("created_at", since).order("created_at", { ascending: false }).limit(500),
       ]);
       const ok = okRes.count ?? 0;
       const skipped = skipRes.count ?? 0;
       const error = errRes.count ?? 0;
+      const noise = noiseRes.count ?? 0;
+      const groupReasons = (rows: Array<{ error: string | null; created_at?: string }> | null | undefined) => {
+        const acc = new Map<string, { count: number; lastAt: string | null }>();
+        for (const r of rows ?? []) {
+          const k = (r.error ?? "sem motivo").trim();
+          const prev = acc.get(k);
+          const lastAt = r.created_at ?? null;
+          if (prev) {
+            prev.count += 1;
+            if (lastAt && (!prev.lastAt || lastAt > prev.lastAt)) prev.lastAt = lastAt;
+          } else {
+            acc.set(k, { count: 1, lastAt });
+          }
+        }
+        return Array.from(acc.entries())
+          .map(([reason, v]) => ({ reason, count: v.count, lastAt: v.lastAt }))
+          .sort((a, b) => b.count - a.count);
+      };
+      const skipReasons = groupReasons(skipList.data as { error: string | null }[] | null).map(({ reason, count }) => ({ reason, count }));
+      const errorReasons = groupReasons(errList.data as { error: string | null; created_at: string }[] | null);
       setDiag({
-        ok, skipped, error, total: ok + skipped + error,
+        ok, skipped, error, noise, total: ok + skipped + error + noise,
         lastEventAt: (lastEvt.data as { created_at: string } | null)?.created_at ?? null,
         lastSyncAt: (lastSync.data as { created_at: string } | null)?.created_at ?? null,
         lastErrorAt: (lastErr.data as { created_at: string; error: string | null } | null)?.created_at ?? null,
         lastError: (lastErr.data as { created_at: string; error: string | null } | null)?.error ?? null,
+        skipReasons,
+        errorReasons,
       });
+
     } catch {
       /* noop */
     }
@@ -334,7 +363,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-2 text-center">
               <CheckCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-emerald-300" />
               <div className="text-base font-black leading-none text-emerald-200">{diag?.ok ?? "—"}</div>
@@ -344,6 +373,11 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
               <MinusCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-amber-300" />
               <div className="text-base font-black leading-none text-amber-200">{diag?.skipped ?? "—"}</div>
               <div className="mt-1 text-[9px] uppercase tracking-wider text-amber-300/70">Ignorados</div>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-center">
+              <Clock className="mx-auto mb-0.5 h-3.5 w-3.5 text-white/50" />
+              <div className="text-base font-black leading-none text-white/70">{diag?.noise ?? "—"}</div>
+              <div className="mt-1 text-[9px] uppercase tracking-wider text-white/40">Ruído</div>
             </div>
             <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-2 text-center">
               <XCircle className="mx-auto mb-0.5 h-3.5 w-3.5 text-red-300" />
@@ -362,7 +396,45 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
             />
           </div>
 
-          {diag?.lastError && (
+          {diag?.skipReasons && diag.skipReasons.length > 0 && (
+            <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-200/90">
+                <MinusCircle className="h-3 w-3" /> Por que foram ignorados
+              </div>
+              <ul className="space-y-1">
+                {diag.skipReasons.slice(0, 6).map((r) => (
+                  <li key={r.reason} className="flex items-center justify-between gap-2 rounded bg-black/25 px-2 py-1 text-[10px]">
+                    <span className="truncate text-amber-100/85">{r.reason}</span>
+                    <span className="shrink-0 rounded-full bg-amber-500/20 px-1.5 font-bold text-amber-200">{r.count}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1.5 text-[9.5px] text-amber-200/50">
+                "Ignorados" são mensagens reais que não gravamos (grupos, duplicatas, mídia vazia). "Ruído" são eventos da plataforma que não são mensagens (contatos, conexão).
+              </p>
+            </div>
+          )}
+
+          {diag?.errorReasons && diag.errorReasons.length > 0 && (
+            <div className="mt-2 rounded-lg border border-red-500/20 bg-red-500/10 p-2">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-red-200">
+                <AlertTriangle className="h-3 w-3" /> Erros por motivo
+              </div>
+              <ul className="space-y-1">
+                {diag.errorReasons.slice(0, 6).map((r) => (
+                  <li key={r.reason} className="flex items-center justify-between gap-2 rounded bg-black/25 px-2 py-1 text-[10px]">
+                    <span className="truncate text-red-100/85">{r.reason}</span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span className="text-red-200/50">{fmtRelative(r.lastAt)}</span>
+                      <span className="rounded-full bg-red-500/20 px-1.5 font-bold text-red-200">{r.count}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {diag?.lastError && (!diag.errorReasons || diag.errorReasons.length === 0) && (
             <div className="mt-2 rounded-lg border border-red-500/20 bg-red-500/10 p-2">
               <div className="flex items-center gap-1.5 text-[10px] font-bold text-red-200">
                 <AlertTriangle className="h-3 w-3" /> Último erro · {fmtRelative(diag.lastErrorAt)}
@@ -370,6 +442,7 @@ export function WhatsappConnectDialog({ open, onClose, onConnected }: Props) {
               <div className="mt-1 line-clamp-2 text-[10px] text-red-100/80">{diag.lastError}</div>
             </div>
           )}
+
 
           {(diag?.total ?? 0) === 0 && (
             <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-white/5 bg-black/20 p-2 text-[10px] text-white/50">
