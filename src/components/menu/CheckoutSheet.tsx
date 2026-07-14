@@ -457,7 +457,6 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   };
 
   const send = async () => {
-    let whatsappTab: Window | null = null;
     console.log("[checkout] send() clicked", {
       paymentMethod,
       mode,
@@ -517,12 +516,10 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       return;
     }
 
-    if (paymentMethod === "whatsapp") {
-      // Abrir imediatamente no gesto do clique evita bloqueio de pop-up após os awaits do banco.
-      whatsappTab = window.open("", "_blank");
-    }
-
     setSending(true);
+    if (paymentMethod === "whatsapp") {
+      toast.loading("Criando seu pedido…", { id: "checkout-submit" });
+    }
     try {
       const { data: order, error: orderErr } = await supabase
         .from("orders")
@@ -610,17 +607,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         const url = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(msg)}`;
         clear();
         closeCheckout();
-        if (whatsappTab && !whatsappTab.closed) {
-          try {
-            whatsappTab.opener = null;
-            whatsappTab.location.href = url;
-          } catch {
-            window.location.href = url;
-          }
-        } else {
-          window.location.href = url;
-        }
-        toast.success("Pedido enviado! Você ganhou 1 selo Bis Recompensa 🍧");
+        toast.success("Pedido criado! Abrindo WhatsApp…", { id: "checkout-submit" });
+        window.location.assign(url);
         return;
       } else if (paymentMethod === "cartao") {
         // Processa cartão via Asaas AGORA, mostrando erro claro se algo falhar
@@ -720,7 +708,6 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
       }
     } catch (err: any) {
-      if (whatsappTab && !whatsappTab.closed) whatsappTab.close();
       console.error("[checkout] send failed", err);
       const detail =
         err?.message ||
@@ -728,6 +715,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         err?.details ||
         (typeof err === "string" ? err : "");
       toast.error("Erro ao enviar o pedido", {
+        id: "checkout-submit",
         description: detail || "Tente novamente em instantes. Se persistir, avise a loja.",
         duration: 8000,
       });
