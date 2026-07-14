@@ -379,13 +379,22 @@ function DashboardTab() {
                 </h2>
               </div>
               {(stats?.topProducts?.length ?? 0) === 0 ? (
-                <p className="py-8 text-center text-xs text-white/40">Sem vendas na semana ainda.</p>
+                <p className="py-8 text-center text-xs text-white/55">Sem vendas na semana ainda.</p>
               ) : (
                 <ul className="space-y-3">
                   {stats!.topProducts.map((p, i) => {
                     const max = stats!.topProducts[0].qty;
                     const pct = Math.max(6, (p.qty / max) * 100);
-                    const medal = i === 0 ? "text-neon-yellow" : i === 1 ? "text-white/70" : i === 2 ? "text-amber-500" : "text-white/40";
+                    // Medalha: 1º ouro (neon-yellow), 2º prata (oklch cool), 3º bronze (oklch warm),
+                    // demais em neutro legível. Uma única linguagem de cor semântica.
+                    const medal =
+                      i === 0
+                        ? "text-neon-yellow"
+                        : i === 1
+                          ? "text-[oklch(0.86_0.02_250)]"
+                          : i === 2
+                            ? "text-[oklch(0.72_0.13_55)]"
+                            : "text-white/55";
                     return (
                       <li key={p.name} className="space-y-1.5">
                         <div className="flex items-center justify-between text-sm">
