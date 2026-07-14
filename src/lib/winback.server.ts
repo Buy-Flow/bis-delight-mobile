@@ -2,7 +2,37 @@
 // Selects inactive customers, generates a unique coupon per user, sends via
 // WhatsApp through Evolution API, and records every send in winback_sends.
 
-import { sendWhatsappText } from "./cash-close.server";
+import {
+  evolutionConfig,
+  fetchEvolutionWithTimeout,
+  normalizeWhatsappPhone,
+} from "./whatsapp-evolution.server";
+
+// Inlined lean whatsapp text sender — avoid pulling pdf-lib via cash-close.server.
+async function sendWhatsappText(
+  number: string,
+  text: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const { base, key, instance } = evolutionConfig();
+  if (!base || !key || !instance) return { ok: false, error: "Evolution API não configurada" };
+  const normalized = normalizeWhatsappPhone(number);
+  if (!normalized || normalized.length < 10) return { ok: false, error: `Número inválido: ${number}` };
+  try {
+    const resp = await fetchEvolutionWithTimeout(
+      `${base}/message/sendText/${encodeURIComponent(instance)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: key },
+        body: JSON.stringify({ number: normalized, text, delay: 0, linkPreview: false }),
+      },
+    );
+    const body = await resp.text();
+    if (!resp.ok) return { ok: false, error: `Evolution ${resp.status}: ${body.slice(0, 200)}` };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
 
 interface WinbackSettings {
   enabled: boolean;
