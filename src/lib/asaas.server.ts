@@ -227,7 +227,7 @@ export async function createCheckoutSession(input: {
 // Map Asaas status → local order status
 export function mapAsaasStatusToOrder(status: string): { paid: boolean; canceled: boolean } {
   const s = status.toUpperCase();
-  const paid = ["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH"].includes(s);
-  const canceled = ["REFUNDED", "CHARGEBACK_REQUESTED", "CHARGEBACK_DISPUTE", "REFUND_REQUESTED"].includes(s);
+  const paid = ["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH", "PAID"].includes(s);
+  const canceled = ["REFUNDED", "CHARGEBACK_REQUESTED", "CHARGEBACK_DISPUTE", "REFUND_REQUESTED", "EXPIRED", "CANCELED"].includes(s);
   return { paid, canceled };
 }
