@@ -59,7 +59,8 @@ export function NotificationsBell() {
     setLoading(true);
     const { data } = await supabase
       .from("push_deliveries")
-      .select("id, opened_at, created_at, campaign_id, campaign:push_campaigns(id, title, body, image, url, created_at, expires_at)")
+      .select("id, opened_at, created_at, campaign_id, subscription:push_subscriptions!inner(user_id), campaign:push_campaigns(id, title, body, image, url, created_at, expires_at)")
+      .eq("subscription.user_id", user.id)
       .is("opened_at", null)
       .order("created_at", { ascending: false })
       .limit(30);
