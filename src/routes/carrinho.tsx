@@ -97,6 +97,37 @@ function CartPage() {
         </div>
       </div>
 
+      {shareMode && (
+        <div className="mx-auto max-w-2xl px-4">
+          <div className="flex items-center gap-2 rounded-2xl border border-neon-cyan/30 bg-neon-cyan/10 p-3 text-xs">
+            <Users className="h-4 w-4 text-neon-cyan shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-neon-cyan">Modo compartilhado</div>
+              <div className="text-white/70 truncate">
+                Você tá adicionando como <b>{shareMode.name}</b>
+                {shareMode.ownerName ? ` no carrinho de ${shareMode.ownerName}` : ""}.
+              </div>
+            </div>
+            <button
+              onClick={() => navigate({ to: "/c/$token", params: { token: shareMode.token } })}
+              className="rounded-full bg-neon-cyan/20 px-3 py-1 text-[11px] font-bold text-neon-cyan"
+            >
+              Ver
+            </button>
+            <button
+              onClick={() => {
+                setShareMode(null);
+                toast.info("Você saiu do carrinho compartilhado");
+              }}
+              className="rounded-full bg-white/10 p-1.5 text-white/70"
+              aria-label="Sair"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Body */}
       <div className="mx-auto max-w-2xl px-4 pt-4">
         {items.length === 0 ? (
