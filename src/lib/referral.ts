@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/friendly-error";
 
 const KEY = "quero-bis:referral-code";
 
