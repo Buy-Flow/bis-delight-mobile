@@ -41,6 +41,8 @@ import {
 } from "@/lib/push";
 import { sendAdminTestPush } from "@/lib/push.functions";
 import { AdminNavMenu } from "@/components/admin/AdminNavMenu";
+import { useSlaSettings, computeSla, type SlaSettings, type SlaHistoryRow } from "@/lib/sla";
+import { SlaBadge, SlaBar } from "@/components/admin/SlaBadge";
 
 export const Route = createFileRoute("/_authenticated/rush")({
   head: () => ({
@@ -254,6 +256,7 @@ function RushPage() {
   const [testBusy, setTestBusy] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const { settings: slaSettings, history: slaHistory } = useSlaSettings();
 
   // sound preference
   const [soundOn, setSoundOn] = useState(() => {
@@ -780,6 +783,8 @@ function RushPage() {
                 tick={tick}
                 busy={busyId === o.id}
                 expanded={expandedId === o.id}
+                slaSettings={slaSettings}
+                slaHistory={slaHistory}
                 onToggle={() => setExpandedId((cur) => (cur === o.id ? null : o.id))}
                 onAdvance={() => advance(o)}
                 onCancel={() => setStatus(o, "cancelado")}
@@ -915,6 +920,8 @@ function RushOrderCard({
   tick,
   busy,
   expanded,
+  slaSettings,
+  slaHistory,
   onToggle,
   onAdvance,
   onCancel,
@@ -925,6 +932,8 @@ function RushOrderCard({
   tick: number;
   busy: boolean;
   expanded: boolean;
+  slaSettings: SlaSettings;
+  slaHistory: Record<string, SlaHistoryRow> | null;
   onToggle: () => void;
   onAdvance: () => void;
   onCancel: () => void;
@@ -936,6 +945,7 @@ function RushOrderCard({
   const critical = min >= 25 && !["entregue", "cancelado"].includes(order.status);
 
   const done = order.status === "entregue" || order.status === "cancelado";
+  const sla = computeSla(order, Date.now() + tick * 0, slaSettings, slaHistory);
 
   const primaryLabel: string =
     order.status === "pendente"
@@ -998,6 +1008,7 @@ function RushOrderCard({
           <Timer className="h-3 w-3" />
           {formatAge(order.created_at, tick)}
         </span>
+        {slaSettings.enabled && sla.status !== "done" && <SlaBadge sla={sla} />}
         <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/80">
           {order.mode === "entrega" ? (
             <Bike className="h-3 w-3" />
@@ -1013,6 +1024,15 @@ function RushOrderCard({
           {brl(Number(order.total || 0))}
         </span>
       </div>
+      {slaSettings.enabled && sla.status !== "done" && (
+        <div className="mt-2">
+          <SlaBar sla={sla} />
+          <div className="mt-1 flex items-center justify-between text-[10px] text-white/50">
+            <span>{Math.round(sla.elapsedMin)}m decorridos</span>
+            <span>meta {sla.greenMax}m • máx {sla.yellowMax}m</span>
+          </div>
+        </div>
+      )}
 
       {/* customer (clickable to expand) */}
       <button

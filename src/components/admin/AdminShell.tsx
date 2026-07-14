@@ -46,6 +46,7 @@ import {
   Award,
   Plus,
   Volume2,
+  Gauge,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,6 +95,7 @@ const groups: NavGroup[] = [
       { to: "/entregas", label: "Entregas", icon: Truck },
       { to: "/garcons", label: "Garçons", icon: UserCheck },
       { to: "/impressao", label: "Impressão", icon: Printer },
+      { to: "/sla", label: "SLA de pedidos", icon: Gauge },
     ],
   },
   {
