@@ -311,16 +311,89 @@ function MotoboyPortal() {
 
   const [proofOrder, setProofOrder] = useState<Order | null>(null);
 
+  // Fail-closed cache for Proof-of-Delivery settings. Default assumes photo is required
+  // so that a network failure (common on the street) NEVER bypasses the proof requirement.
+  type PodSettings = { enabled: boolean; require_photo: boolean; block_completion_without_proof: boolean };
+  const POD_CACHE_KEY = "qb.pod.settings.v1";
+  const readCachedPod = (): PodSettings | null => {
+    try {
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(POD_CACHE_KEY) : null;
+      return raw ? (JSON.parse(raw) as PodSettings) : null;
+    } catch { return null; }
+  };
+  const writeCachedPod = (s: PodSettings) => {
+    try { window.localStorage.setItem(POD_CACHE_KEY, JSON.stringify(s)); } catch {}
+  };
+  const podSettingsRef = useRef<PodSettings | null>(null);
+  useEffect(() => {
+    podSettingsRef.current = readCachedPod();
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("proof_of_delivery_settings")
+        .select("enabled, require_photo, block_completion_without_proof")
+        .eq("id", 1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (!error && data) {
+        const s = data as PodSettings;
+        podSettingsRef.current = s;
+        writeCachedPod(s);
+      }
+    })();
+    // Refresh on config changes
+    const ch = supabase
+      .channel("motoboy-pod-settings")
+      .on("postgres_changes", { event: "*", schema: "public", table: "proof_of_delivery_settings" }, async () => {
+        const { data } = await supabase
+          .from("proof_of_delivery_settings")
+          .select("enabled, require_photo, block_completion_without_proof")
+          .eq("id", 1)
+          .maybeSingle();
+        if (data) {
+          const s = data as PodSettings;
+          podSettingsRef.current = s;
+          writeCachedPod(s);
+        }
+      })
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
+  }, []);
+
   const markDelivered = async (orderId: string) => {
     const order = orders.find((o) => o.id === orderId);
     if (!order) return;
-    // Check settings — if photo required, open proof dialog
-    const { data: pod } = await supabase
-      .from("proof_of_delivery_settings")
-      .select("enabled, require_photo, block_completion_without_proof")
-      .eq("id", 1)
-      .maybeSingle();
-    if (pod?.enabled && pod.require_photo) {
+
+    // Try a fresh fetch with a short timeout; fall back to cache; if still unknown,
+    // FAIL-CLOSED and require the proof photo. This prevents "no recebi" disputes
+    // from network failures on the street.
+    let pod: PodSettings | null = null;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      const { data, error } = await supabase
+        .from("proof_of_delivery_settings")
+        .select("enabled, require_photo, block_completion_without_proof")
+        .eq("id", 1)
+        .abortSignal(controller.signal)
+        .maybeSingle();
+      clearTimeout(timeout);
+      if (!error && data) {
+        pod = data as PodSettings;
+        podSettingsRef.current = pod;
+        writeCachedPod(pod);
+      }
+    } catch {
+      // network / abort — fall through to cache/default
+    }
+    if (!pod) pod = podSettingsRef.current ?? readCachedPod();
+    // Fail-closed default: if we don't know, assume photo is required.
+    const requirePhoto = pod ? (pod.enabled && pod.require_photo) : true;
+
+    if (requirePhoto) {
+      if (!pod) {
+        toast.warning("Sem conexão com o servidor — foto de entrega será exigida por segurança.");
+      }
       setProofOrder(order);
       return;
     }
@@ -329,6 +402,7 @@ function MotoboyPortal() {
     if ((data as { ok: boolean })?.ok) toast.success("Entrega concluída! 🎉");
     await load();
   };
+
 
   const submitProof = async (payload: {
     photo_url: string | null;
