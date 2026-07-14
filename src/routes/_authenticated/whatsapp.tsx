@@ -545,7 +545,10 @@ function WhatsappPage() {
           <main className={cn("min-w-0 flex-1 flex-col bg-[#0b141a]", selected ? "flex" : "hidden md:flex")}>
             {selected ? (
               <>
-                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-[#202c33] px-4">
+                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-[#202c33] px-3">
+                  <button type="button" onClick={() => setSelectedId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white md:hidden" aria-label="Voltar">
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
                   <Avatar conversation={selected} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-semibold">{selected.contact_name || formatPhone(selected.phone)}</div>
