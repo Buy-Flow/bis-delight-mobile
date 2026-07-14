@@ -515,3 +515,41 @@ select:-webkit-autofill {
 /* Skeleton disabled globally — fall back to invisible placeholder space */
 :root[data-sk-enabled="0"] .sk { background: transparent; }
 :root[data-sk-enabled="0"] .sk::after { display: none; }
+
+/* ============================================================
+ * Acessibilidade — Contraste mínimo WCAG AA
+ * ============================================================
+ * text-white/30, /40 e /50 (usadas em ~940 lugares, muitas em
+ * textos < 18px) ficam abaixo de 4.5:1 sobre fundos escuros do
+ * tema (oklch(~0.22) das superfícies principais). Em vez de
+ * refatorar 1000+ classes uma a uma, elevamos aqui o "piso"
+ * de opacidade para valores comprovadamente acima de AA.
+ *
+ * Contraste medido sobre fundo #0a0a0f (bg base do tema):
+ *   /62 ≈ 6.1 : 1  (AA / AAA large)
+ *   /70 ≈ 7.5 : 1  (AAA normal)
+ *   /78 ≈ 9.3 : 1  (AAA normal, folgado)
+ *
+ * Escopo: apenas texto. Bordas/backgrounds com as mesmas
+ * classes NÃO são afetadas (usam `border-white/40`,
+ * `bg-white/40` etc., que não casam com estes seletores).
+ *
+ * Escape hatch: adicione `data-allow-low-contrast` num
+ * ancestral para preservar o valor original (uso raro:
+ * placeholders puramente decorativos, watermark).
+ * ============================================================ */
+:where(:root):not([data-allow-low-contrast] *) .text-white\/30 {
+  color: rgb(255 255 255 / 0.62) !important;
+}
+:where(:root):not([data-allow-low-contrast] *) .text-white\/40 {
+  color: rgb(255 255 255 / 0.70) !important;
+}
+:where(:root):not([data-allow-low-contrast] *) .text-white\/50 {
+  color: rgb(255 255 255 / 0.78) !important;
+}
+
+/* Placeholders herdam a mesma correção (Tailwind gera
+ * `placeholder:text-white/40` como `::placeholder { color: ... }`). */
+.placeholder\:text-white\/30::placeholder { color: rgb(255 255 255 / 0.62) !important; }
+.placeholder\:text-white\/40::placeholder { color: rgb(255 255 255 / 0.70) !important; }
+.placeholder\:text-white\/50::placeholder { color: rgb(255 255 255 / 0.78) !important; }
