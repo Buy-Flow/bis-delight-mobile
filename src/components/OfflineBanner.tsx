@@ -6,26 +6,45 @@ import { cn } from "@/lib/utils";
 
 export function OfflineBanner() {
   const { settings } = usePwaSettings();
-  const [online, setOnline] = useState(
-    typeof navigator === "undefined" ? true : navigator.onLine,
-  );
+  const [online, setOnline] = useState(true);
   const [justRestored, setJustRestored] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Verify real connectivity — navigator.onLine can be a false negative
+    // (especially in iframes/previews). Only mark offline after a real fetch fails.
+    let cancelled = false;
+    const verify = async () => {
+      try {
+        await fetch("/favicon.ico?_ping=" + Date.now(), { cache: "no-store", method: "HEAD" });
+        if (!cancelled) setOnline(true);
+      } catch {
+        if (!cancelled && !navigator.onLine) setOnline(false);
+      }
+    };
+
+    setOnline(navigator.onLine);
+    if (!navigator.onLine) void verify();
+
     const onOnline = () => {
       setOnline(true);
       setJustRestored(true);
       window.setTimeout(() => setJustRestored(false), 2600);
     };
-    const onOffline = () => setOnline(false);
+    const onOffline = () => {
+      // Double-check before showing the banner
+      void verify();
+    };
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
     return () => {
+      cancelled = true;
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
     };
   }, []);
+
 
   if (!settings.offline_banner_enabled) return null;
   if (online && !justRestored) return null;
