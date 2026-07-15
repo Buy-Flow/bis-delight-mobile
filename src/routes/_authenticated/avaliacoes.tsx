@@ -194,12 +194,15 @@ function AvaliacoesPage() {
   }, [reviews, statusFilter, ratingFilter, query, sort]);
 
   const updateOne = async (id: string, patch: Partial<Review>) => {
+    // Optimistic update — não recarrega a página
+    setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any).from("reviews").update(patch).eq("id", id);
-    if (error) toast.error("Erro: " + error.message);
-    else {
-      toast.success("Atualizado!");
+    if (error) {
+      toast.error("Erro: " + error.message);
       load();
+    } else {
+      toast.success("Atualizado!");
     }
   };
 
@@ -215,7 +218,7 @@ function AvaliacoesPage() {
         n.delete(id);
         return n;
       });
-      load();
+      setReviews((prev) => prev.filter((r) => r.id !== id));
     }
   };
 
@@ -228,15 +231,17 @@ function AvaliacoesPage() {
       if (!(await confirmDialog({ message: `Apagar ${ids.length} avaliações? Ação irreversível.` }))) return;
       const { error } = await client.from("reviews").delete().in("id", ids);
       if (error) return toast.error(error.message);
+      setReviews((prev) => prev.filter((r) => !selected.has(r.id)));
     } else {
       const status = action === "publish" ? "published" : "hidden";
       const { error } = await client.from("reviews").update({ status }).in("id", ids);
       if (error) return toast.error(error.message);
+      setReviews((prev) => prev.map((r) => (selected.has(r.id) ? { ...r, status } : r)));
     }
     toast.success(`${ids.length} avaliações atualizadas.`);
     setSelected(new Set());
-    load();
   };
+
 
   const exportCSV = () => {
     const rows = [
