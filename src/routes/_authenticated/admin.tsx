@@ -1025,6 +1025,7 @@ function BigKpi({
   icon: Icon,
   accent,
   glow,
+  delta,
 }: {
   label: string;
   value: string;
@@ -1032,7 +1033,10 @@ function BigKpi({
   icon: React.ComponentType<{ className?: string }>;
   accent: string;
   glow?: string;
+  delta?: number;
 }) {
+  const showDelta = typeof delta === "number" && Number.isFinite(delta);
+  const positive = (delta ?? 0) >= 0;
   return (
     <div
       className={cn(
@@ -1050,6 +1054,20 @@ function BigKpi({
       >
         {value}
       </div>
+      {showDelta && (
+        <div
+          className={cn(
+            "mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black tabular-nums",
+            positive
+              ? "bg-emerald-500/15 text-emerald-300"
+              : "bg-red-500/15 text-red-300",
+          )}
+        >
+          {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+          {positive ? "+" : ""}
+          {(delta ?? 0).toFixed(1)}%
+        </div>
+      )}
       {sub && <div className="mt-2 text-[10px] uppercase tracking-widest text-white/50">{sub}</div>}
     </div>
   );
