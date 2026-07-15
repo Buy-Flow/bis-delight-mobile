@@ -476,7 +476,7 @@ function DashboardTab() {
       supabase
         .from("reviews")
         .select("id", { count: "exact", head: true })
-        .eq("published", false)
+        .eq("status", "pending")
         .then(({ count }) => {
           if (cancelled) return;
           setPendingReviewsCount(count ?? 0);
