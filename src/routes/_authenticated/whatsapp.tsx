@@ -762,27 +762,145 @@ function WhatsappPage() {
                   </div>
                 </div>
 
-                <div className="shrink-0 border-t border-white/10 bg-[#202c33] p-3">
-                  <form className="flex items-end gap-2" onSubmit={(event) => { event.preventDefault(); handleSend(); }}>
-                    <textarea
-                      value={text}
-                      onChange={(event) => setText(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                          event.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                      placeholder={connected ? "Digite uma mensagem" : "Conecte o WhatsApp para enviar"}
-                      rows={1}
-                      disabled={!connected || sending}
-                      className="max-h-32 min-h-11 flex-1 resize-none rounded-lg bg-[#2a3942] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 disabled:opacity-60"
-                    />
-                    <button type="submit" disabled={!connected || !text.trim() || sending} className="grid h-11 w-11 place-items-center rounded-full bg-emerald-500 text-[#06140f] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30" aria-label="Enviar mensagem">
-                      {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                    </button>
-                  </form>
+                <div className="relative shrink-0 border-t border-white/10 bg-[#202c33] p-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept={
+                      fileAcceptMode === "image"
+                        ? "image/*"
+                        : fileAcceptMode === "video"
+                          ? "video/*"
+                          : "*/*"
+                    }
+                    onChange={handleFilePicked}
+                  />
+
+                  {pendingMedia && (
+                    <div className="mb-3 flex items-center gap-3 rounded-lg bg-[#0b141a] p-3 ring-1 ring-white/10">
+                      <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-md bg-black/40">
+                        {pendingMedia.kind === "image" ? (
+                          <img src={pendingMedia.previewUrl} alt="preview" className="h-full w-full object-cover" />
+                        ) : pendingMedia.kind === "video" ? (
+                          <VideoIcon className="h-6 w-6 text-white/60" />
+                        ) : pendingMedia.kind === "audio" ? (
+                          <Mic className="h-6 w-6 text-emerald-300" />
+                        ) : (
+                          <FileText className="h-6 w-6 text-white/60" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-xs font-semibold text-white/80">
+                          {pendingMedia.filename ?? pendingMedia.kind}
+                        </div>
+                        <input
+                          value={caption}
+                          onChange={(event) => setCaption(event.target.value)}
+                          placeholder="Legenda (opcional)"
+                          className="mt-1 h-8 w-full rounded bg-[#202c33] px-2 text-xs text-white outline-none ring-1 ring-white/10 focus:ring-emerald-400/50"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setPendingMedia(null); setCaption(""); }}
+                        className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+                        aria-label="Remover"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSendPendingMedia}
+                        disabled={!connected || sending}
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-500 text-[#06140f] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30"
+                        aria-label="Enviar mídia"
+                      >
+                        {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                      </button>
+                    </div>
+                  )}
+
+                  {recording && (
+                    <div className="mb-3 flex items-center gap-3 rounded-lg bg-red-500/10 p-3 ring-1 ring-red-400/30">
+                      <span className="flex h-3 w-3 items-center justify-center">
+                        <span className="absolute inline-block h-3 w-3 animate-ping rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-block h-2.5 w-2.5 rounded-full bg-red-400" />
+                      </span>
+                      <div className="flex-1 text-sm font-semibold text-red-100">
+                        Gravando… {String(Math.floor(recordSecs / 60)).padStart(2, "0")}:{String(recordSecs % 60).padStart(2, "0")}
+                      </div>
+                      <button type="button" onClick={cancelRecording} className="rounded-full px-3 py-1 text-xs font-bold text-red-100 hover:bg-red-500/20">
+                        Cancelar
+                      </button>
+                      <button type="button" onClick={stopRecording} className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white hover:bg-red-400">
+                        <Square className="h-3.5 w-3.5" /> Parar
+                      </button>
+                    </div>
+                  )}
+
+                  {attachOpen && !pendingMedia && !recording && (
+                    <div className="absolute bottom-16 left-3 z-20 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111b21] shadow-2xl">
+                      <button type="button" onClick={() => pickFile("image")} className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:bg-white/5">
+                        <ImageIcon className="h-4 w-4 text-emerald-300" /> Foto
+                      </button>
+                      <button type="button" onClick={() => pickFile("video")} className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:bg-white/5">
+                        <VideoIcon className="h-4 w-4 text-sky-300" /> Vídeo
+                      </button>
+                      <button type="button" onClick={() => pickFile("document")} className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/85 hover:bg-white/5">
+                        <FileText className="h-4 w-4 text-violet-300" /> Documento
+                      </button>
+                    </div>
+                  )}
+
+                  {!pendingMedia && !recording && (
+                    <form className="flex items-end gap-2" onSubmit={(event) => { event.preventDefault(); handleSend(); }}>
+                      <button
+                        type="button"
+                        onClick={() => setAttachOpen((v) => !v)}
+                        disabled={!connected}
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white disabled:opacity-40"
+                        aria-label="Anexar"
+                      >
+                        <Paperclip className="h-5 w-5" />
+                      </button>
+                      <textarea
+                        value={text}
+                        onChange={(event) => setText(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" && !event.shiftKey) {
+                            event.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder={connected ? "Digite uma mensagem" : "Conecte o WhatsApp para enviar"}
+                        rows={1}
+                        disabled={!connected || sending}
+                        className="max-h-32 min-h-11 flex-1 resize-none rounded-lg bg-[#2a3942] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 disabled:opacity-60"
+                      />
+                      {text.trim() ? (
+                        <button type="submit" disabled={!connected || sending} className="grid h-11 w-11 place-items-center rounded-full bg-emerald-500 text-[#06140f] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30" aria-label="Enviar mensagem">
+                          {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                        </button>
+                      ) : (
+                        <button type="button" onClick={startRecording} disabled={!connected} className="grid h-11 w-11 place-items-center rounded-full bg-emerald-500 text-[#06140f] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30" aria-label="Gravar áudio">
+                          <Mic className="h-5 w-5" />
+                        </button>
+                      )}
+                    </form>
+                  )}
                 </div>
+              </>
+            ) : (
+              <div className="grid h-full place-items-center text-center">
+                <div className="max-w-sm px-6">
+                  <Smartphone className="mx-auto mb-4 h-16 w-16 text-white/20" />
+                  <h1 className="text-xl font-bold">Selecione uma conversa</h1>
+                  <p className="mt-2 text-sm text-white/45">As mensagens chegam em tempo real pelo webhook; use sincronizar apenas para buscar histórico do telefone.</p>
+                </div>
+              </div>
+            )}
+          </main>
               </>
             ) : (
               <div className="grid h-full place-items-center text-center">
