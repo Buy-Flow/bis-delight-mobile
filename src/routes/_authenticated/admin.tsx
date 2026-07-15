@@ -153,7 +153,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "dashboard" | "products" | "categories" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings" | "announcement" | "popup" | "coupons";
+type Tab = "dashboard" | "products" | "categories" | "seals" | "highlights" | "extras" | "news" | "notifications" | "promos" | "loyalty" | "settings" | "announcement" | "popup" | "coupons";
 
 function AdminPage() {
   const navigate = useNavigate();
