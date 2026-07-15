@@ -1004,7 +1004,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
                 </button>
                 <button
                   title="Editar"
-                  onClick={() => setEditing(p)}
+                  onClick={() => openEditor(p)}
                   className="grid h-9 w-9 md:h-10 md:w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   <Pencil className="h-4 w-4" />
