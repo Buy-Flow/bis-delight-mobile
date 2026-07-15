@@ -276,8 +276,6 @@ export function OrdersPanelPro() {
     query || status !== "todos" || mode !== "todos" || payment !== "todos" || period !== "all" || sortBy !== "recent";
 
   const reorder = (items: OrderItem[]) => {
-    // reorder logic delegated to cart context
-    const { add } = useCartRawAdd();
     items.forEach((it) => {
       const image = (it.product_id && productImageById.get(it.product_id)) || "";
       add({
