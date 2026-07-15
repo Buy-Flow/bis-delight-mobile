@@ -17,8 +17,10 @@ import { Route as FinalizarRouteImport } from './routes/finalizar'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as BaixarAppRouteImport } from './routes/baixar-app'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AsaasWebhookRouteImport } from './routes/asaas-webhook'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WebhooksAsaasRouteImport } from './routes/webhooks.asaas'
 import { Route as RastrearTokenRouteImport } from './routes/rastrear.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
@@ -26,6 +28,7 @@ import { Route as PagamentoOrderIdRouteImport } from './routes/pagamento.$orderI
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as BlogGelatoVsSorveteRouteImport } from './routes/blog.gelato-vs-sorvete'
 import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
+import { Route as ApiAsaasWebhookRouteImport } from './routes/api/asaas-webhook'
 import { Route as AuthenticatedWhatsappIaRouteImport } from './routes/_authenticated/whatsapp-ia'
 import { Route as AuthenticatedWhatsappDiagnosticoRouteImport } from './routes/_authenticated/whatsapp-diagnostico'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
@@ -123,6 +126,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AsaasWebhookRoute = AsaasWebhookRouteImport.update({
+  id: '/asaas-webhook',
+  path: '/asaas-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -130,6 +138,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebhooksAsaasRoute = WebhooksAsaasRouteImport.update({
+  id: '/webhooks/asaas',
+  path: '/webhooks/asaas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RastrearTokenRoute = RastrearTokenRouteImport.update({
@@ -165,6 +178,11 @@ const BlogGelatoVsSorveteRoute = BlogGelatoVsSorveteRouteImport.update({
 const ApiCopilotChatRoute = ApiCopilotChatRouteImport.update({
   id: '/api/copilot-chat',
   path: '/api/copilot-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAsaasWebhookRoute = ApiAsaasWebhookRouteImport.update({
+  id: '/api/asaas-webhook',
+  path: '/api/asaas-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWhatsappIaRoute = AuthenticatedWhatsappIaRouteImport.update({
@@ -469,6 +487,7 @@ const ApiPublicWebhookAsaasRoute = ApiPublicWebhookAsaasRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
@@ -522,6 +541,7 @@ export interface FileRoutesByFullPath {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
+  '/api/asaas-webhook': typeof ApiAsaasWebhookRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/blog/gelato-vs-sorvete': typeof BlogGelatoVsSorveteRoute
   '/c/$token': typeof CTokenRoute
@@ -529,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
+  '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
@@ -543,6 +564,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
@@ -596,6 +618,7 @@ export interface FileRoutesByTo {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
+  '/api/asaas-webhook': typeof ApiAsaasWebhookRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/blog/gelato-vs-sorvete': typeof BlogGelatoVsSorveteRoute
   '/c/$token': typeof CTokenRoute
@@ -603,6 +626,7 @@ export interface FileRoutesByTo {
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
+  '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
@@ -619,6 +643,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
@@ -672,6 +697,7 @@ export interface FileRoutesById {
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/_authenticated/whatsapp-diagnostico': typeof AuthenticatedWhatsappDiagnosticoRoute
   '/_authenticated/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
+  '/api/asaas-webhook': typeof ApiAsaasWebhookRoute
   '/api/copilot-chat': typeof ApiCopilotChatRoute
   '/blog/gelato-vs-sorvete': typeof BlogGelatoVsSorveteRoute
   '/c/$token': typeof CTokenRoute
@@ -679,6 +705,7 @@ export interface FileRoutesById {
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
+  '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
@@ -695,6 +722,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
@@ -748,6 +776,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/whatsapp-diagnostico'
     | '/whatsapp-ia'
+    | '/api/asaas-webhook'
     | '/api/copilot-chat'
     | '/blog/gelato-vs-sorvete'
     | '/c/$token'
@@ -755,6 +784,7 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
+    | '/webhooks/asaas'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/asaas'
@@ -769,6 +799,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
@@ -822,6 +853,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/whatsapp-diagnostico'
     | '/whatsapp-ia'
+    | '/api/asaas-webhook'
     | '/api/copilot-chat'
     | '/blog/gelato-vs-sorvete'
     | '/c/$token'
@@ -829,6 +861,7 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
+    | '/webhooks/asaas'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/asaas'
@@ -844,6 +877,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
@@ -897,6 +931,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whatsapp'
     | '/_authenticated/whatsapp-diagnostico'
     | '/_authenticated/whatsapp-ia'
+    | '/api/asaas-webhook'
     | '/api/copilot-chat'
     | '/blog/gelato-vs-sorvete'
     | '/c/$token'
@@ -904,6 +939,7 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
+    | '/webhooks/asaas'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
     | '/api/public/asaas'
@@ -920,6 +956,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AsaasWebhookRoute: typeof AsaasWebhookRoute
   AuthRoute: typeof AuthRoute
   BaixarAppRoute: typeof BaixarAppRoute
   CarrinhoRoute: typeof CarrinhoRoute
@@ -928,6 +965,7 @@ export interface RootRouteChildren {
   OfflineRoute: typeof OfflineRoute
   RecompensasRoute: typeof RecompensasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiAsaasWebhookRoute: typeof ApiAsaasWebhookRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
   BlogGelatoVsSorveteRoute: typeof BlogGelatoVsSorveteRoute
   CTokenRoute: typeof CTokenRoute
@@ -935,6 +973,7 @@ export interface RootRouteChildren {
   ProdutoIdRoute: typeof ProdutoIdRoute
   RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
+  WebhooksAsaasRoute: typeof WebhooksAsaasRoute
   ApiPublicAsaasRoute: typeof ApiPublicAsaasRoute
   ApiPublicAsaasCheckRoute: typeof ApiPublicAsaasCheckRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
@@ -1003,6 +1042,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/asaas-webhook': {
+      id: '/asaas-webhook'
+      path: '/asaas-webhook'
+      fullPath: '/asaas-webhook'
+      preLoaderRoute: typeof AsaasWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -1015,6 +1061,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/webhooks/asaas': {
+      id: '/webhooks/asaas'
+      path: '/webhooks/asaas'
+      fullPath: '/webhooks/asaas'
+      preLoaderRoute: typeof WebhooksAsaasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rastrear/$token': {
@@ -1064,6 +1117,13 @@ declare module '@tanstack/react-router' {
       path: '/api/copilot-chat'
       fullPath: '/api/copilot-chat'
       preLoaderRoute: typeof ApiCopilotChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/asaas-webhook': {
+      id: '/api/asaas-webhook'
+      path: '/api/asaas-webhook'
+      fullPath: '/api/asaas-webhook'
+      preLoaderRoute: typeof ApiAsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/whatsapp-ia': {
@@ -1581,6 +1641,7 @@ const ApiPublicWhatsappWebhookRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AsaasWebhookRoute: AsaasWebhookRoute,
   AuthRoute: AuthRoute,
   BaixarAppRoute: BaixarAppRoute,
   CarrinhoRoute: CarrinhoRoute,
@@ -1589,6 +1650,7 @@ const rootRouteChildren: RootRouteChildren = {
   OfflineRoute: OfflineRoute,
   RecompensasRoute: RecompensasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiAsaasWebhookRoute: ApiAsaasWebhookRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
   BlogGelatoVsSorveteRoute: BlogGelatoVsSorveteRoute,
   CTokenRoute: CTokenRoute,
@@ -1596,6 +1658,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutoIdRoute: ProdutoIdRoute,
   RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
+  WebhooksAsaasRoute: WebhooksAsaasRoute,
   ApiPublicAsaasRoute: ApiPublicAsaasRoute,
   ApiPublicAsaasCheckRoute: ApiPublicAsaasCheckRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
