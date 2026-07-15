@@ -255,21 +255,13 @@ function DeliveriesPage() {
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0d0322]/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/admin"
-              className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80 transition hover:bg-white/10"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white shadow-lg">
-                <Truck className="h-4 w-4" />
-              </span>
-              <div>
-                <h1 className="text-base font-black text-white">Entregas</h1>
-                <p className="text-[11px] text-white/50">Painel ao vivo · motoboys · mapa</p>
-              </div>
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white shadow-lg">
+              <Truck className="h-4 w-4" />
+            </span>
+            <div>
+              <h1 className="text-base font-black text-white">Entregas</h1>
+              <p className="text-[11px] text-white/50">Painel ao vivo · motoboys · mapa</p>
             </div>
           </div>
           <button
