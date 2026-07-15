@@ -107,6 +107,9 @@ export function AddressManager({ embedded = false }: { embedded?: boolean } = {}
                       </span>
                     )}
                   </div>
+                  {a.recipient_name && (
+                    <div className="mt-0.5 text-[11px] font-semibold text-neon-cyan/90">Para: {a.recipient_name}</div>
+                  )}
                   <div className="mt-0.5 text-[12px] leading-snug text-white/80">{a.address}</div>
                   {a.reference && (
                     <div className="mt-0.5 text-[11px] text-white/50">Ref: {a.reference}</div>
@@ -203,6 +206,7 @@ function AddressForm({
   initial?: UserAddress;
   onSubmit: (input: {
     label: string;
+    recipient_name?: string | null;
     address: string;
     reference?: string | null;
     lat?: number | null;
@@ -213,6 +217,7 @@ function AddressForm({
 }) {
   const parsed = parseAddress(initial?.address ?? "");
   const [label, setLabel] = useState(initial?.label ?? "Casa");
+  const [recipientName, setRecipientName] = useState(initial?.recipient_name ?? "");
   const [street, setStreet] = useState(parsed.street);
   const [number, setNumber] = useState(parsed.number);
   const [neighborhood, setNeighborhood] = useState(parsed.neighborhood);
@@ -261,6 +266,7 @@ function AddressForm({
       }
       await onSubmit({
         label: label.trim() || "Casa",
+        recipient_name: recipientName.trim() || null,
         address: fullAddress,
         reference: reference.trim() || null,
         lat: finalLat,
@@ -321,6 +327,14 @@ function AddressForm({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Rótulo (ex: Casa da mãe)"
+          className={inputCls}
+        />
+        <input
+          type="text"
+          value={recipientName}
+          onChange={(e) => setRecipientName(e.target.value)}
+          placeholder="Nome de quem recebe (ex: João Silva)"
+          autoComplete="name"
           className={inputCls}
         />
         <div className="grid grid-cols-[1fr_90px] gap-2">
