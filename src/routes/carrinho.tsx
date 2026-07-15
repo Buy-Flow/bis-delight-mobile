@@ -339,8 +339,9 @@ function CartPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (it.quantity <= 1) {
-                            remove(it.uid);
+                            handleRemove(it.uid, "qty-zero");
                           } else {
+                            haptic.tap();
                             update(it.uid, { quantity: it.quantity - 1 });
                           }
                         }}
@@ -363,6 +364,7 @@ function CartPage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          haptic.tap();
                           update(it.uid, { quantity: it.quantity + 1 });
                         }}
                         className="grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white glow-pink active:scale-95"
@@ -371,6 +373,7 @@ function CartPage() {
                       >
                         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
+
                     </div>
                   </div>
                 </div>
