@@ -146,9 +146,7 @@ const groups: NavGroup[] = [
     id: "marketing",
     label: "Marketing",
     items: [
-      { to: "/admin", tab: "announcement", label: "Anúncio", icon: Megaphone },
-      { to: "/admin", tab: "popup", label: "Pop-up", icon: Sparkles },
-      { to: "/admin", tab: "notifications", label: "Notificações", icon: BellRing },
+      { to: "/admin", tab: "announcement", label: "Comunicação", icon: Megaphone },
       { to: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
       { to: "/marketing-winback", label: "Reativação de clientes", icon: HeartHandshake },
     ],
