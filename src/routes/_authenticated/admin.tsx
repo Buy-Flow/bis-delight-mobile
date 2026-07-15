@@ -1200,6 +1200,7 @@ function ProductEditor({
     { id: "sizes", label: "Tamanhos & Sabores" },
     { id: "extras", label: "Complementos" },
     { id: "custom", label: "Personalizar" },
+    { id: "pause", label: "Pausar" },
     { id: "advanced", label: "Extras" },
   ];
 
