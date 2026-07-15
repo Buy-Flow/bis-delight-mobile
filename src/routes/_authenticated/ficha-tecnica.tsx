@@ -923,6 +923,40 @@ function FichaTecnicaPage() {
         </section>
       </div>
 
+      {/* Sticky mobile save bar */}
+      {selected && mobileView === "editor" && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-background/95 px-3 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">CMV · Margem</div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-black text-white">{BRL(totalCMV)}</span>
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                    margin >= 60
+                      ? "bg-emerald-500/15 text-emerald-300"
+                      : margin >= 40
+                        ? "bg-amber-500/15 text-amber-300"
+                        : "bg-rose-500/15 text-rose-300",
+                  )}
+                >
+                  {margin.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={save}
+              disabled={saving}
+              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-neon-pink to-fuchsia-500 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-neon-pink/30 hover:brightness-110 disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" /> {saving ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        </div>
+      )}
+
+
       {/* Copy dialog */}
       {copyOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
