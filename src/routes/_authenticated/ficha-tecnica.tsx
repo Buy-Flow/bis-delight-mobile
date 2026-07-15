@@ -459,7 +459,7 @@ function FichaTecnicaPage() {
       <div className="grid gap-4 p-3 md:p-6 lg:grid-cols-[320px_1fr]">
 
         {/* Product list */}
-        <aside className="rounded-2xl border border-white/10 bg-white/5">
+        <aside className={cn("rounded-2xl border border-white/10 bg-white/5", mobileView === "editor" ? "hidden lg:block" : "block")}>
           <div className="border-b border-white/10 p-3">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
