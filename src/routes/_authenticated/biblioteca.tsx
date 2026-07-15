@@ -1154,3 +1154,171 @@ export type { MediaItem };
 // keep ArrowDown icons imported for future sort UI
 void ArrowDownAZ;
 void ArrowUpDown;
+
+function PendingUploadDialog({
+  pending,
+  uploading,
+  progress,
+  onChange,
+  onCancel,
+  onConfirm,
+}: {
+  pending: PendingUpload[] | null;
+  uploading: boolean;
+  progress: { done: number; total: number } | null;
+  onChange: (next: PendingUpload[] | null) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const open = !!pending && pending.length > 0;
+  const applyAllCategory = (category: Category | "") => {
+    if (!pending) return;
+    onChange(pending.map((p) => ({ ...p, category })));
+  };
+  const applyAllTags = (tags: string) => {
+    if (!pending) return;
+    onChange(pending.map((p) => ({ ...p, tags })));
+  };
+  const update = (idx: number, patch: Partial<PendingUpload>) => {
+    if (!pending) return;
+    onChange(pending.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
+  };
+  const remove = (idx: number) => {
+    if (!pending) return;
+    const next = pending.filter((_, i) => i !== idx);
+    if (next.length === 0) {
+      onCancel();
+      return;
+    }
+    onChange(next);
+  };
+  const bulkCat = pending && pending.every((p) => p.category === pending[0].category)
+    ? pending[0].category
+    : "";
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && !uploading && onCancel()}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>
+            Enviar {pending?.length ?? 0} {pending?.length === 1 ? "mídia" : "mídias"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/10">
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-white/50">Aplicar categoria a todos</label>
+            <select
+              value={bulkCat}
+              onChange={(e) => applyAllCategory(e.target.value as Category | "")}
+              disabled={uploading}
+              className="mt-1 w-full rounded-lg bg-black/40 px-2 py-1.5 text-sm ring-1 ring-white/10"
+            >
+              <option value="">— manter individual —</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-white/50">Aplicar tags a todos (vírgula)</label>
+            <input
+              type="text"
+              placeholder="ex: promo, inverno, morango"
+              disabled={uploading}
+              onBlur={(e) => e.target.value && applyAllTags(e.target.value)}
+              className="mt-1 w-full rounded-lg bg-black/40 px-2 py-1.5 text-sm ring-1 ring-white/10 placeholder:text-white/30"
+            />
+          </div>
+        </div>
+
+        <div className="mt-3 flex-1 overflow-y-auto space-y-2 pr-1">
+          {pending?.map((p, idx) => (
+            <div key={idx} className="rounded-xl bg-white/[0.02] p-3 ring-1 ring-white/10">
+              <div className="flex gap-3">
+                <img src={p.previewUrl} alt="" className="h-20 w-20 rounded-lg object-cover ring-1 ring-white/10" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="text"
+                      value={p.name}
+                      disabled={uploading}
+                      onChange={(e) => update(idx, { name: e.target.value })}
+                      placeholder="Nome"
+                      className="flex-1 rounded-lg bg-black/40 px-2 py-1.5 text-sm ring-1 ring-white/10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => remove(idx)}
+                      disabled={uploading}
+                      className="rounded-lg bg-white/5 p-1.5 text-white/60 hover:bg-rose-500/20 hover:text-rose-200"
+                      aria-label="Remover"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <select
+                      value={p.category}
+                      disabled={uploading}
+                      onChange={(e) => update(idx, { category: e.target.value as Category | "" })}
+                      className="rounded-lg bg-black/40 px-2 py-1.5 text-xs ring-1 ring-white/10"
+                    >
+                      <option value="">Sem categoria</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={p.tags}
+                      disabled={uploading}
+                      onChange={(e) => update(idx, { tags: e.target.value })}
+                      placeholder="Tags (vírgula)"
+                      className="rounded-lg bg-black/40 px-2 py-1.5 text-xs ring-1 ring-white/10 placeholder:text-white/30"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={p.alt}
+                    disabled={uploading}
+                    onChange={(e) => update(idx, { alt: e.target.value })}
+                    placeholder="Descrição / texto alternativo (usado na busca)"
+                    className="w-full rounded-lg bg-black/40 px-2 py-1.5 text-xs ring-1 ring-white/10 placeholder:text-white/30"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-3">
+          <div className="text-xs text-white/50">
+            {uploading && progress
+              ? `Enviando ${progress.done}/${progress.total}...`
+              : "Preencha os dados para filtrar depois."}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={uploading}
+              className="rounded-lg bg-white/5 px-3 py-1.5 text-sm text-white/80 hover:bg-white/10 disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={uploading}
+              className="inline-flex items-center gap-2 rounded-lg bg-fuchsia-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-fuchsia-400 disabled:opacity-50"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Enviar {pending?.length ?? 0}
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
