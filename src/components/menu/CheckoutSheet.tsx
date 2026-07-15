@@ -57,6 +57,7 @@ function detectCardBrand(num: string): string | null {
 type Mode = "entrega" | "retirada";
 
 const STORAGE_KEY = "querobis:customer";
+const PAYMENT_REDIRECT_KEY = "querobis:payment_redirect_until";
 
 type SavedCustomer = {
   name?: string;
@@ -745,9 +746,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           } else {
             throw new Error(`Pagamento não aprovado (${st || "status desconhecido"}). Tente outro cartão ou PIX.`);
           }
+          try {
+            sessionStorage.setItem(PAYMENT_REDIRECT_KEY, String(Date.now() + 60_000));
+          } catch {}
+          await navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
           clear();
           closeCheckout();
-          navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
         } catch (payErr: any) {
           console.error("[checkout] card charge failed", payErr);
           const raw = payErr?.message || payErr?.error_description || (typeof payErr === "string" ? payErr : "");
@@ -774,8 +778,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               origin: window.location.origin,
             },
           });
-          clear();
-          closeCheckout();
+          try {
+            sessionStorage.setItem(PAYMENT_REDIRECT_KEY, String(Date.now() + 60_000));
+          } catch {}
           // Guarda o link para exibir fallback caso o navegador do usuário bloqueie asaas.com
           try {
             sessionStorage.setItem(`querobis:asaas_url:${order.id}`, res.url);
@@ -784,7 +789,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           try {
             window.open(res.url, "_blank", "noopener,noreferrer");
           } catch {}
-          navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: "asaas" } as never });
+          await navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: "asaas" } as never });
+          clear();
+          closeCheckout();
           return;
         } catch (chkErr: any) {
           console.error("[checkout] asaas checkout failed", chkErr);
@@ -808,9 +815,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         } catch (e) {
           logSilent("checkout:save-customer", e);
         }
+        try {
+          sessionStorage.setItem(PAYMENT_REDIRECT_KEY, String(Date.now() + 60_000));
+        } catch {}
+        await navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
         clear();
         closeCheckout();
-        navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: paymentMethod } as never });
       }
     } catch (err: any) {
       console.error("[checkout] send failed", err);

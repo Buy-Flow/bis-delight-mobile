@@ -25,6 +25,10 @@ function FinalizarPage() {
   // Timeouts fixos derrubavam o usuário em rede lenta antes do estado real chegar.
   useEffect(() => {
     if (!hydrated) return;
+    try {
+      const holdUntil = Number(sessionStorage.getItem("querobis:payment_redirect_until") || 0);
+      if (holdUntil > Date.now()) return;
+    } catch {}
     if (items.length === 0) navigate({ to: "/" });
   }, [hydrated, items.length, navigate]);
 
