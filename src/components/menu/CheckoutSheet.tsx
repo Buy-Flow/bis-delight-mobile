@@ -146,7 +146,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
 
   const [sending, setSending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("whatsapp");
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("pix");
+  const [cardBillingOpen, setCardBillingOpen] = useState(false);
   const [cpf, setCpf] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
