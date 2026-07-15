@@ -245,8 +245,36 @@ export const getAsaasPaymentStatus = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!order) return null;
     await assertOrderAccess(context.supabase, order.user_id, context.userId);
-    // Strip user_id from the response — callers only need payment status fields.
-    const { user_id: _uid, ...rest } = order;
+
+    // Live sync com o Asaas: se temos payment id e o pedido ainda não foi pago,
+    // consultamos direto na API e reconciliamos o status. Assim a confirmação
+    // funciona mesmo se o webhook estiver quebrado / com token divergente.
+    let synced = order;
+    if (order.asaas_payment_id && order.status !== "pago" && order.status !== "cancelado") {
+      try {
+        const { getPayment, mapAsaasStatusToOrder } = await import("@/lib/asaas.server");
+        const live = await getPayment(order.asaas_payment_id);
+        const { paid, canceled } = mapAsaasStatusToOrder(live.status);
+        const patch: Record<string, unknown> = { asaas_status: live.status };
+        if (paid && order.status !== "pago") {
+          patch.status = "pago";
+          patch.paid_at = new Date().toISOString();
+        } else if (canceled && order.status !== "cancelado") {
+          patch.status = "cancelado";
+        }
+        const { data: updated } = await supabaseAdmin
+          .from("orders")
+          .update(patch)
+          .eq("id", order.id)
+          .select("id, status, asaas_status, asaas_payment_id, payment_method, paid_at, user_id")
+          .maybeSingle();
+        if (updated) synced = updated;
+      } catch (err) {
+        console.error("[getAsaasPaymentStatus] live sync failed", err);
+      }
+    }
+
+    const { user_id: _uid, ...rest } = synced;
     return rest;
   });
 
