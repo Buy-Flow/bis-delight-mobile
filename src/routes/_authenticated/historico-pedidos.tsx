@@ -547,10 +547,6 @@ function Kpi({
   );
 }
 
-function TrendingUp(props: any) {
-  // Fallback tiny icon (avoid double import from lucide - already imported)
-  return <Star {...props} />;
-}
 
 function OrderCard({
   order: o,
