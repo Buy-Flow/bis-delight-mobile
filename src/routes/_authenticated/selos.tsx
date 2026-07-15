@@ -95,7 +95,11 @@ function SelosPage() {
   };
 
   return (
-    <AdminShell title="Selos de produto" subtitle="Crie, edite e organize os selos que aparecem nos cards do cardápio.">
+    <AdminShell>
+      <div className="mb-5">
+        <h1 className="font-display text-2xl font-black text-white sm:text-3xl">Selos de produto</h1>
+        <p className="mt-1 text-sm text-white/60">Crie, edite e organize os selos que aparecem nos cards do cardápio.</p>
+      </div>
       <div className="mb-4 flex items-center justify-between">
         <p className="text-sm text-white/70">
           {badges.length} {badges.length === 1 ? "selo" : "selos"} cadastrado{badges.length === 1 ? "" : "s"}
