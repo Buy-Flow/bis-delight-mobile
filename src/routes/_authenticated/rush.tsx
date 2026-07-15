@@ -659,11 +659,14 @@ function RushPage() {
           <button
             type="button"
             onClick={() => setSoundOn((v) => !v)}
-            className="grid h-8 w-8 place-items-center rounded-xl bg-white/5 text-white/80 hover:bg-white/10"
+            className={cn(
+              "grid h-8 w-8 place-items-center rounded-xl transition hover:bg-white/10",
+              soundOn ? "bg-neon-yellow/20 text-neon-yellow ring-1 ring-neon-yellow/40" : "bg-white/5 text-white/50",
+            )}
             aria-label={soundOn ? "Silenciar" : "Ativar som"}
-            title={soundOn ? "Som ligado" : "Som mudo"}
+            title={soundOn ? "Som ligado — clique para desligar" : "Som mudo — clique para ligar"}
           >
-            <Radio className={cn("h-4 w-4", soundOn ? "text-neon-yellow" : "text-white/40")} />
+            {soundOn ? <Radio className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </button>
         </div>
       </div>
