@@ -55,6 +55,16 @@ type MediaItem = {
   updated_at: string;
 };
 
+type PendingUpload = {
+  file: File;
+  previewUrl: string;
+  name: string;
+  category: Category | "";
+  tags: string;
+  alt: string;
+};
+
+
 const CATEGORIES = ["produto", "banner", "categoria", "popup", "logo", "outros"] as const;
 type Category = (typeof CATEGORIES)[number];
 
