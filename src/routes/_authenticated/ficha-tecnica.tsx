@@ -634,8 +634,8 @@ function FichaTecnicaPage() {
               </div>
 
 
-              {/* Recipe rows */}
-              <div className="overflow-x-auto">
+              {/* Recipe rows — Desktop table */}
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full text-sm">
                   <thead className="bg-black/30 text-[10px] uppercase tracking-widest text-white/50">
                     <tr>
@@ -735,6 +735,99 @@ function FichaTecnicaPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Recipe rows — Mobile cards */}
+              <div className="space-y-2 p-3 md:hidden">
+                {activeRows.length === 0 && (
+                  <div className="rounded-xl border border-dashed border-white/10 bg-black/20 p-6 text-center text-xs text-white/40">
+                    Nenhum insumo ainda.<br />Toque em <b className="text-white/70">Adicionar insumo</b> abaixo.
+                  </div>
+                )}
+                {rows.map((r, idx) => {
+                  if (r._deleted) return null;
+                  const ing = ingredientMap.get(r.ingredient_id);
+                  const cpu = Number(ing?.cost_per_unit ?? 0);
+                  const sub = r.qty * (1 + r.waste_pct / 100) * cpu;
+                  const stockOk = ing ? ing.stock >= r.qty : true;
+                  return (
+                    <div key={idx} className="rounded-xl border border-white/10 bg-black/30 p-3">
+                      <div className="flex items-start gap-2">
+                        <select
+                          value={r.ingredient_id}
+                          onChange={(e) => updateRow(idx, { ingredient_id: e.target.value })}
+                          className="min-w-0 flex-1 rounded-md border border-white/10 bg-black/40 px-2 py-2 text-sm font-semibold text-white outline-none focus:border-neon-pink/60"
+                        >
+                          {ingredients.map((i) => (
+                            <option key={i.id} value={i.id}>
+                              {i.name} ({i.unit})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => removeRow(idx)}
+                          aria-label="Remover insumo"
+                          className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-rose-500/30 bg-rose-500/10 text-rose-300"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <label className="block">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+                            Qtd ({ing?.unit ?? "—"})
+                          </span>
+                          <input
+                            type="number"
+                            step="0.001"
+                            min="0"
+                            inputMode="decimal"
+                            value={r.qty}
+                            onChange={(e) => updateRow(idx, { qty: Number(e.target.value) })}
+                            className="mt-1 w-full rounded-md border border-white/10 bg-black/40 px-2 py-2 text-sm text-white outline-none focus:border-neon-pink/60"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+                            Perda %
+                          </span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="100"
+                            inputMode="decimal"
+                            value={r.waste_pct}
+                            onChange={(e) => updateRow(idx, { waste_pct: Number(e.target.value) })}
+                            className="mt-1 w-full rounded-md border border-white/10 bg-black/40 px-2 py-2 text-sm text-white outline-none focus:border-neon-pink/60"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between rounded-md bg-white/5 px-2 py-1.5 text-[11px]">
+                        <span className={cn(cpu === 0 ? "text-rose-300" : "text-white/60")}>
+                          Custo un.: {cpu > 0 ? BRL(cpu) : "sem custo"}
+                        </span>
+                        <span className="font-black text-white">
+                          Subtotal: {BRL(sub)}
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={r.notes ?? ""}
+                        onChange={(e) => updateRow(idx, { notes: e.target.value || null })}
+                        placeholder="Notas (opcional)"
+                        className="mt-2 w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-neon-pink/60"
+                      />
+                      {!stockOk && (
+                        <div className="mt-2 flex items-center gap-1 text-[10px] text-rose-300">
+                          <AlertTriangle className="h-3 w-3" />
+                          Estoque insuficiente ({ing?.stock ?? 0} {ing?.unit})
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
 
               <div className="flex items-center justify-between border-t border-white/10 p-3">
                 <button
