@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Cake, Save, Gift, Users, CalendarDays, BellRing, Sparkles,
-  Search, Send, CheckCircle2, Clock,
+  Search, Send, CheckCircle2, Clock, ChevronDown, Eye, Ticket, CalendarClock, Smartphone,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { BirthdayBannerPreview, PushNotificationPreview } from "@/components/admin/BirthdayBannerPreview";
 
 
 export const Route = createFileRoute("/_authenticated/aniversariantes")({
@@ -100,6 +101,39 @@ function StatCard({ icon: Icon, label, value, tone }: { icon: typeof Cake; label
       </div>
       <div className="mt-1 text-3xl font-black text-white">{value}</div>
     </div>
+  );
+}
+
+function Section({
+  icon: Icon, title, subtitle, defaultOpen = false, right, children,
+}: {
+  icon: typeof Cake; title: string; subtitle?: string;
+  defaultOpen?: boolean; right?: React.ReactNode; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+      <div className="flex items-center gap-3 p-4">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-fuchsia-500/15 text-neon-pink">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-bold text-white">{title}</div>
+            {subtitle && <div className="truncate text-[11px] text-white/50">{subtitle}</div>}
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-white/50 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+        {right && <div className="shrink-0">{right}</div>}
+      </div>
+      {open && <div className="border-t border-white/10 p-4 md:p-5">{children}</div>}
+    </section>
   );
 }
 
@@ -217,20 +251,26 @@ function BirthdayAdmin() {
         </nav>
 
         {tab === "config" && (
-          <div className="space-y-4">
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">Programa</h2>
-                  <p className="text-xs text-white/60">Liga/desliga globalmente o brinde de aniversário.</p>
-                </div>
-                <Toggle checked={s.enabled} onChange={(v) => setS({ ...s, enabled: v })} />
-              </div>
-            </section>
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+            {/* Coluna de configurações em sanfona */}
+            <div className="min-w-0 space-y-3">
+              <Section
+                icon={Sparkles}
+                title="Programa"
+                subtitle={s.enabled ? "Ativo — clientes veem o banner no mês" : "Desligado — banner escondido"}
+                defaultOpen
+                right={<Toggle checked={s.enabled} onChange={(v) => setS({ ...s, enabled: v })} />}
+              >
+                <p className="text-xs text-white/60">
+                  Liga/desliga globalmente o brinde de aniversário no app e nos envios automáticos.
+                </p>
+              </Section>
 
-            <section className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 md:grid-cols-2">
-              <div>
-                <h2 className="mb-3 text-lg font-bold text-white">Cupom</h2>
+              <Section
+                icon={Ticket}
+                title="Cupom"
+                subtitle={`${s.discount_type === "percent" ? `${s.discount_value}%` : `R$ ${Number(s.discount_value).toFixed(0)}`} · mín R$ ${Number(s.min_order).toFixed(0)} · ${s.per_user_yearly}x/ano`}
+              >
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -246,39 +286,35 @@ function BirthdayAdmin() {
                     </div>
                     <div>
                       <Label className="text-xs text-white/70">Valor</Label>
-                      <Input
-                        type="number" min={0} step="0.01"
-                        value={s.discount_value}
-                        onChange={(e) => setS({ ...s, discount_value: Number(e.target.value) })}
-                      />
+                      <Input type="number" min={0} step="0.01" value={s.discount_value}
+                        onChange={(e) => setS({ ...s, discount_value: Number(e.target.value) })} />
                     </div>
                   </div>
                   <div>
                     <Label className="text-xs text-white/70">Pedido mínimo (R$)</Label>
-                    <Input
-                      type="number" min={0} step="0.01"
-                      value={s.min_order}
-                      onChange={(e) => setS({ ...s, min_order: Number(e.target.value) })}
-                    />
+                    <Input type="number" min={0} step="0.01" value={s.min_order}
+                      onChange={(e) => setS({ ...s, min_order: Number(e.target.value) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label className="text-xs text-white/70">Prefixo do código</Label>
-                      <Input value={s.coupon_prefix} onChange={(e) => setS({ ...s, coupon_prefix: e.target.value.toUpperCase().slice(0, 8) })} />
+                      <Input value={s.coupon_prefix}
+                        onChange={(e) => setS({ ...s, coupon_prefix: e.target.value.toUpperCase().slice(0, 8) })} />
                     </div>
                     <div>
                       <Label className="text-xs text-white/70">Usos por ano/cliente</Label>
-                      <Input
-                        type="number" min={1} max={5}
-                        value={s.per_user_yearly}
-                        onChange={(e) => setS({ ...s, per_user_yearly: Number(e.target.value) })}
-                      />
+                      <Input type="number" min={1} max={5} value={s.per_user_yearly}
+                        onChange={(e) => setS({ ...s, per_user_yearly: Number(e.target.value) })} />
                     </div>
                   </div>
                 </div>
-              </div>
-              <div>
-                <h2 className="mb-3 text-lg font-bold text-white">Validade</h2>
+              </Section>
+
+              <Section
+                icon={CalendarClock}
+                title="Validade"
+                subtitle={s.validity_mode === "month" ? "Até o fim do mês de aniversário" : `${s.validity_days} dias após resgate`}
+              >
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs text-white/70">Modo</Label>
@@ -294,74 +330,104 @@ function BirthdayAdmin() {
                   {s.validity_mode === "days_from_claim" && (
                     <div>
                       <Label className="text-xs text-white/70">Dias de validade</Label>
-                      <Input
-                        type="number" min={1} max={365}
-                        value={s.validity_days}
-                        onChange={(e) => setS({ ...s, validity_days: Number(e.target.value) })}
-                      />
+                      <Input type="number" min={1} max={365} value={s.validity_days}
+                        onChange={(e) => setS({ ...s, validity_days: Number(e.target.value) })} />
                     </div>
                   )}
                 </div>
-              </div>
-            </section>
+              </Section>
 
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-3 text-lg font-bold text-white">Banner no app</h2>
-              <div className="grid gap-3 md:grid-cols-4">
-                <div>
-                  <Label className="text-xs text-white/70">Emoji</Label>
-                  <Input value={s.banner_emoji} onChange={(e) => setS({ ...s, banner_emoji: e.target.value.slice(0, 4) })} />
+              <Section
+                icon={Eye}
+                title="Banner no app"
+                subtitle={s.banner_title || "Você ganhou um brinde!"}
+                defaultOpen
+              >
+                <div className="grid gap-3 md:grid-cols-4">
+                  <div>
+                    <Label className="text-xs text-white/70">Emoji</Label>
+                    <Input value={s.banner_emoji} onChange={(e) => setS({ ...s, banner_emoji: e.target.value.slice(0, 4) })} />
+                  </div>
+                  <div className="md:col-span-3">
+                    <Label className="text-xs text-white/70">Título</Label>
+                    <Input value={s.banner_title} onChange={(e) => setS({ ...s, banner_title: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-4">
+                    <Label className="text-xs text-white/70">Mensagem</Label>
+                    <Input value={s.banner_message} onChange={(e) => setS({ ...s, banner_message: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-4">
+                    <Label className="text-xs text-white/70">Texto do botão</Label>
+                    <Input value={s.banner_cta} onChange={(e) => setS({ ...s, banner_cta: e.target.value })} />
+                  </div>
                 </div>
-                <div className="md:col-span-3">
-                  <Label className="text-xs text-white/70">Título</Label>
-                  <Input value={s.banner_title} onChange={(e) => setS({ ...s, banner_title: e.target.value })} />
-                </div>
-                <div className="md:col-span-4">
-                  <Label className="text-xs text-white/70">Mensagem</Label>
-                  <Input value={s.banner_message} onChange={(e) => setS({ ...s, banner_message: e.target.value })} />
-                </div>
-                <div className="md:col-span-4">
-                  <Label className="text-xs text-white/70">Texto do botão</Label>
-                  <Input value={s.banner_cta} onChange={(e) => setS({ ...s, banner_cta: e.target.value })} />
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">Push automático</h2>
-                  <p className="text-xs text-white/60">Envio via cron diário para quem faz aniversário no dia.</p>
-                </div>
-                <Toggle checked={s.push_auto} onChange={(v) => setS({ ...s, push_auto: v })} />
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <Label className="text-xs text-white/70">Título</Label>
-                  <Input value={s.push_title} onChange={(e) => setS({ ...s, push_title: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-white/70">Dias de antecedência</Label>
-                  <Input
-                    type="number" min={0} max={7}
-                    value={s.notify_days_before}
-                    onChange={(e) => setS({ ...s, notify_days_before: Number(e.target.value) })}
+                {/* Preview mobile inline — sempre visível no mobile */}
+                <div className="mt-4 lg:hidden">
+                  <BirthdayBannerPreview
+                    emoji={s.banner_emoji}
+                    title={s.banner_title}
+                    message={s.banner_message}
+                    cta={s.banner_cta}
+                    discountType={s.discount_type}
+                    discountValue={s.discount_value}
+                    minOrder={s.min_order}
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <Label className="text-xs text-white/70">Mensagem</Label>
-                  <Input value={s.push_body} onChange={(e) => setS({ ...s, push_body: e.target.value })} />
-                </div>
-              </div>
-            </section>
+              </Section>
 
-            <div className="sticky bottom-4 flex justify-end">
-              <Button onClick={save} disabled={saving} className="bg-fuchsia-500 hover:bg-fuchsia-600">
-                <Save className="mr-2 h-4 w-4" /> {saving ? "Salvando…" : "Salvar configurações"}
-              </Button>
+              <Section
+                icon={Smartphone}
+                title="Push automático"
+                subtitle={s.push_auto ? `Envio automático · ${s.notify_days_before}d de antecedência` : "Envio manual"}
+                right={<Toggle checked={s.push_auto} onChange={(v) => setS({ ...s, push_auto: v })} />}
+              >
+                <p className="mb-3 text-xs text-white/60">Envio via cron diário para quem faz aniversário no dia.</p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <Label className="text-xs text-white/70">Título</Label>
+                    <Input value={s.push_title} onChange={(e) => setS({ ...s, push_title: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-white/70">Dias de antecedência</Label>
+                    <Input type="number" min={0} max={7} value={s.notify_days_before}
+                      onChange={(e) => setS({ ...s, notify_days_before: Number(e.target.value) })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-xs text-white/70">Mensagem</Label>
+                    <Input value={s.push_body} onChange={(e) => setS({ ...s, push_body: e.target.value })} />
+                  </div>
+                </div>
+                <div className="mt-4 lg:hidden">
+                  <PushNotificationPreview emoji={s.banner_emoji} title={s.push_title} body={s.push_body} />
+                </div>
+              </Section>
+
+              <div className="sticky bottom-4 flex justify-end">
+                <Button onClick={save} disabled={saving} className="bg-fuchsia-500 hover:bg-fuchsia-600">
+                  <Save className="mr-2 h-4 w-4" /> {saving ? "Salvando…" : "Salvar configurações"}
+                </Button>
+              </div>
             </div>
+
+            {/* Preview persistente no desktop */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-4 space-y-4">
+                <BirthdayBannerPreview
+                  emoji={s.banner_emoji}
+                  title={s.banner_title}
+                  message={s.banner_message}
+                  cta={s.banner_cta}
+                  discountType={s.discount_type}
+                  discountValue={s.discount_value}
+                  minOrder={s.min_order}
+                />
+                <PushNotificationPreview emoji={s.banner_emoji} title={s.push_title} body={s.push_body} />
+              </div>
+            </aside>
           </div>
         )}
+
+
 
         {tab === "stats" && stats && (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -376,17 +442,17 @@ function BirthdayAdmin() {
 
         {tab === "upcoming" && (
           <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-md border border-white/15 bg-white/5 px-3 py-2">
-                <Search className="h-4 w-4 text-white/40" />
+            <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
+              <div className="flex flex-1 items-center gap-2 rounded-md border border-white/15 bg-white/5 px-3 py-2 sm:flex-none">
+                <Search className="h-4 w-4 shrink-0 text-white/40" />
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Buscar por nome, email, telefone"
-                  className="w-64 bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
+                  placeholder="Buscar nome, email, telefone"
+                  className="w-full min-w-0 bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none sm:w-64"
                 />
               </div>
-              <select className={`${selectClass} w-auto`} value={range} onChange={(e) => setRange(Number(e.target.value))}>
+              <select className={`${selectClass} sm:w-auto`} value={range} onChange={(e) => setRange(Number(e.target.value))}>
                 <option value={7}>Próximos 7 dias</option>
                 <option value={15}>Próximos 15 dias</option>
                 <option value={30}>Próximos 30 dias</option>
@@ -395,7 +461,59 @@ function BirthdayAdmin() {
               </select>
               <span className="text-xs text-white/50">{filteredUpcoming.length} pessoas</span>
             </div>
-            <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+
+            {/* Cards no mobile */}
+            <div className="grid gap-2 md:hidden">
+              {filteredUpcoming.map((u) => (
+                <div key={u.user_id} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-white">{u.full_name || "—"}</div>
+                      <div className="truncate text-xs text-white/50">{u.email || u.phone || "—"}</div>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${u.days_until === 0 ? "bg-neon-pink/25 text-neon-pink" : u.days_until <= 7 ? "bg-amber-500/20 text-amber-200" : "bg-white/10 text-white/60"}`}>
+                      {u.days_until === 0 ? "Hoje 🎉" : `${u.days_until}d`}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/70">
+                    <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" />{new Date(u.birthday).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
+                    {u.gift_claimed
+                      ? <span className="font-mono text-neon-yellow">{u.gift_code}</span>
+                      : <span className="text-white/40">sem brinde</span>}
+                    {u.push_sent
+                      ? <span className="inline-flex items-center gap-1 text-emerald-300"><CheckCircle2 className="h-3 w-3" />Push</span>
+                      : <span className="inline-flex items-center gap-1 text-white/40"><Clock className="h-3 w-3" />sem push</span>}
+                  </div>
+                  <div className="mt-3">
+                    <Button
+                      size="sm" variant="outline" className="w-full"
+                      disabled={sendingGift === u.user_id || u.gift_claimed}
+                      onClick={() => sendManualGift(u.user_id)}
+                    >
+                      <Send className="mr-1 h-3 w-3" />
+                      {u.gift_claimed ? "Brinde enviado" : sendingGift === u.user_id ? "Enviando…" : "Enviar brinde"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {filteredUpcoming.length === 0 && (
+                <EmptyState
+                  icon={Cake}
+                  title={q ? "Nenhum resultado" : "Nenhum aniversariante"}
+                  description={q ? "Tente outro termo ou amplie a janela." : "Amplie o período ou aguarde novos cadastros."}
+                  action={
+                    q ? (
+                      <Button size="sm" variant="outline" onClick={() => setQ("")}>Limpar busca</Button>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => setRange(365)}>Ver o ano todo</Button>
+                    )
+                  }
+                />
+              )}
+            </div>
+
+            {/* Tabela no desktop */}
+            <div className="hidden overflow-x-auto rounded-2xl border border-white/10 bg-white/5 md:block">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wider text-white/50">
@@ -432,8 +550,7 @@ function BirthdayAdmin() {
                       </td>
                       <td className="px-3 py-2 text-right">
                         <Button
-                          size="sm"
-                          variant="outline"
+                          size="sm" variant="outline"
                           disabled={sendingGift === u.user_id || u.gift_claimed}
                           onClick={() => sendManualGift(u.user_id)}
                         >
@@ -445,30 +562,16 @@ function BirthdayAdmin() {
                   ))}
                   {filteredUpcoming.length === 0 && (
                     <EmptyState
-                      variant="table"
-                      colSpan={6}
-                      icon={Cake}
+                      variant="table" colSpan={6} icon={Cake}
                       title={q ? "Nenhum resultado para essa busca" : "Nenhum aniversariante nesse período"}
-                      description={
-                        q
-                          ? "Tente outro termo ou amplie a janela de datas."
-                          : "Amplie a janela de datas ou aguarde novos cadastros com data de nascimento."
-                      }
-                      action={
-                        q ? (
-                          <Button size="sm" variant="outline" onClick={() => setQ("")}>
-                            Limpar busca
-                          </Button>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => setRange(365)}>
-                            Ver o ano todo
-                          </Button>
-                        )
-                      }
+                      description={q ? "Tente outro termo ou amplie a janela de datas." : "Amplie a janela de datas ou aguarde novos cadastros."}
+                      action={q ? (
+                        <Button size="sm" variant="outline" onClick={() => setQ("")}>Limpar busca</Button>
+                      ) : (
+                        <Button size="sm" variant="outline" onClick={() => setRange(365)}>Ver o ano todo</Button>
+                      )}
                     />
                   )}
-
-
                 </tbody>
               </table>
             </div>
@@ -476,54 +579,80 @@ function BirthdayAdmin() {
         )}
 
         {tab === "history" && (
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wider text-white/50">
-                  <th className="px-3 py-2">Cliente</th>
-                  <th className="px-3 py-2">Cupom</th>
-                  <th className="px-3 py-2">Emitido</th>
-                  <th className="px-3 py-2">Expira</th>
-                  <th className="px-3 py-2">Usado</th>
-                  <th className="px-3 py-2">Origem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((h) => (
-                  <tr key={h.gift_id} className="border-b border-white/5 last:border-0">
-                    <td className="px-3 py-2">
-                      <div className="font-medium text-white">{h.full_name || "—"}</div>
-                      <div className="text-xs text-white/50">{h.email || "—"}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs text-neon-yellow">{h.coupon_code}</td>
-                    <td className="px-3 py-2 text-xs text-white/70">{new Date(h.created_at).toLocaleDateString("pt-BR")}</td>
-                    <td className="px-3 py-2 text-xs text-white/70">{h.coupon_expires_at ? new Date(h.coupon_expires_at).toLocaleDateString("pt-BR") : "—"}</td>
-                    <td className="px-3 py-2">
-                      {h.used_at
-                        ? <span className="inline-flex items-center gap-1 text-xs text-emerald-300"><CheckCircle2 className="h-3 w-3" />{new Date(h.used_at).toLocaleDateString("pt-BR")}</span>
-                        : <span className="text-xs text-white/40">—</span>}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-white/60">{h.granted_by_email ? `Manual (${h.granted_by_email})` : "Auto"}</td>
+          <div className="space-y-3">
+            {/* Cards no mobile */}
+            <div className="grid gap-2 md:hidden">
+              {history.map((h) => (
+                <div key={h.gift_id} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-white">{h.full_name || "—"}</div>
+                      <div className="truncate text-xs text-white/50">{h.email || "—"}</div>
+                    </div>
+                    <span className="shrink-0 font-mono text-xs text-neon-yellow">{h.coupon_code}</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/70">
+                    <span>Emitido {new Date(h.created_at).toLocaleDateString("pt-BR")}</span>
+                    {h.coupon_expires_at && <span>Expira {new Date(h.coupon_expires_at).toLocaleDateString("pt-BR")}</span>}
+                    {h.used_at
+                      ? <span className="inline-flex items-center gap-1 text-emerald-300"><CheckCircle2 className="h-3 w-3" />Usado {new Date(h.used_at).toLocaleDateString("pt-BR")}</span>
+                      : <span className="text-white/40">não usado</span>}
+                    <span className="text-white/60">{h.granted_by_email ? `Manual` : "Auto"}</span>
+                  </div>
+                </div>
+              ))}
+              {history.length === 0 && (
+                <EmptyState
+                  icon={Gift}
+                  title="Nenhum brinde emitido ainda"
+                  description="Quando um aniversariante ganhar cupom, ele aparece aqui."
+                  action={<Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>Ver próximos</Button>}
+                />
+              )}
+            </div>
+
+            {/* Tabela no desktop */}
+            <div className="hidden overflow-x-auto rounded-2xl border border-white/10 bg-white/5 md:block">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wider text-white/50">
+                    <th className="px-3 py-2">Cliente</th>
+                    <th className="px-3 py-2">Cupom</th>
+                    <th className="px-3 py-2">Emitido</th>
+                    <th className="px-3 py-2">Expira</th>
+                    <th className="px-3 py-2">Usado</th>
+                    <th className="px-3 py-2">Origem</th>
                   </tr>
-                ))}
-                {history.length === 0 && (
-                  <EmptyState
-                    variant="table"
-                    colSpan={6}
-                    icon={Gift}
-                    title="Nenhum brinde emitido ainda"
-                    description="Assim que um aniversariante ganhar cupom, o histórico aparece aqui — com código, validade e uso."
-                    action={
-                      <Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>
-                        Ver próximos aniversariantes
-                      </Button>
-                    }
-                  />
-                )}
-
-
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {history.map((h) => (
+                    <tr key={h.gift_id} className="border-b border-white/5 last:border-0">
+                      <td className="px-3 py-2">
+                        <div className="font-medium text-white">{h.full_name || "—"}</div>
+                        <div className="text-xs text-white/50">{h.email || "—"}</div>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-neon-yellow">{h.coupon_code}</td>
+                      <td className="px-3 py-2 text-xs text-white/70">{new Date(h.created_at).toLocaleDateString("pt-BR")}</td>
+                      <td className="px-3 py-2 text-xs text-white/70">{h.coupon_expires_at ? new Date(h.coupon_expires_at).toLocaleDateString("pt-BR") : "—"}</td>
+                      <td className="px-3 py-2">
+                        {h.used_at
+                          ? <span className="inline-flex items-center gap-1 text-xs text-emerald-300"><CheckCircle2 className="h-3 w-3" />{new Date(h.used_at).toLocaleDateString("pt-BR")}</span>
+                          : <span className="text-xs text-white/40">—</span>}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-white/60">{h.granted_by_email ? `Manual (${h.granted_by_email})` : "Auto"}</td>
+                    </tr>
+                  ))}
+                  {history.length === 0 && (
+                    <EmptyState
+                      variant="table" colSpan={6} icon={Gift}
+                      title="Nenhum brinde emitido ainda"
+                      description="Assim que um aniversariante ganhar cupom, o histórico aparece aqui."
+                      action={<Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>Ver próximos</Button>}
+                    />
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
