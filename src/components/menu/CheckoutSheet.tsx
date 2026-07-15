@@ -557,6 +557,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
       fail(STORE_COPY.closedShort(storeStatus));
       return;
     }
+    if (belowMinInvoice) {
+      fail(
+        `Pedido mínimo online de ${brl(MIN_INVOICE_BRL)}. Para valores menores, dirija-se presencialmente à loja para concluir a compra.`,
+      );
+      return;
+    }
     if (authLoading) {
       fail("Ainda estamos carregando sua conta. Tente novamente em alguns segundos.");
       return;
