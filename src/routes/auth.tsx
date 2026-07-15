@@ -528,7 +528,6 @@ function AuthPage() {
       </div>
     </div>
   );
-  );
 }
 
 function TabButton({
