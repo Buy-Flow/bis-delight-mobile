@@ -1097,20 +1097,109 @@ function TableDialog({
   const [items, setItems] = useState<OrderItem[]>([]);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showReserve, setShowReserve] = useState(false);
+  const [showAddItem, setShowAddItem] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [productResults, setProductResults] = useState<
+    Array<{ id: string; name: string; base_price: number | null; image_url: string | null }>
+  >([]);
+  const [adding, setAdding] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+
+  const refreshItems = useCallback(async (orderId: string) => {
+    const { data } = await supabase
+      .from("order_items")
+      .select("id,name,quantity,unit_price,note")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: true });
+    if (data)
+      setItems(
+        data.map((it: any) => ({
+          ...it,
+          total_price: (it.quantity || 0) * Number(it.unit_price || 0),
+        })) as OrderItem[],
+      );
+  }, []);
 
   useEffect(() => {
     if (!order) {
       setItems([]);
       return;
     }
-    (async () => {
-      const { data } = await supabase
-        .from("order_items")
-        .select("id,name,quantity,unit_price,note")
-        .eq("order_id", order.id);
-      if (data) setItems((data || []).map((it:any)=>({...it, total_price: (it.quantity||0)*Number(it.unit_price||0)})) as OrderItem[]);
-    })();
-  }, [order]);
+    void refreshItems(order.id);
+    // realtime — items sync live for anyone with the mesa open
+    const suffix = Math.random().toString(36).slice(2, 8);
+    const ch = supabase
+      .channel(`mesa-items-${order.id}-${suffix}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "order_items", filter: `order_id=eq.${order.id}` },
+        () => void refreshItems(order.id),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [order, refreshItems]);
+
+  // Product search (debounced) for the "add item" panel
+  useEffect(() => {
+    if (!showAddItem) return;
+    const t = setTimeout(async () => {
+      let q = supabase
+        .from("products")
+        .select("id,name,base_price,image_url")
+        .eq("active", true)
+        .order("name")
+        .limit(12);
+      if (productSearch.trim()) q = q.ilike("name", `%${productSearch.trim()}%`);
+      const { data } = await q;
+      if (data) setProductResults(data as any);
+    }, 180);
+    return () => clearTimeout(t);
+  }, [productSearch, showAddItem]);
+
+  async function addItem(p: { id: string; name: string; base_price: number | null }) {
+    if (!order) return;
+    setAdding(p.id);
+    const { error } = await supabase.from("order_items").insert({
+      order_id: order.id,
+      product_id: p.id,
+      name: p.name,
+      quantity: 1,
+      unit_price: Number(p.base_price || 0),
+    });
+    setAdding(null);
+    if (error) toast.error("Falha ao adicionar: " + error.message);
+    else {
+      toast.success(`+ ${p.name}`);
+      onReload();
+    }
+  }
+
+  async function changeQty(itemId: string, delta: number) {
+    const it = items.find((i) => i.id === itemId);
+    if (!it) return;
+    const nextQty = it.quantity + delta;
+    if (nextQty <= 0) {
+      await removeItem(itemId);
+      return;
+    }
+    const { error } = await supabase.from("order_items").update({ quantity: nextQty }).eq("id", itemId);
+    if (error) toast.error(error.message);
+    else onReload();
+  }
+
+  async function removeItem(itemId: string) {
+    setRemoving(itemId);
+    const { error } = await supabase.from("order_items").delete().eq("id", itemId);
+    setRemoving(null);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Item removido");
+      onReload();
+    }
+  }
+
 
   async function closeAndPay() {
     if (!order) return;
@@ -1287,7 +1376,7 @@ function TableDialog({
               {/* Comanda summary */}
               <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-[12px] font-black uppercase text-white/70">Comanda</h4>
+                  <h4 className="text-[12px] font-black uppercase text-white/70">Comanda · {items.length} {items.length === 1 ? "item" : "itens"}</h4>
                   <Link
                     to="/rush"
                     className="text-[11px] font-bold text-neon-cyan hover:underline"
@@ -1297,20 +1386,98 @@ function TableDialog({
                 </div>
                 <div className="mt-2 space-y-1 text-[12px]">
                   {items.length === 0 && (
-                    <p className="py-2 text-center text-white/50">Nenhum item ainda.</p>
+                    <p className="py-2 text-center text-white/50">Nenhum item ainda — use "Adicionar item" abaixo.</p>
                   )}
                   {items.map((it) => (
-                    <div key={it.id} className="flex items-start justify-between gap-2">
+                    <div key={it.id} className="group flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-white/5">
+                      <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/30 px-1 py-0.5">
+                        <button
+                          onClick={() => void changeQty(it.id, -1)}
+                          className="grid h-5 w-5 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                          title="Diminuir"
+                        >−</button>
+                        <span className="min-w-[16px] text-center text-[11px] font-black text-white">{it.quantity}</span>
+                        <button
+                          onClick={() => void changeQty(it.id, +1)}
+                          className="grid h-5 w-5 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+                          title="Aumentar"
+                        >+</button>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-white">
-                          <span className="text-white/50">{it.quantity}×</span> {it.name}
-                        </div>
-                        {it.note && <div className="text-[10px] text-white/50">{it.note}</div>}
+                        <div className="truncate font-semibold text-white">{it.name}</div>
+                        {it.note && <div className="truncate text-[10px] text-white/50">{it.note}</div>}
                       </div>
                       <div className="font-black text-white">{BRL(it.total_price)}</div>
+                      <button
+                        onClick={() => void removeItem(it.id)}
+                        disabled={removing === it.id}
+                        className="grid h-6 w-6 place-items-center rounded-full text-rose-300/70 opacity-0 transition hover:bg-rose-500/20 hover:text-rose-200 group-hover:opacity-100 disabled:opacity-40"
+                        title="Remover"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   ))}
                 </div>
+
+                {/* Add item panel */}
+                <div className="mt-2 border-t border-white/10 pt-2">
+                  {!showAddItem ? (
+                    <button
+                      onClick={() => setShowAddItem(true)}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-500/40 bg-fuchsia-500/10 py-2 text-[12px] font-black uppercase tracking-wider text-fuchsia-100 hover:bg-fuchsia-500/20"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Adicionar item à comanda
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+                        <input
+                          autoFocus
+                          value={productSearch}
+                          onChange={(e) => setProductSearch(e.target.value)}
+                          placeholder="Buscar produto…"
+                          className="w-full rounded-lg border border-white/10 bg-white/5 py-1.5 pl-7 pr-2 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
+                        />
+                      </div>
+                      <div className="max-h-52 space-y-1 overflow-y-auto">
+                        {productResults.length === 0 && (
+                          <p className="py-2 text-center text-[11px] text-white/40">Nenhum produto encontrado.</p>
+                        )}
+                        {productResults.map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => void addItem(p)}
+                            disabled={adding === p.id}
+                            className="flex w-full items-center gap-2 rounded-lg border border-white/5 bg-white/[0.03] px-2 py-1.5 text-left transition hover:border-fuchsia-500/40 hover:bg-fuchsia-500/10 disabled:opacity-40"
+                          >
+                            {p.image_url ? (
+                              <img src={p.image_url} alt="" className="h-8 w-8 shrink-0 rounded-md object-cover" />
+                            ) : (
+                              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-white/5 text-white/40">
+                                <Utensils className="h-3.5 w-3.5" />
+                              </div>
+                            )}
+                            <span className="flex-1 truncate text-[12px] font-semibold text-white">{p.name}</span>
+                            <span className="text-[11px] font-black text-fuchsia-200">{BRL(Number(p.base_price || 0))}</span>
+                            <Plus className="h-3.5 w-3.5 text-fuchsia-300" />
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowAddItem(false);
+                          setProductSearch("");
+                        }}
+                        className="w-full rounded-lg border border-white/10 bg-white/5 py-1 text-[11px] font-bold text-white/60 hover:bg-white/10"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="mt-3 space-y-1 border-t border-white/10 pt-2 text-[12px]">
                   <div className="flex justify-between text-white/70">
                     <span>Subtotal</span>
@@ -1339,6 +1506,7 @@ function TableDialog({
                   )}
                 </div>
               </div>
+
 
               {/* Assistance flag */}
               <button
