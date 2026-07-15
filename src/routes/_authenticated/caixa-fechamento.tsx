@@ -72,12 +72,12 @@ function CashClosePage() {
         <header className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-gradient-to-br from-purple-600 to-fuchsia-600 p-3 text-white shadow-lg">
+              <div className="rounded-2xl bg-gradient-to-br from-primary to-accent p-3 text-primary-foreground shadow-lg">
                 <FileDown className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">Fechamento de Caixa</h1>
-                <p className="text-sm text-slate-500">
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Fechamento de Caixa</h1>
+                <p className="text-sm text-muted-foreground">
                   Relatório automático diário via WhatsApp — vendas, PIX vs. dinheiro, sangrias e mais.
                 </p>
               </div>
@@ -85,15 +85,15 @@ function CashClosePage() {
           </div>
         </header>
 
-        <div className="flex gap-2 border-b border-slate-200">
+        <div className="flex gap-2 border-b border-border">
           {(["gerar", "historico", "config"] as const).map((k) => (
             <button
               key={k}
               onClick={() => setTab(k)}
               className={`px-4 py-2 text-sm font-medium transition ${
                 tab === k
-                  ? "border-b-2 border-purple-600 text-purple-700"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {k === "gerar" ? "Gerar Relatório" : k === "historico" ? "Histórico" : "Configurações"}
