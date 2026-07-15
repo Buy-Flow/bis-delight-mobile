@@ -44,6 +44,7 @@ import { Route as AuthenticatedProvaEntregaRouteImport } from './routes/_authent
 import { Route as AuthenticatedPrevisaoRouteImport } from './routes/_authenticated/previsao'
 import { Route as AuthenticatedPrecificacaoRouteImport } from './routes/_authenticated/precificacao'
 import { Route as AuthenticatedPrePreparoRouteImport } from './routes/_authenticated/pre-preparo'
+import { Route as AuthenticatedPersonalizarPainelRouteImport } from './routes/_authenticated/personalizar-painel'
 import { Route as AuthenticatedPdvRouteImport } from './routes/_authenticated/pdv'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedModelosRouteImport } from './routes/_authenticated/modelos'
@@ -267,6 +268,12 @@ const AuthenticatedPrePreparoRoute = AuthenticatedPrePreparoRouteImport.update({
   path: '/pre-preparo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPersonalizarPainelRoute =
+  AuthenticatedPersonalizarPainelRouteImport.update({
+    id: '/personalizar-painel',
+    path: '/personalizar-painel',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPdvRoute = AuthenticatedPdvRouteImport.update({
   id: '/pdv',
   path: '/pdv',
@@ -540,6 +547,7 @@ export interface FileRoutesByFullPath {
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/personalizar-painel': typeof AuthenticatedPersonalizarPainelRoute
   '/pre-preparo': typeof AuthenticatedPrePreparoRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
@@ -619,6 +627,7 @@ export interface FileRoutesByTo {
   '/modelos': typeof AuthenticatedModelosRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pdv': typeof AuthenticatedPdvRoute
+  '/personalizar-painel': typeof AuthenticatedPersonalizarPainelRoute
   '/pre-preparo': typeof AuthenticatedPrePreparoRoute
   '/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/previsao': typeof AuthenticatedPrevisaoRoute
@@ -700,6 +709,7 @@ export interface FileRoutesById {
   '/_authenticated/modelos': typeof AuthenticatedModelosRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pdv': typeof AuthenticatedPdvRoute
+  '/_authenticated/personalizar-painel': typeof AuthenticatedPersonalizarPainelRoute
   '/_authenticated/pre-preparo': typeof AuthenticatedPrePreparoRoute
   '/_authenticated/precificacao': typeof AuthenticatedPrecificacaoRoute
   '/_authenticated/previsao': typeof AuthenticatedPrevisaoRoute
@@ -781,6 +791,7 @@ export interface FileRouteTypes {
     | '/modelos'
     | '/notificacoes'
     | '/pdv'
+    | '/personalizar-painel'
     | '/pre-preparo'
     | '/precificacao'
     | '/previsao'
@@ -860,6 +871,7 @@ export interface FileRouteTypes {
     | '/modelos'
     | '/notificacoes'
     | '/pdv'
+    | '/personalizar-painel'
     | '/pre-preparo'
     | '/precificacao'
     | '/previsao'
@@ -940,6 +952,7 @@ export interface FileRouteTypes {
     | '/_authenticated/modelos'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pdv'
+    | '/_authenticated/personalizar-painel'
     | '/_authenticated/pre-preparo'
     | '/_authenticated/precificacao'
     | '/_authenticated/previsao'
@@ -1255,6 +1268,13 @@ declare module '@tanstack/react-router' {
       path: '/pre-preparo'
       fullPath: '/pre-preparo'
       preLoaderRoute: typeof AuthenticatedPrePreparoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/personalizar-painel': {
+      id: '/_authenticated/personalizar-painel'
+      path: '/personalizar-painel'
+      fullPath: '/personalizar-painel'
+      preLoaderRoute: typeof AuthenticatedPersonalizarPainelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pdv': {
@@ -1593,6 +1613,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedModelosRoute: typeof AuthenticatedModelosRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPdvRoute: typeof AuthenticatedPdvRoute
+  AuthenticatedPersonalizarPainelRoute: typeof AuthenticatedPersonalizarPainelRoute
   AuthenticatedPrePreparoRoute: typeof AuthenticatedPrePreparoRoute
   AuthenticatedPrecificacaoRoute: typeof AuthenticatedPrecificacaoRoute
   AuthenticatedPrevisaoRoute: typeof AuthenticatedPrevisaoRoute
@@ -1644,6 +1665,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedModelosRoute: AuthenticatedModelosRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPdvRoute: AuthenticatedPdvRoute,
+  AuthenticatedPersonalizarPainelRoute: AuthenticatedPersonalizarPainelRoute,
   AuthenticatedPrePreparoRoute: AuthenticatedPrePreparoRoute,
   AuthenticatedPrecificacaoRoute: AuthenticatedPrecificacaoRoute,
   AuthenticatedPrevisaoRoute: AuthenticatedPrevisaoRoute,
