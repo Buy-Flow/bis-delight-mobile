@@ -200,10 +200,15 @@ export function LoyaltyTiersTab() {
     [next[idx], next[j]] = [next[j], next[idx]];
     const reindexed = next.map((r, i) => ({ ...r, sort_order: i + 1 }));
     setRows(reindexed);
-    const { error } = await supabase.from("loyalty_tiers").upsert(
-      reindexed.map((r) => ({ tier: r.tier, sort_order: r.sort_order })),
-      { onConflict: "tier" },
+    const results = await Promise.all(
+      reindexed.map((r) =>
+        supabase
+          .from("loyalty_tiers")
+          .update({ sort_order: r.sort_order })
+          .eq("tier", r.tier),
+      ),
     );
+    const error = results.find((r) => r.error)?.error;
     if (error) toast.error("Erro ao reordenar", { description: error.message });
   }
 
