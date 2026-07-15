@@ -1435,15 +1435,68 @@ function ProductEditor({
               </div>
 
               <div>
-                <div className="mb-2 text-sm font-bold">Sabores disponíveis</div>
-                <ChipInput
-                  values={p.flavors ?? []}
-                  onChange={(v) => setField("flavors", v)}
-                  placeholder="Ex.: Morango, Chocolate, Baunilha..."
-                />
-                <div className="mt-1 text-[11px] text-white/40">
-                  Deixe vazio se o produto não tem escolha de sabor.
+                <div className="mb-2 flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-bold">Sabores disponíveis</div>
+                    <div className="text-[11px] text-white/50">
+                      Opcional: acréscimo em R$ ao escolher esse sabor.
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      setField("flavors", [...(p.flavors ?? []), "Novo sabor"])
+                    }
+                    className="inline-flex items-center gap-1 rounded-full bg-neon-cyan/20 px-3 py-1.5 text-xs font-bold text-neon-cyan hover:bg-neon-cyan/30"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Adicionar
+                  </button>
                 </div>
+                {(() => {
+                  const parse = (s: string): { name: string; delta: number } => {
+                    const m = s.match(/^(.*?)\s*\+R\$\s*([\d.,]+)\s*$/);
+                    if (m) return { name: m[1].trim(), delta: Number(m[2].replace(",", ".")) || 0 };
+                    return { name: s, delta: 0 };
+                  };
+                  const encode = (name: string, delta: number) => {
+                    const clean = name.trim();
+                    if (!delta || delta <= 0) return clean;
+                    return `${clean} +R$ ${delta.toFixed(2).replace(".", ",")}`;
+                  };
+                  const rows = (p.flavors ?? []).map(parse);
+                  return (
+                    <RowList
+                      items={rows}
+                      onChange={(v) =>
+                        setField(
+                          "flavors",
+                          v.map((r) => encode(r.name, r.delta)),
+                        )
+                      }
+                      render={(row, upd) => (
+                        <>
+                          <input
+                            className={cn(inputCls, "flex-1")}
+                            placeholder="Ex.: Morango"
+                            value={row.name}
+                            onChange={(e) => upd({ ...row, name: e.target.value })}
+                          />
+                          <div className="flex items-center gap-1">
+                            <span className="text-[11px] text-white/50">+R$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min={0}
+                              className={cn(inputCls, "w-20")}
+                              value={row.delta}
+                              onChange={(e) => upd({ ...row, delta: Number(e.target.value) })}
+                            />
+                          </div>
+                        </>
+                      )}
+                      emptyLabel="Nenhum sabor — o produto não terá escolha de sabor."
+                    />
+                  );
+                })()}
               </div>
             </div>
           )}
