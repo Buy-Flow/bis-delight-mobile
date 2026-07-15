@@ -102,6 +102,8 @@ function BibliotecaPage() {
   const [activeItem, setActiveItem] = useState<MediaItem | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [pending, setPending] = useState<PendingUpload[] | null>(null);
+
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
