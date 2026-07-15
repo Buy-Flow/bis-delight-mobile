@@ -86,6 +86,9 @@ function FichaTecnicaPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [copyOpen, setCopyOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "editor">("list");
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
+
 
   const load = async () => {
     setLoading(true);
