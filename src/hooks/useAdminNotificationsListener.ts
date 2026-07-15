@@ -51,7 +51,7 @@ export function useAdminNotificationsListener() {
         (payload) => {
           const row = payload.new as OrderRow;
           if (!row?.id) return;
-          if (row.status !== "pago" && isOnlinePayment(row.payment_method)) return;
+          if (row.status !== "pago" && !isOfflinePayment(row.payment_method)) return;
           pushAdminNotif({
             kind: row.status === "pago" ? "order_paid" : "order_new",
             refId: `${row.status === "pago" ? "order_paid" : "order_new"}:${row.id}`,
