@@ -1,16 +1,17 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { brl } from "@/lib/cart-context";
-import { createAsaasPixForOrder, createAsaasCardForOrder, getAsaasPaymentStatus } from "@/lib/asaas.functions";
+import { createAsaasPixForOrder, createAsaasCardForOrder } from "@/lib/asaas.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
-import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock } from "lucide-react";
+import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatSP } from "@/lib/tz";
+import { detectCardBrand } from "@/lib/card-brand";
 
 const searchSchema = z.object({
   m: z.enum(["pix", "cartao"]).catch("pix"),
@@ -120,8 +121,17 @@ function PagamentoPage() {
         </button>
 
         <div className="mb-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-white/50">Pedido</div>
-          <div className="mt-0.5 font-mono text-sm text-white/80">#{orderId.slice(0, 8)}</div>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-white/50">Pedido</div>
+              <div className="mt-0.5 font-mono text-sm text-white/80">#{orderId.slice(0, 8)}</div>
+            </div>
+            {order && !paid && (
+              <span className="rounded-full bg-neon-yellow/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-neon-yellow ring-1 ring-neon-yellow/40">
+                Aguardando pagamento
+              </span>
+            )}
+          </div>
           <div className="mt-2 flex items-end justify-between">
             <span className="text-white/70">Total</span>
             <span className="font-display text-3xl font-extrabold text-neon-yellow">
@@ -129,6 +139,25 @@ function PagamentoPage() {
             </span>
           </div>
         </div>
+
+        {order && !paid && !loading && (
+          <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
+            <MethodTab
+              active={m === "pix"}
+              onClick={() => navigate({ to: "/pagamento/$orderId", params: { orderId }, search: { m: "pix" } })}
+              icon={QrCode}
+              label="PIX"
+              hint="QR na hora"
+            />
+            <MethodTab
+              active={m === "cartao"}
+              onClick={() => navigate({ to: "/pagamento/$orderId", params: { orderId }, search: { m: "cartao" } })}
+              icon={CreditCard}
+              label="Cartão"
+              hint={`Até 12x`}
+            />
+          </div>
+        )}
 
         {loading || authLoading ? (
           <div className="flex justify-center py-10">
@@ -145,8 +174,44 @@ function PagamentoPage() {
         ) : (
           <CardSection order={order} setOrder={setOrder} user={user} />
         )}
+
+        <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
+          <ShieldCheck className="h-3 w-3 text-emerald-400" />
+          Pagamento criptografado · Processado por Asaas
+        </div>
       </div>
     </div>
+  );
+}
+
+function MethodTab({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+  hint,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center justify-center gap-2 rounded-xl px-3 py-2 transition active:scale-[.98]",
+        active ? "bg-white/10 ring-1 ring-white/25" : "text-white/70 hover:bg-white/[0.04]",
+      )}
+    >
+      <Icon className={cn("h-4 w-4", active ? "text-neon-yellow" : "text-white/50")} />
+      <div className="text-left leading-tight">
+        <div className="text-[13px] font-extrabold text-white">{label}</div>
+        <div className="text-[9.5px] text-white/50">{hint}</div>
+      </div>
+    </button>
   );
 }
 
@@ -175,49 +240,68 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pixError, setPixError] = useState<string | null>(null);
+  const attemptRef = useRef(0);
+
+  const generate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    setPixError(null);
+    attemptRef.current += 1;
+    try {
+      const saved = safeLoadCustomer();
+      await genPix({
+        data: {
+          orderId: order.id,
+          customer: {
+            name: order.customer_name || saved.name || "Cliente",
+            email: saved.email || undefined,
+            cpfCnpj: saved.cpf || undefined,
+            phone: order.phone || saved.phone || undefined,
+            externalReference: order.id,
+          },
+        },
+      });
+      const { data } = await supabase.from("orders").select("*").eq("id", order.id).maybeSingle();
+      if (data) setOrder(data as Order);
+    } catch (e: any) {
+      const message = e?.message || "Tente novamente em alguns instantes.";
+      setPixError(message);
+      toast.error("Não foi possível gerar o PIX", { description: message, duration: 8000 });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   useEffect(() => {
-    if (order.pix_qr_code_base64 || generating) return;
-    setGenerating(true);
-    (async () => {
-      try {
-        setPixError(null);
-        const saved = safeLoadCustomer();
-        await genPix({
-          data: {
-            orderId: order.id,
-            customer: {
-              name: order.customer_name || saved.name || "Cliente",
-              email: saved.email || undefined,
-              cpfCnpj: saved.cpf || undefined,
-              phone: order.phone || saved.phone || undefined,
-              externalReference: order.id,
-            },
-          },
-        });
-        // realtime will hydrate; fallback fetch:
-        const { data } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("id", order.id)
-          .maybeSingle();
-        if (data) setOrder(data as Order);
-      } catch (e: any) {
-        const message = e?.message || "Tente novamente.";
-        setPixError(message);
-        toast.error("Não foi possível gerar o PIX", { description: message, duration: 8000 });
-      } finally {
-        setGenerating(false);
-      }
-    })();
+    if (order.pix_qr_code_base64 || generating || attemptRef.current > 0) return;
+    generate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order.id]);
 
-  const expires = useMemo(() => {
+  const expiresAt = useMemo(() => {
     if (!order.pix_expires_at) return null;
     const d = new Date(order.pix_expires_at);
     return isNaN(d.getTime()) ? null : d;
   }, [order.pix_expires_at]);
+
+  // Live countdown
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!expiresAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+  const msLeft = expiresAt ? expiresAt.getTime() - now : 0;
+  const expired = expiresAt !== null && msLeft <= 0;
+  const urgent = expiresAt !== null && msLeft > 0 && msLeft < 5 * 60_000;
+  const countdown = expiresAt
+    ? (() => {
+        const total = Math.max(0, Math.floor(msLeft / 1000));
+        const mm = Math.floor(total / 60).toString().padStart(2, "0");
+        const ss = (total % 60).toString().padStart(2, "0");
+        return `${mm}:${ss}`;
+      })()
+    : null;
 
   const copy = async () => {
     if (!order.pix_copy_paste) return;
@@ -236,25 +320,77 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
       <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center">
         <Loader2 className="mx-auto h-8 w-8 animate-spin text-neon-yellow" />
         <div className="mt-3 text-sm text-white/70">Gerando QR Code PIX…</div>
+        <div className="mt-1 text-[11px] text-white/50">Isso costuma levar 2–3 segundos.</div>
+      </div>
+    );
+  }
+
+  if (pixError && !order.pix_qr_code_base64) {
+    return (
+      <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-5">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
+          <div className="flex-1">
+            <div className="font-extrabold text-white">Não conseguimos gerar o PIX</div>
+            <div className="mt-1 text-[13px] text-red-100/90">{pixError}</div>
+          </div>
+        </div>
+        <button
+          onClick={generate}
+          disabled={generating}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-yellow px-4 py-3 text-sm font-extrabold text-[oklch(0.18_0.11_305)] disabled:opacity-60"
+        >
+          {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Tentar novamente
+        </button>
       </div>
     );
   }
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-      <div className="mb-3 flex items-center gap-2">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow">
-          <QrCode className="h-5 w-5" />
-        </div>
-        <div>
-          <div className="font-display text-lg font-extrabold text-white">Pague com PIX</div>
-          <div className="text-[11px] text-white/60">
-            Aponte a câmera do banco para o QR Code ou copie o código.
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow">
+            <QrCode className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-display text-lg font-extrabold text-white">Pague com PIX</div>
+            <div className="text-[11px] text-white/60">Aponte a câmera do banco ou copie o código.</div>
           </div>
         </div>
+        {countdown && !expired && (
+          <div
+            className={cn(
+              "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black tabular-nums ring-1",
+              urgent
+                ? "animate-pulse bg-red-500/20 text-red-100 ring-red-400/40"
+                : "bg-emerald-500/15 text-emerald-100 ring-emerald-400/30",
+            )}
+            aria-live="polite"
+          >
+            <Clock className="h-3 w-3" />
+            {countdown}
+          </div>
+        )}
       </div>
 
-      {order.pix_qr_code_base64 ? (
+      {expired ? (
+        <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-center">
+          <div className="font-extrabold text-amber-100">Este PIX expirou</div>
+          <div className="mt-1 text-[12px] text-amber-100/80">
+            Gere um novo código para concluir o pagamento — o pedido continua ativo.
+          </div>
+          <button
+            onClick={generate}
+            disabled={generating}
+            className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-neon-yellow px-4 py-2.5 text-sm font-extrabold text-[oklch(0.18_0.11_305)] disabled:opacity-60"
+          >
+            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Gerar novo PIX
+          </button>
+        </div>
+      ) : order.pix_qr_code_base64 ? (
         <div className="rounded-2xl bg-white p-3">
           <img
             src={`data:image/png;base64,${order.pix_qr_code_base64}`}
@@ -264,16 +400,20 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center text-sm text-white/60">
-          {pixError ? "Não foi possível gerar o QR Code." : "QR Code indisponível."}
-          {pixError && <div className="mt-2 text-xs text-red-200">{pixError}</div>}
+          QR Code indisponível.
         </div>
       )}
 
-      {order.pix_copy_paste && (
+      {order.pix_copy_paste && !expired && (
         <>
-          <div className="mt-3 break-all rounded-2xl border border-white/10 bg-white/[0.04] p-3 font-mono text-[11px] text-white/80">
+          <button
+            type="button"
+            onClick={copy}
+            title="Toque para copiar"
+            className="mt-3 block w-full break-all rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left font-mono text-[11px] text-white/80 transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-yellow/60"
+          >
             {order.pix_copy_paste}
-          </div>
+          </button>
           <button
             onClick={copy}
             className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-yellow px-4 py-3 text-sm font-extrabold text-[oklch(0.18_0.11_305)] active:scale-95"
@@ -284,17 +424,12 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
         </>
       )}
 
-      {expires && (
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-[11.5px] text-white/60">
-          <Clock className="h-3.5 w-3.5" />
-          Válido até {formatSP(expires)}
+      {!expired && (
+        <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/[0.03] p-3 text-[11.5px] text-white/70">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-neon-cyan" />
+          Aguardando pagamento — assim que o PIX cair, seu pedido é confirmado automaticamente.
         </div>
       )}
-
-      <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/[0.03] p-3 text-[11.5px] text-white/70">
-        <Loader2 className="h-3.5 w-3.5 animate-spin text-neon-cyan" />
-        Aguardando pagamento — assim que o PIX cair, seu pedido é confirmado automaticamente.
-      </div>
     </div>
   );
 }
@@ -327,15 +462,43 @@ function CardSection({
     return Math.min(12, Math.max(1, Math.floor(t / 5)));
   }, [order.total]);
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const brand = detectCardBrand(number);
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!holderName.trim() || holderName.trim().length < 3) errs.holderName = "Informe o nome como está no cartão.";
+    if (number.replace(/\D/g, "").length < 12) errs.number = "Número incompleto.";
+    if (!/^\d{2}\/\d{2,4}$/.test(expiry.trim())) errs.expiry = "Formato MM/AA.";
+    else {
+      const [mm, yyRaw] = expiry.split("/");
+      const yy = yyRaw.length === 2 ? 2000 + Number(yyRaw) : Number(yyRaw);
+      const monthNum = Number(mm);
+      if (monthNum < 1 || monthNum > 12) errs.expiry = "Mês inválido.";
+      else {
+        const end = new Date(yy, monthNum, 0, 23, 59, 59);
+        if (end.getTime() < Date.now()) errs.expiry = "Cartão vencido.";
+      }
+    }
+    if (ccv.length < 3) errs.ccv = "CVV inválido.";
+    if (!isValidCpf(cpf)) errs.cpf = "CPF inválido.";
+    if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = "E-mail inválido.";
+    if (cep.replace(/\D/g, "").length !== 8) errs.cep = "CEP com 8 dígitos.";
+    if (!addrNumber.trim()) errs.addrNumber = "Obrigatório.";
+    return errs;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValidCpf(cpf)) return toast.error("CPF inválido.");
-    if (!/^\S+@\S+\.\S+$/.test(email)) return toast.error("E-mail inválido.");
-    if (number.replace(/\D/g, "").length < 12) return toast.error("Número do cartão incompleto.");
-    if (!/^\d{2}\/\d{2,4}$/.test(expiry.trim())) return toast.error("Validade no formato MM/AA.");
-    if (ccv.length < 3) return toast.error("CVV inválido.");
-    if (cep.replace(/\D/g, "").length !== 8) return toast.error("CEP inválido.");
-    if (!addrNumber.trim()) return toast.error("Informe o número do endereço.");
+    setSubmitError(null);
+    const errs = validate();
+    setFieldErrors(errs);
+    if (Object.keys(errs).length) {
+      toast.error("Confira os campos destacados.");
+      return;
+    }
 
     const [mm, yyRaw] = expiry.split("/");
     const yy = yyRaw.length === 2 ? `20${yyRaw}` : yyRaw;
@@ -374,7 +537,9 @@ function CardSection({
       const { data } = await supabase.from("orders").select("*").eq("id", order.id).maybeSingle();
       if (data) setOrder(data as Order);
     } catch (err: any) {
-      toast.error("Pagamento recusado", { description: err?.message || "Verifique os dados e tente outro cartão.", duration: 8000 });
+      const message = err?.message || "Verifique os dados e tente outro cartão.";
+      setSubmitError(message);
+      toast.error("Pagamento recusado", { description: message, duration: 8000 });
     } finally {
       setProcessing(false);
     }
@@ -396,14 +561,22 @@ function CardSection({
         </div>
 
         <div className="grid gap-3">
-          <Field label="Nome como está no cartão" value={holderName} onChange={setHolderName} placeholder="Ex: MARIA S SILVA" />
-          <Field
-            label="Número do cartão"
-            value={formatCardNumber(number)}
-            onChange={(v) => setNumber(v.replace(/\D/g, "").slice(0, 19))}
-            placeholder="0000 0000 0000 0000"
-            inputMode="numeric"
-          />
+          <Field label="Nome como está no cartão" value={holderName} onChange={setHolderName} placeholder="Ex: MARIA S SILVA" error={fieldErrors.holderName} />
+          <div className="relative">
+            <Field
+              label="Número do cartão"
+              value={formatCardNumber(number)}
+              onChange={(v) => setNumber(v.replace(/\D/g, "").slice(0, 19))}
+              placeholder="0000 0000 0000 0000"
+              inputMode="numeric"
+              error={fieldErrors.number}
+            />
+            {brand && (
+              <span className="pointer-events-none absolute right-3 top-8 rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white ring-1 ring-white/20">
+                {brand}
+              </span>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <Field
               label="Validade (MM/AA)"
@@ -411,6 +584,7 @@ function CardSection({
               onChange={(v) => setExpiry(formatExpiry(v))}
               placeholder="12/29"
               inputMode="numeric"
+              error={fieldErrors.expiry}
             />
             <Field
               label="CVV"
@@ -419,16 +593,17 @@ function CardSection({
               placeholder="123"
               inputMode="numeric"
               type="password"
+              error={fieldErrors.ccv}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="CPF do titular" value={formatCpf(cpf)} onChange={setCpf} placeholder="000.000.000-00" inputMode="numeric" />
-            <Field label="E-mail" value={email} onChange={setEmail} placeholder="voce@email.com" />
+            <Field label="CPF do titular" value={formatCpf(cpf)} onChange={setCpf} placeholder="000.000.000-00" inputMode="numeric" error={fieldErrors.cpf} />
+            <Field label="E-mail" value={email} onChange={setEmail} placeholder="voce@email.com" error={fieldErrors.email} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="CEP" value={formatCep(cep)} onChange={setCep} placeholder="00000-000" inputMode="numeric" />
-            <Field label="Número" value={addrNumber} onChange={setAddrNumber} placeholder="123" inputMode="numeric" />
+            <Field label="CEP" value={formatCep(cep)} onChange={setCep} placeholder="00000-000" inputMode="numeric" error={fieldErrors.cep} />
+            <Field label="Número" value={addrNumber} onChange={setAddrNumber} placeholder="123" inputMode="numeric" error={fieldErrors.addrNumber} />
           </div>
 
           {maxInst > 1 && (
@@ -450,6 +625,16 @@ function CardSection({
         </div>
       </div>
 
+      {submitError && (
+        <div className="flex items-start gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-[13px] text-red-100">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+          <div>
+            <div className="font-extrabold">Pagamento recusado</div>
+            <div className="mt-0.5 text-red-100/90">{submitError}</div>
+          </div>
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={processing}
@@ -457,7 +642,7 @@ function CardSection({
           "flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-4 text-sm font-extrabold text-white active:scale-[.98] disabled:opacity-60",
         )}
       >
-        {processing && <Loader2 className="h-4 w-4 animate-spin" />}
+        {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
         {processing ? "Processando pagamento…" : `Pagar ${brl(Number(order.total))}`}
       </button>
     </form>
@@ -471,6 +656,7 @@ function Field({
   placeholder,
   inputMode,
   type,
+  error,
 }: {
   label: string;
   value: string;
@@ -478,6 +664,7 @@ function Field({
   placeholder?: string;
   inputMode?: "text" | "numeric" | "email";
   type?: string;
+  error?: string;
 }) {
   return (
     <div>
@@ -488,8 +675,13 @@ function Field({
         placeholder={placeholder}
         inputMode={inputMode}
         type={type}
-        className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+        aria-invalid={!!error}
+        className={cn(
+          "w-full rounded-2xl border bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none",
+          error ? "border-red-400/60 focus:border-red-400" : "border-white/10 focus:border-neon-pink/60",
+        )}
       />
+      {error && <div className="mt-1 text-[11px] font-semibold text-red-300">{error}</div>}
     </div>
   );
 }
