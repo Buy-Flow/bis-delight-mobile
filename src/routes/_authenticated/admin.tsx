@@ -1100,7 +1100,7 @@ function IconBtn({
   );
 }
 
-type EditorTab = "basic" | "photo" | "sizes" | "extras" | "custom" | "advanced";
+type EditorTab = "basic" | "photo" | "sizes" | "extras" | "custom" | "pause" | "advanced";
 
 function ProductEditor({
   initial,
@@ -1200,6 +1200,7 @@ function ProductEditor({
     { id: "sizes", label: "Tamanhos & Sabores" },
     { id: "extras", label: "Complementos" },
     { id: "custom", label: "Personalizar" },
+    { id: "pause", label: "Pausar" },
     { id: "advanced", label: "Extras" },
   ];
 
@@ -1560,6 +1561,19 @@ function ProductEditor({
           )}
 
 
+          {tab === "pause" && (
+            <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-4">
+              <div className="mb-1 flex items-center gap-2 text-sm font-black text-amber-100">
+                <Pause className="h-4 w-4" />
+                Pausa temporária
+              </div>
+              <div className="mb-3 text-[11px] text-white/60">
+                Some do cardápio até a data escolhida (ex.: acabou o morango). Reativa sozinho no horário definido.
+              </div>
+              <PauseProductControls product={p} onDone={() => setDirty(true)} />
+            </div>
+          )}
+
           {tab === "advanced" && (
             <div className="space-y-4">
               <Field label="Ingredientes removíveis pelo cliente">
@@ -1597,16 +1611,8 @@ function ProductEditor({
                 />
               </Field>
 
-              <div className="rounded-2xl border border-amber-400/20 bg-amber-500/5 p-3">
-                <div className="mb-1 flex items-center gap-2 text-sm font-black text-amber-100">
-                  <Pause className="h-4 w-4" />
-                  Pausa temporária
-                </div>
-                <div className="mb-3 text-[11px] text-white/60">
-                  Some do cardápio até a data escolhida (ex.: acabou o morango). Reativa sozinho no horário definido.
-                </div>
-                <PauseProductControls product={p} onDone={() => setDirty(true)} />
-              </div>
+
+
 
 
               <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
