@@ -77,9 +77,11 @@ import { Route as ApiPublicDailyInsightsCronRouteImport } from './routes/api/pub
 import { Route as ApiPublicCashCloseCronRouteImport } from './routes/api/public/cash-close-cron'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ApiPublicAsaasCheckRouteImport } from './routes/api/public/asaas-check'
+import { Route as ApiPublicAsaasRouteImport } from './routes/api/public/asaas'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 import { Route as ApiPublicWhatsappWebhookEventRouteImport } from './routes/api/public/whatsapp-webhook.$event'
+import { Route as ApiPublicWebhookAsaasRouteImport } from './routes/api/public/webhook.asaas'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -436,6 +438,11 @@ const ApiPublicAsaasCheckRoute = ApiPublicAsaasCheckRouteImport.update({
   path: '/api/public/asaas-check',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAsaasRoute = ApiPublicAsaasRouteImport.update({
+  id: '/api/public/asaas',
+  path: '/api/public/asaas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRastrearOrderIdRoute =
   AuthenticatedRastrearOrderIdRouteImport.update({
     id: '/rastrear/$orderId',
@@ -454,6 +461,11 @@ const ApiPublicWhatsappWebhookEventRoute =
     path: '/$event',
     getParentRoute: () => ApiPublicWhatsappWebhookRoute,
   } as any)
+const ApiPublicWebhookAsaasRoute = ApiPublicWebhookAsaasRouteImport.update({
+  id: '/api/public/webhook/asaas',
+  path: '/api/public/webhook/asaas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -519,12 +531,14 @@ export interface FileRoutesByFullPath {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
+  '/api/public/webhook/asaas': typeof ApiPublicWebhookAsaasRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesByTo {
@@ -591,12 +605,14 @@ export interface FileRoutesByTo {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
+  '/api/public/webhook/asaas': typeof ApiPublicWebhookAsaasRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesById {
@@ -665,12 +681,14 @@ export interface FileRoutesById {
   '/rastrear/$token': typeof RastrearTokenRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
+  '/api/public/webhook/asaas': typeof ApiPublicWebhookAsaasRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRouteTypes {
@@ -739,12 +757,14 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/winback-cron'
+    | '/api/public/webhook/asaas'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -811,12 +831,14 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/winback-cron'
+    | '/api/public/webhook/asaas'
     | '/api/public/whatsapp-webhook/$event'
   id:
     | '__root__'
@@ -884,12 +906,14 @@ export interface FileRouteTypes {
     | '/rastrear/$token'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
+    | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/winback-cron'
+    | '/api/public/webhook/asaas'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesById: FileRoutesById
 }
@@ -911,12 +935,14 @@ export interface RootRouteChildren {
   ProdutoIdRoute: typeof ProdutoIdRoute
   RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
+  ApiPublicAsaasRoute: typeof ApiPublicAsaasRoute
   ApiPublicAsaasCheckRoute: typeof ApiPublicAsaasCheckRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicCashCloseCronRoute: typeof ApiPublicCashCloseCronRoute
   ApiPublicDailyInsightsCronRoute: typeof ApiPublicDailyInsightsCronRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
   ApiPublicWinbackCronRoute: typeof ApiPublicWinbackCronRoute
+  ApiPublicWebhookAsaasRoute: typeof ApiPublicWebhookAsaasRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1397,6 +1423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAsaasCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/asaas': {
+      id: '/api/public/asaas'
+      path: '/api/public/asaas'
+      fullPath: '/api/public/asaas'
+      preLoaderRoute: typeof ApiPublicAsaasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/rastrear/$orderId': {
       id: '/_authenticated/rastrear/$orderId'
       path: '/rastrear/$orderId'
@@ -1417,6 +1450,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/whatsapp-webhook/$event'
       preLoaderRoute: typeof ApiPublicWhatsappWebhookEventRouteImport
       parentRoute: typeof ApiPublicWhatsappWebhookRoute
+    }
+    '/api/public/webhook/asaas': {
+      id: '/api/public/webhook/asaas'
+      path: '/api/public/webhook/asaas'
+      fullPath: '/api/public/webhook/asaas'
+      preLoaderRoute: typeof ApiPublicWebhookAsaasRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1556,12 +1596,14 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutoIdRoute: ProdutoIdRoute,
   RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
+  ApiPublicAsaasRoute: ApiPublicAsaasRoute,
   ApiPublicAsaasCheckRoute: ApiPublicAsaasCheckRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicCashCloseCronRoute: ApiPublicCashCloseCronRoute,
   ApiPublicDailyInsightsCronRoute: ApiPublicDailyInsightsCronRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
   ApiPublicWinbackCronRoute: ApiPublicWinbackCronRoute,
+  ApiPublicWebhookAsaasRoute: ApiPublicWebhookAsaasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

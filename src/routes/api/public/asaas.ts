@@ -1,10 +1,9 @@
-// Asaas webhook receiver (canonical URL).
-// URL: https://<host>/api/public/asaas-webhook
-// Asaas sends the token in the "asaas-access-token" header.
+// Compatibility alias — some Asaas panels have this URL configured.
+// Delegates to the shared handler.
 
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/api/public/asaas-webhook")({
+export const Route = createFileRoute("/api/public/asaas")({
   server: {
     handlers: {
       GET: async () => Response.json({ ok: true, service: "asaas-webhook" }),
