@@ -1784,17 +1784,26 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 Endereço fora do raio de entrega
               </>
             ) : isAuthenticated ? (
-              paymentMethod === "pix"
-                ? `Gerar PIX · ${brl(total)}`
-                : paymentMethod === "cartao"
-                  ? `Pagar com cartão · ${brl(total)}`
-                  : paymentMethod === "asaas_checkout"
-                    ? `Abrir Checkout Asaas · ${brl(total)}`
-                    : `Enviar pedido no WhatsApp · ${brl(total)}`
+              <>
+                {paymentMethod !== "whatsapp" && <Lock className="h-4 w-4" />}
+                {paymentMethod === "pix"
+                  ? `Pagar ${brl(total)} com PIX`
+                  : paymentMethod === "cartao"
+                    ? `Pagar ${brl(total)} no cartão`
+                    : paymentMethod === "asaas_checkout"
+                      ? `Continuar · ${brl(total)}`
+                      : `Enviar no WhatsApp · ${brl(total)}`}
+              </>
             ) : (
               `Entrar para finalizar · ${brl(total)}`
             )}
           </button>
+          {!storeStatus.isClosed && !(mode === "entrega" && outsideRadius) && (
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-[10.5px] font-semibold text-white/60">
+              <ShieldCheck className="h-3 w-3 text-emerald-400" />
+              <span>Pagamento criptografado · Sem taxas escondidas</span>
+            </div>
+          )}
         </div>
       </div>
 
