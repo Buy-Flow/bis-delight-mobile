@@ -1341,7 +1341,7 @@ function ProductEditor({
                       onChange={(e) => setField("badge", (e.target.value || undefined) as Product["badge"])}
                     >
                       <option value="">Nenhum</option>
-                      {(badgesList ?? []).filter((b) => b.active).map((b) => (
+                      {(badgesList ?? []).filter((b: ProductBadge) => b.active).map((b: ProductBadge) => (
                         <option key={b.id} value={b.name}>{b.icon} {b.name}</option>
                       ))}
                     </select>
