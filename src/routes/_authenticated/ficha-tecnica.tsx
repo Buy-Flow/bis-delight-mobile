@@ -558,7 +558,7 @@ function FichaTecnicaPage() {
         </aside>
 
         {/* Editor */}
-        <section className="rounded-2xl border border-white/10 bg-white/5">
+        <section className={cn("rounded-2xl border border-white/10 bg-white/5", mobileView === "list" ? "hidden lg:block" : "block")}>
           {!selected ? (
             <div className="grid h-full place-items-center p-10 text-white/40">
               Selecione um produto
