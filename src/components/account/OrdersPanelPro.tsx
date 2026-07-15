@@ -159,6 +159,18 @@ export function OrdersPanelPro() {
   const [sortBy, setSortBy] = useState<SortBy>("recent");
   const [showFilters, setShowFilters] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [localRecent, setLocalRecent] = useState<Array<{ id: string; at: number; payment_method?: string; total?: number; needs_payment?: boolean }>>([]);
+
+  // Recupera pedidos recentes do próprio dispositivo (mesmo se a sessão trocou de conta)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("querobis:recent_orders");
+      const arr = raw ? JSON.parse(raw) : [];
+      const cutoff = Date.now() - 48 * 3600 * 1000;
+      const valid = (Array.isArray(arr) ? arr : []).filter((x: any) => x?.id && x?.at > cutoff);
+      setLocalRecent(valid);
+    } catch {}
+  }, []);
 
   const productImageById = useMemo(() => {
     const m = new Map<string, string>();
@@ -333,6 +345,48 @@ export function OrdersPanelPro() {
           </button>
         </div>
       )}
+
+      {/* Recuperação de pedidos criados neste dispositivo que não estão no histórico da conta atual */}
+      {(() => {
+        const knownIds = new Set(orders.map((o) => o.id));
+        const orphans = localRecent.filter((r) => r.needs_payment && !knownIds.has(r.id));
+        if (orphans.length === 0) return null;
+        return (
+          <div className="space-y-2 rounded-2xl border border-neon-pink/40 bg-neon-pink/10 p-3">
+            <div className="flex items-start gap-2 text-xs text-white/85">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-neon-pink" />
+              <div className="flex-1">
+                <div className="font-black text-neon-pink">Pagamento pendente detectado</div>
+                <div className="text-white/70">
+                  Você iniciou {orphans.length} pedido{orphans.length > 1 ? "s" : ""} neste dispositivo. Finalize o pagamento para confirmar.
+                </div>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              {orphans.map((r) => (
+                <Link
+                  key={r.id}
+                  to="/pagamento/$orderId"
+                  params={{ orderId: r.id }}
+                  className="flex items-center justify-between rounded-xl bg-black/40 px-3 py-2 text-xs hover:bg-black/60"
+                >
+                  <div className="min-w-0">
+                    <div className="font-bold text-white">#{r.id.slice(0, 8).toUpperCase()}</div>
+                    <div className="text-white/50">
+                      {r.payment_method === "pix" ? "PIX" : r.payment_method === "cartao" ? "Cartão" : "Link de pagamento"}
+                      {typeof r.total === "number" ? ` • ${brl(r.total)}` : ""}
+                      {" • "}{new Date(r.at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-neon-pink px-3 py-1.5 font-black text-white">Pagar</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
 
       {/* SEARCH + toggle */}
       <div className="flex items-center gap-2">
