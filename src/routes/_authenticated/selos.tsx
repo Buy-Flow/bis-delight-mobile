@@ -324,6 +324,6 @@ export function SelosContent() {
           </div>
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }
