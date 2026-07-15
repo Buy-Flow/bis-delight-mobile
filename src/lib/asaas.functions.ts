@@ -305,7 +305,7 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
     const cancelUrl = `${origin}/pagamento/${order.id}?checkout=cancel`;
     const expiredUrl = `${origin}/pagamento/${order.id}?checkout=expired`;
 
-    // Merge address: client-provided → order.address → user_addresses default
+    // Merge address: client-provided → order.address → user_addresses default → store address (retirada)
     let parsed = parseAddressText(order.address);
     if (!parsed.postalCode && order.user_id) {
       const { data: def } = await supabaseAdmin
@@ -316,7 +316,15 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
         .maybeSingle();
       if (def?.address) parsed = { ...parseAddressText(def.address), ...parsed };
     }
-
+    // Retirada na loja (order.address = null): usar endereço da própria loja
+    // como billing address exigido pelo Asaas.
+    if (!parsed.postalCode) {
+      const { data: store } = await supabaseAdmin
+        .from("site_settings")
+        .select("address")
+        .maybeSingle();
+      if (store?.address) parsed = { ...parseAddressText(store.address), ...parsed };
+    }
 
     const merged = {
       postalCode: data.customer.postalCode || parsed.postalCode,
@@ -328,7 +336,7 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
 
     if (!merged.postalCode || !merged.address) {
       throw new Error(
-        "Endereço incompleto para pagamento. Preencha um endereço com CEP no seu perfil e tente novamente.",
+        "Endereço incompleto para pagamento. Configure o endereço da loja (com CEP) nas Configurações e tente novamente.",
       );
     }
 
