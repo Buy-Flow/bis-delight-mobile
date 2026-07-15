@@ -83,24 +83,20 @@ function PagamentoPage() {
       )
       .subscribe();
 
-    // Fallback polling every 10s
+    // Fallback polling: consulta o Asaas ao vivo a cada 8s. Isso reconcilia
+    // o status mesmo se o webhook estiver falhando (token divergente etc.).
+    const syncFn = getAsaasPaymentStatus;
     const iv = setInterval(async () => {
       if (cancelled) return;
-      setOrder((prev) => {
-        if (prev?.status === "pago") return prev;
-        void (async () => {
-          const { data } = await supabase
-            .from("orders")
-            .select(
-              "id, status, total, customer_name, phone, payment_method, asaas_status, pix_qr_code_base64, pix_copy_paste, pix_expires_at, invoice_url, card_last4, card_brand, paid_at",
-            )
-            .eq("id", orderId)
-            .maybeSingle();
-          if (!cancelled && data) setOrder(data as Order);
-        })();
-        return prev;
-      });
-    }, 10000);
+      try {
+        const fresh = await syncFn({ data: { orderId } });
+        if (!cancelled && fresh) {
+          setOrder((prev) => ({ ...(prev as Order), ...(fresh as Partial<Order>) } as Order));
+        }
+      } catch {
+        // silencioso — a próxima tentativa cobre falhas de rede pontuais
+      }
+    }, 8000);
 
     return () => {
       cancelled = true;
