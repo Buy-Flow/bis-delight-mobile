@@ -2737,7 +2737,21 @@ function HighlightPickerModal({
 
 
 
-function HeroImageEditor({ product, onRemove }: { product: Product; onRemove?: () => void }) {
+function HeroImageEditor({
+  product,
+  onRemove,
+  dragging,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+}: {
+  product: Product;
+  onRemove?: () => void;
+  dragging?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDragEnd?: () => void;
+}) {
   const update = useUpdateHeroImage();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
