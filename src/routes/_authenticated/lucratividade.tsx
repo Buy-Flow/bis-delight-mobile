@@ -604,12 +604,12 @@ function LucratividadePage() {
           <>
             {/* Insights */}
             {insights.length > 0 && (
-              <div className="grid gap-2 md:grid-cols-2">
+              <div className="flex flex-wrap gap-1.5">
                 {insights.map((it, i) => (
                   <div
                     key={i}
                     className={cn(
-                      "flex items-start gap-3 rounded-2xl px-4 py-3 border text-sm",
+                      "flex items-center gap-1.5 rounded-full px-2.5 py-1 border text-[11px] leading-tight max-w-full",
                       it.level === "danger" &&
                         "bg-rose-500/10 border-rose-500/30 text-rose-200",
                       it.level === "warn" &&
@@ -621,19 +621,20 @@ function LucratividadePage() {
                     )}
                   >
                     {it.level === "danger" ? (
-                      <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                      <AlertTriangle className="h-3 w-3 shrink-0" />
                     ) : it.level === "warn" ? (
-                      <Flame className="h-4 w-4 mt-0.5 shrink-0" />
+                      <Flame className="h-3 w-3 shrink-0" />
                     ) : it.level === "ok" ? (
-                      <TrendingUp className="h-4 w-4 mt-0.5 shrink-0" />
+                      <TrendingUp className="h-3 w-3 shrink-0" />
                     ) : (
-                      <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                      <Info className="h-3 w-3 shrink-0" />
                     )}
-                    <span className="leading-snug">{it.text}</span>
+                    <span className="truncate">{it.text}</span>
                   </div>
                 ))}
               </div>
             )}
+
 
             {/* KPIs */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
