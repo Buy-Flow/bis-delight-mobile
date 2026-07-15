@@ -433,6 +433,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   })();
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+  // Fatura mínima do site: o valor cobrado (mercadoria após cupom) não pode
+  // ficar abaixo de R$ 5. Se ficar, o pedido não pode ser finalizado online —
+  // o cliente precisa retirar presencialmente na loja.
+  const MIN_INVOICE_BRL = 5;
+  const billableAfterDiscount = Math.max(0, subtotal - discount);
+  const belowMinInvoice = items.length > 0 && billableAfterDiscount < MIN_INVOICE_BRL;
 
   // Revalida o mínimo do cupom sempre que o subtotal cair (item removido,
   // quantidade reduzida, edição de sabor barato). Se ficar abaixo, remove
