@@ -266,6 +266,7 @@ function AddressForm({
       }
       await onSubmit({
         label: label.trim() || "Casa",
+        recipient_name: recipientName.trim() || null,
         address: fullAddress,
         reference: reference.trim() || null,
         lat: finalLat,
