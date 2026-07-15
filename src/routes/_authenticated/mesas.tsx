@@ -624,6 +624,11 @@ function SalonView({
 }
 
 // ---------- Floor Plan (drag & drop) ----------
+// Real-time drag with zero-lag: writes transform directly to the DOM during
+// pointermove (no React re-render per frame). State is only committed on drop.
+const TILE_SIZE = 96;
+const GRID = 8;
+
 function FloorPlanView({
   tables,
   orderByTable,
@@ -636,55 +641,159 @@ function FloorPlanView({
   onReload: () => void;
 }) {
   const [editMode, setEditMode] = useState(false);
-  const [dragging, setDragging] = useState<string | null>(null);
-  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [snap, setSnap] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
+  const [activeId, setActiveId] = useState<string | null>(null); // only for visual highlight, set on drop start/end
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const nodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const posRef = useRef<Record<string, { x: number; y: number }>>({});
+  const dragRef = useRef<{ id: string; dx: number; dy: number; moved: boolean; raf: number | null } | null>(null);
 
-  // Sync local positions from DB, distributing tables with no pos in a grid
+  const setNodeRef = useCallback((id: string) => (el: HTMLDivElement | null) => {
+    nodeRefs.current[id] = el;
+    const p = posRef.current[id];
+    if (el && p) el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+  }, []);
+
+  const applyLayout = useCallback(
+    (opts: { animate?: boolean; force?: boolean } = {}) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const width = canvas.clientWidth;
+      const pad = 16;
+      const gap = 12;
+      const cols = Math.max(1, Math.floor((width - pad * 2 + gap) / (TILE_SIZE + gap)));
+      tables.forEach((t, i) => {
+        let x: number, y: number;
+        if (!opts.force && posRef.current[t.id]) {
+          x = posRef.current[t.id].x;
+          y = posRef.current[t.id].y;
+        } else if (!opts.force && t.pos_x != null && t.pos_y != null) {
+          x = t.pos_x;
+          y = t.pos_y;
+        } else {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          x = pad + col * (TILE_SIZE + gap);
+          y = pad + row * (TILE_SIZE + gap);
+        }
+        posRef.current[t.id] = { x, y };
+        const el = nodeRefs.current[t.id];
+        if (el) {
+          if (opts.animate) {
+            el.style.transition = "transform 260ms cubic-bezier(.2,.8,.2,1)";
+            window.setTimeout(() => {
+              if (el) el.style.transition = "";
+            }, 300);
+          }
+          el.style.transform = `translate(${x}px, ${y}px)`;
+        }
+      });
+    },
+    [tables],
+  );
+
   useEffect(() => {
-    const next: Record<string, { x: number; y: number }> = {};
-    const cols = 6;
-    tables.forEach((t, i) => {
-      if (t.pos_x != null && t.pos_y != null) {
-        next[t.id] = { x: t.pos_x, y: t.pos_y };
-      } else {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        next[t.id] = { x: 40 + col * 110, y: 40 + row * 110 };
-      }
-    });
-    setPositions(next);
-  }, [tables]);
+    // reset positions when tables list changes identity/length
+    posRef.current = {};
+    applyLayout();
+  }, [tables, applyLayout]);
 
-  const pointerDown = (e: React.PointerEvent, id: string) => {
-    if (!editMode) return;
-    e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    setDragging(id);
-  };
-
-  const pointerMove = (e: React.PointerEvent) => {
-    if (!dragging || !editMode) return;
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.max(0, Math.min(rect.width - 96, e.clientX - rect.left - 48));
-    const y = Math.max(0, Math.min(rect.height - 96, e.clientY - rect.top - 48));
-    setPositions((prev) => ({ ...prev, [dragging]: { x, y } }));
+    const ro = new ResizeObserver(() => {
+      // re-clamp positions inside the new canvas rect
+      const rect = canvas.getBoundingClientRect();
+      Object.entries(posRef.current).forEach(([id, p]) => {
+        const x = Math.max(0, Math.min(rect.width - TILE_SIZE, p.x));
+        const y = Math.max(0, Math.min(rect.height - TILE_SIZE, p.y));
+        posRef.current[id] = { x, y };
+        const el = nodeRefs.current[id];
+        if (el) el.style.transform = `translate(${x}px, ${y}px)`;
+      });
+    });
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, []);
+
+  const onPointerDown = (e: React.PointerEvent, id: string) => {
+    if (!editMode) return;
+    e.preventDefault();
+    const el = nodeRefs.current[id];
+    if (!el) return;
+    el.setPointerCapture(e.pointerId);
+    const p = posRef.current[id] || { x: 0, y: 0 };
+    dragRef.current = { id, dx: e.clientX - p.x, dy: e.clientY - p.y, moved: false, raf: null };
+    el.style.transition = "none";
+    el.style.zIndex = "40";
+    el.style.willChange = "transform";
+    el.style.boxShadow = "0 20px 40px -10px rgba(0,0,0,.6), 0 0 0 2px rgba(255,46,147,.5)";
+    setActiveId(id);
   };
 
-  const pointerUp = async () => {
-    if (!dragging) return;
-    const id = dragging;
-    setDragging(null);
-    const p = positions[id];
+  const onPointerMove = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    if (d.raf != null) return; // coalesce to next frame → ultra-smooth, no queue
+    d.raf = requestAnimationFrame(() => {
+      d.raf = null;
+      const rect = canvas.getBoundingClientRect();
+      let x = clientX - d.dx;
+      let y = clientY - d.dy;
+      x = Math.max(0, Math.min(rect.width - TILE_SIZE, x));
+      y = Math.max(0, Math.min(rect.height - TILE_SIZE, y));
+      if (snap) {
+        x = Math.round(x / GRID) * GRID;
+        y = Math.round(y / GRID) * GRID;
+      }
+      posRef.current[d.id] = { x, y };
+      const el = nodeRefs.current[d.id];
+      if (el) el.style.transform = `translate(${x}px, ${y}px)`;
+      d.moved = true;
+    });
+  };
+
+  const onPointerUp = async (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    if (d.raf != null) cancelAnimationFrame(d.raf);
+    dragRef.current = null;
+    const el = nodeRefs.current[d.id];
+    if (el) {
+      el.style.transition = "";
+      el.style.zIndex = "";
+      el.style.willChange = "";
+      el.style.boxShadow = "";
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+    setActiveId(null);
+    if (!d.moved) return;
+    const p = posRef.current[d.id];
     if (!p) return;
     const { error } = await supabase
       .from("restaurant_tables")
       .update({ pos_x: Math.round(p.x), pos_y: Math.round(p.y) })
-      .eq("id", id);
+      .eq("id", d.id);
     if (error) toast.error("Falha ao salvar posição");
-    else onReload();
+  };
+
+  const autoOrganize = async () => {
+    applyLayout({ animate: true, force: true });
+    const updates = Object.entries(posRef.current).map(([id, p]) =>
+      supabase.from("restaurant_tables").update({ pos_x: Math.round(p.x), pos_y: Math.round(p.y) }).eq("id", id),
+    );
+    const results = await Promise.all(updates);
+    const failed = results.filter((r) => r.error).length;
+    if (failed) toast.error(`Falha em ${failed} mesa(s)`);
+    else toast.success("Planta reorganizada em grade");
+    onReload();
   };
 
   if (tables.length === 0)
@@ -697,48 +806,94 @@ function FloorPlanView({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[11px]">
-        <div className="flex items-center gap-2 text-white/70">
-          <Move className="h-3.5 w-3.5" />
-          {editMode ? "Arraste as mesas para reposicionar" : "Toque em uma mesa para gerenciar"}
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[11px]">
+        <div className="flex min-w-0 items-center gap-2 text-white/70">
+          <Move className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">
+            {editMode ? "Arraste para posicionar · toque duplo para abrir" : "Toque em uma mesa para gerenciar"}
+          </span>
         </div>
-        <button
-          onClick={() => setEditMode((v) => !v)}
-          className={cn(
-            "rounded-full border px-3 py-1 font-black uppercase tracking-wider transition",
-            editMode
-              ? "border-neon-pink/60 bg-neon-pink/25 text-white"
-              : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+        <div className="flex flex-wrap items-center gap-1.5">
+          {editMode && (
+            <>
+              <button
+                onClick={() => setSnap((v) => !v)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition",
+                  snap
+                    ? "border-emerald-400/50 bg-emerald-400/20 text-emerald-200"
+                    : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
+                )}
+                title="Encaixar em grade de 8px"
+              >
+                Snap
+              </button>
+              <button
+                onClick={() => setShowGrid((v) => !v)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition",
+                  showGrid
+                    ? "border-sky-400/50 bg-sky-400/20 text-sky-200"
+                    : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
+                )}
+              >
+                Grade
+              </button>
+              <button
+                onClick={autoOrganize}
+                className="rounded-full border border-amber-400/50 bg-amber-400/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-100 hover:bg-amber-400/30"
+              >
+                Auto-organizar
+              </button>
+            </>
           )}
-        >
-          {editMode ? "Concluir" : "Editar planta"}
-        </button>
+          <button
+            onClick={() => setEditMode((v) => !v)}
+            className={cn(
+              "rounded-full border px-3 py-1 font-black uppercase tracking-wider transition",
+              editMode
+                ? "border-neon-pink/60 bg-neon-pink/25 text-white"
+                : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+            )}
+          >
+            {editMode ? "Concluir" : "Editar planta"}
+          </button>
+        </div>
       </div>
+
+      {/* Canvas */}
       <div
         ref={canvasRef}
-        onPointerMove={pointerMove}
-        onPointerUp={pointerUp}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
         className={cn(
-          "relative h-[70vh] min-h-[520px] w-full overflow-hidden rounded-3xl border border-white/10",
-          "bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px] bg-[#0d0322]/60",
+          "relative h-[70vh] min-h-[520px] w-full touch-none select-none overflow-hidden rounded-3xl border transition",
+          editMode
+            ? "border-neon-pink/40 bg-[#0d0322]/70 shadow-[inset_0_0_60px_rgba(255,46,147,.08)]"
+            : "border-white/10 bg-[#0d0322]/60",
+          showGrid &&
+            "bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px]",
         )}
       >
         {tables.map((t) => {
-          const p = positions[t.id] || { x: 40, y: 40 };
           const order = orderByTable.get(t.id) || null;
           const assist = isAssistRequested(t.notes);
           return (
             <div
               key={t.id}
-              onPointerDown={(e) => pointerDown(e, t.id)}
-              onClick={() => !editMode && !dragging && onOpen(t)}
-              style={{ transform: `translate(${p.x}px, ${p.y}px)` }}
+              ref={setNodeRef(t.id)}
+              onPointerDown={(e) => onPointerDown(e, t.id)}
+              onClick={() => !editMode && !dragRef.current && onOpen(t)}
               className={cn(
-                "absolute left-0 top-0 h-24 w-24 select-none rounded-2xl border bg-gradient-to-br p-2 transition",
+                "absolute left-0 top-0 h-24 w-24 select-none rounded-2xl border bg-gradient-to-br p-2",
                 statusTone[t.status],
                 t.status === "ocupada" && agingRing(t.opened_at),
-                editMode ? "cursor-grab active:cursor-grabbing" : "cursor-pointer hover:scale-[1.03] active:scale-95",
-                dragging === t.id && "z-20 scale-110 shadow-2xl",
+                editMode
+                  ? "cursor-grab touch-none active:cursor-grabbing"
+                  : "cursor-pointer transition hover:scale-[1.03] active:scale-95",
+                activeId === t.id && "ring-2 ring-neon-pink/70",
               )}
             >
               {assist && (
@@ -759,6 +914,8 @@ function FloorPlanView({
           );
         })}
       </div>
+
+      {/* Legend */}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[10px] text-white/60">
         <span className="font-black uppercase tracking-widest text-white/50">Legenda</span>
         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-400" /> livre / recente</span>
