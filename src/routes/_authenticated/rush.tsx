@@ -271,6 +271,7 @@ function RushPage() {
   const [testBusy, setTestBusy] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<"all" | "entregue" | "cancelado">("all");
   const { settings: slaSettings, history: slaHistory } = useSlaSettings();
 
   // sound preference
@@ -439,9 +440,14 @@ function RushPage() {
     const allowed = STATUSES_IN_LANE[lane];
     const list = (orders ?? []).filter((o) => allowed.includes(o.status));
     if (lane === "feitos") {
-      // most recent first; limit to today unless showAllHistory
       return list
         .filter((o) => showAllHistory || isToday(new Date(o.created_at)))
+        // Hide cancelled orders in the "today" view; only expose them in full history with filter
+        .filter((o) => {
+          if (!showAllHistory) return o.status !== "cancelado";
+          if (historyFilter === "all") return true;
+          return o.status === historyFilter;
+        })
         .sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
@@ -449,7 +455,7 @@ function RushPage() {
     return list.sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
-  }, [orders, lane, showAllHistory]);
+  }, [orders, lane, showAllHistory, historyFilter]);
 
   const laneCounts = useMemo(() => {
     const c: Record<LaneId, number> = { novos: 0, cozinha: 0, rota: 0, feitos: 0 };
@@ -764,17 +770,49 @@ function RushPage() {
 
         {/* History toggle (Feitos only) */}
         {lane === "feitos" && (
-          <div className="mt-3 flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-            <div className="text-[11px] text-white/70">
-              {showAllHistory ? "Mostrando todo o histórico" : "Mostrando apenas hoje"}
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+              <div className="text-[11px] text-white/70">
+                {showAllHistory ? "Mostrando todo o histórico" : "Mostrando apenas hoje (entregues)"}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllHistory((v) => !v)}
+                className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white hover:bg-white/15"
+              >
+                {showAllHistory ? "Ver só hoje" : "Ver histórico completo"}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowAllHistory((v) => !v)}
-              className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white hover:bg-white/15"
-            >
-              {showAllHistory ? "Ver só hoje" : "Ver histórico completo"}
-            </button>
+            {showAllHistory && (
+              <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-1.5">
+                {([
+                  { id: "all" as const, label: "Todos" },
+                  { id: "entregue" as const, label: "Entregues" },
+                  { id: "cancelado" as const, label: "Cancelados" },
+                ]).map((f) => {
+                  const active = historyFilter === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setHistoryFilter(f.id)}
+                      className={cn(
+                        "rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider transition",
+                        active
+                          ? f.id === "cancelado"
+                            ? "bg-red-600 text-white"
+                            : f.id === "entregue"
+                              ? "bg-emerald-600 text-white"
+                              : "bg-white text-black"
+                          : "bg-white/5 text-white/70 hover:bg-white/10",
+                      )}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
