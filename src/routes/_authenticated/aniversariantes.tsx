@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Cake, Save, Gift, Users, CalendarDays, BellRing, Sparkles,
-  Search, Send, CheckCircle2, Clock,
+  Search, Send, CheckCircle2, Clock, ChevronDown, Eye, Ticket, CalendarClock, Smartphone,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { BirthdayBannerPreview, PushNotificationPreview } from "@/components/admin/BirthdayBannerPreview";
 
 
 export const Route = createFileRoute("/_authenticated/aniversariantes")({
