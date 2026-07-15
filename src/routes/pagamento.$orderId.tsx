@@ -301,19 +301,10 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
         const hh = Math.floor(total / 3600);
         const mm = Math.floor((total % 3600) / 60).toString().padStart(2, "0");
         const ss = (total % 60).toString().padStart(2, "0");
-        // Se expira em mais de 24h, mostra a data em vez do timer estourado
-        if (total >= 24 * 3600) {
-          return expiresAt!.toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            timeZone: "America/Sao_Paulo",
-          });
-        }
         return hh > 0 ? `${hh.toString().padStart(2, "0")}:${mm}:${ss}` : `${mm}:${ss}`;
       })()
     : null;
+
 
 
   const copy = async () => {
