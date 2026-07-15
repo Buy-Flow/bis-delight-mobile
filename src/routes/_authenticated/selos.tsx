@@ -131,10 +131,10 @@ function SelosPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {badges.map((b, idx) => (
-            <div key={b.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div key={b.id} className="overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col gap-0.5">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <div className="flex shrink-0 flex-col gap-0.5">
                     <button
                       className="rounded p-0.5 text-white/40 hover:bg-white/10 hover:text-white disabled:opacity-30"
                       onClick={() => move(b, -1)}
@@ -153,14 +153,15 @@ function SelosPage() {
                     </button>
                   </div>
                   <span
-                    className="inline-flex -rotate-6 items-center gap-1 rounded-md px-2 py-[3px] text-[10px] font-black uppercase tracking-[0.14em] shadow-lg"
+                    className="inline-flex max-w-full -rotate-3 items-center gap-1 truncate rounded-md px-2 py-[3px] text-[10px] font-black uppercase tracking-[0.14em] shadow-lg"
                     style={{
                       backgroundColor: b.color,
                       color: badgeInkFor(b.color),
                       boxShadow: "0 6px 12px -3px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
                     }}
                   >
-                    <span>{b.icon}</span> {b.name}
+                    <span className="shrink-0">{b.icon}</span>
+                    <span className="truncate">{b.name}</span>
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
