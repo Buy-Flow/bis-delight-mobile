@@ -58,6 +58,8 @@ function PagamentoPage() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
 
+  const cancelOrderFn = useServerFn(cancelMyOrder);
+
   const cancelOrder = async () => {
     if (cancelling || !order) return;
     const ok = await confirmDialog({
@@ -70,12 +72,14 @@ function PagamentoPage() {
     if (!ok) return;
     setCancelling(true);
     try {
-      const { error } = await supabase
-        .from("orders")
-        .update({ status: "cancelado", canceled_at: new Date().toISOString() })
-        .eq("id", order.id)
-        .in("status", ["novo", "aguardando_pagamento", "pendente"]);
-      if (error) throw error;
+      await cancelOrderFn({ data: { orderId: order.id } });
+      // Remove from local recent orders list
+      try {
+        const raw = localStorage.getItem("querobis:recent_orders");
+        const arr = raw ? JSON.parse(raw) : [];
+        const next = (Array.isArray(arr) ? arr : []).filter((x: any) => x?.id !== order.id);
+        localStorage.setItem("querobis:recent_orders", JSON.stringify(next));
+      } catch {}
       toast.success("Pedido cancelado");
       navigate({ to: "/" });
     } catch (e: any) {
@@ -84,6 +88,7 @@ function PagamentoPage() {
       setCancelling(false);
     }
   };
+
 
   // Load order + subscribe realtime
   useEffect(() => {
