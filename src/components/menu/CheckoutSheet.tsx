@@ -776,7 +776,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           });
           clear();
           closeCheckout();
-          window.location.href = res.url;
+          // Guarda o link para exibir fallback caso o navegador do usuário bloqueie asaas.com
+          try {
+            sessionStorage.setItem(`querobis:asaas_url:${order.id}`, res.url);
+          } catch {}
+          // Abre em nova aba e leva o usuário para a página do pedido com fallback (copiar link etc.)
+          try {
+            window.open(res.url, "_blank", "noopener,noreferrer");
+          } catch {}
+          navigate({ to: "/pagamento/$orderId", params: { orderId: order.id }, search: { m: "asaas" } as never });
           return;
         } catch (chkErr: any) {
           console.error("[checkout] asaas checkout failed", chkErr);
@@ -784,6 +792,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           setSending(false);
           return;
         }
+
       } else {
         // PIX
         try {
