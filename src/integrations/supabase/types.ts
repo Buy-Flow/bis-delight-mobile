@@ -4025,6 +4025,7 @@ export type Database = {
           label: string
           lat: number | null
           lng: number | null
+          recipient_name: string | null
           reference: string | null
           updated_at: string
           user_id: string
@@ -4037,6 +4038,7 @@ export type Database = {
           label?: string
           lat?: number | null
           lng?: number | null
+          recipient_name?: string | null
           reference?: string | null
           updated_at?: string
           user_id: string
@@ -4049,6 +4051,7 @@ export type Database = {
           label?: string
           lat?: number | null
           lng?: number | null
+          recipient_name?: string | null
           reference?: string | null
           updated_at?: string
           user_id?: string

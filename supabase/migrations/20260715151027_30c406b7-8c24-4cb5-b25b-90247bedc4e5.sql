@@ -1,0 +1,1 @@
+ALTER TABLE public.user_addresses ADD COLUMN IF NOT EXISTS recipient_name text;
