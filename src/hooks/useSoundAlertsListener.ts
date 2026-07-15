@@ -25,9 +25,11 @@ type OrderRow = {
   payment_method: string | null;
 };
 
-function isOnlinePayment(method: string | null | undefined): boolean {
-  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+const OFFLINE_METHODS = new Set(["whatsapp", "dinheiro", "cash", "pos", "presencial"]);
+function isOfflinePayment(method: string | null | undefined): boolean {
+  return OFFLINE_METHODS.has(String(method ?? "").toLowerCase());
 }
+
 
 export function useSoundAlertsListener() {
   const alertsRef = useRef<Record<string, SoundAlert>>({});
