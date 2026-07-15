@@ -1494,3 +1494,137 @@ function escapeHtml(s: string) {
     }
   });
 }
+
+/* ---------------- Kitchen ticket (grande, sem preços) ---------------- */
+
+function buildKitchenHtml(o: {
+  orderId: string;
+  cart: CartLine[];
+  mode: "retirada" | "entrega";
+  customerName: string;
+  address: string;
+} & Record<string, unknown>) {
+  const items = o.cart
+    .map((l) => {
+      const modLines: string[] = [];
+      l.extras.forEach((e) => modLines.push(`+ ${escapeHtml(e.label)}`));
+      l.removed.forEach((r) => modLines.push(`SEM ${escapeHtml(r).toUpperCase()}`));
+      if (l.note) modLines.push(`OBS: ${escapeHtml(l.note)}`);
+      const mods = modLines.length
+        ? `<div style="font-size:14px;padding-left:10px;margin-top:2px">${modLines.join("<br/>")}</div>`
+        : "";
+      return `<div style="border-bottom:1px dashed #000;padding:6px 0"><div style="font-size:18px;font-weight:bold">${l.quantity}x ${escapeHtml(l.name)}${l.size ? ` (${escapeHtml(l.size)})` : ""}${l.flavor ? ` — ${escapeHtml(l.flavor)}` : ""}</div>${mods}</div>`;
+    })
+    .join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Cozinha</title>
+  <style>
+    @page { size: 80mm auto; margin: 4mm; }
+    body { font-family: 'Courier New', monospace; color: #000; font-size: 13px; }
+    h1 { font-size: 20px; text-align: center; margin: 0 0 6px; text-transform: uppercase; }
+    .muted { text-align: center; font-size: 11px; margin-bottom: 4px; }
+    .badge { border: 2px solid #000; padding: 4px 8px; text-align: center; font-weight: bold; font-size: 16px; margin: 6px 0; }
+  </style></head><body>
+    <h1>◆ COZINHA ◆</h1>
+    <div class="muted">Pedido #${o.orderId.slice(0, 8).toUpperCase()} · ${formatSP(new Date())}</div>
+    <div class="badge">${o.mode === "entrega" ? "ENTREGA" : "BALCÃO"} · ${escapeHtml(o.customerName)}</div>
+    ${o.address ? `<div style="font-size:12px;margin-bottom:6px">Endereço: ${escapeHtml(o.address)}</div>` : ""}
+    ${items}
+  </body></html>`;
+}
+
+/* ---------------- Shift Summary ---------------- */
+
+type ShiftMethodTotals = { count: number; total: number };
+
+function ShiftSummaryBar({ userId }: { userId?: string }) {
+  const [stats, setStats] = useState<{
+    count: number;
+    total: number;
+    byMethod: Record<string, ShiftMethodTotals>;
+  } | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const load = useMemo(
+    () => async () => {
+      if (!userId) return;
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const { data } = await supabase
+        .from("orders")
+        .select("total, note, status, created_at")
+        .eq("user_id", userId)
+        .gte("created_at", start.toISOString())
+        .in("status", ["pago", "entregue", "concluido"]);
+      const rows = data ?? [];
+      const byMethod: Record<string, ShiftMethodTotals> = {};
+      let total = 0;
+      for (const r of rows) {
+        const t = Number(r.total) || 0;
+        total += t;
+        const noteStr = String(r.note ?? "");
+        const m = noteStr.match(/PDV · (Dinheiro|PIX|Débito|Crédito)/i);
+        const key = m ? m[1] : "Outros";
+        if (!byMethod[key]) byMethod[key] = { count: 0, total: 0 };
+        byMethod[key].count++;
+        byMethod[key].total += t;
+      }
+      setStats({ count: rows.length, total, byMethod });
+    },
+    [userId],
+  );
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 30_000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  if (!stats) return null;
+  const avg = stats.count > 0 ? stats.total / stats.count : 0;
+
+  return (
+    <div className="border-b border-white/5 bg-gradient-to-r from-fuchsia-900/20 via-transparent to-emerald-900/20 px-4 py-2.5 md:px-6">
+      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 text-xs">
+        <div className="flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-bold text-emerald-200">
+          <TrendingUp className="h-3.5 w-3.5" />
+          Turno hoje
+        </div>
+        <ShiftStat label="Vendas" value={String(stats.count)} />
+        <ShiftStat label="Faturamento" value={BRL(stats.total)} accent />
+        <ShiftStat label="Ticket médio" value={BRL(avg)} />
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="ml-auto flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-white/70 hover:bg-white/10"
+        >
+          {open ? "Ocultar detalhes" : "Ver por método"}
+        </button>
+      </div>
+      {open && (
+        <div className="mx-auto mt-2 grid max-w-[1600px] gap-2 sm:grid-cols-2 md:grid-cols-4">
+          {(["Dinheiro", "PIX", "Débito", "Crédito"] as const).map((k) => {
+            const s = stats.byMethod[k] ?? { count: 0, total: 0 };
+            return (
+              <div key={k} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-white/50">{k}</div>
+                  <div className="text-sm font-black text-white">{BRL(s.total)}</div>
+                </div>
+                <div className="text-[11px] font-bold text-white/60">{s.count}x</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ShiftStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[10px] uppercase tracking-widest text-white/40">{label}</span>
+      <span className={cn("font-black", accent ? "text-neon-yellow" : "text-white")}>{value}</span>
+    </div>
+  );
+}
+
