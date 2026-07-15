@@ -32,7 +32,7 @@ import { useCart, brl } from "@/lib/cart-context";
 import { useProducts } from "@/lib/menu-data";
 import { cn } from "@/lib/utils";
 import { OrdersListSkeleton } from "@/components/skeleton";
-import { confirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmDialog } from "@/lib/confirm";
 
 /* ================= Types ================= */
 
