@@ -5,6 +5,7 @@ export type UserAddress = {
   id: string;
   user_id: string;
   label: string;
+  recipient_name: string | null;
   address: string;
   reference: string | null;
   lat: number | null;
@@ -16,6 +17,7 @@ export type UserAddress = {
 
 export type UserAddressInput = {
   label: string;
+  recipient_name?: string | null;
   address: string;
   reference?: string | null;
   lat?: number | null;
