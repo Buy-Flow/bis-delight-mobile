@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Gift, Check, Ticket, Star, ShoppingBag, CreditCard, Award, Tag, Lock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import rewardTrophyAsset from "@/assets/reward-trophy.png.asset.json";
 import { TierBadge, TIER_META, type LoyaltyTier } from "@/components/menu/TierBadge";
+
 import { RecompensasSkeleton } from "@/components/skeleton";
 import { useLoyaltyTiers } from "@/lib/use-loyalty-tiers";
 
