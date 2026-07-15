@@ -1033,10 +1033,21 @@ function RowMobile({
 }) {
   const m = calc(p, cfg);
   const hasCost = m.totalCost > 0;
+  const [open, setOpen] = useState(false);
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-      <div className="flex items-center gap-3">
-        <button onClick={onDetail} className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white/5">
+    <article
+      className={cn(
+        "overflow-hidden rounded-2xl border bg-white/[0.03] transition",
+        open ? "border-neon-pink/40 shadow-[0_0_0_1px_rgba(255,64,181,0.15)]" : "border-white/10",
+      )}
+    >
+      {/* Header (always visible) */}
+      <div className="flex items-center gap-3 p-3">
+        <button
+          onClick={onDetail}
+          className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white/5"
+          aria-label="Detalhes"
+        >
           {p.image_url ? (
             <img src={p.image_url} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -1045,105 +1056,124 @@ function RowMobile({
             </div>
           )}
         </button>
-        <div className="min-w-0 flex-1">
-          <button onClick={onDetail} className="block w-full text-left">
-            <div className="truncate text-sm font-black text-white">{p.name}</div>
-            <div className="truncate text-[11px] text-white/50">
-              {p.category ?? "—"} · CMV {m.cmvPct.toFixed(0)}%
-            </div>
-          </button>
-        </div>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="min-w-0 flex-1 text-left"
+          aria-expanded={open}
+        >
+          <div className="truncate text-sm font-black text-white">{p.name}</div>
+          <div className="truncate text-[11px] text-white/50">
+            {p.category ?? "—"} · CMV {m.cmvPct.toFixed(0)}%
+          </div>
+        </button>
         {hasCost ? (
           <MarginPill pct={m.realMarginPct} target={n(p.target_margin_pct, 60)} />
         ) : (
           <span className="text-[10px] italic text-white/40">sem custo</span>
         )}
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-        <label className="flex flex-col gap-0.5 rounded-xl bg-black/20 p-2">
-          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
-            Custo
-          </span>
-          <InlineNum
-            value={n(p.cost_price)}
-            onCommit={(v) => onEdit({ cost_price: v })}
-            prefix="R$"
-            className="justify-start px-0"
-          />
-        </label>
-        <label className="flex flex-col gap-0.5 rounded-xl bg-black/20 p-2">
-          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
-            Embalagem
-          </span>
-          <InlineNum
-            value={n(p.packaging_cost)}
-            onCommit={(v) => onEdit({ packaging_cost: v })}
-            prefix="R$"
-            className="justify-start px-0"
-          />
-        </label>
-        <label className="flex flex-col gap-0.5 rounded-xl bg-black/20 p-2">
-          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
-            Preço
-          </span>
-          <InlineNum
-            value={n(p.base_price)}
-            onCommit={(v) => onEdit({ base_price: v })}
-            prefix="R$"
-            className="justify-start px-0"
-          />
-        </label>
-        <label className="flex flex-col gap-0.5 rounded-xl bg-black/20 p-2">
-          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
-            Meta
-          </span>
-          <InlineNum
-            value={n(p.target_margin_pct, 60)}
-            onCommit={(v) => onEdit({ target_margin_pct: v })}
-            suffix="%"
-            className="justify-start px-0"
-          />
-        </label>
-      </div>
-      <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 p-2">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-widest text-white/40">
-            Sugestão
-          </div>
-          {hasCost && m.suggestedPrice > 0 ? (
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-black tabular-nums text-white">
-                {brl(m.suggestedPrice)}
-              </span>
-              <span
-                className={cn(
-                  "text-[10px] font-bold tabular-nums",
-                  m.priceGap > 0.01
-                    ? "text-emerald-300"
-                    : m.priceGap < -0.01
-                      ? "text-red-300"
-                      : "text-white/40",
-                )}
-              >
-                {m.priceGap > 0 ? "+" : ""}
-                {brl(m.priceGap)}
-              </span>
-            </div>
-          ) : (
-            <span className="text-[11px] italic text-white/40">defina custo</span>
-          )}
-        </div>
         <button
-          onClick={onApply}
-          disabled={!hasCost || m.suggestedPrice <= 0}
-          className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-3 py-1.5 text-[11px] font-black text-white hover:brightness-110 disabled:opacity-30"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Recolher" : "Expandir"}
+          className={cn(
+            "grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10",
+            open && "rotate-180 border-neon-pink/40 bg-neon-pink/15 text-neon-pink",
+          )}
         >
-          <Wand2 className="h-3 w-3" /> Aplicar
+          <ChevronDown className="h-4 w-4" />
         </button>
       </div>
+
+      {/* Accordion body */}
+      {open && (
+        <div className="border-t border-white/10 bg-black/20 p-3">
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <label className="flex flex-col gap-0.5 rounded-xl bg-black/30 p-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                Custo
+              </span>
+              <InlineNum
+                value={n(p.cost_price)}
+                onCommit={(v) => onEdit({ cost_price: v })}
+                prefix="R$"
+                className="justify-start px-0"
+              />
+            </label>
+            <label className="flex flex-col gap-0.5 rounded-xl bg-black/30 p-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                Embalagem
+              </span>
+              <InlineNum
+                value={n(p.packaging_cost)}
+                onCommit={(v) => onEdit({ packaging_cost: v })}
+                prefix="R$"
+                className="justify-start px-0"
+              />
+            </label>
+            <label className="flex flex-col gap-0.5 rounded-xl bg-black/30 p-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                Preço
+              </span>
+              <InlineNum
+                value={n(p.base_price)}
+                onCommit={(v) => onEdit({ base_price: v })}
+                prefix="R$"
+                className="justify-start px-0"
+              />
+            </label>
+            <label className="flex flex-col gap-0.5 rounded-xl bg-black/30 p-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                Meta
+              </span>
+              <InlineNum
+                value={n(p.target_margin_pct, 60)}
+                onCommit={(v) => onEdit({ target_margin_pct: v })}
+                suffix="%"
+                className="justify-start px-0"
+              />
+            </label>
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 p-2">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/40">
+                Sugestão
+              </div>
+              {hasCost && m.suggestedPrice > 0 ? (
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-black tabular-nums text-white">
+                    {brl(m.suggestedPrice)}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[10px] font-bold tabular-nums",
+                      m.priceGap > 0.01
+                        ? "text-emerald-300"
+                        : m.priceGap < -0.01
+                          ? "text-red-300"
+                          : "text-white/40",
+                    )}
+                  >
+                    {m.priceGap > 0 ? "+" : ""}
+                    {brl(m.priceGap)}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-[11px] italic text-white/40">defina custo</span>
+              )}
+            </div>
+            <button
+              onClick={onApply}
+              disabled={!hasCost || m.suggestedPrice <= 0}
+              className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-3 py-1.5 text-[11px] font-black text-white hover:brightness-110 disabled:opacity-30"
+            >
+              <Wand2 className="h-3 w-3" /> Aplicar
+            </button>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
+
 
 /* ---------------- Detail Dialog ---------------- */
 
