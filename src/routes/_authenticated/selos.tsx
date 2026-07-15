@@ -52,7 +52,7 @@ function SelosPage() {
       active: editing.active ?? true,
     };
     const { error } = editing.id
-      ? await supabase.from("product_badges" as never).update(payload).eq("id" as never, editing.id as never)
+      ? await supabase.from("product_badges" as never).update(payload as never).eq("id" as never, editing.id as never)
       : await supabase.from("product_badges" as never).insert(payload as never);
     if (error) return toast.error(error.message);
     toast.success(editing.id ? "Selo atualizado" : "Selo criado");
