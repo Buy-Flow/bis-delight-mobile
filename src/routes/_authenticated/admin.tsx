@@ -1452,10 +1452,10 @@ function ProductEditor({
                   </button>
                 </div>
                 {(() => {
-                  const parse = (s: string): { name: string; delta: number } => {
+                  const parse = (s: string, i: number): { id: string; name: string; delta: number } => {
                     const m = s.match(/^(.*?)\s*\+R\$\s*([\d.,]+)\s*$/);
-                    if (m) return { name: m[1].trim(), delta: Number(m[2].replace(",", ".")) || 0 };
-                    return { name: s, delta: 0 };
+                    if (m) return { id: `f${i}`, name: m[1].trim(), delta: Number(m[2].replace(",", ".")) || 0 };
+                    return { id: `f${i}`, name: s, delta: 0 };
                   };
                   const encode = (name: string, delta: number) => {
                     const clean = name.trim();
