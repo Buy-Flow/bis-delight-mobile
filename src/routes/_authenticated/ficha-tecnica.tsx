@@ -504,7 +504,7 @@ function FichaTecnicaPage() {
               return (
                 <li key={p.id}>
                   <button
-                    onClick={() => setSelectedId(p.id)}
+                    onClick={() => { setSelectedId(p.id); setMobileView("editor"); }}
                     className={cn(
                       "flex w-full items-center gap-3 p-3 text-left transition",
                       selectedId === p.id ? "bg-neon-pink/10" : "hover:bg-white/5",
