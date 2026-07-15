@@ -440,29 +440,19 @@ function KpiChip({
   icon: Icon,
   label,
   value,
-  tone,
 }: {
   icon: any;
   label: string;
   value: string | number;
-  tone: "pink" | "cyan" | "yellow" | "white";
 }) {
-  const toneMap = {
-    pink: "text-neon-pink border-neon-pink/30 bg-neon-pink/10",
-    cyan: "text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10",
-    yellow: "text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10",
-    white: "text-white border-white/15 bg-white/5",
-  }[tone];
   return (
-    <div
-      className={`flex items-center gap-2.5 rounded-2xl border ${toneMap} px-3 py-2 backdrop-blur-sm`}
-    >
-      <Icon className="h-4 w-4 shrink-0" />
+    <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+      <Icon className="h-4 w-4 shrink-0 text-white/60" />
       <div className="min-w-0">
-        <div className="truncate text-[10px] font-bold uppercase tracking-wider opacity-80">
+        <div className="truncate text-[10px] font-bold uppercase tracking-wider text-white/50">
           {label}
         </div>
-        <div className="font-display text-lg font-black leading-none">
+        <div className="font-display text-lg font-black leading-none text-white">
           {value}
         </div>
       </div>
