@@ -116,9 +116,17 @@ function SelosPage() {
         <div className="animate-pulse rounded-xl border border-white/10 bg-white/5 p-6 text-white/60">Carregando…</div>
       ) : badges.length === 0 ? (
         <EmptyState
+          icon={Tag}
           title="Nenhum selo cadastrado"
           description="Crie o primeiro selo para destacar produtos no cardápio."
-          action={{ label: "Criar selo", onClick: openNew }}
+          action={
+            <button
+              onClick={openNew}
+              className="inline-flex items-center gap-2 rounded-lg bg-neon-pink px-4 py-2 text-sm font-bold uppercase tracking-wider text-white shadow-lg hover:brightness-110"
+            >
+              <Plus className="h-4 w-4" /> Criar selo
+            </button>
+          }
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
