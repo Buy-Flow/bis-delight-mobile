@@ -1140,10 +1140,12 @@ type EditorTab = "basic" | "photo" | "sizes" | "extras" | "custom" | "pause" | "
 
 function ProductEditor({
   initial,
+  initialTab,
   categories,
   onClose,
 }: {
   initial: Product;
+  initialTab?: EditorTab;
   categories: Category[];
   onClose: () => void;
 }) {
@@ -1154,7 +1156,7 @@ function ProductEditor({
   const { data: badgesList } = useProductBadges();
   const [p, setP] = useState<Product>(initial);
   const [imageBusy, setImageBusy] = useState(false);
-  const [tab, setTab] = useState<EditorTab>("basic");
+  const [tab, setTab] = useState<EditorTab>(initialTab ?? "basic");
   const [dirty, setDirty] = useState(false);
 
   const setField = <K extends keyof Product>(k: K, v: Product[K]) => {
