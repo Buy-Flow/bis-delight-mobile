@@ -210,6 +210,34 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     return `•••.•••.••${d[8]}-${d.slice(9)}`;
   })();
   const handleUnlockCpf = () => { setCpf(""); setCpfLocked(false); };
+  const renderCpfInput = (focusClass: string) => (
+    <div className="relative">
+      <input
+        value={cpfLocked ? maskedCpfDisplay : formatCpf(cpf)}
+        onChange={(e) => { if (cpfLocked) return; setCpf(e.target.value); }}
+        onFocus={() => { if (cpfLocked) handleUnlockCpf(); }}
+        readOnly={cpfLocked}
+        inputMode="numeric"
+        placeholder="000.000.000-00"
+        className={cn(
+          "w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 pr-20 text-sm text-white placeholder:text-white/30 outline-none",
+          focusClass,
+          cpfLocked && "cursor-pointer tracking-wider",
+        )}
+      />
+      {cpfLocked && (
+        <button
+          type="button"
+          onClick={handleUnlockCpf}
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-lg border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/90 hover:bg-white/20"
+        >
+          Trocar
+        </button>
+      )}
+    </div>
+  );
+
+
 
 
   useEffect(() => {
