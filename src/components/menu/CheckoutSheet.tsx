@@ -1798,15 +1798,27 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               {actionError}
             </div>
           )}
+          {belowMinInvoice && !actionError && (
+            <div
+              role="alert"
+              className="mb-2 flex items-start gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-left text-[12px] font-semibold leading-snug text-amber-100"
+            >
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+              <span>
+                Pedido mínimo online de <strong>{brl(MIN_INVOICE_BRL)}</strong>. Para valores menores,
+                dirija-se <strong>presencialmente à loja</strong> para concluir a compra.
+              </span>
+            </div>
+          )}
           <button
             type="button"
             onClick={send}
             disabled={
-              sending
+              sending || belowMinInvoice
             }
             className={cn(
               "flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-4 py-4 text-[15px] font-extrabold leading-none tracking-tight text-white active:scale-[.98] disabled:opacity-60",
-              storeStatus.isClosed || (mode === "entrega" && outsideRadius)
+              storeStatus.isClosed || (mode === "entrega" && outsideRadius) || belowMinInvoice
                 ? "bg-white/10 ring-1 ring-white/15"
                 : "bg-neon-pink",
             )}
@@ -1816,6 +1828,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               "Criando pedido…"
             ) : authLoading ? (
               "Preparando checkout…"
+            ) : belowMinInvoice ? (
+              <>
+                <AlertTriangle className="h-4 w-4 text-amber-300" />
+                Mínimo {brl(MIN_INVOICE_BRL)} · retire na loja
+              </>
             ) : storeStatus.isClosed ? (
               <>
                 <MoonStar className="h-4 w-4 text-red-300" />
