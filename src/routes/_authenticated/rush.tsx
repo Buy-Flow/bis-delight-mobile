@@ -440,9 +440,14 @@ function RushPage() {
     const allowed = STATUSES_IN_LANE[lane];
     const list = (orders ?? []).filter((o) => allowed.includes(o.status));
     if (lane === "feitos") {
-      // most recent first; limit to today unless showAllHistory
       return list
         .filter((o) => showAllHistory || isToday(new Date(o.created_at)))
+        // Hide cancelled orders in the "today" view; only expose them in full history with filter
+        .filter((o) => {
+          if (!showAllHistory) return o.status !== "cancelado";
+          if (historyFilter === "all") return true;
+          return o.status === historyFilter;
+        })
         .sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
@@ -450,7 +455,7 @@ function RushPage() {
     return list.sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     );
-  }, [orders, lane, showAllHistory]);
+  }, [orders, lane, showAllHistory, historyFilter]);
 
   const laneCounts = useMemo(() => {
     const c: Record<LaneId, number> = { novos: 0, cozinha: 0, rota: 0, feitos: 0 };
