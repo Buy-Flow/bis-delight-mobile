@@ -87,14 +87,14 @@ function PrevisaoPage() {
 
   if (adminLoading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[oklch(0.11_0.08_300)] text-white/70">
+      <div className="grid min-h-screen place-items-center bg-background text-white/70">
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
   }
   if (isAdmin === false) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[oklch(0.11_0.08_300)] p-6 text-center text-white/80">
+      <div className="grid min-h-screen place-items-center bg-background p-6 text-center text-white/80">
         <div>
           <p className="mb-4">Acesso restrito.</p>
           <Link to="/" className="text-neon-yellow underline">

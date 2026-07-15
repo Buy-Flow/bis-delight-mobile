@@ -590,7 +590,7 @@ function RushPage() {
   }
   if (!isAdmin && !canOperate) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] px-4 text-white">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 text-white">
         <div className="max-w-sm text-center">
           <h1 className="font-display text-2xl font-black">Acesso negado</h1>
           <p className="mt-2 text-sm text-white/60">
