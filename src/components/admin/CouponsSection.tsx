@@ -13,6 +13,13 @@ import {
   Pencil,
   CalendarClock,
   X,
+  Sparkles,
+  TrendingUp,
+  Percent,
+  DollarSign,
+  Flame,
+  Clock,
+  Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -221,201 +228,216 @@ export function CouponsSection() {
     load();
   };
 
+  const kpis = useMemo(() => {
+    const list = items ?? [];
+    const totalUses = list.reduce((s, c) => s + (c.uses || 0), 0);
+    const withLimit = list.filter((c) => c.max_uses != null && c.max_uses > 0);
+    const avgUsage = withLimit.length
+      ? Math.round(
+          (withLimit.reduce(
+            (s, c) => s + Math.min(1, (c.uses || 0) / (c.max_uses as number)),
+            0,
+          ) /
+            withLimit.length) *
+            100,
+        )
+      : null;
+    const bestCoupon = [...list]
+      .sort((a, b) => (b.uses || 0) - (a.uses || 0))
+      .find((c) => c.uses > 0);
+    return {
+      active: counts.active,
+      scheduled: counts.scheduled,
+      totalUses,
+      avgUsage,
+      bestCoupon,
+    };
+  }, [items, counts]);
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 className="font-display text-xl font-black">Cupons de desconto</h3>
-          <p className="text-xs text-white/50">
-            Crie códigos promocionais, agende lançamentos e acompanhe o uso.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setEditing(null);
-            setShowForm(true);
-          }}
-          className="inline-flex items-center gap-1.5 rounded-full bg-neon-pink px-3 py-1.5 text-xs font-bold text-white glow-pink"
-        >
-          <Plus className="h-3.5 w-3.5" /> Novo cupom
-        </button>
-      </div>
+    <div className="space-y-5">
+      {/* HERO HEADER */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-yellow/15 via-neon-pink/15 to-neon-purple/15 p-5">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-yellow/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-neon-pink/20 blur-3xl" />
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-1.5 rounded-2xl border border-white/10 bg-white/5 p-1">
-        {TABS.map((t) => (
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-yellow to-neon-pink text-white shadow-lg shadow-neon-pink/30">
+              <Ticket className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-display text-2xl font-black text-white">
+                  Cupons de desconto
+                </h3>
+                <span className="rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-neon-cyan">
+                  <Sparkles className="mr-1 inline h-2.5 w-2.5" /> Marketing
+                </span>
+              </div>
+              <p className="mt-1 max-w-md text-[13px] leading-relaxed text-white/60">
+                Crie códigos promocionais, agende lançamentos e acompanhe o uso
+                em tempo real.
+              </p>
+            </div>
+          </div>
+
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={cn(
-              "flex-1 min-w-[90px] rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider transition",
-              tab === t.key
-                ? "bg-neon-pink text-white shadow-lg shadow-neon-pink/30"
-                : "text-white/60 hover:bg-white/5 hover:text-white/90",
-            )}
+            onClick={() => {
+              setEditing(null);
+              setShowForm(true);
+            }}
+            className="group flex items-center gap-2 self-start rounded-2xl bg-neon-pink px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-neon-pink/40 transition-transform hover:scale-[1.02] active:scale-95 glow-pink sm:self-auto"
           >
-            {t.label}
-            <span
-              className={cn(
-                "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px]",
-                tab === t.key ? "bg-white/20" : "bg-white/10",
-              )}
-            >
-              {counts[t.key]}
-            </span>
+            <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+            Novo cupom
           </button>
-        ))}
-      </div>
+        </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar código ou observação…"
-            className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none focus:border-neon-pink"
+        {/* KPI strip */}
+        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <KpiChip
+            icon={Flame}
+            label="Ativos agora"
+            value={kpis.active}
+            tone="cyan"
+          />
+          <KpiChip
+            icon={Clock}
+            label="Agendados"
+            value={kpis.scheduled}
+            tone="yellow"
+          />
+          <KpiChip
+            icon={TrendingUp}
+            label="Usos totais"
+            value={kpis.totalUses}
+            tone="pink"
+          />
+          <KpiChip
+            icon={Percent}
+            label="Taxa média"
+            value={kpis.avgUsage != null ? `${kpis.avgUsage}%` : "—"}
+            tone="white"
           />
         </div>
-        <select
-          value={typeFilter}
-          onChange={(e) =>
-            setTypeFilter(e.target.value as "all" | "fixed" | "percent")
-          }
-          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
-        >
-          <option value="all">Todos os tipos</option>
-          <option value="fixed">Valor fixo (R$)</option>
-          <option value="percent">Percentual (%)</option>
-        </select>
+
+        {kpis.bestCoupon && (
+          <div className="relative mt-3 inline-flex items-center gap-2 rounded-full border border-neon-yellow/30 bg-black/30 px-3 py-1.5 backdrop-blur-sm">
+            <Sparkles className="h-3 w-3 text-neon-yellow" />
+            <span className="text-[11px] text-white/70">
+              Mais usado:{" "}
+              <span className="font-mono font-bold text-neon-yellow">
+                {kpis.bestCoupon.code}
+              </span>{" "}
+              · {kpis.bestCoupon.uses} resgates
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Tabs + Filters */}
+      <div className="space-y-3 rounded-3xl border border-white/10 bg-white/[0.02] p-3">
+        <div className="flex flex-wrap gap-1.5">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={cn(
+                "group flex items-center gap-2 rounded-2xl px-3.5 py-2 text-xs font-bold uppercase tracking-wider transition",
+                tab === t.key
+                  ? "bg-gradient-to-r from-neon-pink to-neon-purple text-white shadow-lg shadow-neon-pink/30"
+                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/90",
+              )}
+            >
+              {t.label}
+              <span
+                className={cn(
+                  "grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[10px] font-black",
+                  tab === t.key
+                    ? "bg-white/25 text-white"
+                    : "bg-white/10 text-white/70",
+                )}
+              >
+                {counts[t.key]}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
+          <div className="relative min-w-[220px] flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar código ou observação…"
+              className="w-full rounded-xl border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink"
+            />
+          </div>
+          <select
+            value={typeFilter}
+            onChange={(e) =>
+              setTypeFilter(e.target.value as "all" | "fixed" | "percent")
+            }
+            className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+          >
+            <option value="all">Todos os tipos</option>
+            <option value="fixed">Valor fixo (R$)</option>
+            <option value="percent">Percentual (%)</option>
+          </select>
+        </div>
       </div>
 
       {items === null && (
-        <div className="grid place-items-center py-12">
+        <div className="grid place-items-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-white/40" />
         </div>
       )}
 
       {items && filtered.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-white/50">
-          <Ticket className="mx-auto mb-2 h-8 w-8 text-white/30" />
-          {items.length === 0
-            ? 'Nenhum cupom criado ainda. Clique em "Novo cupom" pra começar.'
-            : "Nenhum cupom encontrado com os filtros atuais."}
+        <div className="relative overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-14 text-center">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,235,59,0.10),transparent_60%)]" />
+          <div className="relative mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-neon-yellow/30 to-neon-pink/30 text-neon-yellow">
+            <Ticket className="h-8 w-8" />
+          </div>
+          <h4 className="relative mt-4 font-display text-xl font-black text-white">
+            {items.length === 0 ? "Nenhum cupom ainda" : "Nada por aqui"}
+          </h4>
+          <p className="relative mx-auto mt-1 max-w-sm text-sm text-white/50">
+            {items.length === 0
+              ? "Crie códigos promocionais para atrair novos clientes e recompensar os fiéis."
+              : "Ajuste os filtros ou tente outra busca."}
+          </p>
+          {items.length === 0 && (
+            <button
+              onClick={() => {
+                setEditing(null);
+                setShowForm(true);
+              }}
+              className="relative mt-5 inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-5 py-3 text-sm font-extrabold text-white glow-pink"
+            >
+              <Plus className="h-4 w-4" /> Criar primeiro cupom
+            </button>
+          )}
         </div>
       )}
 
       {items && filtered.length > 0 && (
-        <div className="space-y-2">
-          {filtered.map((c) => {
-            const status = getStatus(c);
-            const usagePct =
-              c.max_uses != null && c.max_uses > 0
-                ? Math.min(100, (c.uses / c.max_uses) * 100)
-                : null;
-            return (
-              <div
-                key={c.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 transition hover:border-white/20"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => copy(c.code)}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-neon-yellow/15 px-2 py-1 font-mono text-sm font-bold text-neon-yellow"
-                      title="Copiar código"
-                    >
-                      {c.code}
-                      <Copy className="h-3 w-3" />
-                    </button>
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
-                        status.tone,
-                      )}
-                    >
-                      {status.label}
-                    </span>
-                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/70">
-                      {c.discount_type === "fixed"
-                        ? brl(c.discount_value)
-                        : `${c.discount_value}% OFF`}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-white/60">
-                    {c.min_order > 0 && (
-                      <span>Mínimo: {brl(c.min_order)}</span>
-                    )}
-                    <span>
-                      Usos: <b className="text-white/90">{c.uses}</b>
-                      {c.max_uses != null ? ` / ${c.max_uses}` : " (ilimitado)"}
-                    </span>
-                    <span>Por cliente: {c.per_user_limit}x</span>
-                    {c.starts_at && (
-                      <span className="inline-flex items-center gap-1 text-amber-300/80">
-                        <CalendarClock className="h-3 w-3" />
-                        Inicia:{" "}
-                        {new Date(c.starts_at).toLocaleString("pt-BR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    )}
-                    {c.expires_at && (
-                      <span>
-                        Expira:{" "}
-                        {new Date(c.expires_at).toLocaleDateString("pt-BR")}
-                      </span>
-                    )}
-                  </div>
-                  {usagePct != null && (
-                    <div className="mt-1.5 h-1 w-full max-w-[240px] overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className="h-full bg-gradient-to-r from-neon-pink to-neon-yellow"
-                        style={{ width: `${usagePct}%` }}
-                      />
-                    </div>
-                  )}
-                  {c.note && (
-                    <div className="mt-1 text-[11px] text-white/40">{c.note}</div>
-                  )}
-                </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <button
-                    onClick={() => {
-                      setEditing(c);
-                      setShowForm(true);
-                    }}
-                    className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
-                    title="Editar"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => toggleActive(c)}
-                    className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-white/70 hover:bg-white/10"
-                    title={c.active ? "Desativar" : "Ativar"}
-                  >
-                    {c.active ? (
-                      <Power className="h-3.5 w-3.5" />
-                    ) : (
-                      <PowerOff className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => remove(c)}
-                    className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-red-300 hover:bg-red-500/20"
-                    title="Excluir"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((c) => (
+            <CouponCard
+              key={c.id}
+              coupon={c}
+              onCopy={() => copy(c.code)}
+              onEdit={() => {
+                setEditing(c);
+                setShowForm(true);
+              }}
+              onToggle={() => toggleActive(c)}
+              onDelete={() => remove(c)}
+            />
+          ))}
         </div>
       )}
 
@@ -433,6 +455,235 @@ export function CouponsSection() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+/* ------------------------------ KpiChip ------------------------------ */
+
+function KpiChip({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  tone: "pink" | "cyan" | "yellow" | "white";
+}) {
+  const toneMap = {
+    pink: "text-neon-pink border-neon-pink/30 bg-neon-pink/10",
+    cyan: "text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10",
+    yellow: "text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10",
+    white: "text-white border-white/15 bg-white/5",
+  }[tone];
+  return (
+    <div
+      className={`flex items-center gap-2.5 rounded-2xl border ${toneMap} px-3 py-2 backdrop-blur-sm`}
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <div className="min-w-0">
+        <div className="truncate text-[10px] font-bold uppercase tracking-wider opacity-80">
+          {label}
+        </div>
+        <div className="font-display text-lg font-black leading-none">
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ CouponCard --------------------------- */
+
+function CouponCard({
+  coupon: c,
+  onCopy,
+  onEdit,
+  onToggle,
+  onDelete,
+}: {
+  coupon: Coupon;
+  onCopy: () => void;
+  onEdit: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const status = getStatus(c);
+  const usagePct =
+    c.max_uses != null && c.max_uses > 0
+      ? Math.min(100, (c.uses / c.max_uses) * 100)
+      : null;
+
+  const toneRing = {
+    active: "border-emerald-500/30 hover:border-emerald-500/50",
+    scheduled: "border-amber-500/30 hover:border-amber-500/50",
+    expired: "border-red-500/25 opacity-70",
+    inactive: "border-white/10 opacity-60",
+    all: "border-white/10",
+  }[status.key];
+
+  return (
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-3xl border bg-white/[0.03] transition-all hover:bg-white/[0.05]",
+        toneRing,
+      )}
+    >
+      {/* perforated left edge — ticket look */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex w-6 flex-col items-center justify-around">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <span
+            key={i}
+            className="h-1.5 w-1.5 rounded-full bg-[oklch(0.11_0.08_305)]"
+          />
+        ))}
+      </div>
+      <div className="pointer-events-none absolute inset-y-0 left-6 w-px bg-white/5" />
+
+      <div className="relative pl-8 pr-4 pt-4">
+        <div className="flex items-start justify-between gap-3">
+          {/* code + status */}
+          <div className="min-w-0 flex-1">
+            <button
+              onClick={onCopy}
+              className="group/code inline-flex items-center gap-1.5 rounded-xl bg-neon-yellow/12 px-2.5 py-1.5 font-mono text-sm font-black text-neon-yellow transition hover:bg-neon-yellow/20"
+              title="Copiar código"
+            >
+              <span className="max-w-[160px] truncate">{c.code}</span>
+              <Copy className="h-3 w-3 opacity-60 transition group-hover/code:opacity-100" />
+            </button>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider",
+                  status.tone,
+                )}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-current shadow-[0_0_6px_currentColor]" />
+                {status.label}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10.5px] font-bold text-white/80">
+                {c.discount_type === "fixed" ? (
+                  <DollarSign className="h-2.5 w-2.5" />
+                ) : (
+                  <Percent className="h-2.5 w-2.5" />
+                )}
+                {c.discount_type === "fixed"
+                  ? brl(c.discount_value)
+                  : `${c.discount_value}% OFF`}
+              </span>
+            </div>
+          </div>
+
+          {/* discount badge */}
+          <div className="grid shrink-0 place-items-center rounded-2xl border border-neon-pink/40 bg-gradient-to-br from-neon-pink/25 to-neon-purple/20 px-3 py-2 backdrop-blur-sm">
+            <div className="font-display text-xl font-black leading-none text-white">
+              {c.discount_type === "percent"
+                ? `${c.discount_value}%`
+                : brl(c.discount_value).replace("R$", "").trim()}
+            </div>
+            <div className="mt-0.5 text-[8.5px] font-black uppercase tracking-wider text-white/70">
+              {c.discount_type === "percent" ? "off" : "reais"}
+            </div>
+          </div>
+        </div>
+
+        {/* meta grid */}
+        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-white/60">
+          {c.min_order > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <span className="h-1 w-1 rounded-full bg-white/30" />
+              Mín: <b className="text-white/85">{brl(c.min_order)}</b>
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1">
+            <Users className="h-3 w-3 opacity-60" />
+            {c.per_user_limit}× por cliente
+          </span>
+          {c.starts_at && (
+            <span className="inline-flex items-center gap-1 text-amber-300/85">
+              <CalendarClock className="h-3 w-3" />
+              {new Date(c.starts_at).toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+              })}
+            </span>
+          )}
+          {c.expires_at && (
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3 w-3 opacity-60" />
+              Até {new Date(c.expires_at).toLocaleDateString("pt-BR")}
+            </span>
+          )}
+        </div>
+
+        {/* usage */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-white/50">
+            <span>Uso</span>
+            <span className="text-white/80">
+              {c.uses}
+              {c.max_uses != null ? ` / ${c.max_uses}` : " · ilimitado"}
+            </span>
+          </div>
+          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/8">
+            {usagePct != null ? (
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  usagePct >= 100
+                    ? "bg-red-400"
+                    : usagePct >= 80
+                      ? "bg-gradient-to-r from-neon-yellow to-red-400"
+                      : "bg-gradient-to-r from-neon-pink to-neon-yellow",
+                )}
+                style={{ width: `${Math.max(4, usagePct)}%` }}
+              />
+            ) : (
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-neon-cyan/40 via-neon-pink/40 to-neon-purple/40"
+                style={{ width: "100%", opacity: 0.5 }}
+              />
+            )}
+          </div>
+        </div>
+
+        {c.note && (
+          <div className="mt-3 rounded-xl border border-white/5 bg-black/20 px-2.5 py-1.5 text-[11px] italic text-white/50">
+            "{c.note}"
+          </div>
+        )}
+      </div>
+
+      {/* action bar */}
+      <div className="relative mt-3 flex gap-1 border-t border-white/5 bg-black/20 px-3 py-2 pl-8">
+        <button
+          onClick={onEdit}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/5 py-1.5 text-xs font-bold text-white/85 transition hover:bg-white/12"
+        >
+          <Pencil className="h-3.5 w-3.5" /> Editar
+        </button>
+        <button
+          onClick={onToggle}
+          title={c.active ? "Desativar" : "Ativar"}
+          className="grid h-8 w-8 place-items-center rounded-xl bg-white/5 text-white/80 transition hover:bg-white/12"
+        >
+          {c.active ? (
+            <Power className="h-3.5 w-3.5" />
+          ) : (
+            <PowerOff className="h-3.5 w-3.5" />
+          )}
+        </button>
+        <button
+          onClick={onDelete}
+          title="Excluir"
+          className="grid h-8 w-8 place-items-center rounded-xl border border-red-500/25 bg-red-500/10 text-red-300 transition hover:bg-red-500/20"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   );
 }
