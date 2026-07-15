@@ -356,49 +356,82 @@ function TablesPage() {
         </section>
 
         {/* Filters */}
-        {(tab === "salao" || tab === "lista") && (
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar mesa, zona..."
-                className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-neon-pink/50 focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center gap-1 overflow-x-auto">
-              {["todas", ...zones].map((z) => (
+        {(tab === "salao" || tab === "lista" || tab === "planta") && (
+          <div className="mb-3 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar mesa, zona..."
+                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-neon-pink/50 focus:outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+                {["todas", ...zones].map((z) => (
+                  <button
+                    key={z}
+                    onClick={() => setZoneFilter(z)}
+                    className={cn(
+                      "shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition capitalize",
+                      zoneFilter === z
+                        ? "border-neon-pink/50 bg-neon-pink/20 text-white"
+                        : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+                    )}
+                  >
+                    {z}
+                  </button>
+                ))}
                 <button
-                  key={z}
-                  onClick={() => setZoneFilter(z)}
-                  className={cn(
-                    "shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition capitalize",
-                    zoneFilter === z
-                      ? "border-neon-pink/50 bg-neon-pink/20 text-white"
-                      : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
-                  )}
+                  onClick={() => setManagingZones(true)}
+                  title="Gerenciar zonas"
+                  className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-white/70 transition hover:bg-white/10"
                 >
-                  {z}
+                  Zonas
                 </button>
-              ))}
-              <button
-                onClick={() => setManagingZones(true)}
-                title="Gerenciar zonas"
-                className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-white/70 transition hover:bg-white/10"
-              >
-                Gerenciar zonas
-              </button>
+              </div>
             </div>
+            {waiters.length > 0 && (
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+                <span className="shrink-0 pl-1 pr-1 text-[10px] font-black uppercase tracking-widest text-white/40">
+                  Garçom
+                </span>
+                {[{ id: "todos", name: "Todos" }, ...waiters].map((w) => (
+                  <button
+                    key={w.id}
+                    onClick={() => setWaiterFilter(w.id)}
+                    className={cn(
+                      "shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold transition",
+                      waiterFilter === w.id
+                        ? "border-cyan-400/50 bg-cyan-400/15 text-cyan-100"
+                        : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
+                    )}
+                  >
+                    {w.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {tab === "salao" && (
           <SalonView
             tables={filteredTables}
+            orders={orders}
             orderByTable={orderByTable}
             waiterById={waiterById}
             onOpen={(t) => setSelected(t)}
+          />
+        )}
+
+        {tab === "planta" && (
+          <FloorPlanView
+            tables={filteredTables}
+            orderByTable={orderByTable}
+            onOpen={(t) => setSelected(t)}
+            onReload={() => void load()}
           />
         )}
 
