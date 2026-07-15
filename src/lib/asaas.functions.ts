@@ -35,7 +35,7 @@ const pixInput = z.object({
 
 export const createAsaasPixForOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw) => pixInput.parse(raw))
+  .validator((raw) => pixInput.parse(raw))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createPixCharge } = await import("@/lib/asaas.server");
@@ -120,7 +120,7 @@ const cardInput = z.object({
 
 export const createAsaasCardForOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw) => cardInput.parse(raw))
+  .validator((raw) => cardInput.parse(raw))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCardCharge } = await import("@/lib/asaas.server");
@@ -243,7 +243,7 @@ export const createAsaasCardForOrder = createServerFn({ method: "POST" })
 
 export const getAsaasPaymentStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw) => z.object({ orderId: z.string().uuid() }).parse(raw))
+  .validator((raw) => z.object({ orderId: z.string().uuid() }).parse(raw))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin
@@ -306,7 +306,7 @@ const checkoutInput = z.object({
 
 export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw) => checkoutInput.parse(raw))
+  .validator((raw) => checkoutInput.parse(raw))
   .handler(async ({ data, context }) => {
     // Parse "Rua X, 123 — Bairro — Cidade — CEP 00000-000" style strings loosely.
     // Kept inside the handler because module-scope helpers are stripped by the
