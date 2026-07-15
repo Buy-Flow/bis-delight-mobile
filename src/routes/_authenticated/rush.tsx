@@ -271,6 +271,7 @@ function RushPage() {
   const [testBusy, setTestBusy] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<"all" | "entregue" | "cancelado">("all");
   const { settings: slaSettings, history: slaHistory } = useSlaSettings();
 
   // sound preference
