@@ -808,19 +808,6 @@ function RushPage() {
       {/* Bottom bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[oklch(0.09_0.08_305)]/90 px-3 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center gap-2">
-          <button
-            type="button"
-            onClick={sendPushTest}
-            disabled={testBusy}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white/5 py-3 text-xs font-bold text-white/90 hover:bg-white/10 disabled:opacity-60"
-          >
-            {testBusy ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-            Teste push
-          </button>
           <div className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl bg-gradient-to-r from-neon-pink/15 to-neon-yellow/15 px-2 py-3 text-[10px] font-bold ring-1 ring-white/10 sm:text-[11px]">
             <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
             <span className="text-emerald-200">{kpis.delivered} <span className="hidden sm:inline">entregues</span><span className="sm:hidden">entr.</span></span>
