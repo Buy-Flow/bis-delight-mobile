@@ -55,6 +55,7 @@ import {
   WifiOff,
   Stethoscope,
   History as HistoryIcon,
+  Palette,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +67,7 @@ import { CommandPalette } from "@/components/admin/CommandPalette";
 import { useSoundAlertsListener } from "@/hooks/useSoundAlertsListener";
 import { useAdminNotificationsListener } from "@/hooks/useAdminNotificationsListener";
 import { NotificationCenter } from "@/components/admin/NotificationCenter";
+import { AdminThemeStyle } from "@/components/admin/AdminThemeStyle";
 
 type AdminTab =
   | "products"
@@ -180,6 +182,7 @@ const groups: NavGroup[] = [
       { to: "/usuarios", label: "Usuários e permissões", icon: ShieldCheck },
       { to: "/automacoes", label: "Automações", icon: Zap },
       { to: "/alertas-sonoros", label: "Alertas sonoros", icon: Volume2 },
+      { to: "/personalizar-painel", label: "Personalizar painel", icon: Palette },
     ],
   },
   {
@@ -398,6 +401,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div data-scope="admin" className="min-h-screen bg-background text-white">
+      <AdminThemeStyle />
       {/* Desktop sidebar */}
       <aside
         className={cn(
