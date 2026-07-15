@@ -635,6 +635,18 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
         .single();
       if (orderErr) throw orderErr;
 
+      // Guarda referência local do pedido para recuperação (independe de RLS/sessão)
+      try {
+        const KEY = "querobis:recent_orders";
+        const online = paymentMethod === "pix" || paymentMethod === "cartao" || paymentMethod === "asaas_checkout";
+        const prev = JSON.parse(localStorage.getItem(KEY) || "[]");
+        const next = [
+          { id: order.id, at: Date.now(), payment_method: paymentMethod, total, needs_payment: online },
+          ...prev.filter((x: any) => x?.id && x.id !== order.id),
+        ].slice(0, 10);
+        localStorage.setItem(KEY, JSON.stringify(next));
+      } catch {}
+
       const itemsPayload = items.map((it) => ({
         order_id: order.id,
         product_id: it.productId,
