@@ -58,6 +58,16 @@ type MediaItem = {
 const CATEGORIES = ["produto", "banner", "categoria", "popup", "logo", "outros"] as const;
 type Category = (typeof CATEGORIES)[number];
 
+type PendingUpload = {
+  file: File;
+  previewUrl: string;
+  name: string;
+  category: Category | "";
+  tags: string;
+  alt: string;
+};
+
+
 const BUCKET = "product-images";
 const SIGNED_TTL_SECONDS = 60 * 60 * 24 * 365 * 10; // 10y
 
@@ -102,6 +112,8 @@ function BibliotecaPage() {
   const [activeItem, setActiveItem] = useState<MediaItem | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [pending, setPending] = useState<PendingUpload[] | null>(null);
+
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -199,8 +211,18 @@ function BibliotecaPage() {
     return list;
   }, [items, search, categoryFilter, onlyFavorites, onlyUnused, activeTags, sortKey]);
 
+  const guessCategory = useCallback((filename: string): Category | "" => {
+    const n = filename.toLowerCase();
+    if (/(banner|hero|capa|cover)/.test(n)) return "banner";
+    if (/(logo|marca|brand)/.test(n)) return "logo";
+    if (/(popup|pop-up|modal)/.test(n)) return "popup";
+    if (/(categoria|category|cat[-_])/.test(n)) return "categoria";
+    if (/(produto|product|item|acai|shake|combo)/.test(n)) return "produto";
+    return "";
+  }, []);
+
   const handleFiles = useCallback(
-    async (files: FileList | File[]) => {
+    (files: FileList | File[]) => {
       if (!isAdmin) {
         toast.error("Somente administradores podem enviar mídias");
         return;
@@ -210,59 +232,85 @@ function BibliotecaPage() {
         toast.error("Nenhuma imagem válida selecionada");
         return;
       }
-      setUploading(true);
-      setUploadProgress({ done: 0, total: arr.length });
-      const { data: userData } = await supabase.auth.getUser();
-      const uploaderId = userData.user?.id ?? null;
-      let ok = 0;
-      let fail = 0;
-      for (const file of arr) {
-        try {
-          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-          const path = `${crypto.randomUUID()}.${ext}`;
-          const { error: upErr } = await supabase.storage
-            .from(BUCKET)
-            .upload(path, file, { upsert: false, cacheControl: "3600" });
-          if (upErr) throw upErr;
-          const { data: signed, error: signErr } = await supabase.storage
-            .from(BUCKET)
-            .createSignedUrl(path, SIGNED_TTL_SECONDS);
-          if (signErr || !signed?.signedUrl) throw signErr ?? new Error("URL falhou");
-          const dims = await readImageDims(file);
-          const clean = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
-          const { error: insErr } = await supabase.from("media_library").insert({
-            name: clean.slice(0, 80) || "sem-nome",
-            storage_path: path,
-            url: signed.signedUrl,
-            bucket: BUCKET,
-            mime_type: file.type,
-            size_bytes: file.size,
-            width: dims?.width ?? null,
-            height: dims?.height ?? null,
-            uploaded_by: uploaderId,
-          });
-          if (insErr) throw insErr;
-          ok++;
-        } catch (err) {
-          fail++;
-          console.error("upload fail", err);
-        }
-        setUploadProgress((p) => (p ? { ...p, done: p.done + 1 } : null));
-      }
-      setUploading(false);
-      setUploadProgress(null);
-      if (ok > 0) toast.success(`${ok} ${ok === 1 ? "mídia enviada" : "mídias enviadas"}`);
-      if (fail > 0) toast.error(`${fail} envio(s) falharam`);
-      await loadItems();
+      const queue: PendingUpload[] = arr.map((file) => {
+        const clean = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+        return {
+          file,
+          previewUrl: URL.createObjectURL(file),
+          name: clean.slice(0, 80) || "sem-nome",
+          category: guessCategory(file.name),
+          tags: "",
+          alt: "",
+        };
+      });
+      setPending(queue);
     },
-    [isAdmin, loadItems],
+    [isAdmin, guessCategory],
   );
 
-  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragActive(false);
-    if (e.dataTransfer.files?.length) void handleFiles(e.dataTransfer.files);
-  };
+  const cancelPending = useCallback(() => {
+    setPending((prev) => {
+      prev?.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+      return null;
+    });
+  }, []);
+
+  const confirmUpload = useCallback(async () => {
+    if (!pending || pending.length === 0) return;
+    setUploading(true);
+    setUploadProgress({ done: 0, total: pending.length });
+    const { data: userData } = await supabase.auth.getUser();
+    const uploaderId = userData.user?.id ?? null;
+    let ok = 0;
+    let fail = 0;
+    for (const p of pending) {
+      try {
+        const ext = (p.file.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, p.file, { upsert: false, cacheControl: "3600" });
+        if (upErr) throw upErr;
+        const { data: signed, error: signErr } = await supabase.storage
+          .from(BUCKET)
+          .createSignedUrl(path, SIGNED_TTL_SECONDS);
+        if (signErr || !signed?.signedUrl) throw signErr ?? new Error("URL falhou");
+        const dims = await readImageDims(p.file);
+        const tagsArr = p.tags
+          .split(",")
+          .map((t) => t.trim().toLowerCase())
+          .filter(Boolean);
+        const { error: insErr } = await supabase.from("media_library").insert({
+          name: p.name.trim().slice(0, 80) || "sem-nome",
+          storage_path: path,
+          url: signed.signedUrl,
+          bucket: BUCKET,
+          mime_type: p.file.type,
+          size_bytes: p.file.size,
+          width: dims?.width ?? null,
+          height: dims?.height ?? null,
+          uploaded_by: uploaderId,
+          category: p.category || null,
+          tags: tagsArr,
+          alt_text: p.alt.trim() || null,
+        });
+        if (insErr) throw insErr;
+        ok++;
+      } catch (err) {
+        fail++;
+        console.error("upload fail", err);
+      }
+      setUploadProgress((prev) => (prev ? { ...prev, done: prev.done + 1 } : null));
+    }
+    setUploading(false);
+    setUploadProgress(null);
+    pending.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+    setPending(null);
+    if (ok > 0) toast.success(`${ok} ${ok === 1 ? "mídia enviada" : "mídias enviadas"}`);
+    if (fail > 0) toast.error(`${fail} envio(s) falharam`);
+    await loadItems();
+  }, [pending, loadItems]);
+
 
   const toggleSelect = (id: string) => {
     setSelection((prev) => {
@@ -590,7 +638,12 @@ function BibliotecaPage() {
             setDragActive(true);
           }}
           onDragLeave={() => setDragActive(false)}
-          onDrop={onDrop}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragActive(false);
+            if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
+          }}
+
           className={cn(
             "rounded-2xl border-2 border-dashed transition",
             dragActive
@@ -654,6 +707,16 @@ function BibliotecaPage() {
         onToggleFav={toggleFavorite}
         onCopy={copyUrl}
       />
+
+      <PendingUploadDialog
+        pending={pending}
+        uploading={uploading}
+        progress={uploadProgress}
+        onChange={setPending}
+        onCancel={cancelPending}
+        onConfirm={confirmUpload}
+      />
+
     </div>
   );
 }
@@ -1091,3 +1154,171 @@ export type { MediaItem };
 // keep ArrowDown icons imported for future sort UI
 void ArrowDownAZ;
 void ArrowUpDown;
+
+function PendingUploadDialog({
+  pending,
+  uploading,
+  progress,
+  onChange,
+  onCancel,
+  onConfirm,
+}: {
+  pending: PendingUpload[] | null;
+  uploading: boolean;
+  progress: { done: number; total: number } | null;
+  onChange: (next: PendingUpload[] | null) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const open = !!pending && pending.length > 0;
+  const applyAllCategory = (category: Category | "") => {
+    if (!pending) return;
+    onChange(pending.map((p) => ({ ...p, category })));
+  };
+  const applyAllTags = (tags: string) => {
+    if (!pending) return;
+    onChange(pending.map((p) => ({ ...p, tags })));
+  };
+  const update = (idx: number, patch: Partial<PendingUpload>) => {
+    if (!pending) return;
+    onChange(pending.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
+  };
+  const remove = (idx: number) => {
+    if (!pending) return;
+    const next = pending.filter((_, i) => i !== idx);
+    if (next.length === 0) {
+      onCancel();
+      return;
+    }
+    onChange(next);
+  };
+  const bulkCat = pending && pending.every((p) => p.category === pending[0].category)
+    ? pending[0].category
+    : "";
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && !uploading && onCancel()}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>
+            Enviar {pending?.length ?? 0} {pending?.length === 1 ? "mídia" : "mídias"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/10">
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-white/50">Aplicar categoria a todos</label>
+            <select
+              value={bulkCat}
+              onChange={(e) => applyAllCategory(e.target.value as Category | "")}
+              disabled={uploading}
+              className="mt-1 w-full rounded-lg bg-black/40 px-2 py-1.5 text-sm ring-1 ring-white/10"
+            >
+              <option value="">— manter individual —</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-white/50">Aplicar tags a todos (vírgula)</label>
+            <input
+              type="text"
+              placeholder="ex: promo, inverno, morango"
+              disabled={uploading}
+              onBlur={(e) => e.target.value && applyAllTags(e.target.value)}
+              className="mt-1 w-full rounded-lg bg-black/40 px-2 py-1.5 text-sm ring-1 ring-white/10 placeholder:text-white/30"
+            />
+          </div>
+        </div>
+
+        <div className="mt-3 flex-1 overflow-y-auto space-y-2 pr-1">
+          {pending?.map((p, idx) => (
+            <div key={idx} className="rounded-xl bg-white/[0.02] p-3 ring-1 ring-white/10">
+              <div className="flex gap-3">
+                <img src={p.previewUrl} alt="" className="h-20 w-20 rounded-lg object-cover ring-1 ring-white/10" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="text"
+                      value={p.name}
+                      disabled={uploading}
+                      onChange={(e) => update(idx, { name: e.target.value })}
+                      placeholder="Nome"
+                      className="flex-1 rounded-lg bg-black/40 px-2 py-1.5 text-sm ring-1 ring-white/10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => remove(idx)}
+                      disabled={uploading}
+                      className="rounded-lg bg-white/5 p-1.5 text-white/60 hover:bg-rose-500/20 hover:text-rose-200"
+                      aria-label="Remover"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <select
+                      value={p.category}
+                      disabled={uploading}
+                      onChange={(e) => update(idx, { category: e.target.value as Category | "" })}
+                      className="rounded-lg bg-black/40 px-2 py-1.5 text-xs ring-1 ring-white/10"
+                    >
+                      <option value="">Sem categoria</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={p.tags}
+                      disabled={uploading}
+                      onChange={(e) => update(idx, { tags: e.target.value })}
+                      placeholder="Tags (vírgula)"
+                      className="rounded-lg bg-black/40 px-2 py-1.5 text-xs ring-1 ring-white/10 placeholder:text-white/30"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={p.alt}
+                    disabled={uploading}
+                    onChange={(e) => update(idx, { alt: e.target.value })}
+                    placeholder="Descrição / texto alternativo (usado na busca)"
+                    className="w-full rounded-lg bg-black/40 px-2 py-1.5 text-xs ring-1 ring-white/10 placeholder:text-white/30"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/10 pt-3">
+          <div className="text-xs text-white/50">
+            {uploading && progress
+              ? `Enviando ${progress.done}/${progress.total}...`
+              : "Preencha os dados para filtrar depois."}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={uploading}
+              className="rounded-lg bg-white/5 px-3 py-1.5 text-sm text-white/80 hover:bg-white/10 disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={uploading}
+              className="inline-flex items-center gap-2 rounded-lg bg-fuchsia-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-fuchsia-400 disabled:opacity-50"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Enviar {pending?.length ?? 0}
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
