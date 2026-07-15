@@ -73,7 +73,7 @@ export function useSoundAlertsListener() {
         { event: "INSERT", schema: "public", table: "orders" },
         (payload) => {
           const row = payload.new as OrderRow;
-          if (row.status !== "pago" && isOnlinePayment(row.payment_method)) return;
+          if (row.status !== "pago" && !isOfflinePayment(row.payment_method)) return;
           void fire(row.status === "pago" ? "paid_order" : "new_order");
         },
       )
