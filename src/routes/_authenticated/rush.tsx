@@ -29,7 +29,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsAdmin, useSiteSettings, useUpdateSettings } from "@/lib/menu-data";
+import { useInvalidateMenu, useIsAdmin, useSiteSettings, useUpdateSettings } from "@/lib/menu-data";
 import { usePermissions } from "@/lib/permissions";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
@@ -260,6 +260,7 @@ function RushPage() {
   const canOperate = canAccess("/rush");
   const { data: settings } = useSiteSettings();
   const updateSettings = useUpdateSettings();
+  const invalidateMenu = useInvalidateMenu();
   const sendTestPush = useServerFn(sendAdminTestPush);
 
   const [orders, setOrders] = useState<Order[] | null>(null);
@@ -493,19 +494,20 @@ function RushPage() {
     if (o.status === "saiu_para_entrega") return setStatus(o, "entregue");
   };
 
-  const toggleStore = () => {
+  const toggleStore = async () => {
     if (!settings) return;
     const next = settings.openOverride === "closed" ? "auto" : "closed";
-    updateSettings.mutate(
-      { ...settings, openOverride: next },
-      {
-        onSuccess: () => {
-          toast[next === "closed" ? "warning" : "success"](
-            next === "closed" ? "Novos pedidos pausados." : "Loja aceitando pedidos.",
-          );
-        },
-        onError: (e: Error) => toast.error("Erro: " + e.message),
-      },
+    const { error } = await supabase
+      .from("site_settings")
+      .update({ open_override: next })
+      .eq("id", 1);
+    if (error) {
+      toast.error("Erro: " + error.message);
+      return;
+    }
+    await invalidateMenu();
+    toast[next === "closed" ? "warning" : "success"](
+      next === "closed" ? "Novos pedidos pausados." : "Loja aceitando pedidos.",
     );
   };
 
