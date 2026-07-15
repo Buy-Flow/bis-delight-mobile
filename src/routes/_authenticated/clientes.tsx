@@ -587,56 +587,47 @@ function ClientesDashboard() {
                 Nenhum cliente com pedido pago ainda.
               </p>
             ) : (
-              <>
-                {/* Podium top 3 */}
-                <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-4">
-                  {[1, 0, 2].map((idx) => {
-                    const r = vipRanking[idx];
-                    if (!r) return <div key={idx} />;
-                    return (
-                      <PodiumCard
-                        key={r.id}
-                        rank={idx + 1}
-                        client={r}
-                        onOpen={() => setSelectedId(r.id)}
-                      />
-                    );
-                  })}
-                </div>
-
-                {/* Rest 4-20 */}
-                {vipRanking.length > 3 && (
-                  <ul className="space-y-1.5">
-                    {vipRanking.slice(3).map((r, i) => (
-                      <li
-                        key={r.id}
-                        onClick={() => setSelectedId(r.id)}
-                        className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 transition hover:bg-white/[0.05]"
+              <ul className="space-y-1.5">
+                {vipRanking.map((r, i) => {
+                  const rank = i + 1;
+                  const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                  const isTop3 = rank <= 3;
+                  return (
+                    <li
+                      key={r.id}
+                      onClick={() => setSelectedId(r.id)}
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
+                        isTop3
+                          ? "border-neon-yellow/40 bg-neon-yellow/[0.06] hover:bg-neon-yellow/[0.1]"
+                          : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      <span
+                        className={`inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                          isTop3 ? "bg-neon-yellow/20 text-neon-yellow" : "bg-white/5 text-white/70"
+                        }`}
                       >
-                        <span className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-black text-white/70">
-                          {i + 4}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold text-white">
-                            {r.full_name?.trim() || "Sem nome"}
-                          </p>
-                          <p className="text-[11px] text-white/50">
-                            {r.paid_count} pedido(s) pago(s) · Últ. {relative(r.last_order_at)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-black text-emerald-300">
-                            {BRL(r.paid_spent)}
-                          </p>
-                          <p className="text-[10px] text-white/40">
-                            Ticket {BRL(r.avg_ticket)}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </>
+                        {medal ?? rank}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-white">
+                          {isTop3 && <span className="mr-1 text-neon-yellow">#{rank}</span>}
+                          {r.full_name?.trim() || "Sem nome"}
+                        </p>
+                        <p className="text-[11px] text-white/50">
+                          {r.paid_count} pedido(s) pago(s) · Últ. {relative(r.last_order_at)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-sm font-black ${isTop3 ? "text-neon-yellow" : "text-emerald-300"}`}>
+                          {BRL(r.paid_spent)}
+                        </p>
+                        <p className="text-[10px] text-white/40">Ticket {BRL(r.avg_ticket)}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         )}
