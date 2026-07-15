@@ -170,11 +170,14 @@ function PagamentoPage() {
           </div>
         ) : paid ? (
           <PaidCard order={order} />
+        ) : m === "asaas" || order.payment_method === "asaas_checkout" ? (
+          <AsaasCheckoutSection order={order} />
         ) : m === "pix" ? (
           <PixSection order={order} setOrder={setOrder} />
         ) : (
           <CardSection order={order} setOrder={setOrder} user={user} />
         )}
+
 
         <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
           <ShieldCheck className="h-3 w-3 text-emerald-400" />
