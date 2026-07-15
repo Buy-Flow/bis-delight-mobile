@@ -758,7 +758,7 @@ function WhatsappPage() {
 
                 <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(32,44,51,0.9),_transparent_35%),#0b141a] px-4 py-5">
                   <div className="mx-auto flex max-w-4xl flex-col gap-2">
-                    {loadingMessages ? <MessageSkeleton /> : messages.length === 0 ? <EmptyChat /> : messages.map((message) => <MessageBubble key={message.id} message={message} />)}
+                    {loadingMessages ? <MessageSkeleton /> : messages.length === 0 ? <EmptyChat /> : messages.map((message) => <MessageBubble key={message.id} message={message} onResolveMedia={resolveMedia} />)}
                   </div>
                 </div>
 
