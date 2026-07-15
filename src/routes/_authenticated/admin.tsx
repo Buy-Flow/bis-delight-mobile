@@ -704,7 +704,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
     if (!initialEditId || !products.length) return;
     const p = products.find((p) => p.id === initialEditId);
     if (p) {
-      setEditing(p);
+      openEditor(p);
       navigate({ to: "/admin", search: {}, replace: true });
     }
   }, [initialEditId, products, navigate]);
