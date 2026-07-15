@@ -267,19 +267,6 @@ const checkoutInput = z.object({
   origin: z.string().url(),
 });
 
-// Parse "Rua X, 123 — Bairro — Cidade — CEP 00000-000" style strings loosely.
-function parseAddressText(text: string | null | undefined) {
-  if (!text) return {};
-  const cepMatch = text.match(/\b(\d{5})-?(\d{3})\b/);
-  const postalCode = cepMatch ? `${cepMatch[1]}${cepMatch[2]}` : undefined;
-  const parts = text.split(/\s+—\s+|\s+-\s+/).map((s) => s.trim()).filter(Boolean);
-  const first = parts[0] ?? "";
-  const numMatch = first.match(/^(.*?)[,\s]+(\d+[A-Za-z]?)\b/);
-  const address = numMatch ? numMatch[1].trim() : first || undefined;
-  const addressNumber = numMatch ? numMatch[2] : undefined;
-  const province = parts[1] || undefined;
-  return { postalCode, address, addressNumber, province };
-}
 
 export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
