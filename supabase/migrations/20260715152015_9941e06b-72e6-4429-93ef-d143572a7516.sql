@@ -1,0 +1,1 @@
+UPDATE public.categories SET image_url = '/__l5e/assets-v1/fd0b6534-c6de-4913-b202-bf2421006614/category-monte-voce-mesmo.png', updated_at = now() WHERE id = 'monte-voce-mesmo';
