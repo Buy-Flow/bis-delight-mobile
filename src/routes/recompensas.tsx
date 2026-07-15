@@ -152,7 +152,7 @@ function RecompensasPage() {
       {loading && userId ? (
         <RecompensasSkeleton />
       ) : (
-      <div className="relative mx-auto max-w-2xl px-4 pt-5">
+      <div className="relative mx-auto max-w-2xl px-4 pt-5 lg:max-w-5xl lg:px-8">
 
 
         {/* Hero card com nível atual */}
