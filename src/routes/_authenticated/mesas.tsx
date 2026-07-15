@@ -1097,20 +1097,109 @@ function TableDialog({
   const [items, setItems] = useState<OrderItem[]>([]);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showReserve, setShowReserve] = useState(false);
+  const [showAddItem, setShowAddItem] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [productResults, setProductResults] = useState<
+    Array<{ id: string; name: string; base_price: number | null; image_url: string | null }>
+  >([]);
+  const [adding, setAdding] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+
+  const refreshItems = useCallback(async (orderId: string) => {
+    const { data } = await supabase
+      .from("order_items")
+      .select("id,name,quantity,unit_price,note")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: true });
+    if (data)
+      setItems(
+        data.map((it: any) => ({
+          ...it,
+          total_price: (it.quantity || 0) * Number(it.unit_price || 0),
+        })) as OrderItem[],
+      );
+  }, []);
 
   useEffect(() => {
     if (!order) {
       setItems([]);
       return;
     }
-    (async () => {
-      const { data } = await supabase
-        .from("order_items")
-        .select("id,name,quantity,unit_price,note")
-        .eq("order_id", order.id);
-      if (data) setItems((data || []).map((it:any)=>({...it, total_price: (it.quantity||0)*Number(it.unit_price||0)})) as OrderItem[]);
-    })();
-  }, [order]);
+    void refreshItems(order.id);
+    // realtime — items sync live for anyone with the mesa open
+    const suffix = Math.random().toString(36).slice(2, 8);
+    const ch = supabase
+      .channel(`mesa-items-${order.id}-${suffix}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "order_items", filter: `order_id=eq.${order.id}` },
+        () => void refreshItems(order.id),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [order, refreshItems]);
+
+  // Product search (debounced) for the "add item" panel
+  useEffect(() => {
+    if (!showAddItem) return;
+    const t = setTimeout(async () => {
+      let q = supabase
+        .from("products")
+        .select("id,name,base_price,image_url")
+        .eq("active", true)
+        .order("name")
+        .limit(12);
+      if (productSearch.trim()) q = q.ilike("name", `%${productSearch.trim()}%`);
+      const { data } = await q;
+      if (data) setProductResults(data as any);
+    }, 180);
+    return () => clearTimeout(t);
+  }, [productSearch, showAddItem]);
+
+  async function addItem(p: { id: string; name: string; base_price: number | null }) {
+    if (!order) return;
+    setAdding(p.id);
+    const { error } = await supabase.from("order_items").insert({
+      order_id: order.id,
+      product_id: p.id,
+      name: p.name,
+      quantity: 1,
+      unit_price: Number(p.base_price || 0),
+    });
+    setAdding(null);
+    if (error) toast.error("Falha ao adicionar: " + error.message);
+    else {
+      toast.success(`+ ${p.name}`);
+      onReload();
+    }
+  }
+
+  async function changeQty(itemId: string, delta: number) {
+    const it = items.find((i) => i.id === itemId);
+    if (!it) return;
+    const nextQty = it.quantity + delta;
+    if (nextQty <= 0) {
+      await removeItem(itemId);
+      return;
+    }
+    const { error } = await supabase.from("order_items").update({ quantity: nextQty }).eq("id", itemId);
+    if (error) toast.error(error.message);
+    else onReload();
+  }
+
+  async function removeItem(itemId: string) {
+    setRemoving(itemId);
+    const { error } = await supabase.from("order_items").delete().eq("id", itemId);
+    setRemoving(null);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Item removido");
+      onReload();
+    }
+  }
+
 
   async function closeAndPay() {
     if (!order) return;
