@@ -24,6 +24,8 @@ type CartCtx = {
   add: (item: Omit<CartItem, "uid">) => void;
   update: (uid: string, patch: Partial<CartItem>) => void;
   remove: (uid: string) => void;
+  /** Reinsere um item (usado para "Desfazer" remoção). Idempotente por uid. */
+  restore: (item: CartItem, index?: number) => void;
   clear: () => void;
   subtotal: number;
   count: number;
