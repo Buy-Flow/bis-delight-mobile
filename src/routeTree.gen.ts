@@ -55,6 +55,7 @@ import { Route as AuthenticatedIndiqueRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedIndicacoesRouteImport } from './routes/_authenticated/indicacoes'
 import { Route as AuthenticatedImpressaoRouteImport } from './routes/_authenticated/impressao'
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
+import { Route as AuthenticatedHistoricoPedidosRouteImport } from './routes/_authenticated/historico-pedidos'
 import { Route as AuthenticatedGarconsRouteImport } from './routes/_authenticated/garcons'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedFichaTecnicaRouteImport } from './routes/_authenticated/ficha-tecnica'
@@ -325,6 +326,12 @@ const AuthenticatedImportarRoute = AuthenticatedImportarRouteImport.update({
   path: '/importar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHistoricoPedidosRoute =
+  AuthenticatedHistoricoPedidosRouteImport.update({
+    id: '/historico-pedidos',
+    path: '/historico-pedidos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGarconsRoute = AuthenticatedGarconsRouteImport.update({
   id: '/garcons',
   path: '/garcons',
@@ -521,6 +528,7 @@ export interface FileRoutesByFullPath {
   '/ficha-tecnica': typeof AuthenticatedFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/garcons': typeof AuthenticatedGarconsRoute
+  '/historico-pedidos': typeof AuthenticatedHistoricoPedidosRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/indicacoes': typeof AuthenticatedIndicacoesRoute
@@ -599,6 +607,7 @@ export interface FileRoutesByTo {
   '/ficha-tecnica': typeof AuthenticatedFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/garcons': typeof AuthenticatedGarconsRoute
+  '/historico-pedidos': typeof AuthenticatedHistoricoPedidosRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/impressao': typeof AuthenticatedImpressaoRoute
   '/indicacoes': typeof AuthenticatedIndicacoesRoute
@@ -679,6 +688,7 @@ export interface FileRoutesById {
   '/_authenticated/ficha-tecnica': typeof AuthenticatedFichaTecnicaRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/garcons': typeof AuthenticatedGarconsRoute
+  '/_authenticated/historico-pedidos': typeof AuthenticatedHistoricoPedidosRoute
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
   '/_authenticated/impressao': typeof AuthenticatedImpressaoRoute
   '/_authenticated/indicacoes': typeof AuthenticatedIndicacoesRoute
@@ -759,6 +769,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/garcons'
+    | '/historico-pedidos'
     | '/importar'
     | '/impressao'
     | '/indicacoes'
@@ -837,6 +848,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/garcons'
+    | '/historico-pedidos'
     | '/importar'
     | '/impressao'
     | '/indicacoes'
@@ -916,6 +928,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ficha-tecnica'
     | '/_authenticated/financeiro'
     | '/_authenticated/garcons'
+    | '/_authenticated/historico-pedidos'
     | '/_authenticated/importar'
     | '/_authenticated/impressao'
     | '/_authenticated/indicacoes'
@@ -1321,6 +1334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedImportarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/historico-pedidos': {
+      id: '/_authenticated/historico-pedidos'
+      path: '/historico-pedidos'
+      fullPath: '/historico-pedidos'
+      preLoaderRoute: typeof AuthenticatedHistoricoPedidosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/garcons': {
       id: '/_authenticated/garcons'
       path: '/garcons'
@@ -1561,6 +1581,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFichaTecnicaRoute: typeof AuthenticatedFichaTecnicaRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedGarconsRoute: typeof AuthenticatedGarconsRoute
+  AuthenticatedHistoricoPedidosRoute: typeof AuthenticatedHistoricoPedidosRoute
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
   AuthenticatedImpressaoRoute: typeof AuthenticatedImpressaoRoute
   AuthenticatedIndicacoesRoute: typeof AuthenticatedIndicacoesRoute
@@ -1611,6 +1632,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFichaTecnicaRoute: AuthenticatedFichaTecnicaRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedGarconsRoute: AuthenticatedGarconsRoute,
+  AuthenticatedHistoricoPedidosRoute: AuthenticatedHistoricoPedidosRoute,
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
   AuthenticatedImpressaoRoute: AuthenticatedImpressaoRoute,
   AuthenticatedIndicacoesRoute: AuthenticatedIndicacoesRoute,

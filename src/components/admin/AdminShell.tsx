@@ -54,6 +54,7 @@ import {
   Mic,
   WifiOff,
   Stethoscope,
+  History as HistoryIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,6 +99,7 @@ const groups: NavGroup[] = [
     items: [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
       { to: "/rush", label: "Cozinha", icon: ChefHat },
+      { to: "/historico-pedidos", label: "Histórico de pedidos", icon: HistoryIcon },
       { to: "/pdv", label: "PDV", icon: Store },
       { to: "/caixa", label: "Caixa", icon: Wallet },
       { to: "/mesas", label: "Mesas", icon: Grid3x3 },
