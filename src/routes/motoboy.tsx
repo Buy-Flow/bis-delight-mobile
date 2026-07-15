@@ -440,7 +440,7 @@ function MotoboyPortal() {
 
   const signOut = async () => {
     stopGps();
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     window.location.href = "/auth";
   };
 

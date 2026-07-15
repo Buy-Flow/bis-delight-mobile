@@ -163,7 +163,7 @@ function AdminPage() {
   const tab: Tab = tabParam ?? "dashboard";
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     navigate({ to: "/auth" });
   };
 

@@ -128,7 +128,7 @@ function FinanceiroPage() {
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     navigate({ to: "/auth" });
   };
 
