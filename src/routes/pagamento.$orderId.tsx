@@ -1,16 +1,17 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { brl } from "@/lib/cart-context";
-import { createAsaasPixForOrder, createAsaasCardForOrder, getAsaasPaymentStatus } from "@/lib/asaas.functions";
+import { createAsaasPixForOrder, createAsaasCardForOrder } from "@/lib/asaas.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
-import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock } from "lucide-react";
+import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatSP } from "@/lib/tz";
+import { detectCardBrand } from "@/lib/card-brand";
 
 const searchSchema = z.object({
   m: z.enum(["pix", "cartao"]).catch("pix"),
