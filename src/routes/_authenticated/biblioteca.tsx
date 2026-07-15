@@ -101,6 +101,8 @@ function BibliotecaPage() {
   const [selection, setSelection] = useState<Set<string>>(new Set());
   const [activeItem, setActiveItem] = useState<MediaItem | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadItems = useCallback(async () => {
