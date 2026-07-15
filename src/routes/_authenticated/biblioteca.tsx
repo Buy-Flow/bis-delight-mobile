@@ -211,8 +211,18 @@ function BibliotecaPage() {
     return list;
   }, [items, search, categoryFilter, onlyFavorites, onlyUnused, activeTags, sortKey]);
 
+  const guessCategory = useCallback((filename: string): Category | "" => {
+    const n = filename.toLowerCase();
+    if (/(banner|hero|capa|cover)/.test(n)) return "banner";
+    if (/(logo|marca|brand)/.test(n)) return "logo";
+    if (/(popup|pop-up|modal)/.test(n)) return "popup";
+    if (/(categoria|category|cat[-_])/.test(n)) return "categoria";
+    if (/(produto|product|item|acai|shake|combo)/.test(n)) return "produto";
+    return "";
+  }, []);
+
   const handleFiles = useCallback(
-    async (files: FileList | File[]) => {
+    (files: FileList | File[]) => {
       if (!isAdmin) {
         toast.error("Somente administradores podem enviar mídias");
         return;
@@ -222,59 +232,85 @@ function BibliotecaPage() {
         toast.error("Nenhuma imagem válida selecionada");
         return;
       }
-      setUploading(true);
-      setUploadProgress({ done: 0, total: arr.length });
-      const { data: userData } = await supabase.auth.getUser();
-      const uploaderId = userData.user?.id ?? null;
-      let ok = 0;
-      let fail = 0;
-      for (const file of arr) {
-        try {
-          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-          const path = `${crypto.randomUUID()}.${ext}`;
-          const { error: upErr } = await supabase.storage
-            .from(BUCKET)
-            .upload(path, file, { upsert: false, cacheControl: "3600" });
-          if (upErr) throw upErr;
-          const { data: signed, error: signErr } = await supabase.storage
-            .from(BUCKET)
-            .createSignedUrl(path, SIGNED_TTL_SECONDS);
-          if (signErr || !signed?.signedUrl) throw signErr ?? new Error("URL falhou");
-          const dims = await readImageDims(file);
-          const clean = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
-          const { error: insErr } = await supabase.from("media_library").insert({
-            name: clean.slice(0, 80) || "sem-nome",
-            storage_path: path,
-            url: signed.signedUrl,
-            bucket: BUCKET,
-            mime_type: file.type,
-            size_bytes: file.size,
-            width: dims?.width ?? null,
-            height: dims?.height ?? null,
-            uploaded_by: uploaderId,
-          });
-          if (insErr) throw insErr;
-          ok++;
-        } catch (err) {
-          fail++;
-          console.error("upload fail", err);
-        }
-        setUploadProgress((p) => (p ? { ...p, done: p.done + 1 } : null));
-      }
-      setUploading(false);
-      setUploadProgress(null);
-      if (ok > 0) toast.success(`${ok} ${ok === 1 ? "mídia enviada" : "mídias enviadas"}`);
-      if (fail > 0) toast.error(`${fail} envio(s) falharam`);
-      await loadItems();
+      const queue: PendingUpload[] = arr.map((file) => {
+        const clean = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+        return {
+          file,
+          previewUrl: URL.createObjectURL(file),
+          name: clean.slice(0, 80) || "sem-nome",
+          category: guessCategory(file.name),
+          tags: "",
+          alt: "",
+        };
+      });
+      setPending(queue);
     },
-    [isAdmin, loadItems],
+    [isAdmin, guessCategory],
   );
 
-  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragActive(false);
-    if (e.dataTransfer.files?.length) void handleFiles(e.dataTransfer.files);
-  };
+  const cancelPending = useCallback(() => {
+    setPending((prev) => {
+      prev?.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+      return null;
+    });
+  }, []);
+
+  const confirmUpload = useCallback(async () => {
+    if (!pending || pending.length === 0) return;
+    setUploading(true);
+    setUploadProgress({ done: 0, total: pending.length });
+    const { data: userData } = await supabase.auth.getUser();
+    const uploaderId = userData.user?.id ?? null;
+    let ok = 0;
+    let fail = 0;
+    for (const p of pending) {
+      try {
+        const ext = (p.file.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, p.file, { upsert: false, cacheControl: "3600" });
+        if (upErr) throw upErr;
+        const { data: signed, error: signErr } = await supabase.storage
+          .from(BUCKET)
+          .createSignedUrl(path, SIGNED_TTL_SECONDS);
+        if (signErr || !signed?.signedUrl) throw signErr ?? new Error("URL falhou");
+        const dims = await readImageDims(p.file);
+        const tagsArr = p.tags
+          .split(",")
+          .map((t) => t.trim().toLowerCase())
+          .filter(Boolean);
+        const { error: insErr } = await supabase.from("media_library").insert({
+          name: p.name.trim().slice(0, 80) || "sem-nome",
+          storage_path: path,
+          url: signed.signedUrl,
+          bucket: BUCKET,
+          mime_type: p.file.type,
+          size_bytes: p.file.size,
+          width: dims?.width ?? null,
+          height: dims?.height ?? null,
+          uploaded_by: uploaderId,
+          category: p.category || null,
+          tags: tagsArr,
+          alt_text: p.alt.trim() || null,
+        });
+        if (insErr) throw insErr;
+        ok++;
+      } catch (err) {
+        fail++;
+        console.error("upload fail", err);
+      }
+      setUploadProgress((prev) => (prev ? { ...prev, done: prev.done + 1 } : null));
+    }
+    setUploading(false);
+    setUploadProgress(null);
+    pending.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+    setPending(null);
+    if (ok > 0) toast.success(`${ok} ${ok === 1 ? "mídia enviada" : "mídias enviadas"}`);
+    if (fail > 0) toast.error(`${fail} envio(s) falharam`);
+    await loadItems();
+  }, [pending, loadItems]);
+
 
   const toggleSelect = (id: string) => {
     setSelection((prev) => {
