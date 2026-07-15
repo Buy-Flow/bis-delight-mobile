@@ -258,6 +258,58 @@ function PDVPage() {
   const change = payment === "dinheiro" ? Math.max(0, cashNum - total) : 0;
   const missing = payment === "dinheiro" && cashNum > 0 && cashNum < total ? total - cashNum : 0;
 
+  // Park current sale to localStorage (comanda suspensa)
+  const parkCurrentSale = () => {
+    if (cart.length === 0) {
+      toast.error("Nada para suspender.");
+      return;
+    }
+    const entry: ParkedSale = {
+      id: shortUid(6),
+      savedAt: new Date().toISOString(),
+      label: (customerName.trim() || `Comanda ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`),
+      cart,
+      mode,
+      customerName,
+      customerPhone,
+      address,
+      deliveryFee,
+      discountType,
+      discountValue,
+      payment,
+      note,
+    };
+    setParked((prev) => [entry, ...prev].slice(0, 20));
+    resetSale();
+    toast.success("Venda suspensa. Ctrl+R para retomar.");
+  };
+
+  const resumeSale = (p: ParkedSale) => {
+    if (cart.length > 0) {
+      toast.error("Finalize ou suspenda a venda atual primeiro.");
+      return;
+    }
+    setCart(p.cart);
+    setMode(p.mode);
+    setCustomerName(p.customerName);
+    setCustomerPhone(p.customerPhone);
+    setAddress(p.address);
+    setDeliveryFee(p.deliveryFee);
+    setDiscountType(p.discountType);
+    setDiscountValue(p.discountValue);
+    setPayment(p.payment);
+    setNote(p.note);
+    setParked((prev) => prev.filter((x) => x.id !== p.id));
+    setShowParked(false);
+    toast.success(`Retomado: ${p.label}`);
+  };
+
+  const deleteParked = async (id: string) => {
+    if (!(await confirmDialog({ message: "Descartar esta comanda suspensa?" }))) return;
+    setParked((prev) => prev.filter((x) => x.id !== id));
+  };
+
+
   const addFromModal = (payload: Omit<CartItem, "uid">, isEdit: boolean) => {
     if (isEdit && editingLine) {
       setCart((prev) =>
