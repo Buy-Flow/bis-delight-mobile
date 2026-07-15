@@ -565,29 +565,35 @@ function FichaTecnicaPage() {
             </div>
           ) : (
             <>
-              <div className="border-b border-white/10 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-12 w-12 place-items-center overflow-hidden rounded-xl bg-black/40">
+              <div className="border-b border-white/10 p-3 md:p-4">
+                <div className="flex items-start gap-2 md:items-center md:justify-between md:gap-3">
+                  <button
+                    onClick={() => setMobileView("list")}
+                    aria-label="Voltar para lista"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 lg:hidden"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-black/40 md:h-12 md:w-12">
                       {selected.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={selected.image_url} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <ChefHat className="h-5 w-5 text-white/40" />
                       )}
                     </div>
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-white/40">
+                    <div className="min-w-0">
+                      <div className="truncate text-[10px] font-bold uppercase tracking-widest text-white/40">
                         {selected.category}
                       </div>
-                      <div className="text-lg font-black">{selected.name}</div>
-                      <div className="text-xs text-white/50">
-                        Preço de venda:{" "}
-                        <span className="font-bold text-white">{BRL(selected.base_price)}</span>
+                      <div className="truncate text-base font-black md:text-lg">{selected.name}</div>
+                      <div className="truncate text-xs text-white/50">
+                        Venda: <span className="font-bold text-white">{BRL(selected.base_price)}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  {/* Desktop actions */}
+                  <div className="hidden gap-2 md:flex">
                     <button
                       onClick={() => setCopyOpen(true)}
                       className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10"
@@ -602,10 +608,18 @@ function FichaTecnicaPage() {
                       <Save className="h-3 w-3" /> {saving ? "Salvando..." : "Salvar ficha"}
                     </button>
                   </div>
+                  {/* Mobile copy button */}
+                  <button
+                    onClick={() => setCopyOpen(true)}
+                    aria-label="Copiar receita de outro produto"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 md:hidden"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
                 </div>
 
-                {/* Cost summary bar */}
-                <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                {/* Cost summary — 2 cols mobile, 4 cols desktop */}
+                <div className="mt-3 grid grid-cols-2 gap-2 md:mt-4 sm:grid-cols-4">
                   <Stat label="CMV total" value={BRL(totalCMV)} tone="warn" icon={Boxes} />
                   <Stat
                     label="Margem"
@@ -618,6 +632,7 @@ function FichaTecnicaPage() {
                   <Stat label="Embalagem" value={BRL(packaging)} icon={Package} />
                 </div>
               </div>
+
 
               {/* Recipe rows */}
               <div className="overflow-x-auto">
