@@ -258,9 +258,28 @@ const checkoutInput = z.object({
     email: z.string().email().optional(),
     cpfCnpj: z.string().min(11).max(18).optional(),
     phone: z.string().optional(),
+    postalCode: z.string().optional(),
+    address: z.string().optional(),
+    addressNumber: z.string().optional(),
+    province: z.string().optional(),
+    complement: z.string().optional(),
   }),
   origin: z.string().url(),
 });
+
+// Parse "Rua X, 123 — Bairro — Cidade — CEP 00000-000" style strings loosely.
+function parseAddressText(text: string | null | undefined) {
+  if (!text) return {};
+  const cepMatch = text.match(/\b(\d{5})-?(\d{3})\b/);
+  const postalCode = cepMatch ? `${cepMatch[1]}${cepMatch[2]}` : undefined;
+  const parts = text.split(/\s+—\s+|\s+-\s+/).map((s) => s.trim()).filter(Boolean);
+  const first = parts[0] ?? "";
+  const numMatch = first.match(/^(.*?)[,\s]+(\d+[A-Za-z]?)\b/);
+  const address = numMatch ? numMatch[1].trim() : first || undefined;
+  const addressNumber = numMatch ? numMatch[2] : undefined;
+  const province = parts[1] || undefined;
+  return { postalCode, address, addressNumber, province };
+}
 
 export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -268,16 +287,14 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { createCheckoutSession } = await import("@/lib/asaas.server");
-    const { resolveOrCreateAsaasCustomer } = await import("@/lib/asaas-customer.server");
 
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select("id, total, customer_name, phone, user_id")
+      .select("id, total, customer_name, phone, user_id, address, reference")
       .eq("id", data.orderId)
       .maybeSingle();
     if (error || !order) throw new Error("Pedido não encontrado");
     await assertOrderAccess(context.supabase, order.user_id, context.userId);
-
 
     const shortId = order.id.slice(0, 8);
     const origin = data.origin.replace(/\/+$/, "");
@@ -285,17 +302,32 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
     const cancelUrl = `${origin}/pagamento/${order.id}?checkout=cancel`;
     const expiredUrl = `${origin}/pagamento/${order.id}?checkout=expired`;
 
-    const customer = await resolveOrCreateAsaasCustomer({
-      userId: order.user_id ?? null,
-      name: data.customer.name || order.customer_name || "Cliente",
-      email: data.customer.email,
-      cpfCnpj: data.customer.cpfCnpj,
-      phone: data.customer.phone ?? order.phone ?? undefined,
-    });
+    // Merge address: client-provided → order.address → user_addresses default
+    let parsed = parseAddressText(order.address);
+    if (!parsed.postalCode && order.user_id) {
+      const { data: def } = await supabaseAdmin
+        .from("user_addresses")
+        .select("address")
+        .eq("user_id", order.user_id)
+        .eq("is_default", true)
+        .maybeSingle();
+      if (def?.address) parsed = { ...parseAddressText(def.address), ...parsed };
+    }
 
-    // Asaas Checkout exige endereço quando `customer` (id) é passado.
-    // Passamos `customerData` para que o Asaas colete o endereço no próprio checkout,
-    // evitando o erro "O campo address deve existir para o customer informado".
+    const merged = {
+      postalCode: data.customer.postalCode || parsed.postalCode,
+      address: data.customer.address || parsed.address,
+      addressNumber: data.customer.addressNumber || parsed.addressNumber || "S/N",
+      province: data.customer.province || parsed.province || "Centro",
+      complement: data.customer.complement || order.reference || undefined,
+    };
+
+    if (!merged.postalCode || !merged.address) {
+      throw new Error(
+        "Endereço incompleto para pagamento. Preencha um endereço com CEP no seu perfil e tente novamente.",
+      );
+    }
+
     const session = await createCheckoutSession({
       value: Number(order.total),
       externalReference: order.id,
@@ -310,10 +342,9 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
         email: data.customer.email,
         cpfCnpj: data.customer.cpfCnpj,
         phone: data.customer.phone ?? order.phone ?? undefined,
+        ...merged,
       },
     });
-    void customer;
-
 
     await supabaseAdmin
       .from("orders")
@@ -326,3 +357,4 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
 
     return { checkoutId: session.id, url: session.link };
   });
+
