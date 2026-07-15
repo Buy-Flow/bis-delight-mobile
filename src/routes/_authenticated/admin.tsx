@@ -126,6 +126,7 @@ import {
   Boxes,
 } from "lucide-react";
 import { SearchX } from "lucide-react";
+import { SelosContent } from "@/routes/_authenticated/selos";
 import { isOpenNow } from "@/components/menu/LocationSection";
 import { STORE_COPY } from "@/lib/store-status";
 import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
