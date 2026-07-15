@@ -344,8 +344,8 @@ function SkeletonAdmin() {
               </div>
             </div>
 
-            <div className="rounded-2xl border p-4 bg-background overflow-hidden">
-              {preview === "cards" && <CardGridSkeleton count={6} />}
+            <div className="rounded-2xl border p-4 bg-background overflow-auto max-h-[520px]">
+              {preview === "cards" && <CardGridSkeleton count={6} aspect="aspect-square" />}
               {preview === "list" && <ListSkeleton rows={5} />}
               {preview === "table" && <TableSkeleton rows={6} cols={4} />}
               {preview === "chart" && (
@@ -356,7 +356,7 @@ function SkeletonAdmin() {
               )}
               {preview === "form" && <FormSkeleton fields={4} />}
               {preview === "full" && (
-                <div className="scale-[0.85] origin-top-left">
+                <div className="scale-[0.6] origin-top-left w-[166%] -mb-[40%]">
                   <AdminPageSkeleton />
                 </div>
               )}
