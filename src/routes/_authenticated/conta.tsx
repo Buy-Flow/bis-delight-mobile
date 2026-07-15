@@ -153,7 +153,7 @@ function AccountPage() {
 
       </div>
 
-      <div className="mx-auto max-w-md px-4 pb-24 pt-5">
+      <div className="mx-auto max-w-md px-4 pb-24 pt-5 lg:max-w-4xl lg:px-8">
         {tab === "fidelidade" && <LoyaltyPanel />}
         {tab === "pedidos" && <OrdersPanelPro />}
         {tab === "favoritos" && <FavoritesPanel />}
