@@ -42,6 +42,7 @@ function CartPage() {
     items,
     update,
     remove,
+    restore,
     subtotal,
     openEdit,
     isCheckoutOpen,
@@ -52,6 +53,26 @@ function CartPage() {
     setShareMode,
   } = useCart();
   const { data: allProducts = [] } = useProducts();
+
+  // Remoção com desfazer: guarda o item + posição e mostra toast por 6s.
+  const handleRemove = (uid: string, reason: "trash" | "qty-zero" = "trash") => {
+    const idx = items.findIndex((it) => it.uid === uid);
+    if (idx === -1) return;
+    const snapshot = items[idx];
+    haptic.medium();
+    remove(uid);
+    toast(`${snapshot.name} removido`, {
+      description: reason === "qty-zero" ? "Quantidade chegou a zero." : "Toque em Desfazer para reverter.",
+      duration: 6000,
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          restore(snapshot, idx);
+          haptic.tap();
+        },
+      },
+    });
+  };
 
   const [shareOpen, setShareOpen] = useState(false);
   const [recentShares, setRecentShares] = useState<RecentShare[]>([]);
