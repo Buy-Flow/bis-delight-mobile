@@ -14,9 +14,14 @@ export const Route = createFileRoute("/_authenticated/selos")({
   component: SelosPage,
 });
 
-export function SelosContent() {
-  return <SelosInner />;
+function SelosPage() {
+  return (
+    <AdminShell>
+      <SelosContent />
+    </AdminShell>
+  );
 }
+
 
 
 const DEFAULT_COLORS = [
