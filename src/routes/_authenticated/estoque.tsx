@@ -813,26 +813,55 @@ function MovementsTable({
             : ingMap.get(m.ingredient_id ?? "")?.name ?? "Insumo removido";
         const unit = m.item_type === "ingredient" ? ingMap.get(m.ingredient_id ?? "")?.unit : undefined;
         return (
-          <div
-            key={m.id}
-            className="grid grid-cols-2 md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5 border-t border-white/5 text-sm"
-          >
-            <div className="text-xs text-white/60">{fmtDateTime(m.created_at)}</div>
-            <div>
-              <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border", info.color)}>
-                <info.icon className="w-3 h-3" /> {info.label}
-              </span>
+          <div key={m.id} className="border-t border-white/5 text-sm">
+            {/* MOBILE CARD */}
+            <div className="md:hidden p-3 flex items-start gap-3">
+              <div className={cn("shrink-0 w-9 h-9 rounded-lg grid place-items-center border", info.color)}>
+                <info.icon className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-sm font-semibold truncate">{name}</div>
+                  <div className="text-sm font-bold shrink-0">
+                    {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
+                    {fmtQty(Math.abs(m.qty), unit)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-white/50 mt-0.5">
+                  <span>{info.label}</span>
+                  <span className="text-white/20">·</span>
+                  <span>{fmtDateTime(m.created_at)}</span>
+                  {m.unit_cost ? (
+                    <>
+                      <span className="text-white/20">·</span>
+                      <span>{fmtBRL(m.unit_cost)}</span>
+                    </>
+                  ) : null}
+                </div>
+                {m.reason && <div className="text-[11px] text-white/60 mt-1 line-clamp-2">{m.reason}</div>}
+              </div>
             </div>
-            <div className="col-span-2 md:col-span-1 truncate">{name}</div>
-            <div className="text-sm font-semibold">
-              {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
-              {fmtQty(Math.abs(m.qty), unit)}
+
+            {/* DESKTOP ROW */}
+            <div className="hidden md:grid md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5">
+              <div className="text-xs text-white/60">{fmtDateTime(m.created_at)}</div>
+              <div>
+                <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border", info.color)}>
+                  <info.icon className="w-3 h-3" /> {info.label}
+                </span>
+              </div>
+              <div className="truncate">{name}</div>
+              <div className="text-sm font-semibold">
+                {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
+                {fmtQty(Math.abs(m.qty), unit)}
+              </div>
+              <div className="text-xs text-white/60">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
+              <div className="text-xs text-white/50 truncate">{m.reason || "—"}</div>
             </div>
-            <div className="text-xs text-white/60">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
-            <div className="text-xs text-white/50 truncate">{m.reason || "—"}</div>
           </div>
         );
       })}
+
     </div>
   );
 }
