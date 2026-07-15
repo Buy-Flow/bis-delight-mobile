@@ -2449,11 +2449,13 @@ function CategoryPhotoTab({
       previewMaxWidth={220}
       previewLabel="Preview real — tamanho do card no cardápio"
       renderPreview={(v) => (
-        <div style={{ transform: "scale(3)", transformOrigin: "center", margin: "40px 0" }}>
-          <CategoryChip
-            category={{ ...category, imagePosX: v.posX, imagePosY: v.posY, imageScale: v.scale }}
-            active
-          />
+        <div className="grid place-items-center overflow-hidden" style={{ height: 240 }}>
+          <div style={{ transform: "scale(2)", transformOrigin: "center" }}>
+            <CategoryChip
+              category={{ ...category, imagePosX: v.posX, imagePosY: v.posY, imageScale: v.scale }}
+              active
+            />
+          </div>
         </div>
       )}
     />
