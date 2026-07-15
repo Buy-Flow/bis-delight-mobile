@@ -1487,6 +1487,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             >
               <Ticket className="h-4 w-4 text-neon-cyan" />
               Tenho um cupom de desconto
+              {availableCoupons.length > 0 && (
+                <span className="ml-1 rounded-full bg-neon-cyan/20 px-2 py-0.5 text-[10px] font-black text-neon-cyan ring-1 ring-neon-cyan/40">
+                  {availableCoupons.length} disponível{availableCoupons.length > 1 ? "is" : ""}
+                </span>
+              )}
             </button>
           )}
 
