@@ -490,8 +490,8 @@ function CardSection({
     if (ccv.length < 3) errs.ccv = "CVV inválido.";
     if (!isValidCpf(cpf)) errs.cpf = "CPF inválido.";
     if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = "E-mail inválido.";
-    if (cep.replace(/\D/g, "").length !== 8) errs.cep = "CEP com 8 dígitos.";
-    if (!addrNumber.trim()) errs.addrNumber = "Obrigatório.";
+
+
     return errs;
   };
 
