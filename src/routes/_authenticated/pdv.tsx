@@ -23,6 +23,13 @@ import {
   Check,
   Sparkles,
   Pencil,
+  Copy,
+  PauseCircle,
+  PlayCircle,
+  TrendingUp,
+  Keyboard,
+  ChefHat,
+  Receipt,
 } from "lucide-react";
 import { useProducts, useCategories } from "@/lib/menu-data";
 import { useAuth } from "@/lib/use-auth";
