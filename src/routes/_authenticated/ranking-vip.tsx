@@ -178,7 +178,7 @@ function RankingVipPage() {
               key={t}
               onClick={() => setTab(t)}
               className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
-                tab === t ? "bg-amber-500 text-white" : "text-white/70 hover:bg-slate-50"
+                tab === t ? "bg-amber-500 text-white" : "text-white/70 hover:bg-white/5"
               }`}
             >
               {t === "config" && "Configuração"}
@@ -226,7 +226,7 @@ function RankingVipPage() {
                       key={m}
                       onClick={() => setS({ ...s, metric: m })}
                       className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                        s.metric === m ? "border-amber-400 bg-amber-500/15 text-amber-200" : "border-slate-200 text-white/70"
+                        s.metric === m ? "border-amber-400 bg-amber-500/15 text-amber-200" : "border-white/10 text-white/70"
                       }`}
                     >
                       {m === "ltv" && "LTV (R$)"}
