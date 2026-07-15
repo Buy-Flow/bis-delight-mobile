@@ -181,6 +181,28 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   >([]);
 
   // Load coupons the user already owns (loyalty) + active public promo coupons
+  // Restaura CPF salvo (mascarado) — usuário pode "Trocar" para digitar outro
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = window.localStorage.getItem("querobis:saved_cpf") ?? "";
+      const digits = saved.replace(/\D/g, "");
+      if (digits.length === 11 && isValidCpf(digits)) {
+        setCpf(digits);
+        setCpfLocked(true);
+      }
+    } catch {}
+  }, []);
+
+  // Persiste CPF válido para o próximo checkout
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const digits = cpfDigits(cpf);
+    if (digits.length === 11 && isValidCpf(digits)) {
+      try { window.localStorage.setItem("querobis:saved_cpf", digits); } catch {}
+    }
+  }, [cpf]);
+
   useEffect(() => {
     if ((!isCheckoutOpen && !pageMode) || !user) {
       setAvailableCoupons([]);
