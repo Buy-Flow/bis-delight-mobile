@@ -661,7 +661,7 @@ function RushPage() {
       </div>
 
 
-      <main className="mx-auto max-w-2xl px-3 pt-3">
+      <main className="mx-auto w-full max-w-6xl px-3 pt-3 pb-6 md:px-6 lg:px-8">
         {/* KPIs */}
         <section className="grid grid-cols-3 gap-2">
           <KpiTile
