@@ -329,6 +329,14 @@ function AddressForm({
           placeholder="Rótulo (ex: Casa da mãe)"
           className={inputCls}
         />
+        <input
+          type="text"
+          value={recipientName}
+          onChange={(e) => setRecipientName(e.target.value)}
+          placeholder="Nome de quem recebe (ex: João Silva)"
+          autoComplete="name"
+          className={inputCls}
+        />
         <div className="grid grid-cols-[1fr_90px] gap-2">
           <input
             type="text"
