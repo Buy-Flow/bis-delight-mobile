@@ -1169,8 +1169,47 @@ function TableDialog({
                     <span>Total</span>
                     <span>{BRL(total)}</span>
                   </div>
+                  {/* Split by people */}
+                  {total > 0 && (table.people_count || 0) > 1 && (
+                    <div className="mt-2 flex items-center justify-between rounded-lg border border-fuchsia-500/20 bg-fuchsia-500/10 px-2 py-1.5 text-[11px]">
+                      <span className="flex items-center gap-1.5 font-black text-fuchsia-100">
+                        <Split className="h-3 w-3" /> Dividir por {table.people_count}
+                      </span>
+                      <span className="font-black text-white">
+                        {BRL(total / (table.people_count || 1))}<span className="text-white/50"> /pessoa</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Assistance flag */}
+              <button
+                onClick={async () => {
+                  const currentlyOn = isAssistRequested(table.notes);
+                  const newNotes = currentlyOn
+                    ? (table.notes || "").replace(ASSIST_PREFIX, "").trim() || null
+                    : `${ASSIST_PREFIX} ${(table.notes || "").trim()}`.trim();
+                  const { error } = await supabase
+                    .from("restaurant_tables")
+                    .update({ notes: newNotes })
+                    .eq("id", table.id);
+                  if (error) toast.error(error.message);
+                  else {
+                    toast.success(currentlyOn ? "Chamada atendida" : "Sinal de chamada ligado");
+                    onReload();
+                  }
+                }}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-xl border py-2 text-sm font-black transition",
+                  isAssistRequested(table.notes)
+                    ? "border-rose-400/50 bg-rose-500/25 text-white hover:bg-rose-500/35"
+                    : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+                )}
+              >
+                <Bell className="h-4 w-4" />
+                {isAssistRequested(table.notes) ? "Marcar como atendido" : "Cliente chamando"}
+              </button>
 
               {/* Waiter assign */}
               <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
