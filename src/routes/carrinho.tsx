@@ -601,6 +601,7 @@ function ShareDialog({
         items,
       });
       const url = shareUrlFor(token);
+      pushRecentShare({ token, name: ownerName.trim(), ownerName: ownerName.trim(), lastAt: Date.now() });
       setResult({ url, token });
     } catch (e: any) {
       toast.error(e?.message || "Falha ao gerar link");
