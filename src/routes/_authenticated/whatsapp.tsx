@@ -17,7 +17,7 @@ import {
   Mic,
   Paperclip,
   Phone,
-  Play,
+  
   Plus,
   Radio,
   RefreshCw,
