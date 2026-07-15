@@ -829,18 +829,19 @@ function FichaTecnicaPage() {
               </div>
 
 
-              <div className="flex items-center justify-between border-t border-white/10 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 p-3">
                 <button
                   onClick={addRow}
-                  className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10"
+                  className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 hover:bg-white/10"
                 >
-                  <Plus className="h-3 w-3" /> Adicionar insumo
+                  <Plus className="h-3.5 w-3.5" /> Adicionar insumo
                 </button>
                 <div className="text-xs text-white/50">
                   {activeRows.length} insumo(s) · CMV{" "}
                   <span className="font-bold text-white">{BRL(totalCMV)}</span>
                 </div>
               </div>
+
 
               {/* Extras + suggested price */}
               <div className="grid gap-4 border-t border-white/10 p-4 md:grid-cols-2">
