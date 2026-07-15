@@ -55,6 +55,34 @@ function PagamentoPage() {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+
+  const cancelOrder = async () => {
+    if (cancelling || !order) return;
+    const ok = await confirmDialog({
+      title: "Cancelar pedido?",
+      message: "O pedido será cancelado e não poderá ser recuperado. Se o PIX já tiver sido pago, o cancelamento não é permitido.",
+      confirmLabel: "Cancelar pedido",
+      cancelLabel: "Voltar",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setCancelling(true);
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: "cancelado", canceled_at: new Date().toISOString() })
+        .eq("id", order.id)
+        .in("status", ["novo", "aguardando_pagamento", "pendente"]);
+      if (error) throw error;
+      toast.success("Pedido cancelado");
+      navigate({ to: "/" });
+    } catch (e: any) {
+      toast.error("Não foi possível cancelar", { description: e?.message || "Tente novamente." });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   // Load order + subscribe realtime
   useEffect(() => {
