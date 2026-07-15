@@ -351,6 +351,158 @@ function WhatsappPage() {
     }
   }
 
+  function pickFile(mode: "image" | "video" | "document") {
+    setFileAcceptMode(mode);
+    setAttachOpen(false);
+    // trigger next tick so accept attr updates
+    setTimeout(() => fileInputRef.current?.click(), 0);
+  }
+
+  async function readFileAsBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(reader.error ?? new Error("read error"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleFilePicked(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const MAX = 32 * 1024 * 1024;
+    if (file.size > MAX) {
+      toast.error("Arquivo maior que 32MB não é aceito pelo WhatsApp.");
+      return;
+    }
+    const kind: "image" | "video" | "document" = file.type.startsWith("image/")
+      ? "image"
+      : file.type.startsWith("video/")
+        ? "video"
+        : "document";
+    const dataUrl = await readFileAsBase64(file);
+    setPendingMedia({
+      kind,
+      base64: dataUrl,
+      mimetype: file.type || "application/octet-stream",
+      filename: file.name,
+      previewUrl: dataUrl,
+    });
+    setCaption("");
+  }
+
+  async function startRecording() {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : "";
+      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      recordChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) recordChunksRef.current.push(event.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(recordChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(reader.error ?? new Error("read"));
+          reader.readAsDataURL(blob);
+        });
+        setPendingMedia({
+          kind: "audio",
+          base64: dataUrl,
+          mimetype: blob.type || "audio/webm",
+          filename: `audio-${Date.now()}.webm`,
+          previewUrl: URL.createObjectURL(blob),
+        });
+      };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setRecording(true);
+      setRecordSecs(0);
+      recordTimerRef.current = window.setInterval(() => setRecordSecs((s) => s + 1), 1000);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Microfone indisponível");
+    }
+  }
+
+  function stopRecording() {
+    if (recordTimerRef.current) {
+      window.clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    setRecording(false);
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+    mediaRecorderRef.current = null;
+  }
+
+  function cancelRecording() {
+    if (recordTimerRef.current) {
+      window.clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recordChunksRef.current = [];
+      recorder.onstop = null;
+      try { recorder.stop(); } catch { /* ignore */ }
+    }
+    mediaRecorderRef.current = null;
+    setRecording(false);
+    setRecordSecs(0);
+  }
+
+  async function handleSendPendingMedia() {
+    if (!selectedId || !pendingMedia || sending) return;
+    setSending(true);
+    try {
+      const result = (await sendMediaFn({
+        data: {
+          conversation_id: selectedId,
+          kind: pendingMedia.kind,
+          base64: pendingMedia.base64,
+          mimetype: pendingMedia.mimetype,
+          filename: pendingMedia.filename,
+          caption: caption.trim() || undefined,
+        },
+      })) as { message?: Message; warning?: string | null };
+      const persisted = result.message ?? null;
+      if (persisted) {
+        setMessages((prev) => (prev.some((item) => item.id === persisted.id) ? prev : [...prev, persisted]));
+      }
+      setPendingMedia(null);
+      setCaption("");
+      await loadConversations();
+      if (result.warning) toast.warning(result.warning);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar mídia");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const resolveMedia = useCallback(
+    async (messageId: string) => {
+      try {
+        const result = (await resolveMediaFn({ data: { message_id: messageId } })) as { url: string };
+        setMessages((prev) => prev.map((item) => (item.id === messageId ? { ...item, media_url: result.url } : item)));
+        return result.url;
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Erro ao baixar mídia");
+        return null;
+      }
+    },
+    [resolveMediaFn],
+  );
+
   async function handleSend() {
     if (!selectedId || !text.trim() || sending) return;
     const body = text.trim();
