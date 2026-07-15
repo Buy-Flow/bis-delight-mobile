@@ -2470,9 +2470,43 @@ function HighlightsTab() {
   const { data: products = [] } = useAllProducts();
   const { data: categories = [] } = useCategories();
   const toggle = useToggleHero();
+  const reorder = useReorderHero();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [localOrder, setLocalOrder] = useState<Product[] | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
 
-  const heroProducts = useMemo(() => products.filter((p) => p.hero), [products]);
+  const baseHero = useMemo(
+    () =>
+      products
+        .filter((p) => p.hero)
+        .sort((a, b) => (a.heroOrder ?? 0) - (b.heroOrder ?? 0)),
+    [products],
+  );
+  const heroProducts = localOrder ?? baseHero;
+
+  const onDragOver = (e: React.DragEvent, overId: string) => {
+    e.preventDefault();
+    if (!dragId || dragId === overId) return;
+    const arr = [...heroProducts];
+    const from = arr.findIndex((p) => p.id === dragId);
+    const to = arr.findIndex((p) => p.id === overId);
+    if (from < 0 || to < 0) return;
+    const [m] = arr.splice(from, 1);
+    arr.splice(to, 0, m);
+    setLocalOrder(arr);
+  };
+  const onDragEnd = async () => {
+    setDragId(null);
+    if (!localOrder) return;
+    try {
+      await reorder.mutateAsync(localOrder.map((p, i) => ({ id: p.id, hero_order: i })));
+      toast.success("Ordem salva");
+    } catch {
+      toast.error("Falha ao salvar ordem");
+    } finally {
+      setLocalOrder(null);
+    }
+  };
 
   return (
     <div>
@@ -2480,8 +2514,9 @@ function HighlightsTab() {
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-2xl font-black">Nossos Destaques</h2>
           <p className="text-xs text-white/50">
+            Arraste para reordenar. Toque em um destaque para editar a foto.{" "}
             <b className="text-neon-yellow">{heroProducts.length}</b>{" "}
-            {heroProducts.length === 1 ? "produto" : "produtos"} no carrossel de destaques.
+            {heroProducts.length === 1 ? "produto" : "produtos"} no carrossel.
           </p>
         </div>
         <button
@@ -2507,12 +2542,15 @@ function HighlightsTab() {
             <HeroImageEditor
               key={p.id}
               product={p}
+              dragging={dragId === p.id}
+              onDragStart={() => setDragId(p.id)}
+              onDragOver={(e) => onDragOver(e, p.id)}
+              onDragEnd={onDragEnd}
               onRemove={async () => {
                 if (await confirmDialog({ title: "Remover dos destaques", message: `Remover "${p.name}" dos destaques?`, confirmLabel: "Remover" })) {
                   toggle.mutate({ id: p.id, hero: false });
                 }
               }}
-
             />
           ))}
         </div>
@@ -2524,7 +2562,12 @@ function HighlightsTab() {
           categories={categories}
           onClose={() => setPickerOpen(false)}
           onConfirm={(ids) => {
-            ids.forEach((id) => toggle.mutate({ id, hero: true }));
+            const startOrder = baseHero.length;
+            ids.forEach((id, idx) => toggle.mutate({ id, hero: true }));
+            // Assign hero_order for newly added items (best-effort, after toggle)
+            setTimeout(() => {
+              reorder.mutate(ids.map((id, i) => ({ id, hero_order: startOrder + i })));
+            }, 400);
             setPickerOpen(false);
           }}
         />
