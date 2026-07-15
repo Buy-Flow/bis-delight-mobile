@@ -53,7 +53,7 @@ import {
   ScanSearch,
   Mic,
   WifiOff,
-  Stethoscope,
+  
   History as HistoryIcon,
   Palette,
 } from "lucide-react";
