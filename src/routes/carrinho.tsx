@@ -8,7 +8,7 @@ import { useUserAddresses } from "@/lib/user-addresses";
 import { computeDeliveryPreview } from "@/lib/delivery-preview";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
-import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, getSharedCartStatuses, type RecentShare, type SharedCartStatus } from "@/lib/shared-cart";
+import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, getSharedCartStatuses, pushRecentShare, type RecentShare, type SharedCartStatus } from "@/lib/shared-cart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -601,6 +601,7 @@ function ShareDialog({
         items,
       });
       const url = shareUrlFor(token);
+      pushRecentShare({ token, name: ownerName.trim(), ownerName: ownerName.trim(), lastAt: Date.now() });
       setResult({ url, token });
     } catch (e: any) {
       toast.error(e?.message || "Falha ao gerar link");

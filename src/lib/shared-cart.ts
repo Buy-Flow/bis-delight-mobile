@@ -135,12 +135,13 @@ export function readRecentShares(): RecentShare[] {
   }
 }
 
-function pushRecentShare(entry: RecentShare) {
+export function pushRecentShare(entry: RecentShare) {
   if (typeof window === "undefined") return;
   try {
     const cur = readRecentShares().filter((r) => r.token !== entry.token);
     const next = [entry, ...cur].slice(0, 5);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+    window.dispatchEvent(new Event("querobis:share_mode"));
   } catch (e) {
     // Recentes são acessórios — não spamma toast, só loga.
     console.warn("[shared-cart] falha ao gravar recentes", e);
