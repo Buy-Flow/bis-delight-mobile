@@ -183,6 +183,26 @@ function WhatsappPage() {
   const phoneFn = useServerFn(updateWhatsappConversationPhone);
   const webhookFn = useServerFn(configureWhatsappWebhook);
   const repairFn = useServerFn(repairWhatsappConnection);
+  const sendMediaFn = useServerFn(sendWhatsappMediaMessage);
+  const resolveMediaFn = useServerFn(resolveWhatsappInboundMedia);
+
+  // Media composer
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [pendingMedia, setPendingMedia] = useState<{
+    kind: "image" | "video" | "audio" | "document";
+    base64: string;
+    mimetype: string;
+    filename?: string;
+    previewUrl: string;
+  } | null>(null);
+  const [caption, setCaption] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [recordSecs, setRecordSecs] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordChunksRef = useRef<BlobPart[]>([]);
+  const recordTimerRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileAcceptMode, setFileAcceptMode] = useState<"image" | "video" | "document">("image");
 
   const selected = useMemo(() => conversations.find((conversation) => conversation.id === selectedId) ?? null, [conversations, selectedId]);
 
