@@ -107,6 +107,9 @@ export function AddressManager({ embedded = false }: { embedded?: boolean } = {}
                       </span>
                     )}
                   </div>
+                  {a.recipient_name && (
+                    <div className="mt-0.5 text-[11px] font-semibold text-neon-cyan/90">Para: {a.recipient_name}</div>
+                  )}
                   <div className="mt-0.5 text-[12px] leading-snug text-white/80">{a.address}</div>
                   {a.reference && (
                     <div className="mt-0.5 text-[11px] text-white/50">Ref: {a.reference}</div>
