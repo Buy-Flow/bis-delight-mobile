@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { haptic } from "@/lib/haptics";
 
 import { useComboDiscounts } from "@/lib/use-combo-discounts";
 
@@ -41,6 +42,7 @@ function CartPage() {
     items,
     update,
     remove,
+    restore,
     subtotal,
     openEdit,
     isCheckoutOpen,
@@ -51,6 +53,26 @@ function CartPage() {
     setShareMode,
   } = useCart();
   const { data: allProducts = [] } = useProducts();
+
+  // Remoção com desfazer: guarda o item + posição e mostra toast por 6s.
+  const handleRemove = (uid: string, reason: "trash" | "qty-zero" = "trash") => {
+    const idx = items.findIndex((it) => it.uid === uid);
+    if (idx === -1) return;
+    const snapshot = items[idx];
+    haptic.medium();
+    remove(uid);
+    toast(`${snapshot.name} removido`, {
+      description: reason === "qty-zero" ? "Quantidade chegou a zero." : "Toque em Desfazer para reverter.",
+      duration: 6000,
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          restore(snapshot, idx);
+          haptic.tap();
+        },
+      },
+    });
+  };
 
   const [shareOpen, setShareOpen] = useState(false);
   const [recentShares, setRecentShares] = useState<RecentShare[]>([]);
@@ -317,8 +339,9 @@ function CartPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (it.quantity <= 1) {
-                            remove(it.uid);
+                            handleRemove(it.uid, "qty-zero");
                           } else {
+                            haptic.tap();
                             update(it.uid, { quantity: it.quantity - 1 });
                           }
                         }}
@@ -341,6 +364,7 @@ function CartPage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          haptic.tap();
                           update(it.uid, { quantity: it.quantity + 1 });
                         }}
                         className="grid h-7 w-7 place-items-center rounded-full bg-neon-pink text-white glow-pink active:scale-95"
@@ -349,6 +373,7 @@ function CartPage() {
                       >
                         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
+
                     </div>
                   </div>
                 </div>
@@ -508,7 +533,10 @@ function CartPage() {
 
             </div>
             <button
-              onClick={() => navigate({ to: "/finalizar" })}
+              onClick={() => {
+                haptic.tap();
+                navigate({ to: "/finalizar" });
+              }}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
               <Lock className="h-4 w-4" />

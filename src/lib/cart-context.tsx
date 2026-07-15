@@ -24,6 +24,8 @@ type CartCtx = {
   add: (item: Omit<CartItem, "uid">) => void;
   update: (uid: string, patch: Partial<CartItem>) => void;
   remove: (uid: string) => void;
+  /** Reinsere um item (usado para "Desfazer" remoção). Idempotente por uid. */
+  restore: (item: CartItem, index?: number) => void;
   clear: () => void;
   subtotal: number;
   count: number;
@@ -253,6 +255,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       update: (uid, patch) =>
         setItems((prev) => prev.map((it) => (it.uid === uid ? { ...it, ...patch } : it))),
       remove: (uid) => setItems((prev) => prev.filter((it) => it.uid !== uid)),
+      restore: (item, index) =>
+        setItems((prev) => {
+          if (prev.some((it) => it.uid === item.uid)) return prev;
+          if (index == null || index < 0 || index > prev.length) return [...prev, item];
+          const next = prev.slice();
+          next.splice(index, 0, item);
+          return next;
+        }),
       clear: () => setItems([]),
       isCartOpen,
       openCart: () => setCartOpen(true),
