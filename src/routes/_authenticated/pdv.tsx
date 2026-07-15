@@ -733,19 +733,123 @@ function PDVPage() {
             <div className="mt-1 text-xs text-white/60">
               Pedido #{lastOrderId.slice(0, 8).toUpperCase()} · {BRL(total)}
             </div>
-            <div className="mt-5 grid grid-cols-2 gap-2">
+            <div className="mt-5 grid grid-cols-3 gap-2">
               <button
-                onClick={printReceipt}
-                className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-2.5 text-sm font-bold text-white hover:bg-white/10"
+                onClick={() => printReceipt("cliente")}
+                className="flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-bold text-white hover:bg-white/10"
               >
-                <Printer className="h-4 w-4" /> Imprimir
+                <Receipt className="h-4 w-4" /> Cliente
               </button>
               <button
-                onClick={resetSale}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-neon-pink to-fuchsia-500 py-2.5 text-sm font-bold text-white"
+                onClick={() => printReceipt("cozinha")}
+                className="flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-bold text-white hover:bg-white/10"
               >
-                <Plus className="h-4 w-4" /> Nova venda
+                <ChefHat className="h-4 w-4" /> Cozinha
               </button>
+              <button
+                onClick={() => printReceipt("ambos")}
+                className="flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-bold text-white hover:bg-white/10"
+              >
+                <Printer className="h-4 w-4" /> Ambos
+              </button>
+            </div>
+            <button
+              onClick={resetSale}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-neon-pink to-fuchsia-500 py-3 text-sm font-bold text-white"
+            >
+              <Plus className="h-4 w-4" /> Nova venda
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Parked sales drawer */}
+      {showParked && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4" onClick={() => setShowParked(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-3xl border border-amber-400/30 bg-[oklch(0.13_0.05_300)] p-5 shadow-[0_20px_60px_-20px_rgb(251_191_36/.5)]"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PauseCircle className="h-5 w-5 text-amber-300" />
+                <div className="text-lg font-black text-white">Comandas suspensas</div>
+              </div>
+              <button onClick={() => setShowParked(false)} className="grid h-8 w-8 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {parked.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] py-8 text-center text-sm text-white/50">
+                Nenhuma comanda suspensa.
+                <div className="mt-1 text-[11px] text-white/40">Ctrl+S para suspender a venda atual.</div>
+              </div>
+            ) : (
+              <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+                {parked.map((p) => {
+                  const sub = p.cart.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
+                  const qty = p.cart.reduce((s, l) => s + l.quantity, 0);
+                  return (
+                    <div key={p.id} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-amber-500/15 text-amber-300">
+                        <PauseCircle className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-bold text-white">{p.label}</div>
+                        <div className="truncate text-[11px] text-white/50">
+                          {qty} itens · {BRL(sub)} · {new Date(p.savedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => resumeSale(p)}
+                        className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-xs font-bold text-white"
+                      >
+                        <PlayCircle className="h-3.5 w-3.5" /> Retomar
+                      </button>
+                      <button
+                        onClick={() => deleteParked(p.id)}
+                        className="grid h-8 w-8 place-items-center rounded-lg text-red-300 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Shortcuts help */}
+      {showShortcuts && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4" onClick={() => setShowShortcuts(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-white/10 bg-[oklch(0.13_0.05_300)] p-5"
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <Keyboard className="h-5 w-5 text-neon-yellow" />
+              <div className="text-lg font-black text-white">Atalhos de teclado</div>
+            </div>
+            <div className="space-y-1.5 text-sm">
+              {[
+                ["F2", "Focar busca de produto"],
+                ["F4", "Alternar forma de pagamento"],
+                ["F8", "Focar busca de cliente"],
+                ["F9", "Finalizar venda"],
+                ["Ctrl+D", "Duplicar último item"],
+                ["Ctrl+S", "Suspender venda atual"],
+                ["Ctrl+R", "Ver comandas suspensas"],
+                ["/", "Foco na busca"],
+                ["Esc", "Fechar diálogos"],
+                ["?", "Este menu"],
+              ].map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
+                  <kbd className="rounded bg-white/10 px-2 py-0.5 font-mono text-[11px] font-bold text-neon-yellow">{k}</kbd>
+                  <span className="text-white/80">{v}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
