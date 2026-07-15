@@ -68,6 +68,7 @@ import {
   useToggleProductActive,
   useReorderProducts,
   useReorderCategories,
+  useReorderHero,
   useUpsertCategory,
   useDeleteCategory,
   useUpdateSettings,
