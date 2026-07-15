@@ -257,27 +257,18 @@ export function CouponsSection() {
   return (
     <div className="space-y-5">
       {/* HERO HEADER */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-yellow/15 via-neon-pink/15 to-neon-purple/15 p-5">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-yellow/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-neon-pink/20 blur-3xl" />
-
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-yellow to-neon-pink text-white shadow-lg shadow-neon-pink/30">
-              <Ticket className="h-6 w-6" />
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80">
+              <Ticket className="h-5 w-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-display text-2xl font-black text-white">
-                  Cupons de desconto
-                </h3>
-                <span className="rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-neon-cyan">
-                  <Sparkles className="mr-1 inline h-2.5 w-2.5" /> Marketing
-                </span>
-              </div>
-              <p className="mt-1 max-w-md text-[13px] leading-relaxed text-white/60">
-                Crie códigos promocionais, agende lançamentos e acompanhe o uso
-                em tempo real.
+            <div className="min-w-0">
+              <h3 className="font-display text-lg font-black text-white">
+                Cupons de desconto
+              </h3>
+              <p className="mt-0.5 max-w-md text-[12px] text-white/50">
+                Crie códigos, agende lançamentos e acompanhe o uso em tempo real.
               </p>
             </div>
           </div>
@@ -287,47 +278,31 @@ export function CouponsSection() {
               setEditing(null);
               setShowForm(true);
             }}
-            className="group flex items-center gap-2 self-start rounded-2xl bg-neon-pink px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-neon-pink/40 transition-transform hover:scale-[1.02] active:scale-95 glow-pink sm:self-auto"
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-white/15 sm:self-auto"
           >
-            <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+            <Plus className="h-4 w-4" />
             Novo cupom
           </button>
         </div>
 
         {/* KPI strip */}
-        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <KpiChip
-            icon={Flame}
-            label="Ativos agora"
-            value={kpis.active}
-            tone="cyan"
-          />
-          <KpiChip
-            icon={Clock}
-            label="Agendados"
-            value={kpis.scheduled}
-            tone="yellow"
-          />
-          <KpiChip
-            icon={TrendingUp}
-            label="Usos totais"
-            value={kpis.totalUses}
-            tone="pink"
-          />
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <KpiChip icon={Flame} label="Ativos agora" value={kpis.active} />
+          <KpiChip icon={Clock} label="Agendados" value={kpis.scheduled} />
+          <KpiChip icon={TrendingUp} label="Usos totais" value={kpis.totalUses} />
           <KpiChip
             icon={Percent}
             label="Taxa média"
             value={kpis.avgUsage != null ? `${kpis.avgUsage}%` : "—"}
-            tone="white"
           />
         </div>
 
         {kpis.bestCoupon && (
-          <div className="relative mt-3 inline-flex items-center gap-2 rounded-full border border-neon-yellow/30 bg-black/30 px-3 py-1.5 backdrop-blur-sm">
-            <Sparkles className="h-3 w-3 text-neon-yellow" />
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+            <Sparkles className="h-3 w-3 text-white/60" />
             <span className="text-[11px] text-white/70">
               Mais usado:{" "}
-              <span className="font-mono font-bold text-neon-yellow">
+              <span className="font-mono font-bold text-white">
                 {kpis.bestCoupon.code}
               </span>{" "}
               · {kpis.bestCoupon.uses} resgates
