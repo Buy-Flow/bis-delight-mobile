@@ -606,10 +606,8 @@ function CardSection({
             <Field label="CPF do titular" value={formatCpf(cpf)} onChange={setCpf} placeholder="000.000.000-00" inputMode="numeric" error={fieldErrors.cpf} />
             <Field label="E-mail" value={email} onChange={setEmail} placeholder="voce@email.com" error={fieldErrors.email} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="CEP" value={formatCep(cep)} onChange={setCep} placeholder="00000-000" inputMode="numeric" error={fieldErrors.cep} />
-            <Field label="Número" value={addrNumber} onChange={setAddrNumber} placeholder="123" inputMode="numeric" error={fieldErrors.addrNumber} />
-          </div>
+
+
 
           {maxInst > 1 && (
             <div>
