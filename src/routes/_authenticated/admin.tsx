@@ -1042,8 +1042,9 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
       {editing && (
         <ProductEditor
           initial={editing}
+          initialTab={editingTab}
           categories={catList}
-          onClose={() => setEditing(null)}
+          onClose={() => { setEditing(null); setEditingTab(undefined); }}
         />
       )}
     </div>
