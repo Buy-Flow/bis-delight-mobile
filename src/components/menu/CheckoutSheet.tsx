@@ -203,6 +203,15 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     }
   }, [cpf]);
 
+  // Exibição mascarada do CPF salvo: borra os 8 primeiros dígitos, mostra os 3 últimos.
+  const maskedCpfDisplay = (() => {
+    const d = cpfDigits(cpf);
+    if (d.length !== 11) return "";
+    return `•••.•••.••${d[8]}-${d.slice(9)}`;
+  })();
+  const handleUnlockCpf = () => { setCpf(""); setCpfLocked(false); };
+
+
   useEffect(() => {
     if ((!isCheckoutOpen && !pageMode) || !user) {
       setAvailableCoupons([]);
