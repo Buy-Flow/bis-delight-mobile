@@ -8,7 +8,8 @@ import { createAsaasPixForOrder, createAsaasCardForOrder, getAsaasPaymentStatus 
 import { useServerFn } from "@tanstack/react-start";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
-import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle, ExternalLink, Info } from "lucide-react";
+import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle, ExternalLink, Info, X } from "lucide-react";
+import { confirmDialog } from "@/lib/confirm";
 import { cn } from "@/lib/utils";
 import { formatSP } from "@/lib/tz";
 import { detectCardBrand } from "@/lib/card-brand";
@@ -54,6 +55,34 @@ function PagamentoPage() {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+
+  const cancelOrder = async () => {
+    if (cancelling || !order) return;
+    const ok = await confirmDialog({
+      title: "Cancelar pedido?",
+      message: "O pedido será cancelado e não poderá ser recuperado. Se o PIX já tiver sido pago, o cancelamento não é permitido.",
+      confirmLabel: "Cancelar pedido",
+      cancelLabel: "Voltar",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setCancelling(true);
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: "cancelado", canceled_at: new Date().toISOString() })
+        .eq("id", order.id)
+        .in("status", ["novo", "aguardando_pagamento", "pendente"]);
+      if (error) throw error;
+      toast.success("Pedido cancelado");
+      navigate({ to: "/" });
+    } catch (e: any) {
+      toast.error("Não foi possível cancelar", { description: e?.message || "Tente novamente." });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   // Load order + subscribe realtime
   useEffect(() => {
@@ -110,12 +139,24 @@ function PagamentoPage() {
   return (
     <div className="min-h-dvh bg-[oklch(0.14_0.09_305)] text-white">
       <div className="mx-auto max-w-xl px-4 py-6">
-        <button
-          onClick={() => navigate({ to: "/" })}
-          className="mb-4 flex items-center gap-2 text-sm text-white/70 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" /> Voltar ao cardápio
-        </button>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <button
+            onClick={() => navigate({ to: "/" })}
+            className="flex items-center gap-2 text-sm text-white/70 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" /> Voltar ao cardápio
+          </button>
+          {order && !paid && !loading && (
+            <button
+              onClick={cancelOrder}
+              disabled={cancelling}
+              className="inline-flex items-center gap-1.5 rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-red-200 hover:bg-red-500/20 disabled:opacity-60"
+            >
+              {cancelling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+              Cancelar pedido
+            </button>
+          )}
+        </div>
 
         <div className="mb-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
           <div className="flex items-start justify-between gap-3">
