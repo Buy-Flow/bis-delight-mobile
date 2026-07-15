@@ -327,17 +327,14 @@ function EstoquePage() {
         </div>
 
         {/* KPIs — mobile: 2 destacados + scroll horizontal para o resto */}
-        <div className="md:hidden">
-          <div className="grid grid-cols-2 gap-2.5">
-            <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
-            <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
-          </div>
-          <div className="mt-2.5 -mx-3 px-3 flex gap-2.5 overflow-x-auto scrollbar-none snap-x">
-            <div className="min-w-[46%] snap-start"><KpiCard title="Itens" value={kpi.totalItems.toString()} icon={Boxes} color="from-blue-500/20 to-blue-600/5" /></div>
-            <div className="min-w-[56%] snap-start"><KpiCard title="Valor em estoque" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" /></div>
-            <div className="min-w-[46%] snap-start"><KpiCard title="Movimentos" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" /></div>
-          </div>
+        <div className="md:hidden grid grid-cols-1 gap-2.5">
+          <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
+          <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
+          <KpiCard title="Itens" value={kpi.totalItems.toString()} icon={Boxes} color="from-blue-500/20 to-blue-600/5" />
+          <KpiCard title="Valor em estoque" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" />
+          <KpiCard title="Movimentos" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
         </div>
+
         <div className="hidden md:grid md:grid-cols-5 gap-3">
           <KpiCard title="Itens rastreados" value={kpi.totalItems.toString()} icon={Boxes} color="from-blue-500/20 to-blue-600/5" />
           <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
