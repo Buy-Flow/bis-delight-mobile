@@ -1089,17 +1089,27 @@ function ProfilePanel() {
 
                   <button
                     onClick={async () => {
-                      if (!user?.email) return;
+                      if (!user?.email) {
+                        toast.error("E-mail da conta não encontrado");
+                        return;
+                      }
                       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-                        redirectTo: `${window.location.origin}/auth`,
+                        redirectTo: `${window.location.origin}/reset-password`,
                       });
-                      if (error) toast.error("Erro ao enviar e-mail");
-                      else toast.success("Enviamos um link para redefinir sua senha!");
+                      if (error) {
+                        console.error("[conta] resetPasswordForEmail:", error);
+                        toast.error("Erro ao enviar e-mail", { description: error.message });
+                      } else {
+                        toast.success("Enviamos um link para redefinir sua senha!", {
+                          description: `Verifique a caixa de entrada de ${user.email} (e também o spam).`,
+                        });
+                      }
                     }}
                     className="mt-3 w-full rounded-xl border border-dashed border-white/10 bg-transparent px-3 py-2 text-[11px] font-bold text-white/60 hover:bg-white/5"
                   >
                     Prefere receber por e-mail? Enviar link de redefinição
                   </button>
+
                 </div>
               </div>
             )}
