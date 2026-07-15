@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RecompensasRouteImport } from './routes/recompensas'
 import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as MotoboyRouteImport } from './routes/motoboy'
@@ -91,6 +92,11 @@ import { Route as ApiPublicWebhookAsaasRouteImport } from './routes/api/public/w
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecompensasRoute = RecompensasRouteImport.update({
@@ -507,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/motoboy': typeof MotoboyRoute
   '/offline': typeof OfflineRoute
   '/recompensas': typeof RecompensasRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
@@ -586,6 +593,7 @@ export interface FileRoutesByTo {
   '/motoboy': typeof MotoboyRoute
   '/offline': typeof OfflineRoute
   '/recompensas': typeof RecompensasRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-growth': typeof AuthenticatedAiGrowthRoute
@@ -667,6 +675,7 @@ export interface FileRoutesById {
   '/motoboy': typeof MotoboyRoute
   '/offline': typeof OfflineRoute
   '/recompensas': typeof RecompensasRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-growth': typeof AuthenticatedAiGrowthRoute
@@ -748,6 +757,7 @@ export interface FileRouteTypes {
     | '/motoboy'
     | '/offline'
     | '/recompensas'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
@@ -827,6 +837,7 @@ export interface FileRouteTypes {
     | '/motoboy'
     | '/offline'
     | '/recompensas'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/admin'
     | '/ai-growth'
@@ -907,6 +918,7 @@ export interface FileRouteTypes {
     | '/motoboy'
     | '/offline'
     | '/recompensas'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/ai-growth'
@@ -988,6 +1000,7 @@ export interface RootRouteChildren {
   MotoboyRoute: typeof MotoboyRoute
   OfflineRoute: typeof OfflineRoute
   RecompensasRoute: typeof RecompensasRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiAsaasWebhookRoute: typeof ApiAsaasWebhookRoute
   ApiCopilotChatRoute: typeof ApiCopilotChatRoute
@@ -1016,6 +1029,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recompensas': {
@@ -1690,6 +1710,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoboyRoute: MotoboyRoute,
   OfflineRoute: OfflineRoute,
   RecompensasRoute: RecompensasRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiAsaasWebhookRoute: ApiAsaasWebhookRoute,
   ApiCopilotChatRoute: ApiCopilotChatRoute,
