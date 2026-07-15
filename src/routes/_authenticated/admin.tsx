@@ -124,6 +124,7 @@ import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 import { DeliveryZoneEditor } from "@/components/admin/DeliveryZoneEditor";
 import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useProductBadges, type ProductBadge } from "@/lib/product-badges";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -1113,6 +1114,8 @@ function ProductEditor({
   const upsert = useUpsertProduct();
   const del = useDeleteProduct();
   const isNew = !initial.id;
+  const navigate = useNavigate();
+  const { data: badgesList } = useProductBadges();
   const [p, setP] = useState<Product>(initial);
   const [imageBusy, setImageBusy] = useState(false);
   const [tab, setTab] = useState<EditorTab>("basic");
@@ -1331,16 +1334,26 @@ function ProductEditor({
 
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Selo">
-                  <select
-                    className={inputCls}
-                    value={p.badge ?? ""}
-                    onChange={(e) => setField("badge", (e.target.value || undefined) as Product["badge"])}
-                  >
-                    <option value="">Nenhum</option>
-                    <option value="Premium">⭐ Premium</option>
-                    <option value="Novidade">✨ Novidade</option>
-                    <option value="Favorito">❤️ Favorito</option>
-                  </select>
+                  <div className="flex gap-2">
+                    <select
+                      className={inputCls}
+                      value={p.badge ?? ""}
+                      onChange={(e) => setField("badge", (e.target.value || undefined) as Product["badge"])}
+                    >
+                      <option value="">Nenhum</option>
+                      {(badgesList ?? []).filter((b: ProductBadge) => b.active).map((b: ProductBadge) => (
+                        <option key={b.id} value={b.name}>{b.icon} {b.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => navigate({ to: "/selos" })}
+                      className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10"
+                      title="Gerenciar selos"
+                    >
+                      Gerenciar
+                    </button>
+                  </div>
                 </Field>
                 <Field label="Destaque na home">
                   <Toggle

@@ -6,20 +6,20 @@ import { cn } from "@/lib/utils";
 import { productImageSources } from "@/lib/image-optimize";
 import { FavoriteButton } from "./FavoriteButton";
 import { useIsAdmin, isProductPaused, isIndefinitePause } from "@/lib/menu-data";
+import { useProductBadges, badgeInkFor } from "@/lib/product-badges";
 
 
 
 /**
- * Badges compartilham a mesma tinta escura (`--badge-ink`) para manter
- * contraste WCAG AA consistente sobre qualquer fundo neon. Não trocar por
- * `text-white` em fundos claros (yellow/cyan) — falha em 4.5:1.
+ * Badges usam tokens dinâmicos da tabela `product_badges` (cor + ícone).
+ * Fallback de cor para nomes legados garante compatibilidade retroativa.
  */
-const BADGE_INK = "text-[oklch(0.18_0.11_305)]";
-const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
-  Premium: `bg-neon-yellow ${BADGE_INK}`,
-  Novidade: `bg-neon-cyan ${BADGE_INK}`,
-  Favorito: `bg-neon-pink ${BADGE_INK}`,
+const LEGACY_BADGE_COLORS: Record<string, string> = {
+  Premium: "oklch(0.87 0.19 95)",
+  Novidade: "oklch(0.80 0.16 200)",
+  Favorito: "oklch(0.72 0.22 350)",
 };
+
 
 export function ProductCard({
   product,
@@ -29,7 +29,14 @@ export function ProductCard({
   onOpen: (p: Product) => void;
 }) {
   const { data: isAdmin } = useIsAdmin();
+  const { data: badges } = useProductBadges();
   const navigate = useNavigate();
+  const activeBadge = product.badge
+    ? badges?.find((b) => b.name === product.badge && b.active) ?? null
+    : null;
+  const badgeColor =
+    activeBadge?.color ?? (product.badge ? LEGACY_BADGE_COLORS[product.badge] : null);
+  const badgeIcon = activeBadge?.icon ?? null;
   const stock = product.stock;
   const outOfStock = typeof stock === "number" && stock <= 0;
   const lowThreshold = product.lowStockThreshold ?? 5;
@@ -151,18 +158,21 @@ export function ProductCard({
 
 
         {/* Badge sticker tilted */}
-        {product.badge && (
+        {product.badge && badgeColor && (
           <div
-            className={cn(
-              "absolute left-2 top-2 z-20 flex -rotate-6 items-center gap-1 rounded-md px-2 py-[3px] text-[9px] font-black uppercase tracking-[0.14em] shadow-lg",
-              badgeStyles[product.badge],
-            )}
+            className="absolute left-2 top-2 z-20 flex -rotate-6 items-center gap-1 rounded-md px-2 py-[3px] text-[9px] font-black uppercase tracking-[0.14em] shadow-lg"
             style={{
+              backgroundColor: badgeColor,
+              color: badgeInkFor(badgeColor),
               boxShadow:
                 "0 6px 12px -3px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
             }}
           >
-            <Flame className="h-[10px] w-[10px] fill-current" strokeWidth={2.5} />
+            {badgeIcon ? (
+              <span className="text-[10px] leading-none">{badgeIcon}</span>
+            ) : (
+              <Flame className="h-[10px] w-[10px] fill-current" strokeWidth={2.5} />
+            )}
             {product.badge}
           </div>
         )}

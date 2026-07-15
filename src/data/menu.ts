@@ -186,7 +186,7 @@ export type Product = {
   flavors?: string[];
   extras?: ExtraOption[];
   removable?: string[];
-  badge?: "Premium" | "Novidade" | "Favorito";
+  badge?: string;
   hero?: boolean;
   active?: boolean;
   imagePosX?: number;
