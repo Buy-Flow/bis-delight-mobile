@@ -1550,6 +1550,9 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
               {([
                 { id: "pix", label: "PIX", hint: "QR na hora · Aprovação imediata", Icon: QrCode, color: "text-neon-yellow", badge: "Recomendado" },
                 { id: "cartao", label: "Cartão", hint: "Crédito · Até 12x", Icon: CreditCard, color: "text-neon-pink", badge: null },
+                ...(belowMinInvoice
+                  ? ([{ id: "whatsapp", label: "WhatsApp", hint: "Combinar depois", Icon: WhatsIcon, color: "text-neon-cyan", badge: null }] as const)
+                  : ([] as const)),
               ] as const).map(({ id, label, hint, Icon, color, badge }) => (
                 <button
                   key={id}
