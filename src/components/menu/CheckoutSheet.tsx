@@ -23,7 +23,7 @@ import {
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
 import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/AddressMapInline";
-import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
+import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon, Lock, ShieldCheck, ChevronDown } from "lucide-react";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { maskPhoneInput as formatPhone } from "@/lib/phone";
 import { useServerFn } from "@tanstack/react-start";
