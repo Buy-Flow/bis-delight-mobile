@@ -121,8 +121,17 @@ function PagamentoPage() {
         </button>
 
         <div className="mb-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-white/50">Pedido</div>
-          <div className="mt-0.5 font-mono text-sm text-white/80">#{orderId.slice(0, 8)}</div>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-white/50">Pedido</div>
+              <div className="mt-0.5 font-mono text-sm text-white/80">#{orderId.slice(0, 8)}</div>
+            </div>
+            {order && !paid && (
+              <span className="rounded-full bg-neon-yellow/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-neon-yellow ring-1 ring-neon-yellow/40">
+                Aguardando pagamento
+              </span>
+            )}
+          </div>
           <div className="mt-2 flex items-end justify-between">
             <span className="text-white/70">Total</span>
             <span className="font-display text-3xl font-extrabold text-neon-yellow">
@@ -130,6 +139,25 @@ function PagamentoPage() {
             </span>
           </div>
         </div>
+
+        {order && !paid && !loading && (
+          <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
+            <MethodTab
+              active={m === "pix"}
+              onClick={() => navigate({ to: "/pagamento/$orderId", params: { orderId }, search: { m: "pix" } })}
+              icon={QrCode}
+              label="PIX"
+              hint="QR na hora"
+            />
+            <MethodTab
+              active={m === "cartao"}
+              onClick={() => navigate({ to: "/pagamento/$orderId", params: { orderId }, search: { m: "cartao" } })}
+              icon={CreditCard}
+              label="Cartão"
+              hint={`Até 12x`}
+            />
+          </div>
+        )}
 
         {loading || authLoading ? (
           <div className="flex justify-center py-10">
@@ -146,8 +174,44 @@ function PagamentoPage() {
         ) : (
           <CardSection order={order} setOrder={setOrder} user={user} />
         )}
+
+        <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
+          <ShieldCheck className="h-3 w-3 text-emerald-400" />
+          Pagamento criptografado · Processado por Asaas
+        </div>
       </div>
     </div>
+  );
+}
+
+function MethodTab({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+  hint,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center justify-center gap-2 rounded-xl px-3 py-2 transition active:scale-[.98]",
+        active ? "bg-white/10 ring-1 ring-white/25" : "text-white/70 hover:bg-white/[0.04]",
+      )}
+    >
+      <Icon className={cn("h-4 w-4", active ? "text-neon-yellow" : "text-white/50")} />
+      <div className="text-left leading-tight">
+        <div className="text-[13px] font-extrabold text-white">{label}</div>
+        <div className="text-[9.5px] text-white/50">{hint}</div>
+      </div>
+    </button>
   );
 }
 
