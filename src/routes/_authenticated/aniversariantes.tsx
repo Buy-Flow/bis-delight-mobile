@@ -442,17 +442,17 @@ function BirthdayAdmin() {
 
         {tab === "upcoming" && (
           <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-md border border-white/15 bg-white/5 px-3 py-2">
-                <Search className="h-4 w-4 text-white/40" />
+            <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
+              <div className="flex flex-1 items-center gap-2 rounded-md border border-white/15 bg-white/5 px-3 py-2 sm:flex-none">
+                <Search className="h-4 w-4 shrink-0 text-white/40" />
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Buscar por nome, email, telefone"
-                  className="w-64 bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
+                  placeholder="Buscar nome, email, telefone"
+                  className="w-full min-w-0 bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none sm:w-64"
                 />
               </div>
-              <select className={`${selectClass} w-auto`} value={range} onChange={(e) => setRange(Number(e.target.value))}>
+              <select className={`${selectClass} sm:w-auto`} value={range} onChange={(e) => setRange(Number(e.target.value))}>
                 <option value={7}>Próximos 7 dias</option>
                 <option value={15}>Próximos 15 dias</option>
                 <option value={30}>Próximos 30 dias</option>
@@ -461,7 +461,59 @@ function BirthdayAdmin() {
               </select>
               <span className="text-xs text-white/50">{filteredUpcoming.length} pessoas</span>
             </div>
-            <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+
+            {/* Cards no mobile */}
+            <div className="grid gap-2 md:hidden">
+              {filteredUpcoming.map((u) => (
+                <div key={u.user_id} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-white">{u.full_name || "—"}</div>
+                      <div className="truncate text-xs text-white/50">{u.email || u.phone || "—"}</div>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${u.days_until === 0 ? "bg-neon-pink/25 text-neon-pink" : u.days_until <= 7 ? "bg-amber-500/20 text-amber-200" : "bg-white/10 text-white/60"}`}>
+                      {u.days_until === 0 ? "Hoje 🎉" : `${u.days_until}d`}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/70">
+                    <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" />{new Date(u.birthday).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
+                    {u.gift_claimed
+                      ? <span className="font-mono text-neon-yellow">{u.gift_code}</span>
+                      : <span className="text-white/40">sem brinde</span>}
+                    {u.push_sent
+                      ? <span className="inline-flex items-center gap-1 text-emerald-300"><CheckCircle2 className="h-3 w-3" />Push</span>
+                      : <span className="inline-flex items-center gap-1 text-white/40"><Clock className="h-3 w-3" />sem push</span>}
+                  </div>
+                  <div className="mt-3">
+                    <Button
+                      size="sm" variant="outline" className="w-full"
+                      disabled={sendingGift === u.user_id || u.gift_claimed}
+                      onClick={() => sendManualGift(u.user_id)}
+                    >
+                      <Send className="mr-1 h-3 w-3" />
+                      {u.gift_claimed ? "Brinde enviado" : sendingGift === u.user_id ? "Enviando…" : "Enviar brinde"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {filteredUpcoming.length === 0 && (
+                <EmptyState
+                  icon={Cake}
+                  title={q ? "Nenhum resultado" : "Nenhum aniversariante"}
+                  description={q ? "Tente outro termo ou amplie a janela." : "Amplie o período ou aguarde novos cadastros."}
+                  action={
+                    q ? (
+                      <Button size="sm" variant="outline" onClick={() => setQ("")}>Limpar busca</Button>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => setRange(365)}>Ver o ano todo</Button>
+                    )
+                  }
+                />
+              )}
+            </div>
+
+            {/* Tabela no desktop */}
+            <div className="hidden overflow-x-auto rounded-2xl border border-white/10 bg-white/5 md:block">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wider text-white/50">
@@ -498,8 +550,7 @@ function BirthdayAdmin() {
                       </td>
                       <td className="px-3 py-2 text-right">
                         <Button
-                          size="sm"
-                          variant="outline"
+                          size="sm" variant="outline"
                           disabled={sendingGift === u.user_id || u.gift_claimed}
                           onClick={() => sendManualGift(u.user_id)}
                         >
@@ -511,30 +562,16 @@ function BirthdayAdmin() {
                   ))}
                   {filteredUpcoming.length === 0 && (
                     <EmptyState
-                      variant="table"
-                      colSpan={6}
-                      icon={Cake}
+                      variant="table" colSpan={6} icon={Cake}
                       title={q ? "Nenhum resultado para essa busca" : "Nenhum aniversariante nesse período"}
-                      description={
-                        q
-                          ? "Tente outro termo ou amplie a janela de datas."
-                          : "Amplie a janela de datas ou aguarde novos cadastros com data de nascimento."
-                      }
-                      action={
-                        q ? (
-                          <Button size="sm" variant="outline" onClick={() => setQ("")}>
-                            Limpar busca
-                          </Button>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => setRange(365)}>
-                            Ver o ano todo
-                          </Button>
-                        )
-                      }
+                      description={q ? "Tente outro termo ou amplie a janela de datas." : "Amplie a janela de datas ou aguarde novos cadastros."}
+                      action={q ? (
+                        <Button size="sm" variant="outline" onClick={() => setQ("")}>Limpar busca</Button>
+                      ) : (
+                        <Button size="sm" variant="outline" onClick={() => setRange(365)}>Ver o ano todo</Button>
+                      )}
                     />
                   )}
-
-
                 </tbody>
               </table>
             </div>
@@ -542,54 +579,80 @@ function BirthdayAdmin() {
         )}
 
         {tab === "history" && (
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wider text-white/50">
-                  <th className="px-3 py-2">Cliente</th>
-                  <th className="px-3 py-2">Cupom</th>
-                  <th className="px-3 py-2">Emitido</th>
-                  <th className="px-3 py-2">Expira</th>
-                  <th className="px-3 py-2">Usado</th>
-                  <th className="px-3 py-2">Origem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((h) => (
-                  <tr key={h.gift_id} className="border-b border-white/5 last:border-0">
-                    <td className="px-3 py-2">
-                      <div className="font-medium text-white">{h.full_name || "—"}</div>
-                      <div className="text-xs text-white/50">{h.email || "—"}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs text-neon-yellow">{h.coupon_code}</td>
-                    <td className="px-3 py-2 text-xs text-white/70">{new Date(h.created_at).toLocaleDateString("pt-BR")}</td>
-                    <td className="px-3 py-2 text-xs text-white/70">{h.coupon_expires_at ? new Date(h.coupon_expires_at).toLocaleDateString("pt-BR") : "—"}</td>
-                    <td className="px-3 py-2">
-                      {h.used_at
-                        ? <span className="inline-flex items-center gap-1 text-xs text-emerald-300"><CheckCircle2 className="h-3 w-3" />{new Date(h.used_at).toLocaleDateString("pt-BR")}</span>
-                        : <span className="text-xs text-white/40">—</span>}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-white/60">{h.granted_by_email ? `Manual (${h.granted_by_email})` : "Auto"}</td>
+          <div className="space-y-3">
+            {/* Cards no mobile */}
+            <div className="grid gap-2 md:hidden">
+              {history.map((h) => (
+                <div key={h.gift_id} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-white">{h.full_name || "—"}</div>
+                      <div className="truncate text-xs text-white/50">{h.email || "—"}</div>
+                    </div>
+                    <span className="shrink-0 font-mono text-xs text-neon-yellow">{h.coupon_code}</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/70">
+                    <span>Emitido {new Date(h.created_at).toLocaleDateString("pt-BR")}</span>
+                    {h.coupon_expires_at && <span>Expira {new Date(h.coupon_expires_at).toLocaleDateString("pt-BR")}</span>}
+                    {h.used_at
+                      ? <span className="inline-flex items-center gap-1 text-emerald-300"><CheckCircle2 className="h-3 w-3" />Usado {new Date(h.used_at).toLocaleDateString("pt-BR")}</span>
+                      : <span className="text-white/40">não usado</span>}
+                    <span className="text-white/60">{h.granted_by_email ? `Manual` : "Auto"}</span>
+                  </div>
+                </div>
+              ))}
+              {history.length === 0 && (
+                <EmptyState
+                  icon={Gift}
+                  title="Nenhum brinde emitido ainda"
+                  description="Quando um aniversariante ganhar cupom, ele aparece aqui."
+                  action={<Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>Ver próximos</Button>}
+                />
+              )}
+            </div>
+
+            {/* Tabela no desktop */}
+            <div className="hidden overflow-x-auto rounded-2xl border border-white/10 bg-white/5 md:block">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 text-left text-[11px] uppercase tracking-wider text-white/50">
+                    <th className="px-3 py-2">Cliente</th>
+                    <th className="px-3 py-2">Cupom</th>
+                    <th className="px-3 py-2">Emitido</th>
+                    <th className="px-3 py-2">Expira</th>
+                    <th className="px-3 py-2">Usado</th>
+                    <th className="px-3 py-2">Origem</th>
                   </tr>
-                ))}
-                {history.length === 0 && (
-                  <EmptyState
-                    variant="table"
-                    colSpan={6}
-                    icon={Gift}
-                    title="Nenhum brinde emitido ainda"
-                    description="Assim que um aniversariante ganhar cupom, o histórico aparece aqui — com código, validade e uso."
-                    action={
-                      <Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>
-                        Ver próximos aniversariantes
-                      </Button>
-                    }
-                  />
-                )}
-
-
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {history.map((h) => (
+                    <tr key={h.gift_id} className="border-b border-white/5 last:border-0">
+                      <td className="px-3 py-2">
+                        <div className="font-medium text-white">{h.full_name || "—"}</div>
+                        <div className="text-xs text-white/50">{h.email || "—"}</div>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-neon-yellow">{h.coupon_code}</td>
+                      <td className="px-3 py-2 text-xs text-white/70">{new Date(h.created_at).toLocaleDateString("pt-BR")}</td>
+                      <td className="px-3 py-2 text-xs text-white/70">{h.coupon_expires_at ? new Date(h.coupon_expires_at).toLocaleDateString("pt-BR") : "—"}</td>
+                      <td className="px-3 py-2">
+                        {h.used_at
+                          ? <span className="inline-flex items-center gap-1 text-xs text-emerald-300"><CheckCircle2 className="h-3 w-3" />{new Date(h.used_at).toLocaleDateString("pt-BR")}</span>
+                          : <span className="text-xs text-white/40">—</span>}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-white/60">{h.granted_by_email ? `Manual (${h.granted_by_email})` : "Auto"}</td>
+                    </tr>
+                  ))}
+                  {history.length === 0 && (
+                    <EmptyState
+                      variant="table" colSpan={6} icon={Gift}
+                      title="Nenhum brinde emitido ainda"
+                      description="Assim que um aniversariante ganhar cupom, o histórico aparece aqui."
+                      action={<Button size="sm" variant="outline" onClick={() => setTab("upcoming")}>Ver próximos</Button>}
+                    />
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
