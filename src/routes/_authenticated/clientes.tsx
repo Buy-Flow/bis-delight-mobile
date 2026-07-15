@@ -1026,7 +1026,7 @@ function ClientRowItem({
   const waNumber = onlyDigits(row.phone);
   const waHref = waNumber.length >= 10 ? `https://wa.me/55${waNumber}` : null;
   const seg = SEGMENTS[row.segment];
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <li
