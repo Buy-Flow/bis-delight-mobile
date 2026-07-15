@@ -50,6 +50,7 @@ import {
   LoyaltyPanelSkeleton,
 } from "@/components/skeleton";
 import { AddressManager } from "@/components/account/AddressManager";
+import { OrdersPanelPro } from "@/components/account/OrdersPanelPro";
 import { VipRankingCard } from "@/components/account/VipRankingCard";
 import { formatCpf, isValidCpf, cpfDigits } from "@/lib/cpf";
 
@@ -154,7 +155,7 @@ function AccountPage() {
 
       <div className="mx-auto max-w-md px-4 pb-24 pt-5">
         {tab === "fidelidade" && <LoyaltyPanel />}
-        {tab === "pedidos" && <OrdersPanel />}
+        {tab === "pedidos" && <OrdersPanelPro />}
         {tab === "favoritos" && <FavoritesPanel />}
         {tab === "perfil" && <ProfilePanel />}
         {tab === "notificacoes" && <NotificationsInbox />}
