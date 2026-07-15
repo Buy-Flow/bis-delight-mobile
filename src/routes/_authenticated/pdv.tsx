@@ -82,6 +82,45 @@ const PAYMENTS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ 
   { id: "credito", label: "Crédito", icon: Wallet },
 ];
 
+/* ---------------- Parked sales (comandas suspensas) ---------------- */
+
+type ParkedSale = {
+  id: string;
+  savedAt: string;
+  label: string;
+  cart: CartLine[];
+  mode: "retirada" | "entrega";
+  customerName: string;
+  customerPhone: string;
+  address: string;
+  deliveryFee: string;
+  discountType: "reais" | "percent";
+  discountValue: string;
+  payment: PaymentMethod;
+  note: string;
+};
+
+const PARKED_KEY = "pdv:parked-sales:v1";
+
+function loadParkedSales(): ParkedSale[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(PARKED_KEY);
+    return raw ? (JSON.parse(raw) as ParkedSale[]) : [];
+  } catch {
+    return [];
+  }
+}
+function saveParkedSales(list: ParkedSale[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PARKED_KEY, JSON.stringify(list));
+  } catch {
+    // ignore quota
+  }
+}
+
+
 function PDVPage() {
   const { user } = useAuth();
   const { data: products = [] } = useProducts();
