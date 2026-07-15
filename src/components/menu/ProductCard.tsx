@@ -29,7 +29,14 @@ export function ProductCard({
   onOpen: (p: Product) => void;
 }) {
   const { data: isAdmin } = useIsAdmin();
+  const { data: badges } = useProductBadges();
   const navigate = useNavigate();
+  const activeBadge = product.badge
+    ? badges?.find((b) => b.name === product.badge && b.active) ?? null
+    : null;
+  const badgeColor =
+    activeBadge?.color ?? (product.badge ? LEGACY_BADGE_COLORS[product.badge] : null);
+  const badgeIcon = activeBadge?.icon ?? null;
   const stock = product.stock;
   const outOfStock = typeof stock === "number" && stock <= 0;
   const lowThreshold = product.lowStockThreshold ?? 5;
