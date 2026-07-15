@@ -116,11 +116,7 @@ const groups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { to: "/admin", tab: "products", label: "Produtos", icon: Package },
-      { to: "/admin", tab: "categories", label: "Categorias", icon: Tag },
-      { to: "/selos", label: "Selos", icon: Tag },
-      { to: "/admin", tab: "extras", label: "Complementos", icon: Plus },
-      { to: "/admin", tab: "highlights", label: "Destaques", icon: Star },
-      { to: "/admin", tab: "news", label: "Novidades", icon: Sparkles },
+      { to: "/admin", tab: "categories", label: "Organizar cardápio", icon: Tag },
       { to: "/admin", tab: "promos", label: "Promos & Combos", icon: Ticket },
       { to: "/admin", tab: "coupons", label: "Cupons", icon: Ticket },
       { to: "/estoque", label: "Estoque", icon: Archive },
