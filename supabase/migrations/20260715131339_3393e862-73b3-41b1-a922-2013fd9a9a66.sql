@@ -1,0 +1,1 @@
+UPDATE public.orders SET pix_expires_at = created_at + INTERVAL '30 minutes' WHERE pix_expires_at IS NOT NULL AND pix_expires_at > created_at + INTERVAL '1 hour' AND (asaas_status IS NULL OR asaas_status IN ('PENDING','AWAITING_PAYMENT'));
