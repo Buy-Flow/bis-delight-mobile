@@ -518,8 +518,8 @@ function CardSection({
             email: email.trim(),
             cpfCnpj: cpfDigits(cpf),
             phone: order.phone || undefined,
-            postalCode: cep.replace(/\D/g, ""),
-            addressNumber: addrNumber.trim(),
+
+
           },
           card: {
             holderName: holderName.trim().toUpperCase(),
