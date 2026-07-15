@@ -1548,9 +1548,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             </div>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { id: "pix", label: "PIX", hint: "QR na hora · Aprovação imediata", Icon: QrCode, color: "text-neon-yellow", badge: "Recomendado" },
-                { id: "cartao", label: "Cartão", hint: "Crédito · Até 12x", Icon: CreditCard, color: "text-neon-pink", badge: null },
-              ] as const).map(({ id, label, hint, Icon, color, badge }) => (
+                { id: "pix" as const, label: "PIX", hint: "QR na hora · Aprovação imediata", Icon: QrCode, color: "text-neon-yellow", badge: "Recomendado" as string | null },
+                { id: "cartao" as const, label: "Cartão", hint: "Crédito · Até 12x", Icon: CreditCard, color: "text-neon-pink", badge: null as string | null },
+                ...(belowMinInvoice
+                  ? [{ id: "whatsapp" as const, label: "WhatsApp", hint: "Combinar depois", Icon: WhatsIcon, color: "text-neon-cyan", badge: null as string | null }]
+                  : []),
+              ]).map(({ id, label, hint, Icon, color, badge }) => (
                 <button
                   key={id}
                   type="button"
