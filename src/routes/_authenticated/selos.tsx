@@ -35,7 +35,7 @@ const DEFAULT_COLORS = [
 
 const ICON_SUGGESTIONS = ["⭐", "✨", "❤️", "🔥", "🏆", "💎", "🌟", "⚡", "🎁", "🆕", "👑", "🍦"];
 
-function SelosPage() {
+export function SelosContent() {
   const { data: badges = [], isLoading } = useProductBadges();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Partial<ProductBadge> | null>(null);
