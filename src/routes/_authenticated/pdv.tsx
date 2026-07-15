@@ -1082,8 +1082,31 @@ function CartPanel(p: CartPanelProps) {
           })}
         </div>
         {p.payment === "dinheiro" && (
-          <div className="space-y-1">
+          <div className="space-y-2">
             <FieldRow icon={Banknote} placeholder="Valor recebido (R$)" value={p.cashReceived} onChange={p.setCashReceived} type="number" />
+            <div className="grid grid-cols-5 gap-1">
+              <button
+                type="button"
+                onClick={() => p.setCashReceived(p.total.toFixed(2))}
+                className="rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-1 py-1.5 text-[10px] font-bold text-emerald-200 hover:bg-emerald-500/20"
+                title="Valor exato"
+              >
+                Exato
+              </button>
+              {[20, 50, 100, 200].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => {
+                    const cur = Number(p.cashReceived) || 0;
+                    p.setCashReceived(String(cur + v));
+                  }}
+                  className="rounded-lg border border-white/10 bg-white/5 px-1 py-1.5 text-[10px] font-bold text-white hover:bg-white/10"
+                >
+                  +{v}
+                </button>
+              ))}
+            </div>
             {p.cashReceived && (
               <div
                 className={cn(
