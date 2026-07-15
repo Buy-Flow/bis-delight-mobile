@@ -207,6 +207,7 @@ function TablesPage() {
   const filteredTables = useMemo(() => {
     return tables
       .filter((t) => zoneFilter === "todas" || t.zone === zoneFilter)
+      .filter((t) => waiterFilter === "todos" || t.waiter_id === waiterFilter)
       .filter((t) => {
         if (!query) return true;
         const q = query.toLowerCase();
@@ -216,7 +217,7 @@ function TablesPage() {
           (t.zone || "").toLowerCase().includes(q)
         );
       });
-  }, [tables, query, zoneFilter]);
+  }, [tables, query, zoneFilter, waiterFilter]);
 
   const kpis = useMemo(() => {
     const active = tables;
