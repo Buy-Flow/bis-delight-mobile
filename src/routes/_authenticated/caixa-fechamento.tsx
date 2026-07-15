@@ -158,7 +158,7 @@ function GerarTab() {
   const agg = preview?.aggregate;
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-wrap items-end gap-4">
           <div>
             <Label className="mb-1 block text-xs">Data do relatório</Label>
@@ -185,7 +185,7 @@ function GerarTab() {
         </div>
       </div>
 
-      {loading && <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Calculando…</div>}
+      {loading && <div className="rounded-2xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">Calculando…</div>}
 
       {agg && !loading && (
         <>
@@ -199,12 +199,12 @@ function GerarTab() {
           <div className="grid gap-4 lg:grid-cols-2">
             <Card title="Formas de pagamento (PDV)">
               {agg.payments.length === 0 ? (
-                <p className="text-sm text-slate-500">Sem movimentos de PDV neste dia.</p>
+                <p className="text-sm text-muted-foreground">Sem movimentos de PDV neste dia.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-border text-sm">
                   {agg.payments.map((p: any) => (
                     <li key={p.method} className="flex items-center justify-between py-2">
-                      <span className="capitalize">{p.method} <span className="text-slate-400">({p.count})</span></span>
+                      <span className="capitalize">{p.method} <span className="text-muted-foreground/70">({p.count})</span></span>
                       <strong>{BRL(p.amount)}</strong>
                     </li>
                   ))}
@@ -213,12 +213,12 @@ function GerarTab() {
             </Card>
             <Card title="Por canal">
               {agg.by_mode.length === 0 ? (
-                <p className="text-sm text-slate-500">Sem dados.</p>
+                <p className="text-sm text-muted-foreground">Sem dados.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-border text-sm">
                   {agg.by_mode.map((m: any) => (
                     <li key={m.mode} className="flex items-center justify-between py-2">
-                      <span className="capitalize">{m.mode} <span className="text-slate-400">({m.count})</span></span>
+                      <span className="capitalize">{m.mode} <span className="text-muted-foreground/70">({m.count})</span></span>
                       <strong>{BRL(m.revenue)}</strong>
                     </li>
                   ))}
@@ -227,12 +227,12 @@ function GerarTab() {
             </Card>
             <Card title="Movimentos de caixa">
               {Object.keys(agg.movements ?? {}).length === 0 ? (
-                <p className="text-sm text-slate-500">Sem movimentos manuais.</p>
+                <p className="text-sm text-muted-foreground">Sem movimentos manuais.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-border text-sm">
                   {Object.entries(agg.movements as Record<string, any>).map(([k, m]) => (
                     <li key={k} className="flex items-center justify-between py-2">
-                      <span className="capitalize">{k} <span className="text-slate-400">({m.count})</span></span>
+                      <span className="capitalize">{k} <span className="text-muted-foreground/70">({m.count})</span></span>
                       <strong>{BRL(m.amount)}</strong>
                     </li>
                   ))}
@@ -241,12 +241,12 @@ function GerarTab() {
             </Card>
             <Card title="Top produtos">
               {agg.top_products.length === 0 ? (
-                <p className="text-sm text-slate-500">Sem vendas.</p>
+                <p className="text-sm text-muted-foreground">Sem vendas.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-border text-sm">
                   {agg.top_products.slice(0, 8).map((p: any, i: number) => (
                     <li key={i} className="flex items-center justify-between py-2">
-                      <span className="truncate">{i + 1}. {p.product_name} <span className="text-slate-400">({p.qty}×)</span></span>
+                      <span className="truncate">{i + 1}. {p.product_name} <span className="text-muted-foreground/70">({p.qty}×)</span></span>
                       <strong>{BRL(p.revenue)}</strong>
                     </li>
                   ))}
@@ -256,7 +256,7 @@ function GerarTab() {
           </div>
 
           <Card title="Prévia da mensagem WhatsApp" icon={<MessageSquare className="h-4 w-4" />}>
-            <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-4 font-mono text-xs text-slate-700">
+            <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-4 font-mono text-xs text-foreground/90">
               {preview!.summary}
             </pre>
           </Card>
@@ -309,18 +309,18 @@ function HistoricoTab() {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 p-4">
+    <div className="rounded-2xl border border-border bg-card shadow-sm">
+      <div className="border-b border-border p-4">
         <h2 className="text-sm font-semibold">Histórico de relatórios</h2>
       </div>
       {loading ? (
-        <div className="p-10 text-center text-sm text-slate-500">Carregando…</div>
+        <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>
       ) : rows.length === 0 ? (
-        <div className="p-10 text-center text-sm text-slate-500">Nenhum fechamento gerado ainda.</div>
+        <div className="p-10 text-center text-sm text-muted-foreground">Nenhum fechamento gerado ainda.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="px-4 py-2 text-left">Data</th>
                 <th className="px-4 py-2 text-left">Origem</th>
@@ -330,14 +330,14 @@ function HistoricoTab() {
                 <th className="px-4 py-2 text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {rows.map((r) => {
                 const totals = r.totals as any;
                 return (
-                  <tr key={r.id} className="hover:bg-slate-50">
+                  <tr key={r.id} className="hover:bg-muted/40">
                     <td className="px-4 py-3">
                       <div className="font-medium">{formatDateSP(parseDateOnlySP(r.report_date))}</div>
-                      <div className="text-xs text-slate-400">{formatSP(r.created_at)}</div>
+                      <div className="text-xs text-muted-foreground/70">{formatSP(r.created_at)}</div>
                     </td>
                     <td className="px-4 py-3 capitalize">{r.triggered_by}</td>
                     <td className="px-4 py-3 text-right">{totals?.orders?.orders_count ?? 0}</td>
@@ -345,7 +345,7 @@ function HistoricoTab() {
                     <td className="px-4 py-3">
                       <StatusBadge status={r.whatsapp_status} />
                       {r.whatsapp_error && (
-                        <div className="mt-1 max-w-xs truncate text-xs text-rose-500" title={r.whatsapp_error}>
+                        <div className="mt-1 max-w-xs truncate text-xs text-rose-400" title={r.whatsapp_error}>
                           {r.whatsapp_error}
                         </div>
                       )}
@@ -383,7 +383,7 @@ function ConfigTab() {
 
   useEffect(() => { void (async () => setS(await getFn()))(); }, []);
 
-  if (!s) return <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Carregando…</div>;
+  if (!s) return <div className="rounded-2xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
 
   const patch = (k: string, v: any) => setS({ ...s, [k]: v });
 
@@ -441,7 +441,7 @@ function ConfigTab() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium">Enviar fechamento automaticamente</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               O relatório é gerado e disparado no horário configurado, respeitando o fuso e os dias selecionados.
             </p>
           </div>
@@ -475,7 +475,7 @@ function ConfigTab() {
                   key={d.v}
                   onClick={() => toggleWeekday(d.v)}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                    on ? "bg-purple-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    on ? "bg-primary text-primary-foreground" : "bg-slate-100 text-muted-foreground hover:bg-slate-200"
                   }`}
                 >
                   {d.label}
@@ -486,28 +486,28 @@ function ConfigTab() {
         </div>
 
         {s.last_run_at && (
-          <div className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+          <div className="mt-4 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
             Última execução: <strong>{formatSP(s.last_run_at)}</strong> —{" "}
             <StatusBadge status={s.last_run_status ?? "unknown"} />
-            {s.last_run_error && <div className="mt-1 text-rose-600">{s.last_run_error}</div>}
+            {s.last_run_error && <div className="mt-1 text-rose-400">{s.last_run_error}</div>}
           </div>
         )}
       </Card>
 
       {/* WhatsApp numbers */}
       <Card title="Destinatários (WhatsApp)" icon={<MessageSquare className="h-4 w-4" />}>
-        <p className="mb-3 text-xs text-slate-500">
+        <p className="mb-3 text-xs text-muted-foreground">
           Números com DDI+DDD (ex: <code>5511999999999</code>). Cada número recebe o resumo em texto e o PDF anexado.
         </p>
         <div className="space-y-2">
           {(s.whatsapp_numbers ?? []).length === 0 && (
-            <p className="text-xs text-slate-400">Nenhum número configurado. Adicione ao menos um para envio automático.</p>
+            <p className="text-xs text-muted-foreground/70">Nenhum número configurado. Adicione ao menos um para envio automático.</p>
           )}
           {(s.whatsapp_numbers ?? []).map((n: string, i: number) => (
             <div key={i} className="flex gap-2">
               <Input value={n} onChange={(e) => setNumber(i, e.target.value)} placeholder="5511999999999" />
               <Button variant="outline" size="icon" onClick={() => removeNumber(i)}>
-                <Trash2 className="h-4 w-4 text-rose-500" />
+                <Trash2 className="h-4 w-4 text-rose-400" />
               </Button>
             </div>
           ))}
@@ -584,8 +584,8 @@ function Kpi({ label, value, tone }: { label: string; value: string; tone: "purp
 
 function Card({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
         {icon}
         <span>{title}</span>
       </div>
@@ -596,12 +596,12 @@ function Card({ title, icon, children }: { title: string; icon?: React.ReactNode
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; className: string; Icon: any }> = {
-    sent: { label: "Enviado", className: "bg-emerald-100 text-emerald-700", Icon: CheckCircle2 },
-    partial: { label: "Parcial", className: "bg-amber-100 text-amber-700", Icon: AlertTriangle },
-    failed: { label: "Falhou", className: "bg-rose-100 text-rose-700", Icon: XCircle },
-    skipped: { label: "Sem envio", className: "bg-slate-100 text-slate-600", Icon: Clock },
+    sent: { label: "Enviado", className: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30", Icon: CheckCircle2 },
+    partial: { label: "Parcial", className: "bg-amber-500/15 text-amber-300 border border-amber-500/30", Icon: AlertTriangle },
+    failed: { label: "Falhou", className: "bg-rose-500/15 text-rose-300 border border-rose-500/30", Icon: XCircle },
+    skipped: { label: "Sem envio", className: "bg-slate-100 text-muted-foreground", Icon: Clock },
   };
-  const c = cfg[status] ?? { label: status, className: "bg-slate-100 text-slate-600", Icon: Clock };
+  const c = cfg[status] ?? { label: status, className: "bg-slate-100 text-muted-foreground", Icon: Clock };
   const I = c.Icon;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${c.className}`}>
