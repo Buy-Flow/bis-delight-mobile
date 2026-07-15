@@ -150,6 +150,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("pix");
   const [cardBillingOpen, setCardBillingOpen] = useState(false);
   const [cpf, setCpf] = useState("");
+  const [cpfLocked, setCpfLocked] = useState(false);
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
@@ -180,6 +181,65 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   >([]);
 
   // Load coupons the user already owns (loyalty) + active public promo coupons
+  // Restaura CPF salvo (mascarado) — usuário pode "Trocar" para digitar outro
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = window.localStorage.getItem("querobis:saved_cpf") ?? "";
+      const digits = saved.replace(/\D/g, "");
+      if (digits.length === 11 && isValidCpf(digits)) {
+        setCpf(digits);
+        setCpfLocked(true);
+      }
+    } catch {}
+  }, []);
+
+  // Persiste CPF válido para o próximo checkout
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const digits = cpfDigits(cpf);
+    if (digits.length === 11 && isValidCpf(digits)) {
+      try { window.localStorage.setItem("querobis:saved_cpf", digits); } catch {}
+    }
+  }, [cpf]);
+
+  // Exibição mascarada do CPF salvo: borra os 8 primeiros dígitos, mostra os 3 últimos.
+  const maskedCpfDisplay = (() => {
+    const d = cpfDigits(cpf);
+    if (d.length !== 11) return "";
+    return `•••.•••.••${d[8]}-${d.slice(9)}`;
+  })();
+  const handleUnlockCpf = () => { setCpf(""); setCpfLocked(false); };
+  const renderCpfInput = (focusClass: string) => (
+    <div className="relative">
+      <input
+        value={cpfLocked ? maskedCpfDisplay : formatCpf(cpf)}
+        onChange={(e) => { if (cpfLocked) return; setCpf(e.target.value); }}
+        onFocus={() => { if (cpfLocked) handleUnlockCpf(); }}
+        readOnly={cpfLocked}
+        inputMode="numeric"
+        placeholder="000.000.000-00"
+        className={cn(
+          "w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 pr-20 text-sm text-white placeholder:text-white/30 outline-none",
+          focusClass,
+          cpfLocked && "cursor-pointer tracking-wider",
+        )}
+      />
+      {cpfLocked && (
+        <button
+          type="button"
+          onClick={handleUnlockCpf}
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-lg border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/90 hover:bg-white/20"
+        >
+          Trocar
+        </button>
+      )}
+    </div>
+  );
+
+
+
+
   useEffect(() => {
     if ((!isCheckoutOpen && !pageMode) || !user) {
       setAvailableCoupons([]);
@@ -1591,13 +1651,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF para pagamento *</label>
-                  <input
-                    value={formatCpf(cpf)}
-                    onChange={(e) => setCpf(e.target.value)}
-                    inputMode="numeric"
-                    placeholder="000.000.000-00"
-                    className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-cyan/60"
-                  />
+                  {renderCpfInput("focus:border-neon-cyan/60")}
                 </div>
               </div>
             )}
@@ -1635,13 +1689,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 <div className="grid grid-cols-2 gap-2">
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF do titular *</label>
-                    <input
-                      value={formatCpf(cpf)}
-                      onChange={(e) => setCpf(e.target.value)}
-                      inputMode="numeric"
-                      placeholder="000.000.000-00"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
+                    {renderCpfInput("focus:border-neon-pink/60")}
                   </div>
                   {!(savedCard && useSavedCard) && (
                     <>
@@ -1783,13 +1831,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF para gerar PIX *</label>
-                  <input
-                    value={formatCpf(cpf)}
-                    onChange={(e) => setCpf(e.target.value)}
-                    inputMode="numeric"
-                    placeholder="000.000.000-00"
-                    className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-yellow/60"
-                  />
+                  {renderCpfInput("focus:border-neon-yellow/60")}
                 </div>
               </div>
             )}
