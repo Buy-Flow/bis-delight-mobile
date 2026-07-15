@@ -104,6 +104,39 @@ function StatCard({ icon: Icon, label, value, tone }: { icon: typeof Cake; label
   );
 }
 
+function Section({
+  icon: Icon, title, subtitle, defaultOpen = false, right, children,
+}: {
+  icon: typeof Cake; title: string; subtitle?: string;
+  defaultOpen?: boolean; right?: React.ReactNode; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+      <div className="flex items-center gap-3 p-4">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-fuchsia-500/15 text-neon-pink">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-bold text-white">{title}</div>
+            {subtitle && <div className="truncate text-[11px] text-white/50">{subtitle}</div>}
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-white/50 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+        {right && <div className="shrink-0">{right}</div>}
+      </div>
+      {open && <div className="border-t border-white/10 p-4 md:p-5">{children}</div>}
+    </section>
+  );
+}
+
 type Tab = "config" | "stats" | "upcoming" | "history";
 
 function BirthdayAdmin() {
