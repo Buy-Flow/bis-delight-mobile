@@ -934,18 +934,107 @@ function Avatar({ conversation }: { conversation: Conversation }) {
   return <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-black text-[#06140f]">{initials(conversation.contact_name, conversation.phone)}</div>;
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function isEncryptedWhatsappUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  return /mmg\.whatsapp\.net|\.enc($|\?)/i.test(url);
+}
+
+function MediaAttachment({
+  message,
+  inbound,
+  onResolveMedia,
+}: {
+  message: Message;
+  inbound: boolean;
+  onResolveMedia: (id: string) => Promise<string | null>;
+}) {
+  const [resolving, setResolving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const url = message.media_url;
+  const encrypted = isEncryptedWhatsappUrl(url);
+  const usable = url && !encrypted;
+  const type = (message.type || "").toLowerCase();
+
+  async function handleResolve() {
+    setResolving(true);
+    setError(null);
+    const result = await onResolveMedia(message.id);
+    if (!result) setError("Falha ao baixar mídia.");
+    setResolving(false);
+  }
+
+  // Auto-resolve inbound encrypted media once on mount.
+  useEffect(() => {
+    if (encrypted && inbound && message.id && !message.id.startsWith("local-")) {
+      handleResolve();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message.id]);
+
+  if (!url) return null;
+
+  if (!usable) {
+    return (
+      <button
+        type="button"
+        onClick={handleResolve}
+        disabled={resolving}
+        className="mb-2 flex items-center gap-2 rounded-md bg-black/25 px-2.5 py-2 text-xs font-semibold text-white/80 hover:bg-black/40 disabled:opacity-60"
+      >
+        {resolving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+        {resolving ? "Baixando mídia…" : error ? "Tentar novamente" : "Baixar mídia"}
+      </button>
+    );
+  }
+
+  if (type === "image") {
+    return (
+      <a href={url} target="_blank" rel="noreferrer" className="mb-1 block overflow-hidden rounded-md">
+        <img src={url} alt="" loading="lazy" className="max-h-80 w-full max-w-[300px] rounded-md object-cover" />
+      </a>
+    );
+  }
+  if (type === "video") {
+    return (
+      <video controls preload="metadata" className="mb-1 max-h-80 w-full max-w-[320px] rounded-md bg-black">
+        <source src={url} />
+      </video>
+    );
+  }
+  if (type === "audio" || type === "ptt") {
+    return <audio controls src={url} className="mb-1 w-64 max-w-full" />;
+  }
+  // document / sticker / other
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="mb-1 flex items-center gap-2 rounded-md bg-black/25 px-3 py-2 text-xs font-semibold text-white/85 hover:bg-black/40">
+      <FileText className="h-4 w-4 text-white/70" />
+      <span className="truncate">Abrir documento</span>
+    </a>
+  );
+}
+
+function MessageBubble({
+  message,
+  onResolveMedia,
+}: {
+  message: Message;
+  onResolveMedia: (id: string) => Promise<string | null>;
+}) {
   const inbound = isInbound(message);
   const meta = statusMeta(message);
   const StatusIcon = meta.icon;
   const hasError = Boolean(message.error);
+  const type = (message.type || "text").toLowerCase();
+  const isMedia = type !== "text";
+  const bodyText = message.content || message.transcript || "";
   return (
     <div className={cn("flex", inbound ? "justify-start" : "justify-end")}>
-      <div className={cn("group max-w-[78%] rounded-lg px-3 py-2 text-sm shadow-md", inbound ? "rounded-tl-none bg-[#202c33] text-white" : "rounded-tr-none bg-[#005c4b] text-white", hasError && "ring-1 ring-red-400/40")}>
-        {message.type !== "text" && <div className="mb-1 rounded bg-black/15 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-white/55">{message.type}</div>}
-        {message.media_url && <a href={message.media_url} target="_blank" rel="noreferrer" className="mb-2 block text-xs font-bold text-emerald-100 underline">Abrir mídia</a>}
-        <div className="whitespace-pre-wrap break-words">{message.content || message.transcript || "Mensagem sem texto"}</div>
-        <div className="mt-1 flex items-center justify-end gap-1.5 text-[10px] text-white/55">
+      <div className={cn("group max-w-[78%] rounded-lg px-2.5 py-1.5 text-sm shadow-md", inbound ? "rounded-tl-none bg-[#202c33] text-white" : "rounded-tr-none bg-[#005c4b] text-white", hasError && "ring-1 ring-red-400/40")}>
+        {isMedia && <MediaAttachment message={message} inbound={inbound} onResolveMedia={onResolveMedia} />}
+        {(bodyText || (!isMedia)) && (
+          <div className="whitespace-pre-wrap break-words px-1">{bodyText || (isMedia ? "" : "Mensagem sem texto")}</div>
+        )}
+        <div className="mt-1 flex items-center justify-end gap-1.5 px-1 text-[10px] text-white/55">
           <span>{formatTime(message.created_at)}</span>
           {!inbound && <StatusIcon className={cn("h-3.5 w-3.5", meta.className)} />}
           {hasError && (
