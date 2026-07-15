@@ -777,7 +777,7 @@ function RushPage() {
         )}
 
         {/* Lane list */}
-        <section className="mt-3 space-y-2.5">
+        <section className="mt-3 grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
           {orders === null ? (
             <div className="flex items-center justify-center py-16 text-white/50">
               <Loader2 className="h-5 w-5 animate-spin" />
