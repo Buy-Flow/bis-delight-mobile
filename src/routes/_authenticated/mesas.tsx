@@ -791,7 +791,7 @@ function FloorPlanView({
     if (walls.length === 0) return;
     const ok = await confirmDialog({
       title: "Apagar todas as paredes?",
-      description: "Isso remove o desenho da planta.",
+      message: "Isso remove o desenho da planta.",
       tone: "danger",
       confirmLabel: "Apagar tudo",
     });
