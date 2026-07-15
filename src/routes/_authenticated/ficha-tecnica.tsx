@@ -366,22 +366,23 @@ function FichaTecnicaPage() {
   }).length;
 
   return (
-    <div className="min-h-screen bg-background text-white">
+    <div className="min-h-screen bg-background text-white pb-28 md:pb-0">
       {/* Header */}
-      <div className="border-b border-white/10 bg-gradient-to-br from-card to-background px-4 py-6 md:px-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+      <div className="border-b border-white/10 bg-gradient-to-br from-card to-background px-4 py-4 md:px-8 md:py-6">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 md:flex md:flex-wrap md:justify-between md:gap-4">
+          <div className="min-w-0">
             <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neon-yellow">
               <ClipboardCheck className="h-3 w-3" />
               Gestão · CMV
             </div>
-            <h1 className="text-2xl font-black md:text-3xl">Ficha técnica</h1>
-            <p className="mt-1 max-w-2xl text-sm text-white/60">
+            <h1 className="text-xl font-black md:text-3xl">Ficha técnica</h1>
+            <p className="mt-1 hidden max-w-2xl text-sm text-white/60 md:block">
               Monte a receita de cada produto vinculando insumos do estoque. O CMV é
               calculado automaticamente e o consumo é descontado do estoque a cada venda paga.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          {/* Desktop actions */}
+          <div className="hidden gap-2 md:flex md:flex-wrap">
             <button
               onClick={recalcAll}
               className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 hover:bg-white/10"
@@ -395,10 +396,43 @@ function FichaTecnicaPage() {
               <Download className="h-3.5 w-3.5" /> Exportar CSV
             </button>
           </div>
+          {/* Mobile: single kebab */}
+          <div className="relative shrink-0 md:hidden">
+            <button
+              onClick={() => setMobileActionsOpen((v) => !v)}
+              aria-label="Mais ações"
+              className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-white/5"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+            {mobileActionsOpen && (
+              <>
+                <button
+                  className="fixed inset-0 z-10 cursor-default"
+                  aria-hidden
+                  onClick={() => setMobileActionsOpen(false)}
+                />
+                <div className="absolute right-0 top-11 z-20 w-52 overflow-hidden rounded-xl border border-white/10 bg-card shadow-xl">
+                  <button
+                    onClick={() => { setMobileActionsOpen(false); void recalcAll(); }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-white/90 hover:bg-white/5"
+                  >
+                    <Calculator className="h-4 w-4" /> Recalcular tudo
+                  </button>
+                  <button
+                    onClick={() => { setMobileActionsOpen(false); exportCSV(); }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-white/90 hover:bg-white/5"
+                  >
+                    <Download className="h-4 w-4" /> Exportar CSV
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* KPIs */}
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* KPIs — mobile 2 cols, desktop 4 */}
+        <div className="mt-4 grid grid-cols-2 gap-2 md:mt-5 md:gap-3 lg:grid-cols-4">
           <KPI label="Produtos" value={totalProducts.toString()} icon={Package} tone="neutral" />
           <KPI
             label="Com ficha"
@@ -414,7 +448,7 @@ function FichaTecnicaPage() {
             tone={avgMargin >= 60 ? "good" : avgMargin >= 40 ? "warn" : "bad"}
           />
           <KPI
-            label="Margem baixa (<40%)"
+            label="Margem <40%"
             value={lowMargin.toString()}
             icon={AlertTriangle}
             tone={lowMargin ? "bad" : "good"}
@@ -422,7 +456,8 @@ function FichaTecnicaPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 p-4 md:p-6 lg:grid-cols-[320px_1fr]">
+      <div className="grid gap-4 p-3 md:p-6 lg:grid-cols-[320px_1fr]">
+
         {/* Product list */}
         <aside className="rounded-2xl border border-white/10 bg-white/5">
           <div className="border-b border-white/10 p-3">
