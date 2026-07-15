@@ -96,6 +96,40 @@ function AuthPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
+  // Forgot password modal
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSending, setForgotSending] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+
+  const sendPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+    if (!forgotEmail || !/^\S+@\S+\.\S+$/.test(forgotEmail)) {
+      setForgotError("Informe um e-mail válido.");
+      return;
+    }
+    setForgotSending(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: window.location.origin + "/reset-password",
+      });
+      if (error) throw error;
+      setForgotSent(true);
+      toast.success("E-mail de recuperação enviado!", {
+        description: "Verifique sua caixa de entrada e a pasta de spam.",
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setForgotError(msg);
+      toast.error("Não foi possível enviar o e-mail", { description: msg });
+    } finally {
+      setForgotSending(false);
+    }
+  };
+
+
   // Store referral code if present in URL
   useEffect(() => {
     if (search.ref) {
