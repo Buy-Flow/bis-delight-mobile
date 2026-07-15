@@ -115,8 +115,15 @@ import {
   Users,
   Calendar,
   TrendingUp,
+  TrendingDown,
   ArrowUpRight,
   Zap,
+  Timer,
+  Percent,
+  UserPlus,
+  BarChart3,
+  PieChart,
+  Boxes,
 } from "lucide-react";
 import { SearchX } from "lucide-react";
 import { isOpenNow } from "@/components/menu/LocationSection";
