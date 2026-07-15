@@ -8,14 +8,15 @@ import { createAsaasPixForOrder, createAsaasCardForOrder } from "@/lib/asaas.fun
 import { useServerFn } from "@tanstack/react-start";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
-import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle } from "lucide-react";
+import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle, ExternalLink, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatSP } from "@/lib/tz";
 import { detectCardBrand } from "@/lib/card-brand";
 
 const searchSchema = z.object({
-  m: z.enum(["pix", "cartao"]).catch("pix"),
+  m: z.enum(["pix", "cartao", "asaas"]).catch("pix"),
 });
+
 
 export const Route = createFileRoute("/pagamento/$orderId")({
   validateSearch: (s) => searchSchema.parse(s),
