@@ -696,9 +696,9 @@ function OrderCard({
   const cancel = async () => {
     const ok = await confirmDialog({
       title: "Cancelar pedido?",
-      description: "Este pedido ainda não foi pago. Ele será cancelado e removido da fila.",
-      confirmText: "Cancelar pedido",
-      variant: "destructive",
+      message: "Este pedido ainda não foi pago. Ele será cancelado e removido da fila.",
+      confirmLabel: "Cancelar pedido",
+      tone: "danger",
     });
     if (!ok) return;
     const { error } = await supabase.from("orders").update({ status: "cancelado" }).eq("id", o.id);
