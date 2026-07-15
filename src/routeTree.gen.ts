@@ -81,6 +81,7 @@ import { Route as ApiPublicCashCloseCronRouteImport } from './routes/api/public/
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ApiPublicAsaasCheckRouteImport } from './routes/api/public/asaas-check'
 import { Route as ApiPublicAsaasRouteImport } from './routes/api/public/asaas'
+import { Route as ApiPublicSplatRouteImport } from './routes/api/public/$'
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 import { Route as ApiPublicWhatsappWebhookEventRouteImport } from './routes/api/public/whatsapp-webhook.$event'
@@ -461,6 +462,11 @@ const ApiPublicAsaasRoute = ApiPublicAsaasRouteImport.update({
   path: '/api/public/asaas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSplatRoute = ApiPublicSplatRouteImport.update({
+  id: '/api/public/$',
+  path: '/api/public/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRastrearOrderIdRoute =
   AuthenticatedRastrearOrderIdRouteImport.update({
     id: '/rastrear/$orderId',
@@ -552,6 +558,7 @@ export interface FileRoutesByFullPath {
   '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/$': typeof ApiPublicSplatRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
@@ -629,6 +636,7 @@ export interface FileRoutesByTo {
   '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/$': typeof ApiPublicSplatRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
@@ -708,6 +716,7 @@ export interface FileRoutesById {
   '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
+  '/api/public/$': typeof ApiPublicSplatRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
@@ -787,6 +796,7 @@ export interface FileRouteTypes {
     | '/webhooks/asaas'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/$'
     | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
@@ -864,6 +874,7 @@ export interface FileRouteTypes {
     | '/webhooks/asaas'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
+    | '/api/public/$'
     | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
@@ -942,6 +953,7 @@ export interface FileRouteTypes {
     | '/webhooks/asaas'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
+    | '/api/public/$'
     | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
@@ -974,6 +986,7 @@ export interface RootRouteChildren {
   RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
   WebhooksAsaasRoute: typeof WebhooksAsaasRoute
+  ApiPublicSplatRoute: typeof ApiPublicSplatRoute
   ApiPublicAsaasRoute: typeof ApiPublicAsaasRoute
   ApiPublicAsaasCheckRoute: typeof ApiPublicAsaasCheckRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
@@ -1490,6 +1503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAsaasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/$': {
+      id: '/api/public/$'
+      path: '/api/public/$'
+      fullPath: '/api/public/$'
+      preLoaderRoute: typeof ApiPublicSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/rastrear/$orderId': {
       id: '/_authenticated/rastrear/$orderId'
       path: '/rastrear/$orderId'
@@ -1659,6 +1679,7 @@ const rootRouteChildren: RootRouteChildren = {
   RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
   WebhooksAsaasRoute: WebhooksAsaasRoute,
+  ApiPublicSplatRoute: ApiPublicSplatRoute,
   ApiPublicAsaasRoute: ApiPublicAsaasRoute,
   ApiPublicAsaasCheckRoute: ApiPublicAsaasCheckRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
