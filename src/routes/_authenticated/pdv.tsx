@@ -26,7 +26,7 @@ import {
   Copy,
   PauseCircle,
   PlayCircle,
-  TrendingUp,
+  
   Keyboard,
   ChefHat,
   Receipt,
@@ -490,8 +490,8 @@ function PDVPage() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
-      {/* Shift summary bar */}
-      <ShiftSummaryBar userId={user?.id} />
+
+
 
       <div className="mx-auto grid max-w-[1600px] items-start gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         {/* Catalog */}
@@ -1570,99 +1570,4 @@ function buildKitchenHtml(o: {
   </body></html>`;
 }
 
-/* ---------------- Shift Summary ---------------- */
-
-type ShiftMethodTotals = { count: number; total: number };
-
-function ShiftSummaryBar({ userId }: { userId?: string }) {
-  const [stats, setStats] = useState<{
-    count: number;
-    total: number;
-    byMethod: Record<string, ShiftMethodTotals>;
-  } | null>(null);
-  const [open, setOpen] = useState(false);
-
-  const load = useMemo(
-    () => async () => {
-      if (!userId) return;
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
-      const { data } = await supabase
-        .from("orders")
-        .select("total, note, status, created_at")
-        .eq("user_id", userId)
-        .gte("created_at", start.toISOString())
-        .in("status", ["pago", "entregue", "concluido"]);
-      const rows = data ?? [];
-      const byMethod: Record<string, ShiftMethodTotals> = {};
-      let total = 0;
-      for (const r of rows) {
-        const t = Number(r.total) || 0;
-        total += t;
-        const noteStr = String(r.note ?? "");
-        const m = noteStr.match(/PDV · (Dinheiro|PIX|Débito|Crédito)/i);
-        const key = m ? m[1] : "Outros";
-        if (!byMethod[key]) byMethod[key] = { count: 0, total: 0 };
-        byMethod[key].count++;
-        byMethod[key].total += t;
-      }
-      setStats({ count: rows.length, total, byMethod });
-    },
-    [userId],
-  );
-
-  useEffect(() => {
-    load();
-    const t = setInterval(load, 30_000);
-    return () => clearInterval(t);
-  }, [load]);
-
-  if (!stats) return null;
-  const avg = stats.count > 0 ? stats.total / stats.count : 0;
-
-  return (
-    <div className="border-b border-white/5 bg-gradient-to-r from-fuchsia-900/20 via-transparent to-emerald-900/20 px-4 py-2.5 md:px-6">
-      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 text-xs">
-        <div className="flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-bold text-emerald-200">
-          <TrendingUp className="h-3.5 w-3.5" />
-          Turno hoje
-        </div>
-        <ShiftStat label="Vendas" value={String(stats.count)} />
-        <ShiftStat label="Faturamento" value={BRL(stats.total)} accent />
-        <ShiftStat label="Ticket médio" value={BRL(avg)} />
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="ml-auto flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-white/70 hover:bg-white/10"
-        >
-          {open ? "Ocultar detalhes" : "Ver por método"}
-        </button>
-      </div>
-      {open && (
-        <div className="mx-auto mt-2 grid max-w-[1600px] gap-2 sm:grid-cols-2 md:grid-cols-4">
-          {(["Dinheiro", "PIX", "Débito", "Crédito"] as const).map((k) => {
-            const s = stats.byMethod[k] ?? { count: 0, total: 0 };
-            return (
-              <div key={k} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-                <div>
-                  <div className="text-[10px] uppercase tracking-widest text-white/50">{k}</div>
-                  <div className="text-sm font-black text-white">{BRL(s.total)}</div>
-                </div>
-                <div className="text-[11px] font-bold text-white/60">{s.count}x</div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ShiftStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="flex items-baseline gap-1.5">
-      <span className="text-[10px] uppercase tracking-widest text-white/40">{label}</span>
-      <span className={cn("font-black", accent ? "text-neon-yellow" : "text-white")}>{value}</span>
-    </div>
-  );
-}
 
