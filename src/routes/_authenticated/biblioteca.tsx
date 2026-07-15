@@ -707,6 +707,16 @@ function BibliotecaPage() {
         onToggleFav={toggleFavorite}
         onCopy={copyUrl}
       />
+
+      <PendingUploadDialog
+        pending={pending}
+        uploading={uploading}
+        progress={uploadProgress}
+        onChange={setPending}
+        onCancel={cancelPending}
+        onConfirm={confirmUpload}
+      />
+
     </div>
   );
 }
