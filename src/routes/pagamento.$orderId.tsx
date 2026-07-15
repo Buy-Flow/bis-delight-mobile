@@ -297,13 +297,15 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
   const urgent = expiresAt !== null && msLeft > 0 && msLeft < 5 * 60_000;
   const countdown = expiresAt
     ? (() => {
-        const total = Math.max(0, Math.floor(msLeft / 1000));
-        const hh = Math.floor(total / 3600);
-        const mm = Math.floor((total % 3600) / 60).toString().padStart(2, "0");
+        // Sempre exibir apenas MM:SS, limitado a 30 minutos (padrão PIX)
+        const capped = Math.min(msLeft, 30 * 60_000);
+        const total = Math.max(0, Math.floor(capped / 1000));
+        const mm = Math.floor(total / 60).toString().padStart(2, "0");
         const ss = (total % 60).toString().padStart(2, "0");
-        return hh > 0 ? `${hh.toString().padStart(2, "0")}:${mm}:${ss}` : `${mm}:${ss}`;
+        return `${mm}:${ss}`;
       })()
     : null;
+
 
 
 
