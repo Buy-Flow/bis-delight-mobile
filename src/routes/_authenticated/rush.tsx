@@ -505,7 +505,7 @@ function RushPage() {
       toast.error("Erro: " + error.message);
       return;
     }
-    await qc.invalidateQueries({ queryKey: ["menu"] });
+    await invalidateMenu();
     toast[next === "closed" ? "warning" : "success"](
       next === "closed" ? "Novos pedidos pausados." : "Loja aceitando pedidos.",
     );
