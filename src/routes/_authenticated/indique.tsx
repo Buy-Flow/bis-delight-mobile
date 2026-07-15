@@ -515,11 +515,11 @@ function IndiquePage() {
           subtitle="Edite o texto antes de compartilhar"
           tone="amber"
         >
-          <Textarea
+          <textarea
             value={customMsg}
-            onChange={(e) => setCustomMsg(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomMsg(e.target.value)}
             rows={3}
-            className="border-white/15 bg-black/20 text-white placeholder:text-white/40"
+            className="w-full rounded-md border border-white/15 bg-black/20 p-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50"
             placeholder="Ex: Testa esse açaí que é o melhor da cidade 🔥"
           />
           <div className="mt-2 rounded-lg border border-white/10 bg-black/30 p-3 text-sm text-white/80">
