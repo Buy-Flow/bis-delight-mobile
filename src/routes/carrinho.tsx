@@ -158,8 +158,7 @@ function CartPage() {
     addressLng: defaultAddress?.lng ?? null,
     mode: "entrega",
   });
-  const fee = items.length ? preview.fee : 0;
-  const total = Math.max(0, subtotal + fee - combo.discount);
+  const total = Math.max(0, subtotal - combo.discount);
 
 
 
