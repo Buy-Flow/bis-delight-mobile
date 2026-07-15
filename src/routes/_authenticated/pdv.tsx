@@ -23,6 +23,13 @@ import {
   Check,
   Sparkles,
   Pencil,
+  Copy,
+  PauseCircle,
+  PlayCircle,
+  TrendingUp,
+  Keyboard,
+  ChefHat,
+  Receipt,
 } from "lucide-react";
 import { useProducts, useCategories } from "@/lib/menu-data";
 import { useAuth } from "@/lib/use-auth";
@@ -75,6 +82,45 @@ const PAYMENTS: { id: PaymentMethod; label: string; icon: React.ComponentType<{ 
   { id: "credito", label: "Crédito", icon: Wallet },
 ];
 
+/* ---------------- Parked sales (comandas suspensas) ---------------- */
+
+type ParkedSale = {
+  id: string;
+  savedAt: string;
+  label: string;
+  cart: CartLine[];
+  mode: "retirada" | "entrega";
+  customerName: string;
+  customerPhone: string;
+  address: string;
+  deliveryFee: string;
+  discountType: "reais" | "percent";
+  discountValue: string;
+  payment: PaymentMethod;
+  note: string;
+};
+
+const PARKED_KEY = "pdv:parked-sales:v1";
+
+function loadParkedSales(): ParkedSale[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(PARKED_KEY);
+    return raw ? (JSON.parse(raw) as ParkedSale[]) : [];
+  } catch {
+    return [];
+  }
+}
+function saveParkedSales(list: ParkedSale[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PARKED_KEY, JSON.stringify(list));
+  } catch {
+    // ignore quota
+  }
+}
+
+
 function PDVPage() {
   const { user } = useAuth();
   const { data: products = [] } = useProducts();
@@ -98,18 +144,94 @@ function PDVPage() {
   const [sending, setSending] = useState(false);
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [showMobileCart, setShowMobileCart] = useState(false);
+  const [parked, setParked] = useState<ParkedSale[]>(() => loadParkedSales());
+  const [showParked, setShowParked] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Persist parked sales
+  useEffect(() => {
+    saveParkedSales(parked);
+  }, [parked]);
+
+  // Cycle payment methods
+  const cyclePayment = () => {
+    const idx = PAYMENTS.findIndex((p) => p.id === payment);
+    setPayment(PAYMENTS[(idx + 1) % PAYMENTS.length].id);
+  };
+
+  const duplicateLast = () => {
+    setCart((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      return [...prev, { ...last, uid: shortUid(10) }];
+    });
+    toast.success("Item duplicado");
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
+      const t = e.target as HTMLElement | null;
+      const editing =
+        t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      // Global (work even inside inputs)
+      if (e.key === "Escape") {
+        if (showParked) setShowParked(false);
+        else if (showShortcuts) setShowShortcuts(false);
+        return;
+      }
+      if (e.key === "F2") {
         e.preventDefault();
         searchRef.current?.focus();
+        searchRef.current?.select();
+        return;
+      }
+      if (e.key === "F4") {
+        e.preventDefault();
+        cyclePayment();
+        return;
+      }
+      if (e.key === "F8") {
+        e.preventDefault();
+        const input = document.querySelector<HTMLInputElement>(
+          '[data-pdv-customer] input',
+        );
+        input?.focus();
+        return;
+      }
+      if (e.key === "F9") {
+        e.preventDefault();
+        finalize();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "d" || e.key === "D")) {
+        e.preventDefault();
+        duplicateLast();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        parkCurrentSale();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "r" || e.key === "R")) {
+        e.preventDefault();
+        setShowParked(true);
+        return;
+      }
+      if (!editing && e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (!editing && e.key === "?") {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart, payment, showParked, showShortcuts]);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -136,6 +258,58 @@ function PDVPage() {
   const cashNum = Number(cashReceived) || 0;
   const change = payment === "dinheiro" ? Math.max(0, cashNum - total) : 0;
   const missing = payment === "dinheiro" && cashNum > 0 && cashNum < total ? total - cashNum : 0;
+
+  // Park current sale to localStorage (comanda suspensa)
+  const parkCurrentSale = () => {
+    if (cart.length === 0) {
+      toast.error("Nada para suspender.");
+      return;
+    }
+    const entry: ParkedSale = {
+      id: shortUid(6),
+      savedAt: new Date().toISOString(),
+      label: (customerName.trim() || `Comanda ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`),
+      cart,
+      mode,
+      customerName,
+      customerPhone,
+      address,
+      deliveryFee,
+      discountType,
+      discountValue,
+      payment,
+      note,
+    };
+    setParked((prev) => [entry, ...prev].slice(0, 20));
+    resetSale();
+    toast.success("Venda suspensa. Ctrl+R para retomar.");
+  };
+
+  const resumeSale = (p: ParkedSale) => {
+    if (cart.length > 0) {
+      toast.error("Finalize ou suspenda a venda atual primeiro.");
+      return;
+    }
+    setCart(p.cart);
+    setMode(p.mode);
+    setCustomerName(p.customerName);
+    setCustomerPhone(p.customerPhone);
+    setAddress(p.address);
+    setDeliveryFee(p.deliveryFee);
+    setDiscountType(p.discountType);
+    setDiscountValue(p.discountValue);
+    setPayment(p.payment);
+    setNote(p.note);
+    setParked((prev) => prev.filter((x) => x.id !== p.id));
+    setShowParked(false);
+    toast.success(`Retomado: ${p.label}`);
+  };
+
+  const deleteParked = async (id: string) => {
+    if (!(await confirmDialog({ message: "Descartar esta comanda suspensa?" }))) return;
+    setParked((prev) => prev.filter((x) => x.id !== id));
+  };
+
 
   const addFromModal = (payload: Omit<CartItem, "uid">, isEdit: boolean) => {
     if (isEdit && editingLine) {
@@ -175,6 +349,10 @@ function PDVPage() {
   };
 
   const removeLine = (uid: string) => setCart((prev) => prev.filter((l) => l.uid !== uid));
+
+  const onDuplicateLine = (line: CartLine) => {
+    setCart((prev) => [...prev, { ...line, uid: shortUid(10) }]);
+  };
 
   const clearAll = async () => {
     if (cart.length === 0) return;
@@ -273,8 +451,8 @@ function PDVPage() {
     }
   };
 
-  const printReceipt = () => {
-    const html = buildReceiptHtml({
+  const printReceipt = (variant: "cliente" | "cozinha" | "ambos" = "cliente") => {
+    const base = {
       orderId: lastOrderId ?? "",
       cart,
       subtotal,
@@ -287,22 +465,34 @@ function PDVPage() {
       mode,
       customerName: customerName.trim() || "Balcão",
       address: mode === "entrega" ? address.trim() : "",
-    });
-    const w = window.open("", "_blank", "width=380,height=640");
-    if (!w) {
-      toast.error("Ative pop-ups para imprimir.");
-      return;
+    };
+    const doPrint = (html: string) => {
+      const w = window.open("", "_blank", "width=380,height=640");
+      if (!w) {
+        toast.error("Ative pop-ups para imprimir.");
+        return;
+      }
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 250);
+    };
+    if (variant === "cliente") doPrint(buildReceiptHtml(base));
+    else if (variant === "cozinha") doPrint(buildKitchenHtml(base));
+    else {
+      doPrint(buildReceiptHtml(base));
+      setTimeout(() => doPrint(buildKitchenHtml(base)), 400);
     }
-    w.document.write(html);
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 250);
   };
+
 
   const cartCount = cart.reduce((s, l) => s + l.quantity, 0);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
+      {/* Shift summary bar */}
+      <ShiftSummaryBar userId={user?.id} />
+
       <div className="mx-auto grid max-w-[1600px] items-start gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         {/* Catalog */}
         <section className="min-w-0">
@@ -313,7 +503,7 @@ function PDVPage() {
                 ref={searchRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar produto…  (tecla /)"
+                placeholder="Buscar produto ou código…  (F2 ou /)"
                 className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-pink/60"
               />
             </div>
@@ -321,7 +511,28 @@ function PDVPage() {
               <Sparkles className="h-3.5 w-3.5 text-neon-yellow" />
               {filteredProducts.length} itens
             </div>
+            <button
+              onClick={() => setShowParked(true)}
+              className="relative flex items-center gap-1.5 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 hover:bg-amber-500/20"
+              title="Comandas suspensas (Ctrl+R)"
+            >
+              <PauseCircle className="h-3.5 w-3.5" />
+              Suspensas
+              {parked.length > 0 && (
+                <span className="ml-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-amber-400 px-1 text-[10px] font-black text-black">
+                  {parked.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setShowShortcuts(true)}
+              className="hidden items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/70 hover:bg-white/10 md:flex"
+              title="Atalhos de teclado (?)"
+            >
+              <Keyboard className="h-3.5 w-3.5" /> Atalhos
+            </button>
           </div>
+
 
           <div className="mb-4 flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
             {categories.map((c) => {
@@ -424,6 +635,7 @@ function PDVPage() {
             changeQty={changeQty}
             removeLine={removeLine}
             onEditLine={onEditLine}
+            onDuplicateLine={onDuplicateLine}
             clearAll={clearAll}
             finalize={finalize}
             sending={sending}
@@ -491,6 +703,7 @@ function PDVPage() {
               changeQty={changeQty}
               removeLine={removeLine}
               onEditLine={onEditLine}
+            onDuplicateLine={onDuplicateLine}
               clearAll={clearAll}
               finalize={finalize}
               sending={sending}
@@ -527,19 +740,123 @@ function PDVPage() {
             <div className="mt-1 text-xs text-white/60">
               Pedido #{lastOrderId.slice(0, 8).toUpperCase()} · {BRL(total)}
             </div>
-            <div className="mt-5 grid grid-cols-2 gap-2">
+            <div className="mt-5 grid grid-cols-3 gap-2">
               <button
-                onClick={printReceipt}
-                className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-2.5 text-sm font-bold text-white hover:bg-white/10"
+                onClick={() => printReceipt("cliente")}
+                className="flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-bold text-white hover:bg-white/10"
               >
-                <Printer className="h-4 w-4" /> Imprimir
+                <Receipt className="h-4 w-4" /> Cliente
               </button>
               <button
-                onClick={resetSale}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-neon-pink to-fuchsia-500 py-2.5 text-sm font-bold text-white"
+                onClick={() => printReceipt("cozinha")}
+                className="flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-bold text-white hover:bg-white/10"
               >
-                <Plus className="h-4 w-4" /> Nova venda
+                <ChefHat className="h-4 w-4" /> Cozinha
               </button>
+              <button
+                onClick={() => printReceipt("ambos")}
+                className="flex items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 py-2.5 text-xs font-bold text-white hover:bg-white/10"
+              >
+                <Printer className="h-4 w-4" /> Ambos
+              </button>
+            </div>
+            <button
+              onClick={resetSale}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-neon-pink to-fuchsia-500 py-3 text-sm font-bold text-white"
+            >
+              <Plus className="h-4 w-4" /> Nova venda
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Parked sales drawer */}
+      {showParked && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4" onClick={() => setShowParked(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-3xl border border-amber-400/30 bg-[oklch(0.13_0.05_300)] p-5 shadow-[0_20px_60px_-20px_rgb(251_191_36/.5)]"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PauseCircle className="h-5 w-5 text-amber-300" />
+                <div className="text-lg font-black text-white">Comandas suspensas</div>
+              </div>
+              <button onClick={() => setShowParked(false)} className="grid h-8 w-8 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {parked.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] py-8 text-center text-sm text-white/50">
+                Nenhuma comanda suspensa.
+                <div className="mt-1 text-[11px] text-white/40">Ctrl+S para suspender a venda atual.</div>
+              </div>
+            ) : (
+              <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+                {parked.map((p) => {
+                  const sub = p.cart.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
+                  const qty = p.cart.reduce((s, l) => s + l.quantity, 0);
+                  return (
+                    <div key={p.id} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-amber-500/15 text-amber-300">
+                        <PauseCircle className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-bold text-white">{p.label}</div>
+                        <div className="truncate text-[11px] text-white/50">
+                          {qty} itens · {BRL(sub)} · {new Date(p.savedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => resumeSale(p)}
+                        className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-xs font-bold text-white"
+                      >
+                        <PlayCircle className="h-3.5 w-3.5" /> Retomar
+                      </button>
+                      <button
+                        onClick={() => deleteParked(p.id)}
+                        className="grid h-8 w-8 place-items-center rounded-lg text-red-300 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Shortcuts help */}
+      {showShortcuts && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4" onClick={() => setShowShortcuts(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-white/10 bg-[oklch(0.13_0.05_300)] p-5"
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <Keyboard className="h-5 w-5 text-neon-yellow" />
+              <div className="text-lg font-black text-white">Atalhos de teclado</div>
+            </div>
+            <div className="space-y-1.5 text-sm">
+              {[
+                ["F2", "Focar busca de produto"],
+                ["F4", "Alternar forma de pagamento"],
+                ["F8", "Focar busca de cliente"],
+                ["F9", "Finalizar venda"],
+                ["Ctrl+D", "Duplicar último item"],
+                ["Ctrl+S", "Suspender venda atual"],
+                ["Ctrl+R", "Ver comandas suspensas"],
+                ["/", "Foco na busca"],
+                ["Esc", "Fechar diálogos"],
+                ["?", "Este menu"],
+              ].map(([k, v]) => (
+                <div key={k} className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
+                  <kbd className="rounded bg-white/10 px-2 py-0.5 font-mono text-[11px] font-bold text-neon-yellow">{k}</kbd>
+                  <span className="text-white/80">{v}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -581,6 +898,7 @@ type CartPanelProps = {
   changeQty: (uid: string, delta: number) => void;
   removeLine: (uid: string) => void;
   onEditLine: (line: CartLine) => void;
+  onDuplicateLine: (line: CartLine) => void;
   clearAll: () => void;
   finalize: () => void;
   sending: boolean;
@@ -685,6 +1003,13 @@ function CartPanel(p: CartPanelProps) {
                     <Pencil className="h-3 w-3" />
                   </button>
                   <button
+                    onClick={() => p.onDuplicateLine(l)}
+                    className="grid h-6 w-6 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+                    title="Duplicar"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </button>
+                  <button
                     onClick={() => p.removeLine(l.uid)}
                     className="grid h-6 w-6 place-items-center rounded-full text-red-300 hover:bg-red-500/10"
                     title="Remover"
@@ -699,7 +1024,7 @@ function CartPanel(p: CartPanelProps) {
       </div>
 
       {/* Customer */}
-      <div className="space-y-2 border-t border-white/10 pt-3">
+      <div className="space-y-2 border-t border-white/10 pt-3" data-pdv-customer>
         <CustomerSearch
           name={p.customerName}
           phone={p.customerPhone}
@@ -771,8 +1096,31 @@ function CartPanel(p: CartPanelProps) {
           })}
         </div>
         {p.payment === "dinheiro" && (
-          <div className="space-y-1">
+          <div className="space-y-2">
             <FieldRow icon={Banknote} placeholder="Valor recebido (R$)" value={p.cashReceived} onChange={p.setCashReceived} type="number" />
+            <div className="grid grid-cols-5 gap-1">
+              <button
+                type="button"
+                onClick={() => p.setCashReceived(p.total.toFixed(2))}
+                className="rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-1 py-1.5 text-[10px] font-bold text-emerald-200 hover:bg-emerald-500/20"
+                title="Valor exato"
+              >
+                Exato
+              </button>
+              {[20, 50, 100, 200].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => {
+                    const cur = Number(p.cashReceived) || 0;
+                    p.setCashReceived(String(cur + v));
+                  }}
+                  className="rounded-lg border border-white/10 bg-white/5 px-1 py-1.5 text-[10px] font-bold text-white hover:bg-white/10"
+                >
+                  +{v}
+                </button>
+              ))}
+            </div>
             {p.cashReceived && (
               <div
                 className={cn(
@@ -1184,3 +1532,137 @@ function escapeHtml(s: string) {
     }
   });
 }
+
+/* ---------------- Kitchen ticket (grande, sem preços) ---------------- */
+
+function buildKitchenHtml(o: {
+  orderId: string;
+  cart: CartLine[];
+  mode: "retirada" | "entrega";
+  customerName: string;
+  address: string;
+} & Record<string, unknown>) {
+  const items = o.cart
+    .map((l) => {
+      const modLines: string[] = [];
+      l.extras.forEach((e) => modLines.push(`+ ${escapeHtml(e.label)}`));
+      l.removed.forEach((r) => modLines.push(`SEM ${escapeHtml(r).toUpperCase()}`));
+      if (l.note) modLines.push(`OBS: ${escapeHtml(l.note)}`);
+      const mods = modLines.length
+        ? `<div style="font-size:14px;padding-left:10px;margin-top:2px">${modLines.join("<br/>")}</div>`
+        : "";
+      return `<div style="border-bottom:1px dashed #000;padding:6px 0"><div style="font-size:18px;font-weight:bold">${l.quantity}x ${escapeHtml(l.name)}${l.size ? ` (${escapeHtml(l.size)})` : ""}${l.flavor ? ` — ${escapeHtml(l.flavor)}` : ""}</div>${mods}</div>`;
+    })
+    .join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Cozinha</title>
+  <style>
+    @page { size: 80mm auto; margin: 4mm; }
+    body { font-family: 'Courier New', monospace; color: #000; font-size: 13px; }
+    h1 { font-size: 20px; text-align: center; margin: 0 0 6px; text-transform: uppercase; }
+    .muted { text-align: center; font-size: 11px; margin-bottom: 4px; }
+    .badge { border: 2px solid #000; padding: 4px 8px; text-align: center; font-weight: bold; font-size: 16px; margin: 6px 0; }
+  </style></head><body>
+    <h1>◆ COZINHA ◆</h1>
+    <div class="muted">Pedido #${o.orderId.slice(0, 8).toUpperCase()} · ${formatSP(new Date())}</div>
+    <div class="badge">${o.mode === "entrega" ? "ENTREGA" : "BALCÃO"} · ${escapeHtml(o.customerName)}</div>
+    ${o.address ? `<div style="font-size:12px;margin-bottom:6px">Endereço: ${escapeHtml(o.address)}</div>` : ""}
+    ${items}
+  </body></html>`;
+}
+
+/* ---------------- Shift Summary ---------------- */
+
+type ShiftMethodTotals = { count: number; total: number };
+
+function ShiftSummaryBar({ userId }: { userId?: string }) {
+  const [stats, setStats] = useState<{
+    count: number;
+    total: number;
+    byMethod: Record<string, ShiftMethodTotals>;
+  } | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const load = useMemo(
+    () => async () => {
+      if (!userId) return;
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const { data } = await supabase
+        .from("orders")
+        .select("total, note, status, created_at")
+        .eq("user_id", userId)
+        .gte("created_at", start.toISOString())
+        .in("status", ["pago", "entregue", "concluido"]);
+      const rows = data ?? [];
+      const byMethod: Record<string, ShiftMethodTotals> = {};
+      let total = 0;
+      for (const r of rows) {
+        const t = Number(r.total) || 0;
+        total += t;
+        const noteStr = String(r.note ?? "");
+        const m = noteStr.match(/PDV · (Dinheiro|PIX|Débito|Crédito)/i);
+        const key = m ? m[1] : "Outros";
+        if (!byMethod[key]) byMethod[key] = { count: 0, total: 0 };
+        byMethod[key].count++;
+        byMethod[key].total += t;
+      }
+      setStats({ count: rows.length, total, byMethod });
+    },
+    [userId],
+  );
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 30_000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  if (!stats) return null;
+  const avg = stats.count > 0 ? stats.total / stats.count : 0;
+
+  return (
+    <div className="border-b border-white/5 bg-gradient-to-r from-fuchsia-900/20 via-transparent to-emerald-900/20 px-4 py-2.5 md:px-6">
+      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 text-xs">
+        <div className="flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 font-bold text-emerald-200">
+          <TrendingUp className="h-3.5 w-3.5" />
+          Turno hoje
+        </div>
+        <ShiftStat label="Vendas" value={String(stats.count)} />
+        <ShiftStat label="Faturamento" value={BRL(stats.total)} accent />
+        <ShiftStat label="Ticket médio" value={BRL(avg)} />
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="ml-auto flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-white/70 hover:bg-white/10"
+        >
+          {open ? "Ocultar detalhes" : "Ver por método"}
+        </button>
+      </div>
+      {open && (
+        <div className="mx-auto mt-2 grid max-w-[1600px] gap-2 sm:grid-cols-2 md:grid-cols-4">
+          {(["Dinheiro", "PIX", "Débito", "Crédito"] as const).map((k) => {
+            const s = stats.byMethod[k] ?? { count: 0, total: 0 };
+            return (
+              <div key={k} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-white/50">{k}</div>
+                  <div className="text-sm font-black text-white">{BRL(s.total)}</div>
+                </div>
+                <div className="text-[11px] font-bold text-white/60">{s.count}x</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ShiftStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-[10px] uppercase tracking-widest text-white/40">{label}</span>
+      <span className={cn("font-black", accent ? "text-neon-yellow" : "text-white")}>{value}</span>
+    </div>
+  );
+}
+
