@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { brl } from "@/lib/cart-context";
-import { createAsaasPixForOrder, createAsaasCardForOrder } from "@/lib/asaas.functions";
+import { createAsaasPixForOrder, createAsaasCardForOrder, getAsaasPaymentStatus } from "@/lib/asaas.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
