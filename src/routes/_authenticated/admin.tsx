@@ -194,14 +194,17 @@ function AdminPage() {
   }
 
   const isComms = tab === "announcement" || tab === "popup" || tab === "notifications";
+  const isOrganize = tab === "categories" || tab === "seals" || tab === "extras" || tab === "highlights" || tab === "news";
 
   return (
     <div className="text-white">
       <main className="mx-auto max-w-6xl px-4 py-6">
         {isComms && <CommsTabSwitcher current={tab as "announcement" | "popup" | "notifications"} />}
+        {isOrganize && <OrganizeTabSwitcher current={tab as "categories" | "seals" | "extras" | "highlights" | "news"} />}
         {tab === "dashboard" && <DashboardTab />}
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}
         {tab === "categories" && <CategoriesTab initialEditId={editProductId} />}
+        {tab === "seals" && <SelosContent />}
         {tab === "highlights" && <HighlightsTab />}
         {tab === "extras" && <ExtrasTab />}
         {tab === "news" && <NewsTab />}
