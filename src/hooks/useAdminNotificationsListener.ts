@@ -19,9 +19,13 @@ type OrderRow = {
   payment_method: string | null;
 };
 
-function isOnlinePayment(method: string | null | undefined): boolean {
-  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+// Only these payment methods are actionable at INSERT time (before payment is confirmed).
+// Everything else (pix, cartao, credit_card, asaas_checkout, null, unknown) must wait for status='pago'.
+const OFFLINE_METHODS = new Set(["whatsapp", "dinheiro", "cash", "pos", "presencial"]);
+function isOfflinePayment(method: string | null | undefined): boolean {
+  return OFFLINE_METHODS.has(String(method ?? "").toLowerCase());
 }
+
 
 function money(v: number | null | undefined): string {
   if (typeof v !== "number") return "";
