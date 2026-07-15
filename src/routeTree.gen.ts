@@ -80,6 +80,7 @@ import { Route as ApiPublicAsaasCheckRouteImport } from './routes/api/public/asa
 import { Route as AuthenticatedRastrearOrderIdRouteImport } from './routes/_authenticated/rastrear.$orderId'
 import { Route as AuthenticatedAvaliarOrderIdRouteImport } from './routes/_authenticated/avaliar.$orderId'
 import { Route as ApiPublicWhatsappWebhookEventRouteImport } from './routes/api/public/whatsapp-webhook.$event'
+import { Route as ApiPublicWebhookAsaasRouteImport } from './routes/api/public/webhook.asaas'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -454,6 +455,11 @@ const ApiPublicWhatsappWebhookEventRoute =
     path: '/$event',
     getParentRoute: () => ApiPublicWhatsappWebhookRoute,
   } as any)
+const ApiPublicWebhookAsaasRoute = ApiPublicWebhookAsaasRouteImport.update({
+  id: '/api/public/webhook/asaas',
+  path: '/api/public/webhook/asaas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -525,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
+  '/api/public/webhook/asaas': typeof ApiPublicWebhookAsaasRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesByTo {
@@ -597,6 +604,7 @@ export interface FileRoutesByTo {
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
+  '/api/public/webhook/asaas': typeof ApiPublicWebhookAsaasRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRoutesById {
@@ -671,6 +679,7 @@ export interface FileRoutesById {
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
   '/api/public/winback-cron': typeof ApiPublicWinbackCronRoute
+  '/api/public/webhook/asaas': typeof ApiPublicWebhookAsaasRoute
   '/api/public/whatsapp-webhook/$event': typeof ApiPublicWhatsappWebhookEventRoute
 }
 export interface FileRouteTypes {
@@ -745,6 +754,7 @@ export interface FileRouteTypes {
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/winback-cron'
+    | '/api/public/webhook/asaas'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -817,6 +827,7 @@ export interface FileRouteTypes {
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/winback-cron'
+    | '/api/public/webhook/asaas'
     | '/api/public/whatsapp-webhook/$event'
   id:
     | '__root__'
@@ -890,6 +901,7 @@ export interface FileRouteTypes {
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
     | '/api/public/winback-cron'
+    | '/api/public/webhook/asaas'
     | '/api/public/whatsapp-webhook/$event'
   fileRoutesById: FileRoutesById
 }
@@ -917,6 +929,7 @@ export interface RootRouteChildren {
   ApiPublicDailyInsightsCronRoute: typeof ApiPublicDailyInsightsCronRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
   ApiPublicWinbackCronRoute: typeof ApiPublicWinbackCronRoute
+  ApiPublicWebhookAsaasRoute: typeof ApiPublicWebhookAsaasRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1418,6 +1431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWhatsappWebhookEventRouteImport
       parentRoute: typeof ApiPublicWhatsappWebhookRoute
     }
+    '/api/public/webhook/asaas': {
+      id: '/api/public/webhook/asaas'
+      path: '/api/public/webhook/asaas'
+      fullPath: '/api/public/webhook/asaas'
+      preLoaderRoute: typeof ApiPublicWebhookAsaasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1562,6 +1582,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDailyInsightsCronRoute: ApiPublicDailyInsightsCronRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
   ApiPublicWinbackCronRoute: ApiPublicWinbackCronRoute,
+  ApiPublicWebhookAsaasRoute: ApiPublicWebhookAsaasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
