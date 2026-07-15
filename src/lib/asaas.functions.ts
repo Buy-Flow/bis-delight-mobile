@@ -65,6 +65,13 @@ export const createAsaasPixForOrder = createServerFn({ method: "POST" })
       description: data.description ?? `Pedido ${order.id.slice(0, 8)}`,
     });
 
+    // Asaas retorna expirationDate default de ~1 ano; limitamos a 30 min (padrão PIX).
+    const PIX_TTL_MS = 30 * 60 * 1000;
+    const asaasExpMs = qr.expirationDate ? new Date(qr.expirationDate).getTime() : NaN;
+    const capMs = Date.now() + PIX_TTL_MS;
+    const effectiveExpMs = Number.isFinite(asaasExpMs) ? Math.min(asaasExpMs, capMs) : capMs;
+    const effectiveExpISO = new Date(effectiveExpMs).toISOString();
+
     await supabaseAdmin
       .from("orders")
       .update({
@@ -73,7 +80,7 @@ export const createAsaasPixForOrder = createServerFn({ method: "POST" })
         asaas_status: payment.status,
         pix_qr_code_base64: qr.encodedImage,
         pix_copy_paste: qr.payload,
-        pix_expires_at: qr.expirationDate,
+        pix_expires_at: effectiveExpISO,
         invoice_url: payment.invoiceUrl,
       })
       .eq("id", order.id);
@@ -83,10 +90,11 @@ export const createAsaasPixForOrder = createServerFn({ method: "POST" })
       status: payment.status,
       qrBase64: qr.encodedImage,
       copyPaste: qr.payload,
-      expiresAt: qr.expirationDate,
+      expiresAt: effectiveExpISO,
       invoiceUrl: payment.invoiceUrl,
     };
   });
+
 
 const cardInput = z.object({
   orderId: z.string().uuid(),
