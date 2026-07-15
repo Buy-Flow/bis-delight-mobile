@@ -623,6 +623,153 @@ function SalonView({
   );
 }
 
+// ---------- Floor Plan (drag & drop) ----------
+function FloorPlanView({
+  tables,
+  orderByTable,
+  onOpen,
+  onReload,
+}: {
+  tables: RestaurantTable[];
+  orderByTable: Map<string, OrderLite>;
+  onOpen: (t: RestaurantTable) => void;
+  onReload: () => void;
+}) {
+  const [editMode, setEditMode] = useState(false);
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+
+  // Sync local positions from DB, distributing tables with no pos in a grid
+  useEffect(() => {
+    const next: Record<string, { x: number; y: number }> = {};
+    const cols = 6;
+    tables.forEach((t, i) => {
+      if (t.pos_x != null && t.pos_y != null) {
+        next[t.id] = { x: t.pos_x, y: t.pos_y };
+      } else {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        next[t.id] = { x: 40 + col * 110, y: 40 + row * 110 };
+      }
+    });
+    setPositions(next);
+  }, [tables]);
+
+  const pointerDown = (e: React.PointerEvent, id: string) => {
+    if (!editMode) return;
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setDragging(id);
+  };
+
+  const pointerMove = (e: React.PointerEvent) => {
+    if (!dragging || !editMode) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width - 96, e.clientX - rect.left - 48));
+    const y = Math.max(0, Math.min(rect.height - 96, e.clientY - rect.top - 48));
+    setPositions((prev) => ({ ...prev, [dragging]: { x, y } }));
+  };
+
+  const pointerUp = async () => {
+    if (!dragging) return;
+    const id = dragging;
+    setDragging(null);
+    const p = positions[id];
+    if (!p) return;
+    const { error } = await supabase
+      .from("restaurant_tables")
+      .update({ pos_x: Math.round(p.x), pos_y: Math.round(p.y) })
+      .eq("id", id);
+    if (error) toast.error("Falha ao salvar posição");
+    else onReload();
+  };
+
+  if (tables.length === 0)
+    return (
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-12 text-center">
+        <LayoutGrid className="mx-auto mb-3 h-8 w-8 text-white/30" />
+        <p className="text-sm text-white/60">Nenhuma mesa para exibir na planta.</p>
+      </div>
+    );
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 text-white/70">
+          <Move className="h-3.5 w-3.5" />
+          {editMode ? "Arraste as mesas para reposicionar" : "Toque em uma mesa para gerenciar"}
+        </div>
+        <button
+          onClick={() => setEditMode((v) => !v)}
+          className={cn(
+            "rounded-full border px-3 py-1 font-black uppercase tracking-wider transition",
+            editMode
+              ? "border-neon-pink/60 bg-neon-pink/25 text-white"
+              : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+          )}
+        >
+          {editMode ? "Concluir" : "Editar planta"}
+        </button>
+      </div>
+      <div
+        ref={canvasRef}
+        onPointerMove={pointerMove}
+        onPointerUp={pointerUp}
+        className={cn(
+          "relative h-[70vh] min-h-[520px] w-full overflow-hidden rounded-3xl border border-white/10",
+          "bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px] bg-[#0d0322]/60",
+        )}
+      >
+        {tables.map((t) => {
+          const p = positions[t.id] || { x: 40, y: 40 };
+          const order = orderByTable.get(t.id) || null;
+          const assist = isAssistRequested(t.notes);
+          return (
+            <div
+              key={t.id}
+              onPointerDown={(e) => pointerDown(e, t.id)}
+              onClick={() => !editMode && !dragging && onOpen(t)}
+              style={{ transform: `translate(${p.x}px, ${p.y}px)` }}
+              className={cn(
+                "absolute left-0 top-0 h-24 w-24 select-none rounded-2xl border bg-gradient-to-br p-2 transition",
+                statusTone[t.status],
+                t.status === "ocupada" && agingRing(t.opened_at),
+                editMode ? "cursor-grab active:cursor-grabbing" : "cursor-pointer hover:scale-[1.03] active:scale-95",
+                dragging === t.id && "z-20 scale-110 shadow-2xl",
+              )}
+            >
+              {assist && (
+                <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-rose-500 text-white shadow-lg animate-bounce">
+                  <Bell className="h-2.5 w-2.5" />
+                </span>
+              )}
+              <div className="text-[9px] font-bold uppercase tracking-widest opacity-70">Mesa</div>
+              <div className="text-2xl font-black leading-none text-white">{t.number}</div>
+              <div className="mt-1 flex items-center gap-1 text-[10px] opacity-80">
+                <Users className="h-2.5 w-2.5" />
+                {t.people_count || 0}/{t.seats}
+              </div>
+              {order && (
+                <div className="mt-0.5 truncate text-[9px] font-black text-white">{BRL(order.total)}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[10px] text-white/60">
+        <span className="font-black uppercase tracking-widest text-white/50">Legenda</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-400" /> livre / recente</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" /> 30-60 min</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-400" /> +60 min</span>
+        <span className="flex items-center gap-1"><Bell className="h-3 w-3 text-rose-400" /> chamando</span>
+      </div>
+    </div>
+  );
+}
+
 // ---------- List View ----------
 function ListView({
   tables,
