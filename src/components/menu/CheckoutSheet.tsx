@@ -424,21 +424,29 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
   // Recomputa o desconto quando o subtotal muda:
   // - promo em %: recalcula sobre o subtotal atual;
   // - fixo/loyalty: nunca desconta mais do que o subtotal.
-  const discount = (() => {
+  // Fatura mínima do site: o valor cobrado (mercadoria após cupom) não pode
+  // ficar abaixo de R$ 5. Se o desconto do cupom levaria o subtotal abaixo
+  // desse piso, o desconto é limitado para preservar o mínimo — o cupom
+  // ainda é aplicado, mas nunca reduz a conta a menos de R$ 5.
+  const MIN_INVOICE_BRL = 5;
+  const rawDiscount = (() => {
     if (!couponApplied) return 0;
     if (couponApplied.discountType === "percent" && couponApplied.discountValue) {
       return Math.round((subtotal * couponApplied.discountValue) / 100 * 100) / 100;
     }
     return Math.min(couponApplied.discount, subtotal);
   })();
+  const maxDiscountKeepingMin = couponApplied
+    ? Math.max(0, subtotal - MIN_INVOICE_BRL)
+    : rawDiscount;
+  const discount = couponApplied ? Math.min(rawDiscount, maxDiscountKeepingMin) : rawDiscount;
+  const discountCappedByMin = couponApplied != null && rawDiscount > (couponApplied ? Math.min(rawDiscount, Math.max(0, subtotal - MIN_INVOICE_BRL)) : rawDiscount);
+  void discountCappedByMin;
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
-  // Fatura mínima do site: o valor cobrado (mercadoria após cupom) não pode
-  // ficar abaixo de R$ 5. Se ficar, o pedido não pode ser finalizado online —
-  // o cliente precisa retirar presencialmente na loja.
-  const MIN_INVOICE_BRL = 5;
   const billableAfterDiscount = Math.max(0, subtotal - discount);
   const belowMinInvoice = items.length > 0 && billableAfterDiscount < MIN_INVOICE_BRL;
+
 
   // Revalida o mínimo do cupom sempre que o subtotal cair (item removido,
   // quantidade reduzida, edição de sabor barato). Se ficar abaixo, remove
