@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { brl } from "@/lib/cart-context";
 import { createAsaasPixForOrder, createAsaasCardForOrder, getAsaasPaymentStatus } from "@/lib/asaas.functions";
+import { cancelMyOrder } from "@/lib/orders.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
