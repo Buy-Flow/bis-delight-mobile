@@ -98,7 +98,9 @@ type OrderRow = {
   address: string | null;
   created_at: string;
   coupon_code: string | null;
+  payment_method: string | null;
 };
+
 
 type OrderItemRow = {
   id: string;
