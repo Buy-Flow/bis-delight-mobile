@@ -186,9 +186,12 @@ function AdminPage() {
     );
   }
 
+  const isComms = tab === "announcement" || tab === "popup" || tab === "notifications";
+
   return (
     <div className="text-white">
       <main className="mx-auto max-w-6xl px-4 py-6">
+        {isComms && <CommsTabSwitcher current={tab as "announcement" | "popup" | "notifications"} />}
         {tab === "dashboard" && <DashboardTab />}
         {tab === "products" && <ProductsTab initialEditId={editProductId} />}
         {tab === "categories" && <CategoriesTab initialEditId={editProductId} />}
@@ -206,6 +209,48 @@ function AdminPage() {
     </div>
   );
 }
+
+function CommsTabSwitcher({ current }: { current: "announcement" | "popup" | "notifications" }) {
+  const navigate = useNavigate();
+  const tabs = [
+    { id: "announcement" as const, label: "Anúncio", icon: Megaphone, desc: "Barra no topo do app", tone: "from-amber-500/20 to-orange-500/10 border-amber-400/30" },
+    { id: "popup" as const, label: "Pop-up", icon: Sparkles, desc: "Modal de boas-vindas", tone: "from-fuchsia-500/20 to-purple-500/10 border-fuchsia-400/30" },
+    { id: "notifications" as const, label: "Notificações", icon: BellRing, desc: "Push para o celular", tone: "from-sky-500/20 to-cyan-500/10 border-sky-400/30" },
+  ];
+  return (
+    <div className="mb-5">
+      <div className="mb-3">
+        <h1 className="text-2xl font-black text-white md:text-3xl">Comunicação com o cliente</h1>
+        <p className="text-sm text-white/60">Escolha o canal: barra de anúncio, pop-up ou push.</p>
+      </div>
+      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
+        {tabs.map((t) => {
+          const active = current === t.id;
+          const Icon = t.icon;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => navigate({ to: "/admin", search: { tab: t.id } })}
+              className={`group relative flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-3 text-center transition sm:flex-row sm:gap-2 sm:py-2.5 ${
+                active
+                  ? `bg-gradient-to-br ${t.tone} border text-white shadow-lg`
+                  : "border border-transparent text-white/60 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <Icon className={`h-4 w-4 shrink-0 ${active ? "text-white" : "text-white/70"}`} />
+              <div className="min-w-0">
+                <div className="text-xs font-bold sm:text-sm">{t.label}</div>
+                <div className="hidden text-[10px] text-white/50 sm:block">{t.desc}</div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 
 
 /* =============================== Dashboard =============================== */
