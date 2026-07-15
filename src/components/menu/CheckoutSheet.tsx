@@ -1500,25 +1500,30 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             </div>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { id: "whatsapp", label: "Combinar", hint: "Falar no WhatsApp", Icon: WhatsIcon, color: "text-neon-cyan" },
-                { id: "pix", label: "PIX", hint: "QR Code na hora", Icon: QrCode, color: "text-neon-yellow" },
-                { id: "cartao", label: "Cartão", hint: "Até 12x aqui", Icon: CreditCard, color: "text-neon-pink" },
-                { id: "asaas_checkout", label: "Checkout Asaas", hint: "PIX ou Cartão (mais seguro)", Icon: CreditCard, color: "text-neon-cyan" },
-              ] as const).map(({ id, label, hint, Icon, color }) => (
+                { id: "pix", label: "PIX", hint: "QR na hora · Aprovação imediata", Icon: QrCode, color: "text-neon-yellow", badge: "Recomendado" },
+                { id: "cartao", label: "Cartão", hint: "Crédito · Até 12x", Icon: CreditCard, color: "text-neon-pink", badge: null },
+                { id: "whatsapp", label: "WhatsApp", hint: "Combinar depois", Icon: WhatsIcon, color: "text-neon-cyan", badge: null },
+                { id: "asaas_checkout", label: "Link seguro", hint: "Página externa Asaas", Icon: Lock, color: "text-neon-cyan", badge: null },
+              ] as const).map(({ id, label, hint, Icon, color, badge }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setPaymentMethod(id)}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-center transition active:scale-95",
+                    "relative flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-center transition active:scale-95",
                     paymentMethod === id
                       ? "border-white/40 bg-white/10"
                       : "border-white/10 bg-white/[0.03] hover:border-white/25",
                   )}
                 >
+                  {badge && (
+                    <span className="absolute -top-1.5 right-1.5 rounded-full bg-neon-yellow px-1.5 py-0.5 text-[8.5px] font-black uppercase tracking-wider text-[oklch(0.18_0.11_305)]">
+                      {badge}
+                    </span>
+                  )}
                   <Icon className={cn("h-5 w-5", color)} />
                   <div className="text-[12px] font-extrabold text-white leading-tight">{label}</div>
-                  <div className="text-[9.5px] text-white/50 leading-tight">{hint}</div>
+                  <div className="text-[9.5px] text-white/60 leading-tight">{hint}</div>
                 </button>
               ))}
             </div>
