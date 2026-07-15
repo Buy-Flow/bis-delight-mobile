@@ -490,8 +490,8 @@ function PDVPage() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
-      {/* Shift summary bar */}
-      <ShiftSummaryBar userId={user?.id} />
+
+
 
       <div className="mx-auto grid max-w-[1600px] items-start gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         {/* Catalog */}
