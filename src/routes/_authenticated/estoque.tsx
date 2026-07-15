@@ -287,43 +287,58 @@ function EstoquePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b0518] via-[#150829] to-[#0b0518] text-white">
-      <div className="mx-auto max-w-7xl p-4 md:p-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#0b0518] via-[#150829] to-[#0b0518] text-white pb-24 md:pb-6">
+      <div className="mx-auto max-w-7xl p-3 md:p-6 space-y-4 md:space-y-6">
         {/* HEADER */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 text-black grid place-items-center shadow-lg shadow-yellow-500/30">
-              <Archive className="w-6 h-6" />
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="w-10 h-10 md:w-11 md:h-11 shrink-0 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 text-black grid place-items-center shadow-lg shadow-yellow-500/30">
+              <Archive className="w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Estoque</h1>
-              <p className="text-white/60 text-sm">{kpi.totalItems} itens · {kpi.alerts} alerta{kpi.alerts !== 1 ? "s" : ""}</p>
+            <div className="min-w-0">
+              <h1 className="text-xl md:text-3xl font-bold truncate">Estoque</h1>
+              <p className="text-white/60 text-xs md:text-sm truncate">
+                {kpi.totalItems} itens · {kpi.alerts} alerta{kpi.alerts !== 1 ? "s" : ""}
+              </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 shrink-0">
             <button
               onClick={load}
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-sm flex items-center gap-1.5"
+              aria-label="Atualizar"
+              className="h-10 w-10 md:h-auto md:w-auto md:px-3 md:py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-sm flex items-center justify-center gap-1.5"
             >
-              <RefreshCcw className="w-4 h-4" /> Atualizar
+              <RefreshCcw className="w-4 h-4" /> <span className="hidden md:inline">Atualizar</span>
             </button>
             <button
               onClick={exportCSV}
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-sm flex items-center gap-1.5"
+              aria-label="Exportar CSV"
+              className="h-10 w-10 md:h-auto md:w-auto md:px-3 md:py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-sm flex items-center justify-center gap-1.5"
             >
-              <Download className="w-4 h-4" /> Exportar
+              <Download className="w-4 h-4" /> <span className="hidden md:inline">Exportar</span>
             </button>
             <button
               onClick={() => setEditIng("new")}
-              className="px-3 py-2 rounded-lg bg-yellow-400 text-black text-sm font-semibold flex items-center gap-1.5 hover:bg-yellow-300"
+              className="h-10 px-3 md:px-3 md:py-2 rounded-lg bg-yellow-400 text-black text-sm font-semibold flex items-center gap-1.5 hover:bg-yellow-300"
             >
-              <Plus className="w-4 h-4" /> Novo insumo
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Novo insumo</span><span className="sm:hidden">Novo</span>
             </button>
           </div>
         </div>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {/* KPIs — mobile: 2 destacados + scroll horizontal para o resto */}
+        <div className="md:hidden">
+          <div className="grid grid-cols-2 gap-2.5">
+            <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
+            <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
+          </div>
+          <div className="mt-2.5 -mx-3 px-3 flex gap-2.5 overflow-x-auto scrollbar-none snap-x">
+            <div className="min-w-[46%] snap-start"><KpiCard title="Itens" value={kpi.totalItems.toString()} icon={Boxes} color="from-blue-500/20 to-blue-600/5" /></div>
+            <div className="min-w-[56%] snap-start"><KpiCard title="Valor em estoque" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" /></div>
+            <div className="min-w-[46%] snap-start"><KpiCard title="Movimentos" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" /></div>
+          </div>
+        </div>
+        <div className="hidden md:grid md:grid-cols-5 gap-3">
           <KpiCard title="Itens rastreados" value={kpi.totalItems.toString()} icon={Boxes} color="from-blue-500/20 to-blue-600/5" />
           <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
           <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
@@ -331,51 +346,63 @@ function EstoquePage() {
           <KpiCard title="Movimentos (30d)" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
         </div>
 
-        {/* TABS + FILTERS */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1">
-            {(
-              [
-                { id: "produtos", label: "Produtos", icon: Package, count: products.filter((p) => p.stock !== null).length },
-                { id: "insumos", label: "Insumos", icon: Boxes, count: ingredients.length },
-                { id: "movimentos", label: "Movimentos", icon: History, count: movements.length },
-              ] as const
-            ).map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 font-medium transition-colors",
-                  tab === t.id ? "bg-yellow-400 text-black" : "text-white/70 hover:bg-white/10",
-                )}
-              >
-                <t.icon className="w-4 h-4" />
-                {t.label}
-                <span className={cn("text-[10px] px-1.5 rounded-full", tab === t.id ? "bg-black/20" : "bg-white/10")}>
-                  {t.count}
-                </span>
-              </button>
-            ))}
+        {/* TABS — sticky no mobile, roláveis */}
+        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-[#0b0518]/85 backdrop-blur supports-[backdrop-filter]:bg-[#0b0518]/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
+            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0">
+              {(
+                [
+                  { id: "produtos", label: "Produtos", icon: Package, count: products.filter((p) => p.stock !== null).length },
+                  { id: "insumos", label: "Insumos", icon: Boxes, count: ingredients.length },
+                  { id: "movimentos", label: "Movimentos", icon: History, count: movements.length },
+                ] as const
+              ).map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 font-medium transition-colors whitespace-nowrap",
+                    tab === t.id ? "bg-yellow-400 text-black" : "text-white/70 hover:bg-white/10",
+                  )}
+                >
+                  <t.icon className="w-4 h-4" />
+                  {t.label}
+                  <span className={cn("text-[10px] px-1.5 rounded-full", tab === t.id ? "bg-black/20" : "bg-white/10")}>
+                    {t.count}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2 items-center">
-            <div className="relative">
+          {/* FILTROS */}
+          <div className="mt-2 flex gap-2 items-center">
+            <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Buscar..."
-                className="pl-8 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm w-52 focus:outline-none focus:border-yellow-400/50"
+                className="w-full pl-8 pr-8 py-2 rounded-lg bg-white/5 border border-white/10 text-sm md:w-52 focus:outline-none focus:border-yellow-400/50"
               />
+              {q && (
+                <button
+                  onClick={() => setQ("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10"
+                >
+                  <X className="w-3.5 h-3.5 text-white/50" />
+                </button>
+              )}
             </div>
             {tab !== "movimentos" && (
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as typeof filter)}
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-yellow-400/50"
+                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-yellow-400/50 shrink-0"
               >
                 <option value="all">Todos</option>
                 <option value="out">Sem estoque</option>
-                <option value="low">Estoque baixo</option>
+                <option value="low">Baixo</option>
                 <option value="ok">Regular</option>
               </select>
             )}
@@ -406,6 +433,7 @@ function EstoquePage() {
           <MovementsTable movements={filteredMovements} productMap={productMap} ingMap={ingMap} />
         )}
       </div>
+
 
       {editIng && (
         <IngredientDialog
@@ -498,50 +526,97 @@ function ProductsTable({
         return (
           <div
             key={p.id}
-            className="grid grid-cols-2 md:grid-cols-[1fr,120px,140px,120px,120px,120px] items-center px-4 py-3 border-t border-white/5 hover:bg-white/[0.03]"
+            className="border-t border-white/5 hover:bg-white/[0.03]"
           >
-            <div className="col-span-2 md:col-span-1 flex items-center gap-3">
+            {/* MOBILE CARD */}
+            <div className="md:hidden p-3 flex gap-3">
               {p.image_url ? (
-                <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                <img src={p.image_url} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-white/10 grid place-items-center">
-                  <Package className="w-5 h-5 text-white/40" />
+                <div className="w-14 h-14 rounded-xl bg-white/10 grid place-items-center shrink-0">
+                  <Package className="w-6 h-6 text-white/40" />
                 </div>
               )}
-              <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{p.name}</div>
-                <div className={cn("md:hidden text-[10px] mt-0.5 inline-block px-1.5 py-0.5 rounded border", s.className)}>{s.label}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold truncate">{p.name}</div>
+                    <div className="text-[11px] text-white/50 truncate">{p.category}</div>
+                  </div>
+                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0", s.className)}>{s.label}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <div className="text-xs text-white/60">
+                    <span className="text-base font-bold text-white">{p.stock ?? 0}</span>
+                    <span className="ml-1">un</span>
+                    <span className="mx-2 text-white/30">·</span>
+                    <span>Alerta ≤</span>
+                    <input
+                      type="number"
+                      min={0}
+                      defaultValue={p.low_stock_threshold}
+                      onBlur={(e) => {
+                        const v = Math.max(0, Number(e.target.value) || 0);
+                        if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
+                      }}
+                      className="ml-1 w-12 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-xs"
+                    />
+                  </div>
+                  <button
+                    onClick={() => onOpenMovement(p)}
+                    className="px-3 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-medium hover:bg-yellow-400/30 shrink-0"
+                  >
+                    Movimento
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="hidden md:block text-xs text-white/60 truncate">{p.category}</div>
-            <div className="text-sm font-semibold">
-              {p.stock ?? 0}
-              <span className={cn("hidden md:inline ml-2 text-[10px] px-1.5 py-0.5 rounded border", s.className)}>{s.label}</span>
-            </div>
-            <div className="text-xs">
-              <input
-                type="number"
-                min={0}
-                defaultValue={p.low_stock_threshold}
-                onBlur={(e) => {
-                  const v = Math.max(0, Number(e.target.value) || 0);
-                  if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
-                }}
-                className="w-16 px-2 py-1 rounded bg-white/5 border border-white/10 text-xs"
-              />
-            </div>
-            <div className="hidden md:block text-xs text-white/70">{fmtBRL((p.stock ?? 0) * (p.cost_price ?? 0))}</div>
-            <div className="flex justify-end gap-1">
-              <button
-                onClick={() => onOpenMovement(p)}
-                className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
-              >
-                Movimento
-              </button>
+
+            {/* DESKTOP ROW */}
+            <div className="hidden md:grid md:grid-cols-[1fr,120px,140px,120px,120px,120px] items-center px-4 py-3">
+              <div className="flex items-center gap-3">
+                {p.image_url ? (
+                  <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-lg bg-white/10 grid place-items-center">
+                    <Package className="w-5 h-5 text-white/40" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{p.name}</div>
+                </div>
+              </div>
+              <div className="text-xs text-white/60 truncate">{p.category}</div>
+              <div className="text-sm font-semibold">
+                {p.stock ?? 0}
+                <span className={cn("ml-2 text-[10px] px-1.5 py-0.5 rounded border", s.className)}>{s.label}</span>
+              </div>
+              <div className="text-xs">
+                <input
+                  type="number"
+                  min={0}
+                  defaultValue={p.low_stock_threshold}
+                  onBlur={(e) => {
+                    const v = Math.max(0, Number(e.target.value) || 0);
+                    if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
+                  }}
+                  className="w-16 px-2 py-1 rounded bg-white/5 border border-white/10 text-xs"
+                />
+              </div>
+              <div className="text-xs text-white/70">{fmtBRL((p.stock ?? 0) * (p.cost_price ?? 0))}</div>
+              <div className="flex justify-end gap-1">
+                <button
+                  onClick={() => onOpenMovement(p)}
+                  className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
+                >
+                  Movimento
+                </button>
+              </div>
             </div>
           </div>
         );
       })}
+
       {untracked.length > 0 && (
         <div className="border-t border-white/5 px-4 py-2 text-[11px] text-white/40">
           {untracked.length} produto(s) sem rastreamento de estoque. Ative em Produtos → editar → estoque.
@@ -581,64 +656,125 @@ function IngredientsTable({
       {ingredients.map((i) => {
         const s = statusFor(i.stock, i.low_stock_threshold);
         return (
-          <div
-            key={i.id}
-            className="grid grid-cols-2 md:grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] items-center px-4 py-3 border-t border-white/5 hover:bg-white/[0.03]"
-          >
-            <div className="col-span-2 md:col-span-1 min-w-0">
-              <div className="text-sm font-medium truncate">{i.name}</div>
-              <div className="text-[11px] text-white/50 truncate">
-                {i.category ? i.category + " · " : ""}{i.unit}
-                {i.sku ? " · SKU " + i.sku : ""}
+          <div key={i.id} className="border-t border-white/5 hover:bg-white/[0.03]">
+            {/* MOBILE CARD */}
+            <div className="md:hidden p-3 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold truncate">{i.name}</div>
+                  <div className="text-[11px] text-white/50 truncate">
+                    {i.category ? i.category + " · " : ""}{i.unit}
+                    {i.sku ? " · SKU " + i.sku : ""}
+                  </div>
+                </div>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0", s.className)}>{s.label}</span>
               </div>
-            </div>
-            <div className="hidden md:block text-xs text-white/60 truncate">
-              {i.supplier ? (
-                <>
-                  <div className="flex items-center gap-1"><Truck className="w-3 h-3" /> {i.supplier}</div>
+              <div className="grid grid-cols-3 gap-2 text-[11px]">
+                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <div className="text-white/40">Estoque</div>
+                  <div className="text-sm font-bold text-white truncate">{fmtQty(i.stock, i.unit)}</div>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <div className="text-white/40">Alerta</div>
+                  <div className="text-sm font-semibold text-white/80 truncate">{fmtQty(i.low_stock_threshold, i.unit)}</div>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <div className="text-white/40">Valor</div>
+                  <div className="text-sm font-semibold text-white/80 truncate">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+                </div>
+              </div>
+              {i.supplier && (
+                <div className="flex items-center gap-2 text-[11px] text-white/60">
+                  <Truck className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{i.supplier}</span>
                   {i.supplier_phone && (
-                    <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-white/70 mt-0.5">
+                    <a href={`tel:${i.supplier_phone}`} className="ml-auto flex items-center gap-1 text-white/50 shrink-0">
                       <Phone className="w-3 h-3" /> {i.supplier_phone}
                     </a>
                   )}
-                </>
-              ) : (
-                <span className="text-white/30">—</span>
+                </div>
               )}
+              <div className="flex gap-1.5 pt-1">
+                <button
+                  onClick={() => onOpenMovement(i)}
+                  className="flex-1 px-3 py-2 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-medium hover:bg-yellow-400/30"
+                >
+                  Movimento
+                </button>
+                <button
+                  onClick={() => onEdit(i)}
+                  className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10"
+                  aria-label="Editar"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onDelete(i.id)}
+                  className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="text-sm font-semibold">
-              {fmtQty(i.stock, i.unit)}
-              <div className={cn("mt-0.5 md:mt-1 text-[10px] inline-block px-1.5 py-0.5 rounded border", s.className)}>{s.label}</div>
-            </div>
-            <div className="hidden md:block text-xs text-white/60">{fmtQty(i.low_stock_threshold, i.unit)}</div>
-            <div className="hidden md:block text-xs text-white/60">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
-            <div className="hidden md:block text-xs text-white/80">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
-            <div className="flex justify-end gap-1 flex-wrap">
-              <button
-                onClick={() => onOpenMovement(i)}
-                className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
-                title="Registrar movimento"
-              >
-                Movimento
-              </button>
-              <button
-                onClick={() => onEdit(i)}
-                className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10"
-                title="Editar"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onDelete(i.id)}
-                className="p-1.5 rounded bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
-                title="Excluir"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+
+            {/* DESKTOP ROW */}
+            <div className="hidden md:grid md:grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] items-center px-4 py-3">
+              <div className="min-w-0">
+                <div className="text-sm font-medium truncate">{i.name}</div>
+                <div className="text-[11px] text-white/50 truncate">
+                  {i.category ? i.category + " · " : ""}{i.unit}
+                  {i.sku ? " · SKU " + i.sku : ""}
+                </div>
+              </div>
+              <div className="text-xs text-white/60 truncate">
+                {i.supplier ? (
+                  <>
+                    <div className="flex items-center gap-1"><Truck className="w-3 h-3" /> {i.supplier}</div>
+                    {i.supplier_phone && (
+                      <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-white/70 mt-0.5">
+                        <Phone className="w-3 h-3" /> {i.supplier_phone}
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-white/30">—</span>
+                )}
+              </div>
+              <div className="text-sm font-semibold">
+                {fmtQty(i.stock, i.unit)}
+                <div className={cn("mt-1 text-[10px] inline-block px-1.5 py-0.5 rounded border", s.className)}>{s.label}</div>
+              </div>
+              <div className="text-xs text-white/60">{fmtQty(i.low_stock_threshold, i.unit)}</div>
+              <div className="text-xs text-white/60">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
+              <div className="text-xs text-white/80">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+              <div className="flex justify-end gap-1 flex-wrap">
+                <button
+                  onClick={() => onOpenMovement(i)}
+                  className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
+                >
+                  Movimento
+                </button>
+                <button
+                  onClick={() => onEdit(i)}
+                  className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10"
+                  aria-label="Editar"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => onDelete(i.id)}
+                  className="p-1.5 rounded bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         );
       })}
+
     </div>
   );
 }
@@ -677,26 +813,55 @@ function MovementsTable({
             : ingMap.get(m.ingredient_id ?? "")?.name ?? "Insumo removido";
         const unit = m.item_type === "ingredient" ? ingMap.get(m.ingredient_id ?? "")?.unit : undefined;
         return (
-          <div
-            key={m.id}
-            className="grid grid-cols-2 md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5 border-t border-white/5 text-sm"
-          >
-            <div className="text-xs text-white/60">{fmtDateTime(m.created_at)}</div>
-            <div>
-              <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border", info.color)}>
-                <info.icon className="w-3 h-3" /> {info.label}
-              </span>
+          <div key={m.id} className="border-t border-white/5 text-sm">
+            {/* MOBILE CARD */}
+            <div className="md:hidden p-3 flex items-start gap-3">
+              <div className={cn("shrink-0 w-9 h-9 rounded-lg grid place-items-center border", info.color)}>
+                <info.icon className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-sm font-semibold truncate">{name}</div>
+                  <div className="text-sm font-bold shrink-0">
+                    {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
+                    {fmtQty(Math.abs(m.qty), unit)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-white/50 mt-0.5">
+                  <span>{info.label}</span>
+                  <span className="text-white/20">·</span>
+                  <span>{fmtDateTime(m.created_at)}</span>
+                  {m.unit_cost ? (
+                    <>
+                      <span className="text-white/20">·</span>
+                      <span>{fmtBRL(m.unit_cost)}</span>
+                    </>
+                  ) : null}
+                </div>
+                {m.reason && <div className="text-[11px] text-white/60 mt-1 line-clamp-2">{m.reason}</div>}
+              </div>
             </div>
-            <div className="col-span-2 md:col-span-1 truncate">{name}</div>
-            <div className="text-sm font-semibold">
-              {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
-              {fmtQty(Math.abs(m.qty), unit)}
+
+            {/* DESKTOP ROW */}
+            <div className="hidden md:grid md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5">
+              <div className="text-xs text-white/60">{fmtDateTime(m.created_at)}</div>
+              <div>
+                <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border", info.color)}>
+                  <info.icon className="w-3 h-3" /> {info.label}
+                </span>
+              </div>
+              <div className="truncate">{name}</div>
+              <div className="text-sm font-semibold">
+                {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
+                {fmtQty(Math.abs(m.qty), unit)}
+              </div>
+              <div className="text-xs text-white/60">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
+              <div className="text-xs text-white/50 truncate">{m.reason || "—"}</div>
             </div>
-            <div className="text-xs text-white/60">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
-            <div className="text-xs text-white/50 truncate">{m.reason || "—"}</div>
           </div>
         );
       })}
+
     </div>
   );
 }
