@@ -421,16 +421,16 @@ function WhatsappPage() {
 
   return (
     <AdminShell>
-      <div className="h-[calc(100dvh-3.5rem)] w-full min-w-0 overflow-hidden bg-[var(--wa-bg)] text-white">
+      <div className="h-[calc(100dvh-3.5rem)] w-full min-w-0 overflow-hidden bg-[#0b141a] text-white">
         <div className="flex h-full w-full min-w-0">
           <aside className={cn(
-            "flex min-w-0 flex-col border-r border-white/10 bg-[var(--wa-panel)]",
+            "flex min-w-0 flex-col border-r border-white/10 bg-[#111b21]",
             selected ? "hidden md:flex md:w-[340px] md:shrink-0 lg:w-[360px]" : "flex w-full md:w-[340px] md:shrink-0 lg:w-[360px]"
           )}>
-            <div className="border-b border-white/10 bg-[var(--wa-panel-2)] px-3 py-2.5">
+            <div className="border-b border-white/10 bg-[#202c33] px-3 py-2.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--wa-accent)]/15 text-emerald-400">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-500/15 text-emerald-400">
                     <MessageCircle className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0 leading-tight">
@@ -438,7 +438,7 @@ function WhatsappPage() {
                     <div className="flex items-center gap-1.5 text-[11px] text-white/55">
                       {connected ? (
                         <>
-                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--wa-accent)]" />
+                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
                           <span>Conectado</span>
                         </>
                       ) : (
@@ -460,7 +460,7 @@ function WhatsappPage() {
                 </div>
               </div>
 
-              <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-[var(--wa-bg)] px-3 py-2">
+              <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-[#0b141a] px-3 py-2">
                 <Search className="h-4 w-4 text-white/45" />
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pesquisar conversa" className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35" />
                 {query && (
@@ -479,9 +479,9 @@ function WhatsappPage() {
                 ].map(([key, label, count]) => {
                   const active = filter === key;
                   return (
-                    <button key={key as string} type="button" onClick={() => setFilter(key as FilterKey)} className={cn("inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold transition", active ? "bg-[var(--wa-accent)] text-[var(--wa-accent-ink)]" : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white")}>
+                    <button key={key as string} type="button" onClick={() => setFilter(key as FilterKey)} className={cn("inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold transition", active ? "bg-emerald-500 text-[#06140f]" : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white")}>
                       <span>{label as string}</span>
-                      <span className={cn("min-w-4 rounded-full px-1 text-[10px] font-black", active ? "bg-[var(--wa-accent-ink)]/25 text-[var(--wa-accent-ink)]" : "bg-white/10 text-white/80")}>{count as number}</span>
+                      <span className={cn("min-w-4 rounded-full px-1 text-[10px] font-black", active ? "bg-[#06140f]/25 text-[#06140f]" : "bg-white/10 text-white/80")}>{count as number}</span>
                     </button>
                   );
                 })}
@@ -528,7 +528,7 @@ function WhatsappPage() {
                 <div className="px-6 py-12 text-center text-sm text-white/45">Nenhuma conversa encontrada.</div>
               ) : (
                 filtered.map((conversation) => (
-                  <button key={conversation.id} type="button" onClick={() => setSelectedId(conversation.id)} className={cn("flex w-full items-center gap-3 border-b border-white/5 px-4 py-3 text-left transition hover:bg-white/5", selectedId === conversation.id && "bg-[var(--wa-input)]")}>
+                  <button key={conversation.id} type="button" onClick={() => setSelectedId(conversation.id)} className={cn("flex w-full items-center gap-3 border-b border-white/5 px-4 py-3 text-left transition hover:bg-white/5", selectedId === conversation.id && "bg-[#2a3942]")}>
                     <Avatar conversation={conversation} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -539,7 +539,7 @@ function WhatsappPage() {
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <span className="text-[11px] text-white/40">{formatTime(conversation.last_message_at)}</span>
-                      {conversation.unread_count > 0 && <span className="grid min-h-5 min-w-5 place-items-center rounded-full bg-[var(--wa-accent)] px-1.5 text-[11px] font-black text-[var(--wa-accent-ink)]">{conversation.unread_count}</span>}
+                      {conversation.unread_count > 0 && <span className="grid min-h-5 min-w-5 place-items-center rounded-full bg-emerald-400 px-1.5 text-[11px] font-black text-[#06140f]">{conversation.unread_count}</span>}
                     </div>
                   </button>
                 ))
@@ -547,10 +547,10 @@ function WhatsappPage() {
             </div>
           </aside>
 
-          <main className={cn("min-w-0 flex-1 flex-col bg-[var(--wa-bg)]", selected ? "flex" : "hidden md:flex")}>
+          <main className={cn("min-w-0 flex-1 flex-col bg-[#0b141a]", selected ? "flex" : "hidden md:flex")}>
             {selected ? (
               <>
-                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-[var(--wa-panel-2)] px-3">
+                <div className="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 bg-[#202c33] px-3">
                   <button type="button" onClick={() => setSelectedId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 hover:bg-white/10 hover:text-white md:hidden" aria-label="Voltar">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -559,8 +559,8 @@ function WhatsappPage() {
                     <div className="truncate font-semibold">{selected.contact_name || formatPhone(selected.phone)}</div>
                     {editingPhone ? (
                       <div className="mt-1 flex items-center gap-2">
-                        <input value={phoneDraft} onChange={(event) => setPhoneDraft(event.target.value)} className="h-7 w-52 rounded bg-[var(--wa-panel)] px-2 text-xs text-white outline-none ring-1 ring-white/10 focus:ring-[var(--wa-accent)]/50" />
-                        <button type="button" onClick={handleSavePhone} className="rounded bg-[var(--wa-accent)] px-2 py-1 text-xs font-bold text-[var(--wa-accent-ink)]">Salvar</button>
+                        <input value={phoneDraft} onChange={(event) => setPhoneDraft(event.target.value)} className="h-7 w-52 rounded bg-[#111b21] px-2 text-xs text-white outline-none ring-1 ring-white/10 focus:ring-emerald-400/50" />
+                        <button type="button" onClick={handleSavePhone} className="rounded bg-emerald-500 px-2 py-1 text-xs font-bold text-[#06140f]">Salvar</button>
                         <button type="button" onClick={() => setEditingPhone(false)} className="text-xs text-white/55 hover:text-white">Cancelar</button>
                       </div>
                     ) : (
@@ -569,19 +569,19 @@ function WhatsappPage() {
                       </button>
                     )}
                   </div>
-                  <button type="button" onClick={handleToggleAi} className={cn("inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition", selected.ai_paused ? "bg-amber-400/15 text-amber-200 hover:bg-amber-400/25" : "bg-[var(--wa-accent)]/15 text-emerald-200 hover:bg-[var(--wa-accent)]/25")}>
+                  <button type="button" onClick={handleToggleAi} className={cn("inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition", selected.ai_paused ? "bg-amber-400/15 text-amber-200 hover:bg-amber-400/25" : "bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25")}>
                     {selected.ai_paused ? <BotOff className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                     {selected.ai_paused ? "IA pausada" : "IA ativa"}
                   </button>
                 </div>
 
-                <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_color-mix(in_oklab,var(--wa-panel-2)_60%,transparent),_transparent_35%),var(--wa-bg)] px-4 py-5">
+                <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(32,44,51,0.9),_transparent_35%),#0b141a] px-4 py-5">
                   <div className="mx-auto flex max-w-4xl flex-col gap-2">
                     {loadingMessages ? <MessageSkeleton /> : messages.length === 0 ? <EmptyChat /> : messages.map((message) => <MessageBubble key={message.id} message={message} />)}
                   </div>
                 </div>
 
-                <div className="shrink-0 border-t border-white/10 bg-[var(--wa-panel-2)] p-3">
+                <div className="shrink-0 border-t border-white/10 bg-[#202c33] p-3">
                   <form className="flex items-end gap-2" onSubmit={(event) => { event.preventDefault(); handleSend(); }}>
                     <textarea
                       value={text}
@@ -595,9 +595,9 @@ function WhatsappPage() {
                       placeholder={connected ? "Digite uma mensagem" : "Conecte o WhatsApp para enviar"}
                       rows={1}
                       disabled={!connected || sending}
-                      className="max-h-32 min-h-11 flex-1 resize-none rounded-lg bg-[var(--wa-input)] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 disabled:opacity-60"
+                      className="max-h-32 min-h-11 flex-1 resize-none rounded-lg bg-[#2a3942] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 disabled:opacity-60"
                     />
-                    <button type="submit" disabled={!connected || !text.trim() || sending} className="grid h-11 w-11 place-items-center rounded-full bg-[var(--wa-accent)] text-[var(--wa-accent-ink)] transition hover:bg-[var(--wa-accent)]/85 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30" aria-label="Enviar mensagem">
+                    <button type="submit" disabled={!connected || !text.trim() || sending} className="grid h-11 w-11 place-items-center rounded-full bg-emerald-500 text-[#06140f] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/30" aria-label="Enviar mensagem">
                       {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                     </button>
                   </form>
@@ -617,7 +617,7 @@ function WhatsappPage() {
 
         {newOpen && (
           <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4">
-            <div className="w-full max-w-md rounded-xl border border-white/10 bg-[var(--wa-panel)] p-5 shadow-2xl">
+            <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#111b21] p-5 shadow-2xl">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-bold">Nova conversa</h2>
@@ -626,9 +626,9 @@ function WhatsappPage() {
                 <button type="button" onClick={() => setNewOpen(false)} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/10"><X className="h-4 w-4" /></button>
               </div>
               <div className="mt-5 space-y-3">
-                <input value={newName} onChange={(event) => setNewName(event.target.value)} placeholder="Nome do cliente" className="h-11 w-full rounded-lg bg-[var(--wa-bg)] px-3 text-sm outline-none ring-1 ring-white/10 focus:ring-[var(--wa-accent)]/50" />
-                <input value={newPhone} onChange={(event) => setNewPhone(event.target.value)} placeholder="Telefone / WhatsApp" className="h-11 w-full rounded-lg bg-[var(--wa-bg)] px-3 text-sm outline-none ring-1 ring-white/10 focus:ring-[var(--wa-accent)]/50" />
-                <button type="button" onClick={handleCreateConversation} className="h-11 w-full rounded-lg bg-[var(--wa-accent)] font-black text-[var(--wa-accent-ink)] hover:bg-[var(--wa-accent)]/85">Criar conversa</button>
+                <input value={newName} onChange={(event) => setNewName(event.target.value)} placeholder="Nome do cliente" className="h-11 w-full rounded-lg bg-[#0b141a] px-3 text-sm outline-none ring-1 ring-white/10 focus:ring-emerald-400/50" />
+                <input value={newPhone} onChange={(event) => setNewPhone(event.target.value)} placeholder="Telefone / WhatsApp" className="h-11 w-full rounded-lg bg-[#0b141a] px-3 text-sm outline-none ring-1 ring-white/10 focus:ring-emerald-400/50" />
+                <button type="button" onClick={handleCreateConversation} className="h-11 w-full rounded-lg bg-emerald-500 font-black text-[#06140f] hover:bg-emerald-400">Criar conversa</button>
               </div>
             </div>
           </div>
@@ -643,7 +643,7 @@ function WhatsappPage() {
 
 function Avatar({ conversation }: { conversation: Conversation }) {
   if (conversation.profile_pic_url) return <img src={conversation.profile_pic_url} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" loading="lazy" />;
-  return <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[var(--wa-accent)] to-[var(--wa-bubble-out)] text-sm font-black text-[var(--wa-accent-ink)]">{initials(conversation.contact_name, conversation.phone)}</div>;
+  return <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-black text-[#06140f]">{initials(conversation.contact_name, conversation.phone)}</div>;
 }
 
 function MessageBubble({ message }: { message: Message }) {
@@ -653,7 +653,7 @@ function MessageBubble({ message }: { message: Message }) {
   const hasError = Boolean(message.error);
   return (
     <div className={cn("flex", inbound ? "justify-start" : "justify-end")}>
-      <div className={cn("group max-w-[78%] rounded-lg px-3 py-2 text-sm shadow-md", inbound ? "rounded-tl-none bg-[var(--wa-panel-2)] text-white" : "rounded-tr-none bg-[var(--wa-bubble-out)] text-white", hasError && "ring-1 ring-red-400/40")}>
+      <div className={cn("group max-w-[78%] rounded-lg px-3 py-2 text-sm shadow-md", inbound ? "rounded-tl-none bg-[#202c33] text-white" : "rounded-tr-none bg-[#005c4b] text-white", hasError && "ring-1 ring-red-400/40")}>
         {message.type !== "text" && <div className="mb-1 rounded bg-black/15 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-white/55">{message.type}</div>}
         {message.media_url && <a href={message.media_url} target="_blank" rel="noreferrer" className="mb-2 block text-xs font-bold text-emerald-100 underline">Abrir mídia</a>}
         <div className="whitespace-pre-wrap break-words">{message.content || message.transcript || "Mensagem sem texto"}</div>
@@ -699,9 +699,9 @@ function MessageSkeleton() {
   return (
     <div className="space-y-3">
       <div className="h-16 w-2/3 rounded-lg bg-white/10" />
-      <div className="ml-auto h-14 w-1/2 rounded-lg bg-[var(--wa-accent)]/20" />
+      <div className="ml-auto h-14 w-1/2 rounded-lg bg-emerald-500/20" />
       <div className="h-20 w-3/5 rounded-lg bg-white/10" />
-      <div className="ml-auto h-12 w-2/5 rounded-lg bg-[var(--wa-accent)]/20" />
+      <div className="ml-auto h-12 w-2/5 rounded-lg bg-emerald-500/20" />
     </div>
   );
 }

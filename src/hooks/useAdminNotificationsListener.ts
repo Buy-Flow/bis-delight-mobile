@@ -79,8 +79,6 @@ export function useAdminNotificationsListener() {
           }
           if (oldRow?.status !== row.status) {
             if (row.status === "cancelado") {
-              // Silencia cancelamentos por falta de pagamento (pedido nunca foi pago)
-              if (!row.paid_at) return;
               pushAdminNotif({
                 kind: "order_cancelled",
                 refId: `order_cancelled:${row.id}`,

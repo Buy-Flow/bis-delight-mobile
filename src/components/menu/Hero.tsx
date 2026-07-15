@@ -48,16 +48,6 @@ export function Hero({
           }}
         />
 
-      </div>
-
-      {/* Side illustrations layer — on desktop, anchored to a centered
-          max-width container so images never bleed past the viewport edge.
-          On mobile/tablet the offsets remain relative to the section width
-          (which matches the ~500px app column). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 lg:left-1/2 lg:right-auto lg:w-full lg:max-w-[1200px] lg:-translate-x-1/2"
-      >
         {/* Side illustrations — configurable via admin (Início) */}
         {heroImages?.left?.url && (
           <img
@@ -65,7 +55,7 @@ export function Hero({
             alt=""
             decoding="async"
             fetchPriority="high"
-            className="pointer-events-none absolute bottom-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px] lg:h-[720px] lg:w-[480px]"
+            className="pointer-events-none absolute bottom-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px] lg:h-[820px] lg:w-[560px]"
             style={{
               left: `${heroImages.left.offsetX}px`,
               bottom: `${-heroImages.left.offsetY}px`,
@@ -81,7 +71,7 @@ export function Hero({
             alt=""
             decoding="async"
             fetchPriority="high"
-            className="pointer-events-none absolute bottom-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px] lg:h-[680px] lg:w-[460px]"
+            className="pointer-events-none absolute bottom-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px] lg:h-[760px] lg:w-[540px]"
             style={{
               right: `${heroImages.right.offsetX}px`,
               bottom: `${-heroImages.right.offsetY}px`,
@@ -168,17 +158,22 @@ export function Hero({
 
         {/* Offer chips */}
         <div
-          className="mt-5 flex w-full items-center justify-center gap-1.5"
+          className="mt-5 flex flex-col items-center gap-1.5"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          {["Açaí", "Shakes", "Sorvetes"].map((chip) => (
-            <span
-              key={chip}
-              className="whitespace-nowrap rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.10em] text-white/90 backdrop-blur-sm"
-            >
-              {chip}
-            </span>
-          ))}
+          <div className="flex items-center justify-center gap-1.5">
+            {["Açaí", "Shakes"].map((chip) => (
+              <span
+                key={chip}
+                className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
+          <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm">
+            Sorvetes
+          </span>
         </div>
 
         <p

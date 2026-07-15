@@ -15,7 +15,6 @@ import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as MotoboyRouteImport } from './routes/motoboy'
 import { Route as FinalizarRouteImport } from './routes/finalizar'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
-import { Route as CardapioRouteImport } from './routes/cardapio'
 import { Route as BaixarAppRouteImport } from './routes/baixar-app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AsaasWebhookRouteImport } from './routes/asaas-webhook'
@@ -118,11 +117,6 @@ const FinalizarRoute = FinalizarRouteImport.update({
 const CarrinhoRoute = CarrinhoRouteImport.update({
   id: '/carrinho',
   path: '/carrinho',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CardapioRoute = CardapioRouteImport.update({
-  id: '/cardapio',
-  path: '/cardapio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BaixarAppRoute = BaixarAppRouteImport.update({
@@ -516,7 +510,6 @@ export interface FileRoutesByFullPath {
   '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
-  '/cardapio': typeof CardapioRoute
   '/carrinho': typeof CarrinhoRoute
   '/finalizar': typeof FinalizarRoute
   '/motoboy': typeof MotoboyRoute
@@ -597,7 +590,6 @@ export interface FileRoutesByTo {
   '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
-  '/cardapio': typeof CardapioRoute
   '/carrinho': typeof CarrinhoRoute
   '/finalizar': typeof FinalizarRoute
   '/motoboy': typeof MotoboyRoute
@@ -680,7 +672,6 @@ export interface FileRoutesById {
   '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
-  '/cardapio': typeof CardapioRoute
   '/carrinho': typeof CarrinhoRoute
   '/finalizar': typeof FinalizarRoute
   '/motoboy': typeof MotoboyRoute
@@ -763,7 +754,6 @@ export interface FileRouteTypes {
     | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
-    | '/cardapio'
     | '/carrinho'
     | '/finalizar'
     | '/motoboy'
@@ -844,7 +834,6 @@ export interface FileRouteTypes {
     | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
-    | '/cardapio'
     | '/carrinho'
     | '/finalizar'
     | '/motoboy'
@@ -926,7 +915,6 @@ export interface FileRouteTypes {
     | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
-    | '/cardapio'
     | '/carrinho'
     | '/finalizar'
     | '/motoboy'
@@ -1009,7 +997,6 @@ export interface RootRouteChildren {
   AsaasWebhookRoute: typeof AsaasWebhookRoute
   AuthRoute: typeof AuthRoute
   BaixarAppRoute: typeof BaixarAppRoute
-  CardapioRoute: typeof CardapioRoute
   CarrinhoRoute: typeof CarrinhoRoute
   FinalizarRoute: typeof FinalizarRoute
   MotoboyRoute: typeof MotoboyRoute
@@ -1078,13 +1065,6 @@ declare module '@tanstack/react-router' {
       path: '/carrinho'
       fullPath: '/carrinho'
       preLoaderRoute: typeof CarrinhoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cardapio': {
-      id: '/cardapio'
-      path: '/cardapio'
-      fullPath: '/cardapio'
-      preLoaderRoute: typeof CardapioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/baixar-app': {
@@ -1728,7 +1708,6 @@ const rootRouteChildren: RootRouteChildren = {
   AsaasWebhookRoute: AsaasWebhookRoute,
   AuthRoute: AuthRoute,
   BaixarAppRoute: BaixarAppRoute,
-  CardapioRoute: CardapioRoute,
   CarrinhoRoute: CarrinhoRoute,
   FinalizarRoute: FinalizarRoute,
   MotoboyRoute: MotoboyRoute,

@@ -98,14 +98,13 @@ export function BottomNav() {
 
   return (
     <>
-      {/* Spacer so content isn't hidden behind the fixed nav — mobile only */}
-      <div aria-hidden className="h-20 md:hidden" />
+      {/* Spacer so content isn't hidden behind the fixed nav */}
+      <div aria-hidden className="h-20" />
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-
         {/* Solid backdrop strip — blocks page content from showing behind the pill */}
         <div
           aria-hidden

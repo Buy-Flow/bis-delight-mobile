@@ -736,8 +736,15 @@ function HighlightsCarousel({
         </div>
       )}
 
-      <div className="group relative overflow-hidden py-8">
-
+      <div
+        className="group relative overflow-hidden py-8"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
+          maskImage:
+            "linear-gradient(90deg, transparent 0, black 34px, black calc(100% - 34px), transparent 100%)",
+        }}
+      >
         <div
           data-marquee
           className="flex w-max gap-3 px-4"
