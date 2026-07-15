@@ -48,6 +48,16 @@ export function Hero({
           }}
         />
 
+      </div>
+
+      {/* Side illustrations layer — on desktop, anchored to a centered
+          max-width container so images never bleed past the viewport edge.
+          On mobile/tablet the offsets remain relative to the section width
+          (which matches the ~500px app column). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 lg:left-1/2 lg:right-auto lg:w-full lg:max-w-[1200px] lg:-translate-x-1/2"
+      >
         {/* Side illustrations — configurable via admin (Início) */}
         {heroImages?.left?.url && (
           <img
@@ -55,7 +65,7 @@ export function Hero({
             alt=""
             decoding="async"
             fetchPriority="high"
-            className="pointer-events-none absolute bottom-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px] lg:h-[820px] lg:w-[560px]"
+            className="pointer-events-none absolute bottom-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px] lg:h-[720px] lg:w-[480px]"
             style={{
               left: `${heroImages.left.offsetX}px`,
               bottom: `${-heroImages.left.offsetY}px`,
@@ -71,7 +81,7 @@ export function Hero({
             alt=""
             decoding="async"
             fetchPriority="high"
-            className="pointer-events-none absolute bottom-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px] lg:h-[760px] lg:w-[540px]"
+            className="pointer-events-none absolute bottom-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px] lg:h-[680px] lg:w-[460px]"
             style={{
               right: `${heroImages.right.offsetX}px`,
               bottom: `${-heroImages.right.offsetY}px`,
