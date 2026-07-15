@@ -31,15 +31,21 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    let order: { id: string; total: number | null; customer_name: string | null } | null = null;
+    let order: { id: string; total: number | null; customer_name: string | null; status: string | null; payment_method: string | null } | null = null;
     if (!test) {
       const { data } = await admin
         .from("orders")
-        .select("id, total, customer_name")
+        .select("id, total, customer_name, status, payment_method")
         .eq("id", orderId)
         .single();
       order = data;
       if (!order) return json({ error: "order not found" }, 404);
+      const onlinePayment = ["pix", "cartao", "credit_card", "asaas_checkout"].includes(
+        String(order.payment_method ?? "").toLowerCase(),
+      );
+      if (onlinePayment && order.status !== "pago") {
+        return json({ sent: 0, failed: 0, total: 0, skipped: "payment_pending" });
+      }
     }
 
     const { data: admins } = await admin
