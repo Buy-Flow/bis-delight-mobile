@@ -109,7 +109,7 @@ function AccountPage() {
     >
       {/* Cart-style sticky header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-[oklch(0.20_0.16_305)] via-[oklch(0.20_0.16_305)]/80 to-transparent pb-4 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3 lg:max-w-4xl">
           {tab === "pedidos" ? (
             <button
               onClick={() => navigate({ to: "/conta", search: { tab: "perfil" } })}
