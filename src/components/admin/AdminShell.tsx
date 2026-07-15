@@ -62,7 +62,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { markAdminShellMounted } from "@/lib/admin-shell-flag";
 import { usePermissions, labelForRole } from "@/lib/permissions";
-import { FloatingAssistant, AssistantTrigger } from "@/components/admin/FloatingAssistant";
+import { AssistantTrigger } from "@/components/admin/FloatingAssistant";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { useSoundAlertsListener } from "@/hooks/useSoundAlertsListener";
 import { useAdminNotificationsListener } from "@/hooks/useAdminNotificationsListener";
@@ -587,7 +587,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
-      <FloatingAssistant />
+      
       <CommandPalette />
     </div>
   );
