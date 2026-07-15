@@ -53,6 +53,17 @@ const CheckoutSheet = lazy(() =>
 
 
 export const Route = createFileRoute("/")({
+  server: {
+    handlers: {
+      // Alguns painéis do Asaas ficam configurados apontando para a raiz do
+      // domínio em vez de /api/public/asaas-webhook. Delegamos ao mesmo
+      // handler para não perder eventos e evitar 500 barulhentos no log.
+      POST: async ({ request }) => {
+        const { handleAsaasWebhookRequest } = await import("@/lib/asaas-webhook.server");
+        return handleAsaasWebhookRequest(request);
+      },
+    },
+  },
   loader: async ({ context }) => {
     // Pré-aquece o cache do Query: HTML/hidratação chega com dados prontos.
     // Evita a renderização "em ondas" (letras > imagens > seções).
