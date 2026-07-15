@@ -341,7 +341,7 @@ function Content() {
             const monte = products.find((p) => p.id === "monte-acai" || p.isCustom);
             if (monte) openProduct(monte);
           }}
-          className="group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
+          className="group relative mx-auto flex w-full max-w-[560px] items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99] lg:max-w-none"
         >
           <div className="relative z-10">
             <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
