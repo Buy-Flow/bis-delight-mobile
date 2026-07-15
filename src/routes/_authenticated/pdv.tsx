@@ -996,6 +996,13 @@ function CartPanel(p: CartPanelProps) {
                     <Pencil className="h-3 w-3" />
                   </button>
                   <button
+                    onClick={() => p.onDuplicateLine(l)}
+                    className="grid h-6 w-6 place-items-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+                    title="Duplicar"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </button>
+                  <button
                     onClick={() => p.removeLine(l.uid)}
                     className="grid h-6 w-6 place-items-center rounded-full text-red-300 hover:bg-red-500/10"
                     title="Remover"
