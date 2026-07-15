@@ -360,7 +360,7 @@ function ImportarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white pb-24">
+    <div className="min-h-screen bg-background text-white pb-24">
       {/* Header */}
       <div className="border-b bg-black/40 backdrop-blur-md border-white/10 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-wrap items-center gap-4 justify-between">

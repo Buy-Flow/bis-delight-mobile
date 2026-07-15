@@ -176,7 +176,7 @@ function ClientesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] text-white">
+      <div className="flex min-h-screen items-center justify-center bg-background text-white">
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
@@ -184,7 +184,7 @@ function ClientesPage() {
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[oklch(0.10_0.08_300)] px-4 text-white">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 text-white">
         <div className="max-w-sm text-center">
           <h1 className="font-display text-2xl font-black">Acesso negado</h1>
           <p className="mt-2 text-sm text-white/60">
@@ -202,7 +202,7 @@ function ClientesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[oklch(0.10_0.08_300)] text-white">
+    <div className="min-h-screen bg-background text-white">
 
 
       <main className="mx-auto max-w-6xl px-3 py-5 sm:px-4 sm:py-8">
