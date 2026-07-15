@@ -21,7 +21,10 @@ import {
   Sparkles,
   X,
   Wand2,
+  ChevronLeft,
+  MoreHorizontal,
 } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +86,9 @@ function FichaTecnicaPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [copyOpen, setCopyOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "editor">("list");
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
+
 
   const load = async () => {
     setLoading(true);
@@ -360,22 +366,23 @@ function FichaTecnicaPage() {
   }).length;
 
   return (
-    <div className="min-h-screen bg-background text-white">
+    <div className="min-h-screen bg-background text-white pb-28 md:pb-0">
       {/* Header */}
-      <div className="border-b border-white/10 bg-gradient-to-br from-card to-background px-4 py-6 md:px-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+      <div className="border-b border-white/10 bg-gradient-to-br from-card to-background px-4 py-4 md:px-8 md:py-6">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 md:flex md:flex-wrap md:justify-between md:gap-4">
+          <div className="min-w-0">
             <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neon-yellow">
               <ClipboardCheck className="h-3 w-3" />
               Gestão · CMV
             </div>
-            <h1 className="text-2xl font-black md:text-3xl">Ficha técnica</h1>
-            <p className="mt-1 max-w-2xl text-sm text-white/60">
+            <h1 className="text-xl font-black md:text-3xl">Ficha técnica</h1>
+            <p className="mt-1 hidden max-w-2xl text-sm text-white/60 md:block">
               Monte a receita de cada produto vinculando insumos do estoque. O CMV é
               calculado automaticamente e o consumo é descontado do estoque a cada venda paga.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          {/* Desktop actions */}
+          <div className="hidden gap-2 md:flex md:flex-wrap">
             <button
               onClick={recalcAll}
               className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 hover:bg-white/10"
@@ -389,10 +396,43 @@ function FichaTecnicaPage() {
               <Download className="h-3.5 w-3.5" /> Exportar CSV
             </button>
           </div>
+          {/* Mobile: single kebab */}
+          <div className="relative shrink-0 md:hidden">
+            <button
+              onClick={() => setMobileActionsOpen((v) => !v)}
+              aria-label="Mais ações"
+              className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 bg-white/5"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+            {mobileActionsOpen && (
+              <>
+                <button
+                  className="fixed inset-0 z-10 cursor-default"
+                  aria-hidden
+                  onClick={() => setMobileActionsOpen(false)}
+                />
+                <div className="absolute right-0 top-11 z-20 w-52 overflow-hidden rounded-xl border border-white/10 bg-card shadow-xl">
+                  <button
+                    onClick={() => { setMobileActionsOpen(false); void recalcAll(); }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-white/90 hover:bg-white/5"
+                  >
+                    <Calculator className="h-4 w-4" /> Recalcular tudo
+                  </button>
+                  <button
+                    onClick={() => { setMobileActionsOpen(false); exportCSV(); }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-white/90 hover:bg-white/5"
+                  >
+                    <Download className="h-4 w-4" /> Exportar CSV
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* KPIs */}
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* KPIs — mobile 2 cols, desktop 4 */}
+        <div className="mt-4 grid grid-cols-2 gap-2 md:mt-5 md:gap-3 lg:grid-cols-4">
           <KPI label="Produtos" value={totalProducts.toString()} icon={Package} tone="neutral" />
           <KPI
             label="Com ficha"
@@ -408,7 +448,7 @@ function FichaTecnicaPage() {
             tone={avgMargin >= 60 ? "good" : avgMargin >= 40 ? "warn" : "bad"}
           />
           <KPI
-            label="Margem baixa (<40%)"
+            label="Margem <40%"
             value={lowMargin.toString()}
             icon={AlertTriangle}
             tone={lowMargin ? "bad" : "good"}
@@ -416,9 +456,10 @@ function FichaTecnicaPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 p-4 md:p-6 lg:grid-cols-[320px_1fr]">
+      <div className="grid gap-4 p-3 md:p-6 lg:grid-cols-[320px_1fr]">
+
         {/* Product list */}
-        <aside className="rounded-2xl border border-white/10 bg-white/5">
+        <aside className={cn("rounded-2xl border border-white/10 bg-white/5", mobileView === "editor" ? "hidden lg:block" : "block")}>
           <div className="border-b border-white/10 p-3">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
@@ -463,7 +504,7 @@ function FichaTecnicaPage() {
               return (
                 <li key={p.id}>
                   <button
-                    onClick={() => setSelectedId(p.id)}
+                    onClick={() => { setSelectedId(p.id); setMobileView("editor"); }}
                     className={cn(
                       "flex w-full items-center gap-3 p-3 text-left transition",
                       selectedId === p.id ? "bg-neon-pink/10" : "hover:bg-white/5",
@@ -517,36 +558,42 @@ function FichaTecnicaPage() {
         </aside>
 
         {/* Editor */}
-        <section className="rounded-2xl border border-white/10 bg-white/5">
+        <section className={cn("rounded-2xl border border-white/10 bg-white/5", mobileView === "list" ? "hidden lg:block" : "block")}>
           {!selected ? (
             <div className="grid h-full place-items-center p-10 text-white/40">
               Selecione um produto
             </div>
           ) : (
             <>
-              <div className="border-b border-white/10 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-12 w-12 place-items-center overflow-hidden rounded-xl bg-black/40">
+              <div className="border-b border-white/10 p-3 md:p-4">
+                <div className="flex items-start gap-2 md:items-center md:justify-between md:gap-3">
+                  <button
+                    onClick={() => setMobileView("list")}
+                    aria-label="Voltar para lista"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 lg:hidden"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-black/40 md:h-12 md:w-12">
                       {selected.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={selected.image_url} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <ChefHat className="h-5 w-5 text-white/40" />
                       )}
                     </div>
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-white/40">
+                    <div className="min-w-0">
+                      <div className="truncate text-[10px] font-bold uppercase tracking-widest text-white/40">
                         {selected.category}
                       </div>
-                      <div className="text-lg font-black">{selected.name}</div>
-                      <div className="text-xs text-white/50">
-                        Preço de venda:{" "}
-                        <span className="font-bold text-white">{BRL(selected.base_price)}</span>
+                      <div className="truncate text-base font-black md:text-lg">{selected.name}</div>
+                      <div className="truncate text-xs text-white/50">
+                        Venda: <span className="font-bold text-white">{BRL(selected.base_price)}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  {/* Desktop actions */}
+                  <div className="hidden gap-2 md:flex">
                     <button
                       onClick={() => setCopyOpen(true)}
                       className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10"
@@ -561,10 +608,18 @@ function FichaTecnicaPage() {
                       <Save className="h-3 w-3" /> {saving ? "Salvando..." : "Salvar ficha"}
                     </button>
                   </div>
+                  {/* Mobile copy button */}
+                  <button
+                    onClick={() => setCopyOpen(true)}
+                    aria-label="Copiar receita de outro produto"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 md:hidden"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
                 </div>
 
-                {/* Cost summary bar */}
-                <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                {/* Cost summary — 2 cols mobile, 4 cols desktop */}
+                <div className="mt-3 grid grid-cols-2 gap-2 md:mt-4 sm:grid-cols-4">
                   <Stat label="CMV total" value={BRL(totalCMV)} tone="warn" icon={Boxes} />
                   <Stat
                     label="Margem"
@@ -578,8 +633,9 @@ function FichaTecnicaPage() {
                 </div>
               </div>
 
-              {/* Recipe rows */}
-              <div className="overflow-x-auto">
+
+              {/* Recipe rows — Desktop table */}
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full text-sm">
                   <thead className="bg-black/30 text-[10px] uppercase tracking-widest text-white/50">
                     <tr>
@@ -680,18 +736,112 @@ function FichaTecnicaPage() {
                 </table>
               </div>
 
-              <div className="flex items-center justify-between border-t border-white/10 p-3">
+              {/* Recipe rows — Mobile cards */}
+              <div className="space-y-2 p-3 md:hidden">
+                {activeRows.length === 0 && (
+                  <div className="rounded-xl border border-dashed border-white/10 bg-black/20 p-6 text-center text-xs text-white/40">
+                    Nenhum insumo ainda.<br />Toque em <b className="text-white/70">Adicionar insumo</b> abaixo.
+                  </div>
+                )}
+                {rows.map((r, idx) => {
+                  if (r._deleted) return null;
+                  const ing = ingredientMap.get(r.ingredient_id);
+                  const cpu = Number(ing?.cost_per_unit ?? 0);
+                  const sub = r.qty * (1 + r.waste_pct / 100) * cpu;
+                  const stockOk = ing ? ing.stock >= r.qty : true;
+                  return (
+                    <div key={idx} className="rounded-xl border border-white/10 bg-black/30 p-3">
+                      <div className="flex items-start gap-2">
+                        <select
+                          value={r.ingredient_id}
+                          onChange={(e) => updateRow(idx, { ingredient_id: e.target.value })}
+                          className="min-w-0 flex-1 rounded-md border border-white/10 bg-black/40 px-2 py-2 text-sm font-semibold text-white outline-none focus:border-neon-pink/60"
+                        >
+                          {ingredients.map((i) => (
+                            <option key={i.id} value={i.id}>
+                              {i.name} ({i.unit})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => removeRow(idx)}
+                          aria-label="Remover insumo"
+                          className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-rose-500/30 bg-rose-500/10 text-rose-300"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <label className="block">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+                            Qtd ({ing?.unit ?? "—"})
+                          </span>
+                          <input
+                            type="number"
+                            step="0.001"
+                            min="0"
+                            inputMode="decimal"
+                            value={r.qty}
+                            onChange={(e) => updateRow(idx, { qty: Number(e.target.value) })}
+                            className="mt-1 w-full rounded-md border border-white/10 bg-black/40 px-2 py-2 text-sm text-white outline-none focus:border-neon-pink/60"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+                            Perda %
+                          </span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="100"
+                            inputMode="decimal"
+                            value={r.waste_pct}
+                            onChange={(e) => updateRow(idx, { waste_pct: Number(e.target.value) })}
+                            className="mt-1 w-full rounded-md border border-white/10 bg-black/40 px-2 py-2 text-sm text-white outline-none focus:border-neon-pink/60"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between rounded-md bg-white/5 px-2 py-1.5 text-[11px]">
+                        <span className={cn(cpu === 0 ? "text-rose-300" : "text-white/60")}>
+                          Custo un.: {cpu > 0 ? BRL(cpu) : "sem custo"}
+                        </span>
+                        <span className="font-black text-white">
+                          Subtotal: {BRL(sub)}
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={r.notes ?? ""}
+                        onChange={(e) => updateRow(idx, { notes: e.target.value || null })}
+                        placeholder="Notas (opcional)"
+                        className="mt-2 w-full rounded-md border border-white/10 bg-black/40 px-2 py-1.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-neon-pink/60"
+                      />
+                      {!stockOk && (
+                        <div className="mt-2 flex items-center gap-1 text-[10px] text-rose-300">
+                          <AlertTriangle className="h-3 w-3" />
+                          Estoque insuficiente ({ing?.stock ?? 0} {ing?.unit})
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 p-3">
                 <button
                   onClick={addRow}
-                  className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/10"
+                  className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/20 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 hover:bg-white/10"
                 >
-                  <Plus className="h-3 w-3" /> Adicionar insumo
+                  <Plus className="h-3.5 w-3.5" /> Adicionar insumo
                 </button>
                 <div className="text-xs text-white/50">
                   {activeRows.length} insumo(s) · CMV{" "}
                   <span className="font-bold text-white">{BRL(totalCMV)}</span>
                 </div>
               </div>
+
 
               {/* Extras + suggested price */}
               <div className="grid gap-4 border-t border-white/10 p-4 md:grid-cols-2">
@@ -772,6 +922,40 @@ function FichaTecnicaPage() {
           )}
         </section>
       </div>
+
+      {/* Sticky mobile save bar */}
+      {selected && mobileView === "editor" && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-background/95 px-3 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">CMV · Margem</div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-black text-white">{BRL(totalCMV)}</span>
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                    margin >= 60
+                      ? "bg-emerald-500/15 text-emerald-300"
+                      : margin >= 40
+                        ? "bg-amber-500/15 text-amber-300"
+                        : "bg-rose-500/15 text-rose-300",
+                  )}
+                >
+                  {margin.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={save}
+              disabled={saving}
+              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-neon-pink to-fuchsia-500 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-neon-pink/30 hover:brightness-110 disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" /> {saving ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {/* Copy dialog */}
       {copyOpen && (
