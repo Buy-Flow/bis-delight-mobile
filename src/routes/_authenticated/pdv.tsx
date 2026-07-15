@@ -105,18 +105,93 @@ function PDVPage() {
   const [sending, setSending] = useState(false);
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [showMobileCart, setShowMobileCart] = useState(false);
+  const [parked, setParked] = useState<ParkedSale[]>(() => loadParkedSales());
+  const [showParked, setShowParked] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const customerBoxRef = useRef<HTMLDivElement>(null);
+
+  // Persist parked sales
+  useEffect(() => {
+    saveParkedSales(parked);
+  }, [parked]);
+
+  // Cycle payment methods
+  const cyclePayment = () => {
+    const idx = PAYMENTS.findIndex((p) => p.id === payment);
+    setPayment(PAYMENTS[(idx + 1) % PAYMENTS.length].id);
+  };
+
+  const duplicateLast = () => {
+    setCart((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      return [...prev, { ...last, uid: shortUid(10) }];
+    });
+    toast.success("Item duplicado");
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
+      const t = e.target as HTMLElement | null;
+      const editing =
+        t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      // Global (work even inside inputs)
+      if (e.key === "Escape") {
+        if (showParked) setShowParked(false);
+        else if (showShortcuts) setShowShortcuts(false);
+        return;
+      }
+      if (e.key === "F2") {
         e.preventDefault();
         searchRef.current?.focus();
+        searchRef.current?.select();
+        return;
+      }
+      if (e.key === "F4") {
+        e.preventDefault();
+        cyclePayment();
+        return;
+      }
+      if (e.key === "F8") {
+        e.preventDefault();
+        const input = customerBoxRef.current?.querySelector("input");
+        input?.focus();
+        return;
+      }
+      if (e.key === "F9") {
+        e.preventDefault();
+        finalize();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "d" || e.key === "D")) {
+        e.preventDefault();
+        duplicateLast();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        parkCurrentSale();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "r" || e.key === "R")) {
+        e.preventDefault();
+        setShowParked(true);
+        return;
+      }
+      if (!editing && e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (!editing && e.key === "?") {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart, payment, showParked, showShortcuts]);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
