@@ -1100,7 +1100,7 @@ function IconBtn({
   );
 }
 
-type EditorTab = "basic" | "photo" | "sizes" | "extras" | "custom" | "advanced";
+type EditorTab = "basic" | "photo" | "sizes" | "extras" | "custom" | "pause" | "advanced";
 
 function ProductEditor({
   initial,
