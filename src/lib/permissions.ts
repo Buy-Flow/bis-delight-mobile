@@ -64,7 +64,8 @@ export function usePermissions() {
       const uid = userData.user?.id;
       if (!uid || cancelled) return;
       channel = supabase
-        .channel(`user_roles:${uid}`)
+        .channel(`user_roles:${uid}:${Math.random().toString(36).slice(2)}`)
+
         .on(
           "postgres_changes",
           {
