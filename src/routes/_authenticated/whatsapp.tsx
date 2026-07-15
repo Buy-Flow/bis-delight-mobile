@@ -569,13 +569,13 @@ function WhatsappPage() {
                       </button>
                     )}
                   </div>
-                  <button type="button" onClick={handleToggleAi} className={cn("inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition", selected.ai_paused ? "bg-amber-400/15 text-amber-200 hover:bg-amber-400/25" : "bg-[var(--wa-accent)]/15 text-emerald-200 hover:bg-[var(--wa-accent)]/85/25")}>
+                  <button type="button" onClick={handleToggleAi} className={cn("inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition", selected.ai_paused ? "bg-amber-400/15 text-amber-200 hover:bg-amber-400/25" : "bg-[var(--wa-accent)]/15 text-emerald-200 hover:bg-[var(--wa-accent)]/25")}>
                     {selected.ai_paused ? <BotOff className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                     {selected.ai_paused ? "IA pausada" : "IA ativa"}
                   </button>
                 </div>
 
-                <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_var(--wa-panel-2),_transparent_35%),#0b141a] px-4 py-5">
+                <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_color-mix(in_oklab,var(--wa-panel-2)_60%,transparent),_transparent_35%),var(--wa-bg)] px-4 py-5">
                   <div className="mx-auto flex max-w-4xl flex-col gap-2">
                     {loadingMessages ? <MessageSkeleton /> : messages.length === 0 ? <EmptyChat /> : messages.map((message) => <MessageBubble key={message.id} message={message} />)}
                   </div>
