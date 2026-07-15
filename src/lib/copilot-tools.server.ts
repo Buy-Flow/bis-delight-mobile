@@ -133,7 +133,7 @@ export function buildCopilotTools(ctx: Ctx) {
         body: z.string().max(140).describe("Texto principal. Se houver cupom, inclua o código aqui."),
         image_url: z.string().url().describe("URL da imagem (use a retornada por gerar_imagem_banner)"),
         cta: z.string().max(20).describe("Texto do botão (ex: 'Aproveitar')"),
-        link: z.string().default("/").describe("Rota para onde o CTA leva. Padrão '/cardapio'"),
+        link: z.string().default("/").describe("Rota para onde o CTA leva. Padrão '/' (cardápio inline na home)"),
         starts_at: z.string().describe("Data/hora ISO 8601 de início (ex: '2026-07-11T16:00:00-03:00')"),
         ends_at: z.string().describe("Data/hora ISO 8601 de término"),
         priority: z.number().int().default(50),
