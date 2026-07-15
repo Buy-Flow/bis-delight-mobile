@@ -446,8 +446,8 @@ function PDVPage() {
     }
   };
 
-  const printReceipt = () => {
-    const html = buildReceiptHtml({
+  const printReceipt = (variant: "cliente" | "cozinha" | "ambos" = "cliente") => {
+    const base = {
       orderId: lastOrderId ?? "",
       cart,
       subtotal,
@@ -460,17 +460,26 @@ function PDVPage() {
       mode,
       customerName: customerName.trim() || "Balcão",
       address: mode === "entrega" ? address.trim() : "",
-    });
-    const w = window.open("", "_blank", "width=380,height=640");
-    if (!w) {
-      toast.error("Ative pop-ups para imprimir.");
-      return;
+    };
+    const doPrint = (html: string) => {
+      const w = window.open("", "_blank", "width=380,height=640");
+      if (!w) {
+        toast.error("Ative pop-ups para imprimir.");
+        return;
+      }
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 250);
+    };
+    if (variant === "cliente") doPrint(buildReceiptHtml(base));
+    else if (variant === "cozinha") doPrint(buildKitchenHtml(base));
+    else {
+      doPrint(buildReceiptHtml(base));
+      setTimeout(() => doPrint(buildKitchenHtml(base)), 400);
     }
-    w.document.write(html);
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 250);
   };
+
 
   const cartCount = cart.reduce((s, l) => s + l.quantity, 0);
 
