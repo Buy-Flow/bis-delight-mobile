@@ -293,6 +293,9 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
       phone: data.customer.phone ?? order.phone ?? undefined,
     });
 
+    // Asaas Checkout exige endereço quando `customer` (id) é passado.
+    // Passamos `customerData` para que o Asaas colete o endereço no próprio checkout,
+    // evitando o erro "O campo address deve existir para o customer informado".
     const session = await createCheckoutSession({
       value: Number(order.total),
       externalReference: order.id,
@@ -302,8 +305,15 @@ export const createAsaasCheckoutForOrder = createServerFn({ method: "POST" })
       expiredUrl,
       minutesToExpire: 60,
       billingTypes: ["CREDIT_CARD", "PIX"],
-      customerId: customer.id,
+      customer: {
+        name: data.customer.name || order.customer_name || "Cliente",
+        email: data.customer.email,
+        cpfCnpj: data.customer.cpfCnpj,
+        phone: data.customer.phone ?? order.phone ?? undefined,
+      },
     });
+    void customer;
+
 
     await supabaseAdmin
       .from("orders")
