@@ -59,6 +59,7 @@ export function useUserAddresses(userId: string | undefined) {
         .insert({
           user_id: userId,
           label: input.label.trim() || "Casa",
+          recipient_name: input.recipient_name?.trim() || null,
           address: input.address.trim(),
           reference: input.reference?.trim() || null,
           lat: input.lat ?? null,
