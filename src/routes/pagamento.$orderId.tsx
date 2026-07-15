@@ -141,7 +141,7 @@ function PagamentoPage() {
           </div>
         </div>
 
-        {order && !paid && !loading && (
+        {order && !paid && !loading && order.payment_method !== "asaas_checkout" && m !== "asaas" && (
           <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
             <MethodTab
               active={m === "pix"}
@@ -159,6 +159,7 @@ function PagamentoPage() {
             />
           </div>
         )}
+
 
         {loading || authLoading ? (
           <div className="flex justify-center py-10">
