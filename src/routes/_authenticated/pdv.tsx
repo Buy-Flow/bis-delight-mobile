@@ -892,6 +892,7 @@ type CartPanelProps = {
   changeQty: (uid: string, delta: number) => void;
   removeLine: (uid: string) => void;
   onEditLine: (line: CartLine) => void;
+  onDuplicateLine: (line: CartLine) => void;
   clearAll: () => void;
   finalize: () => void;
   sending: boolean;
