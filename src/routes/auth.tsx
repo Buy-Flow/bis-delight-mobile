@@ -281,13 +281,53 @@ function AuthPage() {
         }}
       />
 
-      <div className="relative z-10 w-full max-w-md">
-        <Link
-          to="/"
-          className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 backdrop-blur-md transition hover:bg-white/10 hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao cardápio
-        </Link>
+      <div className="relative z-10 grid w-full max-w-md items-center gap-10 lg:max-w-6xl lg:grid-cols-[1.05fr_minmax(0,420px)] lg:gap-14">
+        {/* Brand storytelling panel — só aparece em desktop, preenche o vazio à esquerda */}
+        <aside className="hidden lg:flex lg:flex-col lg:gap-6 lg:pr-4">
+          <Link
+            to="/"
+            className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 backdrop-blur-md transition hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao cardápio
+          </Link>
+          <div>
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-neon-yellow/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-neon-yellow ring-1 ring-neon-yellow/40">
+              <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow shadow-[0_0_8px_rgba(255,215,60,0.9)]" />
+              Sorveteria Quero Bis
+            </div>
+            <h2 className="font-display text-[52px] font-black leading-[0.95] text-white">
+              O sabor que <span className="bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan bg-clip-text text-transparent">transforma</span> o seu dia.
+            </h2>
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/70">
+              Entre para acompanhar seus pedidos, acumular selos do <span className="font-semibold text-neon-yellow">Bis Recompensa</span>, salvar favoritos e receber cupons exclusivos.
+            </p>
+          </div>
+          <ul className="grid gap-3 text-sm text-white/80">
+            {[
+              { t: "Pedidos com 1 toque", d: "Endereço, cartão e histórico salvos com segurança." },
+              { t: "Fidelidade Bis", d: "Selos automáticos, cupons de aniversário e níveis VIP." },
+              { t: "Push em tempo real", d: "Saiba quando o entregador saiu — sem abrir o app." },
+            ].map((f) => (
+              <li key={f.t} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-neon-pink/30 to-neon-cyan/30 text-neon-yellow ring-1 ring-white/15">
+                  <span className="text-sm font-black">✦</span>
+                </span>
+                <div className="min-w-0">
+                  <div className="font-extrabold text-white">{f.t}</div>
+                  <div className="text-[13px] text-white/60">{f.d}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        <div className="w-full">
+          <Link
+            to="/"
+            className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 backdrop-blur-md transition hover:bg-white/10 hover:text-white lg:hidden"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao cardápio
+          </Link>
 
         {/* Card */}
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[oklch(0.14_0.09_305)]/85 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl">
@@ -483,6 +523,7 @@ function AuthPage() {
               Ao continuar, você concorda com nossos termos e política de privacidade.
             </p>
           </div>
+        </div>
         </div>
       </div>
     </div>

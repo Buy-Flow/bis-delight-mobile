@@ -243,7 +243,7 @@ function Content() {
 
   return (
       <div
-        className="relative mx-auto min-h-screen w-full max-w-[520px] overflow-hidden lg:overflow-visible"
+        className="relative mx-auto min-h-screen w-full max-w-[520px] overflow-hidden lg:max-w-[1240px] lg:overflow-visible lg:px-6 xl:px-10"
         style={{
           background:
             "radial-gradient(140% 900px at 50% 0%, oklch(0.24 0.15 305 / 0.92), transparent 68%), radial-gradient(120% 760px at 50% 34%, oklch(0.22 0.14 305 / 0.58), transparent 72%), linear-gradient(180deg, oklch(0.11 0.08 305) 0%, oklch(0.16 0.11 305) 28%, oklch(0.14 0.10 305) 58%, oklch(0.10 0.07 305) 100%)",
@@ -291,15 +291,17 @@ function Content() {
       )}
 
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
-      
-      <Hero onScrollMenu={scrollToFeitoComAmor} />
-      <StoreClosedBanner />
-      <UrgencyBanner />
-      <ActiveOrderCard />
-      <Reveal><Benefits /></Reveal>
-      <BirthdayBanner />
-      <Reveal><LoyaltyProgress /></Reveal>
-      <PushOptInCard />
+
+      <div className="lg:mx-auto lg:max-w-[600px]">
+        <Hero onScrollMenu={scrollToFeitoComAmor} />
+        <StoreClosedBanner />
+        <UrgencyBanner />
+        <ActiveOrderCard />
+        <Reveal><Benefits /></Reveal>
+        <BirthdayBanner />
+        <Reveal><LoyaltyProgress /></Reveal>
+        <PushOptInCard />
+      </div>
       
       
 
@@ -339,7 +341,7 @@ function Content() {
             const monte = products.find((p) => p.id === "monte-acai" || p.isCustom);
             if (monte) openProduct(monte);
           }}
-          className="group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99]"
+          className="group relative mx-auto flex w-full max-w-[560px] items-center gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[oklch(0.28_0.18_305)] via-[oklch(0.20_0.14_305)] to-[oklch(0.14_0.10_300)] p-4 text-left ring-1 ring-neon-pink/25 active:scale-[.99] lg:max-w-none"
         >
           <div className="relative z-10">
             <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-neon-yellow px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-widest text-[oklch(0.18_0.11_305)]">
@@ -506,8 +508,8 @@ function Content() {
 
 
         {productsLoading && products.length === 0 ? (
-          <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
               <div key={`sk-${i}`} className="h-full">
                 <ProductCardSkeleton delay={i * 80} />
               </div>
@@ -552,7 +554,7 @@ function Content() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {visibleProducts.map((p) => (
               <div key={p.id} className="h-full">
                 <ProductCard product={p} onOpen={openProduct} />
