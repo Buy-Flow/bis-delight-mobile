@@ -617,7 +617,8 @@ function SalonView({
             })}
           </div>
         </section>
-      ))}
+        );
+      })}
     </div>
   );
 }
