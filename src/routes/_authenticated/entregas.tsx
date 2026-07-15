@@ -818,7 +818,7 @@ function MapView({
       </div>
       <div
         ref={mapEl}
-        className="h-[520px] w-full overflow-hidden rounded-xl border border-white/10 [&_.leaflet-container]:bg-[#0d0322]"
+        className="relative isolate h-[520px] w-full overflow-hidden rounded-xl border border-white/10 [&_.leaflet-bottom]:!z-[1] [&_.leaflet-container]:bg-[#0d0322] [&_.leaflet-control]:!z-[2] [&_.leaflet-pane]:!z-[1] [&_.leaflet-top]:!z-[2]"
       />
       {(storeLat == null || storeLng == null) && (
         <p className="mt-2 text-[11px] text-amber-300">
