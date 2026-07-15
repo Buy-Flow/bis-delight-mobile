@@ -457,8 +457,8 @@ function CardSection({
   const [ccv, setCcv] = useState("");
   const [email, setEmail] = useState(user?.email || saved.email || "");
   const [cpf, setCpf] = useState(saved.cpf || "");
-  const [cep, setCep] = useState("");
-  const [addrNumber, setAddrNumber] = useState("");
+
+
   const [installments, setInstallments] = useState(1);
 
   const maxInst = useMemo(() => {
@@ -490,8 +490,8 @@ function CardSection({
     if (ccv.length < 3) errs.ccv = "CVV inválido.";
     if (!isValidCpf(cpf)) errs.cpf = "CPF inválido.";
     if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = "E-mail inválido.";
-    if (cep.replace(/\D/g, "").length !== 8) errs.cep = "CEP com 8 dígitos.";
-    if (!addrNumber.trim()) errs.addrNumber = "Obrigatório.";
+
+
     return errs;
   };
 
@@ -518,8 +518,8 @@ function CardSection({
             email: email.trim(),
             cpfCnpj: cpfDigits(cpf),
             phone: order.phone || undefined,
-            postalCode: cep.replace(/\D/g, ""),
-            addressNumber: addrNumber.trim(),
+
+
           },
           card: {
             holderName: holderName.trim().toUpperCase(),
@@ -606,10 +606,8 @@ function CardSection({
             <Field label="CPF do titular" value={formatCpf(cpf)} onChange={setCpf} placeholder="000.000.000-00" inputMode="numeric" error={fieldErrors.cpf} />
             <Field label="E-mail" value={email} onChange={setEmail} placeholder="voce@email.com" error={fieldErrors.email} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="CEP" value={formatCep(cep)} onChange={setCep} placeholder="00000-000" inputMode="numeric" error={fieldErrors.cep} />
-            <Field label="Número" value={addrNumber} onChange={setAddrNumber} placeholder="123" inputMode="numeric" error={fieldErrors.addrNumber} />
-          </div>
+
+
 
           {maxInst > 1 && (
             <div>
