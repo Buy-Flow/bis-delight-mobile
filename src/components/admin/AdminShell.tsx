@@ -62,7 +62,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { markAdminShellMounted } from "@/lib/admin-shell-flag";
 import { usePermissions, labelForRole } from "@/lib/permissions";
-import { AssistantTrigger } from "@/components/admin/FloatingAssistant";
+
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { useSoundAlertsListener } from "@/hooks/useSoundAlertsListener";
 import { useAdminNotificationsListener } from "@/hooks/useAdminNotificationsListener";
