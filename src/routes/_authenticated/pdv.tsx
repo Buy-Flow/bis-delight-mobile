@@ -476,6 +476,9 @@ function PDVPage() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
+      {/* Shift summary bar */}
+      <ShiftSummaryBar userId={user?.id} />
+
       <div className="mx-auto grid max-w-[1600px] items-start gap-4 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         {/* Catalog */}
         <section className="min-w-0">
@@ -486,7 +489,7 @@ function PDVPage() {
                 ref={searchRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar produto…  (tecla /)"
+                placeholder="Buscar produto ou código…  (F2 ou /)"
                 className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-neon-pink/60"
               />
             </div>
@@ -494,7 +497,28 @@ function PDVPage() {
               <Sparkles className="h-3.5 w-3.5 text-neon-yellow" />
               {filteredProducts.length} itens
             </div>
+            <button
+              onClick={() => setShowParked(true)}
+              className="relative flex items-center gap-1.5 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-200 hover:bg-amber-500/20"
+              title="Comandas suspensas (Ctrl+R)"
+            >
+              <PauseCircle className="h-3.5 w-3.5" />
+              Suspensas
+              {parked.length > 0 && (
+                <span className="ml-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-amber-400 px-1 text-[10px] font-black text-black">
+                  {parked.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setShowShortcuts(true)}
+              className="hidden items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/70 hover:bg-white/10 md:flex"
+              title="Atalhos de teclado (?)"
+            >
+              <Keyboard className="h-3.5 w-3.5" /> Atalhos
+            </button>
           </div>
+
 
           <div className="mb-4 flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
             {categories.map((c) => {
