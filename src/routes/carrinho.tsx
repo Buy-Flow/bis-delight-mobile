@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles, Gift, Copy, MessageCircle, X, Users } from "lucide-react";
+import { Plus, Minus, Trash2, ShoppingBag, Pencil, Truck, Sparkles, Gift, Copy, MessageCircle, X, Users, Lock, ShieldCheck } from "lucide-react";
 import { brl, useCart } from "@/lib/cart-context";
 import { useProducts, useSiteSettings } from "@/lib/menu-data";
 import { useAuth } from "@/lib/use-auth";
@@ -509,10 +509,15 @@ function CartPage() {
             </div>
             <button
               onClick={() => navigate({ to: "/finalizar" })}
-              className="w-full rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
-              Continuar para finalização
+              <Lock className="h-4 w-4" />
+              Ir para pagamento · {brl(total)}
             </button>
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-white/60">
+              <ShieldCheck className="h-3 w-3 text-emerald-400" />
+              PIX, Cartão ou WhatsApp · Pagamento criptografado
+            </div>
             {!shareMode && (
               <button
                 onClick={() => setShareOpen(true)}

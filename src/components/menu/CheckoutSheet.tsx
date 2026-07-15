@@ -23,7 +23,7 @@ import {
 import { useUserAddresses, type UserAddress } from "@/lib/user-addresses";
 import { AddressMapPicker } from "@/components/menu/AddressMapPicker";
 import { AddressMapInline, type InlinePickedLocation } from "@/components/menu/AddressMapInline";
-import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon } from "lucide-react";
+import { MoonStar, Clock as ClockIcon, Home, Briefcase, Star, Navigation, Mail, QrCode, CreditCard, MessageCircle as WhatsIcon, Lock, ShieldCheck, ChevronDown } from "lucide-react";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { maskPhoneInput as formatPhone } from "@/lib/phone";
 import { useServerFn } from "@tanstack/react-start";
@@ -146,7 +146,8 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
 
   const [sending, setSending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("whatsapp");
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "pix" | "cartao" | "asaas_checkout">("pix");
+  const [cardBillingOpen, setCardBillingOpen] = useState(false);
   const [cpf, setCpf] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -1486,6 +1487,11 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             >
               <Ticket className="h-4 w-4 text-neon-cyan" />
               Tenho um cupom de desconto
+              {availableCoupons.length > 0 && (
+                <span className="ml-1 rounded-full bg-neon-cyan/20 px-2 py-0.5 text-[10px] font-black text-neon-cyan ring-1 ring-neon-cyan/40">
+                  {availableCoupons.length} disponível{availableCoupons.length > 1 ? "is" : ""}
+                </span>
+              )}
             </button>
           )}
 
@@ -1499,25 +1505,30 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             </div>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { id: "whatsapp", label: "Combinar", hint: "Falar no WhatsApp", Icon: WhatsIcon, color: "text-neon-cyan" },
-                { id: "pix", label: "PIX", hint: "QR Code na hora", Icon: QrCode, color: "text-neon-yellow" },
-                { id: "cartao", label: "Cartão", hint: "Até 12x aqui", Icon: CreditCard, color: "text-neon-pink" },
-                { id: "asaas_checkout", label: "Checkout Asaas", hint: "PIX ou Cartão (mais seguro)", Icon: CreditCard, color: "text-neon-cyan" },
-              ] as const).map(({ id, label, hint, Icon, color }) => (
+                { id: "pix", label: "PIX", hint: "QR na hora · Aprovação imediata", Icon: QrCode, color: "text-neon-yellow", badge: "Recomendado" },
+                { id: "cartao", label: "Cartão", hint: "Crédito · Até 12x", Icon: CreditCard, color: "text-neon-pink", badge: null },
+                { id: "whatsapp", label: "WhatsApp", hint: "Combinar depois", Icon: WhatsIcon, color: "text-neon-cyan", badge: null },
+                { id: "asaas_checkout", label: "Link seguro", hint: "Página externa Asaas", Icon: Lock, color: "text-neon-cyan", badge: null },
+              ] as const).map(({ id, label, hint, Icon, color, badge }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setPaymentMethod(id)}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-center transition active:scale-95",
+                    "relative flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-center transition active:scale-95",
                     paymentMethod === id
                       ? "border-white/40 bg-white/10"
                       : "border-white/10 bg-white/[0.03] hover:border-white/25",
                   )}
                 >
+                  {badge && (
+                    <span className="absolute -top-1.5 right-1.5 rounded-full bg-neon-yellow px-1.5 py-0.5 text-[8.5px] font-black uppercase tracking-wider text-[oklch(0.18_0.11_305)]">
+                      {badge}
+                    </span>
+                  )}
                   <Icon className={cn("h-5 w-5", color)} />
                   <div className="text-[12px] font-extrabold text-white leading-tight">{label}</div>
-                  <div className="text-[9.5px] text-white/50 leading-tight">{hint}</div>
+                  <div className="text-[9.5px] text-white/60 leading-tight">{hint}</div>
                 </button>
               ))}
             </div>
@@ -1624,37 +1635,60 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                       className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
                     />
                   </div>
-                  <div>
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CEP *</label>
-                    <input
-                      value={formatCep(cardCep || cep)}
-                      onChange={(e) => setCardCep(e.target.value)}
-                      inputMode="numeric"
-                      placeholder="00000-000"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nº endereço *</label>
-                    <input
-                      value={cardAddrNumber || addrNumber}
-                      onChange={(e) => setCardAddrNumber(e.target.value)}
-                      inputMode="numeric"
-                      placeholder="123"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
-                  </div>
                   <div className="col-span-2">
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">E-mail *</label>
-                    <input
-                      value={cardEmail || (user?.email ?? "")}
-                      onChange={(e) => setCardEmail(e.target.value)}
-                      inputMode="email"
-                      autoComplete="email"
-                      placeholder="voce@email.com"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setCardBillingOpen((v) => !v)}
+                      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-[11px] font-bold text-white/70 hover:border-white/25"
+                    >
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-3.5 w-3.5 text-neon-pink" />
+                        Dados de cobrança
+                        <span className="text-[10px] font-normal text-white/50">
+                          · {formatCep(cardCep || cep) || "sem CEP"} · nº {cardAddrNumber || addrNumber || "—"}
+                        </span>
+                      </span>
+                      <ChevronDown className={cn("h-3.5 w-3.5 transition", cardBillingOpen && "rotate-180")} />
+                    </button>
+                    <div className="mt-1 text-[10px] text-white/40">
+                      Usamos os dados do endereço automaticamente. Toque para editar.
+                    </div>
                   </div>
+                  {cardBillingOpen && (
+                    <>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CEP *</label>
+                        <input
+                          value={formatCep(cardCep || cep)}
+                          onChange={(e) => setCardCep(e.target.value)}
+                          inputMode="numeric"
+                          placeholder="00000-000"
+                          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nº endereço *</label>
+                        <input
+                          value={cardAddrNumber || addrNumber}
+                          onChange={(e) => setCardAddrNumber(e.target.value)}
+                          inputMode="numeric"
+                          placeholder="123"
+                          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">E-mail *</label>
+                        <input
+                          value={cardEmail || (user?.email ?? "")}
+                          onChange={(e) => setCardEmail(e.target.value)}
+                          inputMode="email"
+                          autoComplete="email"
+                          placeholder="voce@email.com"
+                          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                        />
+                      </div>
+                    </>
+                  )}
                     </>
                   )}
                   <div className="col-span-2">
@@ -1750,17 +1784,26 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 Endereço fora do raio de entrega
               </>
             ) : isAuthenticated ? (
-              paymentMethod === "pix"
-                ? `Gerar PIX · ${brl(total)}`
-                : paymentMethod === "cartao"
-                  ? `Pagar com cartão · ${brl(total)}`
-                  : paymentMethod === "asaas_checkout"
-                    ? `Abrir Checkout Asaas · ${brl(total)}`
-                    : `Enviar pedido no WhatsApp · ${brl(total)}`
+              <>
+                {paymentMethod !== "whatsapp" && <Lock className="h-4 w-4" />}
+                {paymentMethod === "pix"
+                  ? `Pagar ${brl(total)} com PIX`
+                  : paymentMethod === "cartao"
+                    ? `Pagar ${brl(total)} no cartão`
+                    : paymentMethod === "asaas_checkout"
+                      ? `Continuar · ${brl(total)}`
+                      : `Enviar no WhatsApp · ${brl(total)}`}
+              </>
             ) : (
               `Entrar para finalizar · ${brl(total)}`
             )}
           </button>
+          {!storeStatus.isClosed && !(mode === "entrega" && outsideRadius) && (
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-[10.5px] font-semibold text-white/60">
+              <ShieldCheck className="h-3 w-3 text-emerald-400" />
+              <span>Pagamento criptografado · Sem taxas escondidas</span>
+            </div>
+          )}
         </div>
       </div>
 
