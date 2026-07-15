@@ -99,7 +99,7 @@ const groups: NavGroup[] = [
     items: [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
       { to: "/rush", label: "Cozinha", icon: ChefHat },
-      { to: "/historico-pedidos", label: "Histórico de pedidos", icon: History },
+      { to: "/historico-pedidos", label: "Histórico de pedidos", icon: HistoryIcon },
       { to: "/pdv", label: "PDV", icon: Store },
       { to: "/caixa", label: "Caixa", icon: Wallet },
       { to: "/mesas", label: "Mesas", icon: Grid3x3 },
