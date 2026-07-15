@@ -1,0 +1,1 @@
+UPDATE public.categories SET image_url = '/__l5e/assets-v1/088247a5-4e1a-44f6-a9b8-b20b2495b865/monte-acai.png' WHERE id = 'monte-voce-mesmo';
