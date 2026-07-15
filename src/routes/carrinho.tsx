@@ -547,14 +547,25 @@ function CartPage() {
               PIX, Cartão ou WhatsApp · Pagamento criptografado
             </div>
             {!shareMode && (
-              <button
-                onClick={() => setShareOpen(true)}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-[13px] font-semibold text-white/70 hover:bg-white/[0.06] hover:text-white/90 transition-colors"
-              >
-                <Users className="h-4 w-4" strokeWidth={2} />
-                Dividir carrinho com amigos
-              </button>
+              rejoinable.length > 0 ? (
+                <a
+                  href={shareUrlFor(rejoinable[0].token)}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-neon-pink/40 bg-neon-pink/10 px-3 py-2.5 text-[13px] font-semibold text-white hover:bg-neon-pink/20 transition-colors"
+                >
+                  <Users className="h-4 w-4" strokeWidth={2} />
+                  Ver carrinho compartilhado com amigos
+                </a>
+              ) : (
+                <button
+                  onClick={() => setShareOpen(true)}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-[13px] font-semibold text-white/70 hover:bg-white/[0.06] hover:text-white/90 transition-colors"
+                >
+                  <Users className="h-4 w-4" strokeWidth={2} />
+                  Dividir carrinho com amigos
+                </button>
+              )
             )}
+
 
           </div>
         </div>
