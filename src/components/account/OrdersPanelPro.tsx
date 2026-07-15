@@ -753,10 +753,21 @@ function OrderCard({
       tone: "danger",
     });
     if (!ok) return;
-    const { error } = await supabase.from("orders").update({ status: "cancelado" }).eq("id", o.id);
-    if (error) return toast.error("Não foi possível cancelar");
-    toast.success("Pedido cancelado");
+    try {
+      const { cancelMyOrder } = await import("@/lib/orders.functions");
+      await cancelMyOrder({ data: { orderId: o.id } });
+      try {
+        const raw = localStorage.getItem("querobis:recent_orders");
+        const arr = raw ? JSON.parse(raw) : [];
+        const next = (Array.isArray(arr) ? arr : []).filter((x: any) => x?.id !== o.id);
+        localStorage.setItem("querobis:recent_orders", JSON.stringify(next));
+      } catch {}
+      toast.success("Pedido cancelado");
+    } catch (e: any) {
+      toast.error("Não foi possível cancelar", { description: e?.message || "Tente novamente." });
+    }
   };
+
 
   return (
     <div
