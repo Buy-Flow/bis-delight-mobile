@@ -206,6 +206,7 @@ function AddressForm({
   initial?: UserAddress;
   onSubmit: (input: {
     label: string;
+    recipient_name?: string | null;
     address: string;
     reference?: string | null;
     lat?: number | null;
