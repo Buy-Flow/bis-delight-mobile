@@ -139,12 +139,24 @@ function PagamentoPage() {
   return (
     <div className="min-h-dvh bg-[oklch(0.14_0.09_305)] text-white">
       <div className="mx-auto max-w-xl px-4 py-6">
-        <button
-          onClick={() => navigate({ to: "/" })}
-          className="mb-4 flex items-center gap-2 text-sm text-white/70 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" /> Voltar ao cardápio
-        </button>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <button
+            onClick={() => navigate({ to: "/" })}
+            className="flex items-center gap-2 text-sm text-white/70 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" /> Voltar ao cardápio
+          </button>
+          {order && !paid && !loading && (
+            <button
+              onClick={cancelOrder}
+              disabled={cancelling}
+              className="inline-flex items-center gap-1.5 rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-red-200 hover:bg-red-500/20 disabled:opacity-60"
+            >
+              {cancelling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+              Cancelar pedido
+            </button>
+          )}
+        </div>
 
         <div className="mb-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
           <div className="flex items-start justify-between gap-3">
