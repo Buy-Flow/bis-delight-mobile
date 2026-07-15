@@ -1462,9 +1462,9 @@ function ClientDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border-white/10 bg-[oklch(0.12_0.08_300)] text-white">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between gap-3 pr-6">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border-white/10 bg-[oklch(0.12_0.08_300)] text-white [&>button.absolute]:hidden">
+        <DialogHeader className="sticky top-0 z-20 -mx-6 -mt-6 mb-2 border-b border-white/10 bg-[oklch(0.12_0.08_300)]/95 px-6 py-4 backdrop-blur">
+          <DialogTitle className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <span
                 className="truncate text-2xl font-black text-neon-yellow"
@@ -1482,8 +1482,17 @@ function ClientDetailDialog({
                 {segInfo.label}
               </span>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </DialogTitle>
         </DialogHeader>
+
 
         {!client ? null : (
           <div className="space-y-5">
