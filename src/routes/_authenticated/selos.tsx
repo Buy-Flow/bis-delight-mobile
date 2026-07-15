@@ -72,9 +72,9 @@ function SelosPage() {
   const remove = async (b: ProductBadge) => {
     const ok = await confirmDialog({
       title: `Apagar "${b.name}"?`,
-      description: "Produtos com esse selo continuarão listados, mas o selo deixará de aparecer.",
+      message: "Produtos com esse selo continuarão listados, mas o selo deixará de aparecer.",
       confirmLabel: "Apagar",
-      variant: "destructive",
+      tone: "danger",
     });
     if (!ok) return;
     const { error } = await supabase.from("product_badges" as never).delete().eq("id" as never, b.id as never);
