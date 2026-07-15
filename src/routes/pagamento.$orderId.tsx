@@ -8,14 +8,15 @@ import { createAsaasPixForOrder, createAsaasCardForOrder } from "@/lib/asaas.fun
 import { useServerFn } from "@tanstack/react-start";
 import { formatCpf, cpfDigits, isValidCpf } from "@/lib/cpf";
 import { toast } from "sonner";
-import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle } from "lucide-react";
+import { Loader2, QrCode, CreditCard, Copy, Check, ShieldCheck, ArrowLeft, PartyPopper, Clock, RefreshCw, AlertTriangle, ExternalLink, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatSP } from "@/lib/tz";
 import { detectCardBrand } from "@/lib/card-brand";
 
 const searchSchema = z.object({
-  m: z.enum(["pix", "cartao"]).catch("pix"),
+  m: z.enum(["pix", "cartao", "asaas"]).catch("pix"),
 });
+
 
 export const Route = createFileRoute("/pagamento/$orderId")({
   validateSearch: (s) => searchSchema.parse(s),
@@ -140,7 +141,7 @@ function PagamentoPage() {
           </div>
         </div>
 
-        {order && !paid && !loading && (
+        {order && !paid && !loading && order.payment_method !== "asaas_checkout" && m !== "asaas" && (
           <div className="mb-3 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
             <MethodTab
               active={m === "pix"}
@@ -159,6 +160,7 @@ function PagamentoPage() {
           </div>
         )}
 
+
         {loading || authLoading ? (
           <div className="flex justify-center py-10">
             <Loader2 className="h-6 w-6 animate-spin text-white/60" />
@@ -169,11 +171,14 @@ function PagamentoPage() {
           </div>
         ) : paid ? (
           <PaidCard order={order} />
+        ) : m === "asaas" || order.payment_method === "asaas_checkout" ? (
+          <AsaasCheckoutSection order={order} />
         ) : m === "pix" ? (
           <PixSection order={order} setOrder={setOrder} />
         ) : (
           <CardSection order={order} setOrder={setOrder} user={user} />
         )}
+
 
         <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
           <ShieldCheck className="h-3 w-3 text-emerald-400" />
@@ -707,4 +712,120 @@ function safeLoadCustomer(): { name?: string; phone?: string; email?: string; cp
     if (raw) return JSON.parse(raw);
   } catch {}
   return {};
+}
+
+function AsaasCheckoutSection({ order }: { order: Order }) {
+  const [copied, setCopied] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [openedAt, setOpenedAt] = useState<number | null>(null);
+
+  const url = useMemo(() => {
+    if (order.invoice_url) return order.invoice_url;
+    if (typeof window === "undefined") return null;
+    try {
+      return sessionStorage.getItem(`querobis:asaas_url:${order.id}`);
+    } catch {
+      return null;
+    }
+  }, [order.invoice_url, order.id]);
+
+  useEffect(() => {
+    if (!openedAt) return;
+    const t = setTimeout(() => setShowHelp(true), 8000);
+    return () => clearTimeout(t);
+  }, [openedAt]);
+
+  const open = () => {
+    if (!url) return;
+    try {
+      window.open(url, "_blank", "noopener,noreferrer");
+      setOpenedAt(Date.now());
+    } catch {
+      toast.error("Não deu para abrir. Copie o link e cole em outro navegador.");
+    }
+  };
+
+  const copy = async () => {
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success("Link do pagamento copiado!");
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error("Não deu para copiar. Selecione manualmente.");
+    }
+  };
+
+  if (!url) {
+    return (
+      <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-100">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
+          <div>
+            <div className="font-extrabold text-white">Link de pagamento indisponível</div>
+            <div className="mt-1 text-[13px] text-red-100/90">
+              Volte ao carrinho e escolha PIX ou Cartão para gerar um novo pagamento.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow">
+          <ShieldCheck className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="font-display text-lg font-extrabold text-white">Checkout seguro Asaas</div>
+          <div className="text-[11px] text-white/60">Escolha PIX, cartão ou boleto na próxima página.</div>
+        </div>
+      </div>
+
+      <button
+        onClick={open}
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-yellow px-4 py-3 text-sm font-extrabold text-[oklch(0.18_0.11_305)] active:scale-95"
+      >
+        <ExternalLink className="h-4 w-4" />
+        Abrir checkout Asaas
+      </button>
+
+      <button
+        onClick={copy}
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.03] px-4 py-3 text-sm font-extrabold text-white hover:bg-white/[0.06]"
+      >
+        {copied ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
+        {copied ? "Link copiado!" : "Copiar link do pagamento"}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setShowHelp((v) => !v)}
+        className="mt-3 flex w-full items-center justify-center gap-1.5 text-[11.5px] text-white/60 hover:text-white/80"
+      >
+        <Info className="h-3.5 w-3.5" />
+        A página do Asaas não abriu?
+      </button>
+
+      {showHelp && (
+        <div className="mt-2 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-[12.5px] text-amber-100/95">
+          <div className="font-extrabold text-amber-100">Se o navegador recusou a conexão com asaas.com:</div>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>Toque em <strong>Copiar link</strong> e abra em <strong>outro navegador</strong> (Chrome, Firefox ou Safari).</li>
+            <li>Desative <strong>bloqueadores de anúncio, antivírus ou VPN</strong> — eles podem barrar o Asaas.</li>
+            <li>Se estiver em <strong>Wi-Fi corporativo</strong>, tente pelos <strong>dados móveis</strong>.</li>
+            <li>Alternativa: troque o DNS do aparelho para <strong>1.1.1.1</strong> ou <strong>8.8.8.8</strong>.</li>
+          </ol>
+        </div>
+      )}
+
+      <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/[0.03] p-3 text-[11.5px] text-white/70">
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-neon-cyan" />
+        Aguardando confirmação — esta página atualiza sozinha quando o pagamento cair.
+      </div>
+    </div>
+  );
 }
