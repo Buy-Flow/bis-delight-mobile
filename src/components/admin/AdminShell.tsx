@@ -51,7 +51,7 @@ import {
   Camera,
   HeartHandshake,
   ScanSearch,
-  Mic,
+  
   WifiOff,
   
   History as HistoryIcon,
