@@ -194,7 +194,7 @@ const groups: NavGroup[] = [
       { to: "/modelos", label: "Modelos de produto", icon: Layers },
       { to: "/importar", label: "Importar cardápio", icon: FileDown },
       
-      { to: "/voz-copiloto", label: "Voz no Copiloto", icon: Mic },
+      
       { to: "/skeleton-loading", label: "Skeleton loading", icon: Sparkles },
       { to: "/pwa-offline", label: "PWA & Offline", icon: WifiOff },
     ],
