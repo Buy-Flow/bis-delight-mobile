@@ -20,6 +20,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AsaasWebhookRouteImport } from './routes/asaas-webhook'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WebhooksAsaasRouteImport } from './routes/webhooks.asaas'
 import { Route as RastrearTokenRouteImport } from './routes/rastrear.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
@@ -137,6 +138,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebhooksAsaasRoute = WebhooksAsaasRouteImport.update({
+  id: '/webhooks/asaas',
+  path: '/webhooks/asaas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RastrearTokenRoute = RastrearTokenRouteImport.update({
@@ -543,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
+  '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
@@ -619,6 +626,7 @@ export interface FileRoutesByTo {
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
+  '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
@@ -697,6 +705,7 @@ export interface FileRoutesById {
   '/produto/$id': typeof ProdutoIdRoute
   '/r/$code': typeof RCodeRoute
   '/rastrear/$token': typeof RastrearTokenRoute
+  '/webhooks/asaas': typeof WebhooksAsaasRoute
   '/_authenticated/avaliar/$orderId': typeof AuthenticatedAvaliarOrderIdRoute
   '/_authenticated/rastrear/$orderId': typeof AuthenticatedRastrearOrderIdRoute
   '/api/public/asaas': typeof ApiPublicAsaasRoute
@@ -775,6 +784,7 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
+    | '/webhooks/asaas'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/asaas'
@@ -851,6 +861,7 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
+    | '/webhooks/asaas'
     | '/avaliar/$orderId'
     | '/rastrear/$orderId'
     | '/api/public/asaas'
@@ -928,6 +939,7 @@ export interface FileRouteTypes {
     | '/produto/$id'
     | '/r/$code'
     | '/rastrear/$token'
+    | '/webhooks/asaas'
     | '/_authenticated/avaliar/$orderId'
     | '/_authenticated/rastrear/$orderId'
     | '/api/public/asaas'
@@ -961,6 +973,7 @@ export interface RootRouteChildren {
   ProdutoIdRoute: typeof ProdutoIdRoute
   RCodeRoute: typeof RCodeRoute
   RastrearTokenRoute: typeof RastrearTokenRoute
+  WebhooksAsaasRoute: typeof WebhooksAsaasRoute
   ApiPublicAsaasRoute: typeof ApiPublicAsaasRoute
   ApiPublicAsaasCheckRoute: typeof ApiPublicAsaasCheckRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
@@ -1048,6 +1061,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/webhooks/asaas': {
+      id: '/webhooks/asaas'
+      path: '/webhooks/asaas'
+      fullPath: '/webhooks/asaas'
+      preLoaderRoute: typeof WebhooksAsaasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rastrear/$token': {
@@ -1638,6 +1658,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutoIdRoute: ProdutoIdRoute,
   RCodeRoute: RCodeRoute,
   RastrearTokenRoute: RastrearTokenRoute,
+  WebhooksAsaasRoute: WebhooksAsaasRoute,
   ApiPublicAsaasRoute: ApiPublicAsaasRoute,
   ApiPublicAsaasCheckRoute: ApiPublicAsaasCheckRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
