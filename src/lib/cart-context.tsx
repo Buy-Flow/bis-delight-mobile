@@ -255,6 +255,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       update: (uid, patch) =>
         setItems((prev) => prev.map((it) => (it.uid === uid ? { ...it, ...patch } : it))),
       remove: (uid) => setItems((prev) => prev.filter((it) => it.uid !== uid)),
+      restore: (item, index) =>
+        setItems((prev) => {
+          if (prev.some((it) => it.uid === item.uid)) return prev;
+          if (index == null || index < 0 || index > prev.length) return [...prev, item];
+          const next = prev.slice();
+          next.splice(index, 0, item);
+          return next;
+        }),
       clear: () => setItems([]),
       isCartOpen,
       openCart: () => setCartOpen(true),
