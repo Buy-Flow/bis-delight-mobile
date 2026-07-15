@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { confirmDialog } from "@/lib/confirm";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import { cn } from "@/lib/utils";
 
 import { toast } from "sonner";
 import {
-  FileDown, Save, Send, Play, Clock, MessageSquare, Trash2, Plus,
+  FileDown, Save, Send, Clock, MessageSquare, Trash2, Plus,
   CheckCircle2, XCircle, AlertTriangle, Download, RotateCcw, FileText,
 } from "lucide-react";
 import {
@@ -34,11 +34,17 @@ function Switch({ checked, onCheckedChange }: { checked: boolean; onCheckedChang
     <button
       type="button"
       onClick={() => onCheckedChange(!checked)}
-      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
-        checked ? "bg-purple-600" : "bg-slate-300"
-      }`}
+      className={cn(
+        "inline-flex h-6 w-11 shrink-0 items-center rounded-full transition",
+        checked ? "bg-fuchsia-500" : "bg-white/15",
+      )}
     >
-      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
+      <span
+        className={cn(
+          "inline-block h-5 w-5 transform rounded-full bg-white shadow transition",
+          checked ? "translate-x-5" : "translate-x-0.5",
+        )}
+      />
     </button>
   );
 }
@@ -48,7 +54,10 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       {...rest}
-      className={`w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 ${className}`}
+      className={cn(
+        "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-500/20",
+        className,
+      )}
     />
   );
 }
@@ -66,37 +75,40 @@ type Tab = "gerar" | "historico" | "config";
 function CashClosePage() {
   const [tab, setTab] = useState<Tab>("gerar");
 
+  const tabs: { k: Tab; label: string }[] = [
+    { k: "gerar", label: "Gerar Relatório" },
+    { k: "historico", label: "Histórico" },
+    { k: "config", label: "Configurações" },
+  ];
+
   return (
     <AdminShell>
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6">
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-gradient-to-br from-purple-600 to-fuchsia-600 p-3 text-white shadow-lg">
-                <FileDown className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">Fechamento de Caixa</h1>
-                <p className="text-sm text-slate-500">
-                  Relatório automático diário via WhatsApp — vendas, PIX vs. dinheiro, sangrias e mais.
-                </p>
-              </div>
-            </div>
+      <div className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:px-4 sm:py-6">
+        <header className="flex items-center gap-3">
+          <div className="rounded-2xl bg-gradient-to-br from-purple-600 to-fuchsia-600 p-3 text-white shadow-lg shrink-0">
+            <FileDown className="h-6 w-6" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Fechamento de Caixa</h1>
+            <p className="text-xs sm:text-sm text-white/60">
+              Relatório automático diário via WhatsApp — vendas, PIX vs. dinheiro, sangrias e mais.
+            </p>
           </div>
         </header>
 
-        <div className="flex gap-2 border-b border-slate-200">
-          {(["gerar", "historico", "config"] as const).map((k) => (
+        <div className="flex gap-1 border-b border-white/10 overflow-x-auto scrollbar-none -mx-1 px-1">
+          {tabs.map(({ k, label }) => (
             <button
               key={k}
               onClick={() => setTab(k)}
-              className={`px-4 py-2 text-sm font-medium transition ${
+              className={cn(
+                "px-4 py-2 text-sm font-medium transition whitespace-nowrap border-b-2 -mb-px",
                 tab === k
-                  ? "border-b-2 border-purple-600 text-purple-700"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
+                  ? "border-fuchsia-500 text-white"
+                  : "border-transparent text-white/50 hover:text-white/80",
+              )}
             >
-              {k === "gerar" ? "Gerar Relatório" : k === "historico" ? "Histórico" : "Configurações"}
+              {label}
             </button>
           ))}
         </div>
@@ -157,39 +169,56 @@ function GerarTab() {
 
   const agg = preview?.aggregate;
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-wrap items-end gap-4">
-          <div>
-            <Label className="mb-1 block text-xs">Data do relatório</Label>
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} max={today} className="w-44" />
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 shadow-sm">
+        <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-end">
+          <div className="min-w-0">
+            <Label className="mb-1 block text-xs text-white/60">Data do relatório</Label>
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              max={today}
+              className="w-full sm:w-44 bg-white/5 border-white/10 text-white [color-scheme:dark]"
+            />
           </div>
-          <label className="flex items-center gap-2 pb-2 text-sm">
-            <Switch checked={includePending} onCheckedChange={setIncludePending} />
-            <span>Incluir pendentes</span>
-          </label>
-          <label className="flex items-center gap-2 pb-2 text-sm">
-            <Switch checked={includeCanceled} onCheckedChange={setIncludeCanceled} />
-            <span>Incluir cancelados</span>
-          </label>
-          <div className="ml-auto flex gap-2">
-            <Button variant="outline" onClick={load} disabled={loading}>
-              <RotateCcw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Atualizar prévia
+          <div className="flex flex-wrap gap-4 sm:gap-3 sm:pb-2">
+            <label className="flex items-center gap-2 text-sm text-white/80">
+              <Switch checked={includePending} onCheckedChange={setIncludePending} />
+              <span>Incluir pendentes</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-white/80">
+              <Switch checked={includeCanceled} onCheckedChange={setIncludeCanceled} />
+              <span>Incluir cancelados</span>
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:ml-auto sm:flex">
+            <Button variant="outline" onClick={load} disabled={loading} className="border-white/15 bg-white/5 text-white hover:bg-white/10">
+              <RotateCcw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
+              <span className="hidden sm:inline">Atualizar prévia</span>
+              <span className="sm:hidden">Atualizar</span>
             </Button>
-            <Button onClick={run} disabled={running || !agg}>
+            <Button
+              onClick={run}
+              disabled={running || !agg}
+              className="bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white hover:from-fuchsia-400 hover:to-purple-500"
+            >
               <Send className="mr-2 h-4 w-4" />
-              {running ? "Enviando…" : "Gerar & Enviar agora"}
+              {running ? "Enviando…" : (<><span className="hidden sm:inline">Gerar & Enviar agora</span><span className="sm:hidden">Enviar</span></>)}
             </Button>
           </div>
         </div>
       </div>
 
-      {loading && <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Calculando…</div>}
+      {loading && (
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/50">
+          Calculando…
+        </div>
+      )}
 
       {agg && !loading && (
         <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             <Kpi label="Pedidos" value={String(agg.orders.orders_count)} tone="purple" />
             <Kpi label="Faturamento" value={BRL(agg.orders.revenue)} tone="green" />
             <Kpi label="Ticket médio" value={BRL(agg.orders.avg_ticket)} tone="blue" />
@@ -199,13 +228,13 @@ function GerarTab() {
           <div className="grid gap-4 lg:grid-cols-2">
             <Card title="Formas de pagamento (PDV)">
               {agg.payments.length === 0 ? (
-                <p className="text-sm text-slate-500">Sem movimentos de PDV neste dia.</p>
+                <p className="text-sm text-white/50">Sem movimentos de PDV neste dia.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-white/5 text-sm">
                   {agg.payments.map((p: any) => (
                     <li key={p.method} className="flex items-center justify-between py-2">
-                      <span className="capitalize">{p.method} <span className="text-slate-400">({p.count})</span></span>
-                      <strong>{BRL(p.amount)}</strong>
+                      <span className="capitalize text-white/80">{p.method} <span className="text-white/40">({p.count})</span></span>
+                      <strong className="text-white">{BRL(p.amount)}</strong>
                     </li>
                   ))}
                 </ul>
@@ -213,13 +242,13 @@ function GerarTab() {
             </Card>
             <Card title="Por canal">
               {agg.by_mode.length === 0 ? (
-                <p className="text-sm text-slate-500">Sem dados.</p>
+                <p className="text-sm text-white/50">Sem dados.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-white/5 text-sm">
                   {agg.by_mode.map((m: any) => (
                     <li key={m.mode} className="flex items-center justify-between py-2">
-                      <span className="capitalize">{m.mode} <span className="text-slate-400">({m.count})</span></span>
-                      <strong>{BRL(m.revenue)}</strong>
+                      <span className="capitalize text-white/80">{m.mode} <span className="text-white/40">({m.count})</span></span>
+                      <strong className="text-white">{BRL(m.revenue)}</strong>
                     </li>
                   ))}
                 </ul>
@@ -227,13 +256,13 @@ function GerarTab() {
             </Card>
             <Card title="Movimentos de caixa">
               {Object.keys(agg.movements ?? {}).length === 0 ? (
-                <p className="text-sm text-slate-500">Sem movimentos manuais.</p>
+                <p className="text-sm text-white/50">Sem movimentos manuais.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-white/5 text-sm">
                   {Object.entries(agg.movements as Record<string, any>).map(([k, m]) => (
                     <li key={k} className="flex items-center justify-between py-2">
-                      <span className="capitalize">{k} <span className="text-slate-400">({m.count})</span></span>
-                      <strong>{BRL(m.amount)}</strong>
+                      <span className="capitalize text-white/80">{k} <span className="text-white/40">({m.count})</span></span>
+                      <strong className="text-white">{BRL(m.amount)}</strong>
                     </li>
                   ))}
                 </ul>
@@ -241,13 +270,13 @@ function GerarTab() {
             </Card>
             <Card title="Top produtos">
               {agg.top_products.length === 0 ? (
-                <p className="text-sm text-slate-500">Sem vendas.</p>
+                <p className="text-sm text-white/50">Sem vendas.</p>
               ) : (
-                <ul className="divide-y divide-slate-100 text-sm">
+                <ul className="divide-y divide-white/5 text-sm">
                   {agg.top_products.slice(0, 8).map((p: any, i: number) => (
-                    <li key={i} className="flex items-center justify-between py-2">
-                      <span className="truncate">{i + 1}. {p.product_name} <span className="text-slate-400">({p.qty}×)</span></span>
-                      <strong>{BRL(p.revenue)}</strong>
+                    <li key={i} className="flex items-center justify-between py-2 gap-3">
+                      <span className="truncate text-white/80">{i + 1}. {p.product_name} <span className="text-white/40">({p.qty}×)</span></span>
+                      <strong className="text-white shrink-0">{BRL(p.revenue)}</strong>
                     </li>
                   ))}
                 </ul>
@@ -256,7 +285,7 @@ function GerarTab() {
           </div>
 
           <Card title="Prévia da mensagem WhatsApp" icon={<MessageSquare className="h-4 w-4" />}>
-            <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-4 font-mono text-xs text-slate-700">
+            <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap rounded-lg bg-black/40 border border-white/5 p-4 font-mono text-xs text-white/80">
               {preview!.summary}
             </pre>
           </Card>
@@ -309,65 +338,105 @@ function HistoricoTab() {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 p-4">
-        <h2 className="text-sm font-semibold">Histórico de relatórios</h2>
+    <div className="rounded-2xl border border-white/10 bg-white/5 shadow-sm overflow-hidden">
+      <div className="border-b border-white/10 p-4">
+        <h2 className="text-sm font-semibold text-white">Histórico de relatórios</h2>
       </div>
       {loading ? (
-        <div className="p-10 text-center text-sm text-slate-500">Carregando…</div>
+        <div className="p-10 text-center text-sm text-white/50">Carregando…</div>
       ) : rows.length === 0 ? (
-        <div className="p-10 text-center text-sm text-slate-500">Nenhum fechamento gerado ainda.</div>
+        <div className="p-10 text-center text-sm text-white/50">Nenhum fechamento gerado ainda.</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-2 text-left">Data</th>
-                <th className="px-4 py-2 text-left">Origem</th>
-                <th className="px-4 py-2 text-right">Pedidos</th>
-                <th className="px-4 py-2 text-right">Faturamento</th>
-                <th className="px-4 py-2 text-left">Envio</th>
-                <th className="px-4 py-2 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {rows.map((r) => {
-                const totals = r.totals as any;
-                return (
-                  <tr key={r.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{formatDateSP(parseDateOnlySP(r.report_date))}</div>
-                      <div className="text-xs text-slate-400">{formatSP(r.created_at)}</div>
-                    </td>
-                    <td className="px-4 py-3 capitalize">{r.triggered_by}</td>
-                    <td className="px-4 py-3 text-right">{totals?.orders?.orders_count ?? 0}</td>
-                    <td className="px-4 py-3 text-right font-medium">{BRL(totals?.orders?.revenue ?? 0)}</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={r.whatsapp_status} />
-                      {r.whatsapp_error && (
-                        <div className="mt-1 max-w-xs truncate text-xs text-rose-500" title={r.whatsapp_error}>
-                          {r.whatsapp_error}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex justify-end gap-2">
-                        {r.pdf_path && (
-                          <Button size="sm" variant="outline" onClick={() => download(r.id)}>
-                            <Download className="mr-1 h-3.5 w-3.5" /> PDF
-                          </Button>
+        <>
+          {/* Mobile cards */}
+          <div className="grid gap-2 p-3 sm:hidden">
+            {rows.map((r) => {
+              const totals = r.totals as any;
+              return (
+                <div key={r.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-medium text-white">{formatDateSP(parseDateOnlySP(r.report_date))}</div>
+                      <div className="text-[11px] text-white/40">{formatSP(r.created_at)} · {r.triggered_by}</div>
+                    </div>
+                    <StatusBadge status={r.whatsapp_status} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-white/60">{totals?.orders?.orders_count ?? 0} pedidos</span>
+                    <strong className="text-white">{BRL(totals?.orders?.revenue ?? 0)}</strong>
+                  </div>
+                  {r.whatsapp_error && (
+                    <div className="mt-2 text-xs text-rose-300 break-words" title={r.whatsapp_error}>
+                      {r.whatsapp_error}
+                    </div>
+                  )}
+                  <div className="mt-3 flex gap-2">
+                    {r.pdf_path && (
+                      <Button size="sm" variant="outline" onClick={() => download(r.id)} className="flex-1 border-white/15 bg-white/5 text-white hover:bg-white/10">
+                        <Download className="mr-1 h-3.5 w-3.5" /> PDF
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => resend(r.id)} className="flex-1 border-white/15 bg-white/5 text-white hover:bg-white/10">
+                      <Send className="mr-1 h-3.5 w-3.5" /> Reenviar
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-white/5 text-xs uppercase text-white/50">
+                <tr>
+                  <th className="px-4 py-2 text-left font-medium">Data</th>
+                  <th className="px-4 py-2 text-left font-medium">Origem</th>
+                  <th className="px-4 py-2 text-right font-medium">Pedidos</th>
+                  <th className="px-4 py-2 text-right font-medium">Faturamento</th>
+                  <th className="px-4 py-2 text-left font-medium">Envio</th>
+                  <th className="px-4 py-2 text-right font-medium">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {rows.map((r) => {
+                  const totals = r.totals as any;
+                  return (
+                    <tr key={r.id} className="hover:bg-white/[0.03]">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-white">{formatDateSP(parseDateOnlySP(r.report_date))}</div>
+                        <div className="text-xs text-white/40">{formatSP(r.created_at)}</div>
+                      </td>
+                      <td className="px-4 py-3 capitalize text-white/70">{r.triggered_by}</td>
+                      <td className="px-4 py-3 text-right text-white/80">{totals?.orders?.orders_count ?? 0}</td>
+                      <td className="px-4 py-3 text-right font-medium text-white">{BRL(totals?.orders?.revenue ?? 0)}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={r.whatsapp_status} />
+                        {r.whatsapp_error && (
+                          <div className="mt-1 max-w-xs truncate text-xs text-rose-300" title={r.whatsapp_error}>
+                            {r.whatsapp_error}
+                          </div>
                         )}
-                        <Button size="sm" variant="outline" onClick={() => resend(r.id)}>
-                          <Send className="mr-1 h-3.5 w-3.5" /> Reenviar
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          {r.pdf_path && (
+                            <Button size="sm" variant="outline" onClick={() => download(r.id)} className="border-white/15 bg-white/5 text-white hover:bg-white/10">
+                              <Download className="mr-1 h-3.5 w-3.5" /> PDF
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline" onClick={() => resend(r.id)} className="border-white/15 bg-white/5 text-white hover:bg-white/10">
+                            <Send className="mr-1 h-3.5 w-3.5" /> Reenviar
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
@@ -383,7 +452,11 @@ function ConfigTab() {
 
   useEffect(() => { void (async () => setS(await getFn()))(); }, []);
 
-  if (!s) return <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">Carregando…</div>;
+  if (!s) return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center text-sm text-white/50">
+      Carregando…
+    </div>
+  );
 
   const patch = (k: string, v: any) => setS({ ...s, [k]: v });
 
@@ -434,39 +507,41 @@ function ConfigTab() {
     patch("weekdays", [...set].sort());
   };
 
+  const inputCls = "bg-white/5 border-white/10 text-white [color-scheme:dark]";
+
   return (
-    <div className="space-y-6">
-      {/* Toggle enabled */}
+    <div className="space-y-5 pb-24">
       <Card title="Envio automático" icon={<Clock className="h-4 w-4" />}>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium">Enviar fechamento automaticamente</p>
-            <p className="text-xs text-slate-500">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-white">Enviar fechamento automaticamente</p>
+            <p className="text-xs text-white/50">
               O relatório é gerado e disparado no horário configurado, respeitando o fuso e os dias selecionados.
             </p>
           </div>
           <Switch checked={!!s.enabled} onCheckedChange={(v) => patch("enabled", v)} />
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-3">
           <div>
-            <Label className="mb-1 block text-xs">Hora</Label>
-            <Input type="number" min={0} max={23} value={s.send_hour ?? 23}
+            <Label className="mb-1 block text-xs text-white/60">Hora</Label>
+            <Input type="number" min={0} max={23} value={s.send_hour ?? 23} className={inputCls}
               onChange={(e) => patch("send_hour", Math.min(23, Math.max(0, Number(e.target.value) || 0)))} />
           </div>
           <div>
-            <Label className="mb-1 block text-xs">Minuto</Label>
-            <Input type="number" min={0} max={59} value={s.send_minute ?? 30}
+            <Label className="mb-1 block text-xs text-white/60">Minuto</Label>
+            <Input type="number" min={0} max={59} value={s.send_minute ?? 30} className={inputCls}
               onChange={(e) => patch("send_minute", Math.min(59, Math.max(0, Number(e.target.value) || 0)))} />
           </div>
-          <div>
-            <Label className="mb-1 block text-xs">Fuso horário (IANA)</Label>
-            <Input value={s.timezone ?? "America/Sao_Paulo"} onChange={(e) => patch("timezone", e.target.value)} />
+          <div className="col-span-2 sm:col-span-1">
+            <Label className="mb-1 block text-xs text-white/60">Fuso horário (IANA)</Label>
+            <Input value={s.timezone ?? "America/Sao_Paulo"} className={inputCls}
+              onChange={(e) => patch("timezone", e.target.value)} />
           </div>
         </div>
 
         <div className="mt-4">
-          <Label className="mb-2 block text-xs">Dias da semana</Label>
+          <Label className="mb-2 block text-xs text-white/60">Dias da semana</Label>
           <div className="flex flex-wrap gap-2">
             {WEEKDAYS.map((d) => {
               const on = (s.weekdays ?? []).includes(d.v);
@@ -474,9 +549,12 @@ function ConfigTab() {
                 <button
                   key={d.v}
                   onClick={() => toggleWeekday(d.v)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                    on ? "bg-purple-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium transition min-w-[44px]",
+                    on
+                      ? "bg-fuchsia-500 text-white shadow-sm shadow-fuchsia-500/30"
+                      : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10",
+                  )}
                 >
                   {d.label}
                 </button>
@@ -486,77 +564,80 @@ function ConfigTab() {
         </div>
 
         {s.last_run_at && (
-          <div className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-            Última execução: <strong>{formatSP(s.last_run_at)}</strong> —{" "}
+          <div className="mt-4 rounded-lg bg-white/5 border border-white/10 p-3 text-xs text-white/70">
+            Última execução: <strong className="text-white">{formatSP(s.last_run_at)}</strong>{" "}
             <StatusBadge status={s.last_run_status ?? "unknown"} />
-            {s.last_run_error && <div className="mt-1 text-rose-600">{s.last_run_error}</div>}
+            {s.last_run_error && <div className="mt-1 text-rose-300 break-words">{s.last_run_error}</div>}
           </div>
         )}
       </Card>
 
-      {/* WhatsApp numbers */}
       <Card title="Destinatários (WhatsApp)" icon={<MessageSquare className="h-4 w-4" />}>
-        <p className="mb-3 text-xs text-slate-500">
-          Números com DDI+DDD (ex: <code>5511999999999</code>). Cada número recebe o resumo em texto e o PDF anexado.
+        <p className="mb-3 text-xs text-white/50">
+          Números com DDI+DDD (ex: <code className="rounded bg-white/10 px-1 text-white/80">5511999999999</code>). Cada número recebe o resumo em texto e o PDF anexado.
         </p>
         <div className="space-y-2">
           {(s.whatsapp_numbers ?? []).length === 0 && (
-            <p className="text-xs text-slate-400">Nenhum número configurado. Adicione ao menos um para envio automático.</p>
+            <p className="text-xs text-white/40">Nenhum número configurado. Adicione ao menos um para envio automático.</p>
           )}
           {(s.whatsapp_numbers ?? []).map((n: string, i: number) => (
             <div key={i} className="flex gap-2">
-              <Input value={n} onChange={(e) => setNumber(i, e.target.value)} placeholder="5511999999999" />
-              <Button variant="outline" size="icon" onClick={() => removeNumber(i)}>
-                <Trash2 className="h-4 w-4 text-rose-500" />
+              <Input value={n} onChange={(e) => setNumber(i, e.target.value)} placeholder="5511999999999" className={inputCls} />
+              <Button variant="outline" size="icon" onClick={() => removeNumber(i)} className="border-white/15 bg-white/5 hover:bg-rose-500/10 shrink-0">
+                <Trash2 className="h-4 w-4 text-rose-400" />
               </Button>
             </div>
           ))}
-          <Button variant="outline" size="sm" onClick={addNumber}>
+          <Button variant="outline" size="sm" onClick={addNumber} className="border-white/15 bg-white/5 text-white hover:bg-white/10">
             <Plus className="mr-1 h-4 w-4" /> Adicionar número
           </Button>
         </div>
       </Card>
 
-      {/* Conteúdo */}
       <Card title="Conteúdo do relatório" icon={<FileText className="h-4 w-4" />}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="flex items-center gap-2 text-sm">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex items-center gap-2 text-sm text-white/80">
             <Switch checked={!!s.send_pdf} onCheckedChange={(v) => patch("send_pdf", v)} />
             Anexar PDF completo
           </label>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm text-white/80">
             <Switch checked={!!s.send_text_summary} onCheckedChange={(v) => patch("send_text_summary", v)} />
             Enviar resumo em texto
           </label>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm text-white/80">
             <Switch checked={!!s.include_pending} onCheckedChange={(v) => patch("include_pending", v)} />
             Incluir pedidos pendentes
           </label>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm text-white/80">
             <Switch checked={!!s.include_canceled} onCheckedChange={(v) => patch("include_canceled", v)} />
             Incluir pedidos cancelados
           </label>
-          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+          <label className="flex items-center gap-2 text-sm text-white/80 sm:col-span-2">
             <Switch checked={!!s.auto_close_session} onCheckedChange={(v) => patch("auto_close_session", v)} />
             Fechar sessões de PDV que ficaram abertas
           </label>
         </div>
         <div className="mt-4 grid gap-3">
           <div>
-            <Label className="mb-1 block text-xs">Cabeçalho personalizado</Label>
+            <Label className="mb-1 block text-xs text-white/60">Cabeçalho personalizado</Label>
             <Textarea rows={2} value={s.custom_header ?? ""} onChange={(e) => patch("custom_header", e.target.value)}
               placeholder="Ex: Bom dia, chefe! Segue o fechamento de ontem." />
           </div>
           <div>
-            <Label className="mb-1 block text-xs">Rodapé personalizado</Label>
+            <Label className="mb-1 block text-xs text-white/60">Rodapé personalizado</Label>
             <Textarea rows={2} value={s.custom_footer ?? ""} onChange={(e) => patch("custom_footer", e.target.value)}
               placeholder="Ex: Qualquer dúvida, chama no chat." />
           </div>
         </div>
       </Card>
 
-      <div className="sticky bottom-4 flex justify-end">
-        <Button onClick={save} disabled={saving} size="lg" className="shadow-lg">
+      <div className="sticky bottom-4 z-10 flex justify-end">
+        <Button
+          onClick={save}
+          disabled={saving}
+          size="lg"
+          className="w-full sm:w-auto bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white shadow-lg shadow-fuchsia-500/20 hover:from-fuchsia-400 hover:to-purple-500"
+        >
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Salvando…" : "Salvar configurações"}
         </Button>
@@ -569,23 +650,23 @@ function ConfigTab() {
 
 function Kpi({ label, value, tone }: { label: string; value: string; tone: "purple" | "green" | "blue" | "amber" }) {
   const bg = {
-    purple: "from-purple-500 to-fuchsia-500",
-    green: "from-emerald-500 to-teal-500",
-    blue: "from-sky-500 to-blue-500",
-    amber: "from-amber-500 to-orange-500",
+    purple: "from-purple-500/80 to-fuchsia-500/80",
+    green: "from-emerald-500/80 to-teal-500/80",
+    blue: "from-sky-500/80 to-blue-500/80",
+    amber: "from-amber-500/80 to-orange-500/80",
   }[tone];
   return (
-    <div className={`rounded-2xl bg-gradient-to-br ${bg} p-4 text-white shadow-sm`}>
+    <div className={cn("rounded-2xl bg-gradient-to-br p-4 text-white shadow-sm border border-white/10", bg)}>
       <div className="text-[10px] uppercase tracking-wide opacity-80">{label}</div>
-      <div className="mt-1 text-2xl font-bold">{value}</div>
+      <div className="mt-1 text-xl sm:text-2xl font-bold truncate">{value}</div>
     </div>
   );
 }
 
 function Card({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 shadow-sm">
+      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
         {icon}
         <span>{title}</span>
       </div>
@@ -596,15 +677,15 @@ function Card({ title, icon, children }: { title: string; icon?: React.ReactNode
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; className: string; Icon: any }> = {
-    sent: { label: "Enviado", className: "bg-emerald-100 text-emerald-700", Icon: CheckCircle2 },
-    partial: { label: "Parcial", className: "bg-amber-100 text-amber-700", Icon: AlertTriangle },
-    failed: { label: "Falhou", className: "bg-rose-100 text-rose-700", Icon: XCircle },
-    skipped: { label: "Sem envio", className: "bg-slate-100 text-slate-600", Icon: Clock },
+    sent: { label: "Enviado", className: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30", Icon: CheckCircle2 },
+    partial: { label: "Parcial", className: "bg-amber-500/15 text-amber-300 border border-amber-500/30", Icon: AlertTriangle },
+    failed: { label: "Falhou", className: "bg-rose-500/15 text-rose-300 border border-rose-500/30", Icon: XCircle },
+    skipped: { label: "Sem envio", className: "bg-white/10 text-white/60 border border-white/15", Icon: Clock },
   };
-  const c = cfg[status] ?? { label: status, className: "bg-slate-100 text-slate-600", Icon: Clock };
+  const c = cfg[status] ?? { label: status, className: "bg-white/10 text-white/60 border border-white/15", Icon: Clock };
   const I = c.Icon;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${c.className}`}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium", c.className)}>
       <I className="h-3 w-3" />
       {c.label}
     </span>
