@@ -33,7 +33,7 @@ const DESK_ITEMS: DeskItem[] = [
   },
 ];
 
-export function TopBar({ onOpenCategories }: { onOpenCategories: () => void }) {
+export function TopBar({ onOpenCategories }: { onOpenCategories?: () => void }) {
   const { data: settings } = useSiteSettings();
   const logo = settings?.logo || BRAND.logo;
   const name = settings?.name || BRAND.name;
