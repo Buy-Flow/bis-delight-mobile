@@ -315,6 +315,7 @@ function TablesPage() {
           {(
             [
               { id: "salao", label: "Salão", icon: Grid3x3 },
+              { id: "planta", label: "Planta", icon: LayoutGrid },
               { id: "lista", label: "Lista", icon: Utensils, badge: kpis.occ },
               { id: "config", label: "Gerenciar", icon: Pencil },
             ] as { id: Tab; label: string; icon: typeof Grid3x3; badge?: number }[]
