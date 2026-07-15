@@ -643,19 +643,31 @@ function ClientesDashboard() {
       </div>
 
       {/* Toolbar: busca + sort + exportar */}
-      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-md">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar por nome, telefone ou endereço…"
-              className="w-full rounded-2xl border border-white/10 bg-black/30 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-neon-pink focus:outline-none"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <SortMenu sort={sort} setSort={setSort} />
+      <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-md space-y-4">
+        {/* Row 1: search full width */}
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buscar por nome, telefone ou endereço…"
+            className="w-full rounded-2xl border border-white/10 bg-black/30 py-2.5 pl-9 pr-9 text-sm text-white placeholder:text-white/40 focus:border-neon-pink focus:outline-none"
+          />
+          {q && (
+            <button
+              onClick={() => setQ("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-white/40 hover:bg-white/10 hover:text-white"
+              aria-label="Limpar busca"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Row 2: sort + actions */}
+        <div className="flex flex-wrap items-center gap-2">
+          <SortMenu sort={sort} setSort={setSort} />
+          <div className="ml-auto flex flex-wrap gap-2">
             <button
               onClick={copyPhones}
               className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
@@ -732,40 +744,65 @@ function ClientesDashboard() {
           </div>
         </div>
 
-        {/* Segment chips */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Chip active={filter === "all"} onClick={() => setFilter("all")}>
-            Todos ({rows.length})
-          </Chip>
-          <Chip active={filter === "vip"} onClick={() => setFilter("vip")} tone="gold">
-            <Crown className="mr-1 inline h-3 w-3" /> VIP ({kpis.segCounts.vip})
-          </Chip>
-          <Chip active={filter === "fiel"} onClick={() => setFilter("fiel")} tone="pink">
-            Fiéis ({kpis.segCounts.fiel})
-          </Chip>
-          <Chip active={filter === "novo"} onClick={() => setFilter("novo")} tone="cyan">
-            Novos ({kpis.segCounts.novo})
-          </Chip>
-          <Chip active={filter === "em_risco"} onClick={() => setFilter("em_risco")} tone="amber">
-            Em risco ({kpis.segCounts.em_risco})
-          </Chip>
-          <Chip active={filter === "inativo"} onClick={() => setFilter("inativo")} tone="red">
-            Inativos ({kpis.segCounts.inativo})
-          </Chip>
-          <Chip active={filter === "buyers"} onClick={() => setFilter("buyers")}>
-            Compraram ({kpis.buyers})
-          </Chip>
-          <Chip active={filter === "no_orders"} onClick={() => setFilter("no_orders")}>
-            Sem pedidos ({rows.length - kpis.buyers})
-          </Chip>
-          <Chip active={filter === "birthday"} onClick={() => setFilter("birthday")}>
-            Aniversariantes ({kpis.bdays})
-          </Chip>
-          <Chip active={filter === "with_address"} onClick={() => setFilter("with_address")}>
-            Com endereço
-          </Chip>
+        {/* Segmentos RFM */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+              Segmentos RFM
+            </div>
+            {filter !== "all" && (
+              <button
+                onClick={() => setFilter("all")}
+                className="text-[10px] font-semibold uppercase tracking-wider text-white/50 hover:text-white"
+              >
+                Limpar filtro
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Chip active={filter === "all"} onClick={() => setFilter("all")}>
+              Todos ({rows.length})
+            </Chip>
+            <Chip active={filter === "vip"} onClick={() => setFilter("vip")} tone="gold">
+              <Crown className="mr-1 inline h-3 w-3" /> VIP ({kpis.segCounts.vip})
+            </Chip>
+            <Chip active={filter === "fiel"} onClick={() => setFilter("fiel")} tone="pink">
+              Fiéis ({kpis.segCounts.fiel})
+            </Chip>
+            <Chip active={filter === "novo"} onClick={() => setFilter("novo")} tone="cyan">
+              Novos ({kpis.segCounts.novo})
+            </Chip>
+            <Chip active={filter === "em_risco"} onClick={() => setFilter("em_risco")} tone="amber">
+              Em risco ({kpis.segCounts.em_risco})
+            </Chip>
+            <Chip active={filter === "inativo"} onClick={() => setFilter("inativo")} tone="red">
+              Inativos ({kpis.segCounts.inativo})
+            </Chip>
+          </div>
+        </div>
+
+        {/* Comportamento */}
+        <div>
+          <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
+            Comportamento
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Chip active={filter === "buyers"} onClick={() => setFilter("buyers")}>
+              Compraram ({kpis.buyers})
+            </Chip>
+            <Chip active={filter === "no_orders"} onClick={() => setFilter("no_orders")}>
+              Sem pedidos ({rows.length - kpis.buyers})
+            </Chip>
+            <Chip active={filter === "birthday"} onClick={() => setFilter("birthday")}>
+              <Cake className="mr-1 inline h-3 w-3" /> Aniversariantes ({kpis.bdays})
+            </Chip>
+            <Chip active={filter === "with_address"} onClick={() => setFilter("with_address")}>
+              Com endereço
+            </Chip>
+          </div>
         </div>
       </div>
+
 
       {/* Bulk selection bar */}
       {selection.size > 0 && (
