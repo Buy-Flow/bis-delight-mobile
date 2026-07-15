@@ -267,68 +267,246 @@ function DashboardTab() {
   const [stats, setStats] = useState<{
     todayCount: number;
     todayRevenue: number;
+    yesterdayRevenue: number;
+    yesterdayCount: number;
     weekCount: number;
     weekRevenue: number;
+    prevWeekRevenue: number;
     monthRevenue: number;
     pendingCount: number;
     preparingCount: number;
     avgTicket: number;
+    prevAvgTicket: number;
     uniqueCustomers: number;
+    newCustomers: number;
+    returningCustomers: number;
+    canceledCount: number;
+    cancelRate: number;
+    avgPrepMin: number;
+    avgDeliverMin: number;
+    daily: { date: string; revenue: number; count: number }[];
+    hourly: number[];
+    paymentBreakdown: { key: string; label: string; count: number; revenue: number }[];
+    modeBreakdown: { key: string; label: string; count: number; revenue: number }[];
+    categoryBreakdown: { name: string; qty: number; revenue: number }[];
     topProducts: { name: string; qty: number }[];
     recent: { id: string; customer_name: string | null; total: number; status: string; created_at: string }[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lowStockCount, setLowStockCount] = useState<number | null>(null);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfYesterday = new Date(startOfDay.getTime() - 24 * 60 * 60 * 1000);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+      const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
       const { data: monthOrders } = await supabase
         .from("orders")
-        .select("id,user_id,customer_name,total,status,created_at,order_items(name,quantity)")
-        .gte("created_at", monthAgo)
+        .select("id,user_id,customer_name,total,subtotal,status,mode,payment_method,created_at,paid_at,preparing_at,dispatched_at,delivered_at,order_items(name,quantity,price,category_id)")
+        .gte("created_at", monthAgo.toISOString())
         .order("created_at", { ascending: false });
 
       if (cancelled) return;
       const list = (monthOrders ?? []) as any[];
       const paid = list.filter((o) => o.status !== "cancelado");
+      const canceledMonth = list.filter((o) => o.status === "cancelado");
 
-      const today = paid.filter((o) => o.created_at >= startOfDay);
-      const week = paid.filter((o) => o.created_at >= weekAgo);
+      const today = paid.filter((o) => new Date(o.created_at) >= startOfDay);
+      const yesterday = paid.filter((o) => {
+        const d = new Date(o.created_at);
+        return d >= startOfYesterday && d < startOfDay;
+      });
+      const week = paid.filter((o) => new Date(o.created_at) >= weekAgo);
+      const prevWeek = paid.filter((o) => {
+        const d = new Date(o.created_at);
+        return d >= twoWeeksAgo && d < weekAgo;
+      });
       const pending = list.filter((o) => o.status === "pendente" || o.status === "pago");
       const preparing = list.filter((o) => o.status === "preparando" || o.status === "saiu_para_entrega");
 
+      const sum = (arr: any[]) => arr.reduce((s, o) => s + Number(o.total ?? 0), 0);
+      const todayRevenue = sum(today);
+      const yesterdayRevenue = sum(yesterday);
+      const weekRevenue = sum(week);
+      const prevWeekRevenue = sum(prevWeek);
+      const monthRevenue = sum(paid);
+      const avgTicket = week.length ? weekRevenue / week.length : 0;
+      const prevAvgTicket = prevWeek.length ? prevWeekRevenue / prevWeek.length : 0;
+
+      // Daily aggregation (last 14 days)
+      const daily: { date: string; revenue: number; count: number }[] = [];
+      for (let i = 13; i >= 0; i--) {
+        const day = new Date(startOfDay.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayEnd = new Date(day.getTime() + 24 * 60 * 60 * 1000);
+        const dayOrders = paid.filter((o) => {
+          const d = new Date(o.created_at);
+          return d >= day && d < dayEnd;
+        });
+        daily.push({
+          date: day.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+          revenue: sum(dayOrders),
+          count: dayOrders.length,
+        });
+      }
+
+      // Hourly distribution (week)
+      const hourly = new Array(24).fill(0) as number[];
+      for (const o of week) hourly[new Date(o.created_at).getHours()]++;
+
+      // Product & category aggregation (week)
       const productCounts = new Map<string, number>();
+      const categoryAgg = new Map<string, { qty: number; revenue: number }>();
       for (const o of week) {
         for (const it of (o.order_items ?? []) as any[]) {
           productCounts.set(it.name, (productCounts.get(it.name) ?? 0) + (it.quantity ?? 1));
+          const catId = it.category_id ?? "sem-categoria";
+          const prev = categoryAgg.get(catId) ?? { qty: 0, revenue: 0 };
+          prev.qty += it.quantity ?? 1;
+          prev.revenue += Number(it.price ?? 0) * Number(it.quantity ?? 1);
+          categoryAgg.set(catId, prev);
         }
       }
       const topProducts = [...productCounts.entries()]
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([name, qty]) => ({ name, qty }));
+      const catNameMap = new Map(categories.map((c) => [c.id, c.name]));
+      const categoryBreakdown = [...categoryAgg.entries()]
+        .map(([id, v]) => ({ name: catNameMap.get(id) ?? "Sem categoria", qty: v.qty, revenue: v.revenue }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5);
 
-      const sum = (arr: any[]) => arr.reduce((s, o) => s + Number(o.total ?? 0), 0);
-      const todayRevenue = sum(today);
-      const weekRevenue = sum(week);
-      const monthRevenue = sum(paid);
-      const uniqueCustomers = new Set(week.map((o) => o.user_id).filter(Boolean)).size;
+      // Payment method breakdown (week)
+      const paymentAgg = new Map<string, { count: number; revenue: number }>();
+      for (const o of week) {
+        const k = String(o.payment_method ?? "outro");
+        const prev = paymentAgg.get(k) ?? { count: 0, revenue: 0 };
+        prev.count++;
+        prev.revenue += Number(o.total ?? 0);
+        paymentAgg.set(k, prev);
+      }
+      const paymentLabels: Record<string, string> = {
+        pix: "PIX",
+        credit_card: "Cartão",
+        cartao: "Cartão",
+        asaas_checkout: "Link seguro",
+        whatsapp: "WhatsApp",
+        dinheiro: "Dinheiro",
+        cash: "Dinheiro",
+        outro: "Outro",
+      };
+      const paymentBreakdown = [...paymentAgg.entries()]
+        .map(([key, v]) => ({ key, label: paymentLabels[key] ?? key, ...v }))
+        .sort((a, b) => b.revenue - a.revenue);
+
+      // Mode breakdown (week)
+      const modeAgg = new Map<string, { count: number; revenue: number }>();
+      for (const o of week) {
+        const k = String(o.mode ?? "outro");
+        const prev = modeAgg.get(k) ?? { count: 0, revenue: 0 };
+        prev.count++;
+        prev.revenue += Number(o.total ?? 0);
+        modeAgg.set(k, prev);
+      }
+      const modeLabels: Record<string, string> = {
+        delivery: "Entrega",
+        entrega: "Entrega",
+        pickup: "Retirada",
+        retirada: "Retirada",
+        mesa: "Mesa",
+        table: "Mesa",
+        balcao: "Balcão",
+      };
+      const modeBreakdown = [...modeAgg.entries()]
+        .map(([key, v]) => ({ key, label: modeLabels[key] ?? key, ...v }))
+        .sort((a, b) => b.revenue - a.revenue);
+
+      // SLA metrics (week, completed only)
+      let prepSum = 0, prepN = 0, delivSum = 0, delivN = 0;
+      for (const o of week) {
+        if (o.preparing_at && o.dispatched_at) {
+          const d = (new Date(o.dispatched_at).getTime() - new Date(o.preparing_at).getTime()) / 60000;
+          if (d > 0 && d < 240) { prepSum += d; prepN++; }
+        }
+        if (o.created_at && o.delivered_at) {
+          const d = (new Date(o.delivered_at).getTime() - new Date(o.created_at).getTime()) / 60000;
+          if (d > 0 && d < 360) { delivSum += d; delivN++; }
+        }
+      }
+
+      // Customer segmentation (week)
+      const weekUserIds = week.map((o) => o.user_id).filter(Boolean) as string[];
+      const uniqueCustomers = new Set(weekUserIds).size;
+      let newCustomers = 0, returningCustomers = 0;
+      if (weekUserIds.length) {
+        const uniq = [...new Set(weekUserIds)];
+        const { data: firstOrders } = await supabase
+          .from("orders")
+          .select("user_id,created_at")
+          .in("user_id", uniq)
+          .order("created_at", { ascending: true });
+        const firstSeen = new Map<string, string>();
+        for (const r of (firstOrders ?? []) as any[]) {
+          if (!firstSeen.has(r.user_id)) firstSeen.set(r.user_id, r.created_at);
+        }
+        for (const uid of uniq) {
+          const first = firstSeen.get(uid);
+          if (first && new Date(first) >= weekAgo) newCustomers++;
+          else returningCustomers++;
+        }
+      }
+
+      // Low stock (products with pause reason "estoque" or inventory tie-in)
+      supabase
+        .from("inventory_items")
+        .select("id,current_qty,min_qty", { count: "exact", head: false })
+        .then(({ data }) => {
+          if (cancelled) return;
+          const low = ((data ?? []) as any[]).filter((r) => Number(r.current_qty ?? 0) <= Number(r.min_qty ?? 0)).length;
+          setLowStockCount(low);
+        });
+
+      // Pending reviews
+      supabase
+        .from("reviews")
+        .select("id", { count: "exact", head: true })
+        .eq("published", false)
+        .then(({ count }) => {
+          if (cancelled) return;
+          setPendingReviewsCount(count ?? 0);
+        });
 
       setStats({
         todayCount: today.length,
         todayRevenue,
+        yesterdayRevenue,
+        yesterdayCount: yesterday.length,
         weekCount: week.length,
         weekRevenue,
+        prevWeekRevenue,
         monthRevenue,
         pendingCount: pending.length,
         preparingCount: preparing.length,
-        avgTicket: week.length ? weekRevenue / week.length : 0,
+        avgTicket,
+        prevAvgTicket,
         uniqueCustomers,
+        newCustomers,
+        returningCustomers,
+        canceledCount: canceledMonth.length,
+        cancelRate: list.length ? (canceledMonth.length / list.length) * 100 : 0,
+        avgPrepMin: prepN ? prepSum / prepN : 0,
+        avgDeliverMin: delivN ? delivSum / delivN : 0,
+        daily,
+        hourly,
+        paymentBreakdown,
+        modeBreakdown,
+        categoryBreakdown,
         topProducts,
         recent: list.slice(0, 6).map((o) => ({
           id: o.id,
@@ -343,15 +521,27 @@ function DashboardTab() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [categories]);
 
   const activeProducts = products.filter((p) => p.active).length;
   const pausedProducts = products.filter((p) => isProductPaused(p)).length;
 
   const fmt = (n: number) =>
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const pct = (curr: number, prev: number) => {
+    if (!prev) return curr ? 100 : 0;
+    return ((curr - prev) / prev) * 100;
+  };
   const now = new Date();
   const barlow = { fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" } as const;
+
+  const dayDelta = pct(stats?.todayRevenue ?? 0, stats?.yesterdayRevenue ?? 0);
+  const weekDelta = pct(stats?.weekRevenue ?? 0, stats?.prevWeekRevenue ?? 0);
+  const ticketDelta = pct(stats?.avgTicket ?? 0, stats?.prevAvgTicket ?? 0);
+  const maxDaily = Math.max(1, ...(stats?.daily.map((d) => d.revenue) ?? [1]));
+  const maxHourly = Math.max(1, ...(stats?.hourly ?? [1]));
+  const totalPaymentCount = (stats?.paymentBreakdown ?? []).reduce((s, p) => s + p.count, 0) || 1;
+  const totalModeCount = (stats?.modeBreakdown ?? []).reduce((s, p) => s + p.count, 0) || 1;
 
   return (
     <div className="space-y-8">
@@ -390,17 +580,19 @@ function DashboardTab() {
             <BigKpi
               label="Faturamento hoje"
               value={fmt(stats?.todayRevenue ?? 0)}
-              sub={`${stats?.todayCount ?? 0} pedidos`}
+              sub={`${stats?.todayCount ?? 0} pedidos · ontem ${fmt(stats?.yesterdayRevenue ?? 0)}`}
               icon={Wallet}
               accent="text-neon-cyan"
               glow="shadow-[0_0_30px_-8px_var(--neon-cyan)]"
+              delta={dayDelta}
             />
             <BigKpi
               label="Últimos 7 dias"
               value={fmt(stats?.weekRevenue ?? 0)}
-              sub={`${stats?.weekCount ?? 0} pedidos`}
+              sub={`${stats?.weekCount ?? 0} pedidos · 7d anteriores ${fmt(stats?.prevWeekRevenue ?? 0)}`}
               icon={ShoppingBag}
               accent="text-neon-yellow"
+              delta={weekDelta}
             />
             <BigKpi
               label="Ticket médio 7d"
@@ -408,11 +600,12 @@ function DashboardTab() {
               sub="por pedido"
               icon={Receipt}
               accent="text-neon-pink"
+              delta={ticketDelta}
             />
             <BigKpi
               label="Clientes 7d"
               value={String(stats?.uniqueCustomers ?? 0)}
-              sub={fmt(stats?.monthRevenue ?? 0) + " · 30d"}
+              sub={`${stats?.newCustomers ?? 0} novos · ${stats?.returningCustomers ?? 0} recorrentes`}
               icon={Users}
               accent="text-white"
             />
@@ -424,6 +617,111 @@ function DashboardTab() {
             <MiniStat icon={ClipboardList} label="Em preparo" value={stats?.preparingCount ?? 0} accent="text-cyan-300" to="/rush" />
             <MiniStat icon={Package} label="Produtos ativos" value={`${activeProducts}/${products.length}`} accent="text-emerald-300" to="/admin" tab="products" />
             <MiniStat icon={Pause} label="Pausados" value={pausedProducts} accent="text-amber-300" to="/admin" tab="products" />
+          </section>
+
+          {/* Performance summary strip */}
+          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <MiniStat icon={Timer} label="Preparo médio" value={`${Math.round(stats?.avgPrepMin ?? 0)} min`} accent="text-neon-cyan" to="/sla" />
+            <MiniStat icon={Truck} label="Entrega média" value={`${Math.round(stats?.avgDeliverMin ?? 0)} min`} accent="text-neon-pink" to="/entregas" />
+            <MiniStat icon={Percent} label="Cancelamento 30d" value={`${(stats?.cancelRate ?? 0).toFixed(1)}%`} accent="text-red-300" to="/historico-pedidos" />
+            <MiniStat icon={Boxes} label="Estoque baixo" value={lowStockCount ?? 0} accent="text-amber-300" to="/estoque" />
+          </section>
+
+          {/* 14-day revenue chart */}
+          <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-neon-cyan" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">Faturamento · 14 dias</h2>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-white/40">
+                Pico {fmt(maxDaily)}
+              </span>
+            </div>
+            <div className="flex items-end gap-1.5 h-40">
+              {stats?.daily.map((d, i) => {
+                const h = Math.max(4, (d.revenue / maxDaily) * 100);
+                const isToday = i === stats.daily.length - 1;
+                return (
+                  <div key={i} className="group relative flex flex-1 flex-col items-center justify-end">
+                    <div
+                      className={cn(
+                        "w-full rounded-t-md transition-all",
+                        isToday
+                          ? "bg-gradient-to-t from-neon-pink to-neon-yellow"
+                          : "bg-gradient-to-t from-neon-cyan/60 to-neon-cyan/20 group-hover:from-neon-cyan group-hover:to-neon-cyan/40",
+                      )}
+                      style={{ height: `${h}%` }}
+                    />
+                    <div className="pointer-events-none absolute -top-8 z-10 whitespace-nowrap rounded-md bg-black/90 px-2 py-1 text-[10px] font-bold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                      {d.date} · {fmt(d.revenue)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex justify-between text-[9px] uppercase tracking-widest text-white/30">
+              <span>{stats?.daily[0]?.date}</span>
+              <span>Hoje</span>
+            </div>
+          </section>
+
+          {/* Hourly heatmap */}
+          <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-neon-yellow" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">Pedidos por horário · 7 dias</h2>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-white/40">
+                Pico {stats?.hourly.indexOf(maxHourly)}h ({maxHourly})
+              </span>
+            </div>
+            <div className="grid grid-cols-24 gap-1" style={{ gridTemplateColumns: "repeat(24, minmax(0,1fr))" }}>
+              {stats?.hourly.map((v, h) => {
+                const intensity = v / maxHourly;
+                return (
+                  <div key={h} className="group relative">
+                    <div
+                      className="aspect-square rounded"
+                      style={{
+                        background: intensity === 0
+                          ? "rgba(255,255,255,0.05)"
+                          : `color-mix(in oklab, var(--neon-pink) ${intensity * 100}%, rgba(255,255,255,0.05))`,
+                      }}
+                    />
+                    <div className="mt-1 text-center text-[9px] font-bold tabular-nums text-white/40">
+                      {h}
+                    </div>
+                    {v > 0 && (
+                      <div className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/90 px-2 py-1 text-[10px] font-bold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                        {h}h · {v} pedidos
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Payment + Mode breakdown */}
+          <section className="grid gap-6 lg:grid-cols-2">
+            <BreakdownCard
+              title="Método de pagamento · 7d"
+              icon={CreditCard}
+              accent="text-neon-cyan"
+              items={stats?.paymentBreakdown ?? []}
+              total={totalPaymentCount}
+              fmt={fmt}
+            />
+            <BreakdownCard
+              title="Modo de pedido · 7d"
+              icon={Store}
+              accent="text-neon-yellow"
+              items={stats?.modeBreakdown ?? []}
+              total={totalModeCount}
+              fmt={fmt}
+            />
           </section>
 
           {/* Two columns: top products + recent orders */}
@@ -441,9 +739,7 @@ function DashboardTab() {
                 <ul className="space-y-3">
                   {stats!.topProducts.map((p, i) => {
                     const max = stats!.topProducts[0].qty;
-                    const pct = Math.max(6, (p.qty / max) * 100);
-                    // Medalha: 1º ouro (neon-yellow), 2º prata (oklch cool), 3º bronze (oklch warm),
-                    // demais em neutro legível. Uma única linguagem de cor semântica.
+                    const pctBar = Math.max(6, (p.qty / max) * 100);
                     const medal =
                       i === 0
                         ? "text-neon-yellow"
@@ -468,7 +764,7 @@ function DashboardTab() {
                         <div className="h-1.5 overflow-hidden rounded-full bg-black/40">
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-yellow to-neon-cyan"
-                            style={{ width: `${pct}%` }}
+                            style={{ width: `${pctBar}%` }}
                           />
                         </div>
                       </li>
@@ -519,6 +815,86 @@ function DashboardTab() {
             </div>
           </section>
 
+          {/* Category performance + alerts */}
+          <section className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <PieChart className="h-4 w-4 text-neon-pink" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">
+                  Categorias por faturamento · 7 dias
+                </h2>
+              </div>
+              {(stats?.categoryBreakdown?.length ?? 0) === 0 ? (
+                <p className="py-8 text-center text-xs text-white/55">Sem dados de categoria ainda.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {stats!.categoryBreakdown.map((c) => {
+                    const max = stats!.categoryBreakdown[0].revenue;
+                    const w = Math.max(6, (c.revenue / max) * 100);
+                    return (
+                      <li key={c.name} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="min-w-0 truncate font-semibold text-white/90">{c.name}</span>
+                          <span className="shrink-0 tabular-nums font-black text-white/80" style={barlow}>
+                            {fmt(c.revenue)} · {c.qty}un
+                          </span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-black/40">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-neon-cyan via-neon-pink to-neon-yellow"
+                            style={{ width: `${w}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-300" />
+                <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">
+                  Requer atenção
+                </h2>
+              </div>
+              <ul className="space-y-2">
+                <AlertRow
+                  label="Pedidos aguardando pagto"
+                  value={stats?.pendingCount ?? 0}
+                  to="/rush"
+                  tone={(stats?.pendingCount ?? 0) > 0 ? "warn" : "ok"}
+                />
+                <AlertRow
+                  label="Itens de estoque baixo"
+                  value={lowStockCount ?? 0}
+                  to="/estoque"
+                  tone={(lowStockCount ?? 0) > 0 ? "warn" : "ok"}
+                />
+                <AlertRow
+                  label="Avaliações pendentes"
+                  value={pendingReviewsCount ?? 0}
+                  to="/avaliacoes"
+                  tone={(pendingReviewsCount ?? 0) > 0 ? "warn" : "ok"}
+                />
+                <AlertRow
+                  label="Produtos pausados"
+                  value={pausedProducts}
+                  to="/admin"
+                  tab="products"
+                  tone={pausedProducts > 0 ? "warn" : "ok"}
+                />
+                <AlertRow
+                  label="Cancelamentos 30d"
+                  value={stats?.canceledCount ?? 0}
+                  to="/historico-pedidos"
+                  tone={(stats?.cancelRate ?? 0) > 5 ? "danger" : "ok"}
+                />
+              </ul>
+            </div>
+          </section>
+
           {/* Quick actions */}
           <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
             <div className="mb-4 flex items-center justify-between">
@@ -544,6 +920,101 @@ function DashboardTab() {
         </>
       )}
     </div>
+  );
+}
+
+function BreakdownCard({
+  title,
+  icon: Icon,
+  accent,
+  items,
+  total,
+  fmt,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: string;
+  items: { key: string; label: string; count: number; revenue: number }[];
+  total: number;
+  fmt: (n: number) => string;
+}) {
+  const barlow = { fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" } as const;
+  const palette = ["from-neon-pink to-neon-yellow", "from-neon-cyan to-neon-pink", "from-neon-yellow to-neon-cyan", "from-emerald-400 to-neon-cyan", "from-amber-400 to-neon-pink"];
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <Icon className={cn("h-4 w-4", accent)} />
+        <h2 className="text-sm font-bold uppercase tracking-wider text-white/80">{title}</h2>
+      </div>
+      {items.length === 0 ? (
+        <p className="py-6 text-center text-xs text-white/55">Sem dados ainda.</p>
+      ) : (
+        <ul className="space-y-2.5">
+          {items.map((it, i) => {
+            const share = (it.count / total) * 100;
+            return (
+              <li key={it.key} className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-white/90">{it.label}</span>
+                  <span className="tabular-nums text-white/60" style={barlow}>
+                    {it.count} · {fmt(it.revenue)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40">
+                    <div
+                      className={cn("h-full rounded-full bg-gradient-to-r", palette[i % palette.length])}
+                      style={{ width: `${Math.max(4, share)}%` }}
+                    />
+                  </div>
+                  <span className="w-10 shrink-0 text-right text-[10px] font-bold tabular-nums text-white/50">
+                    {share.toFixed(0)}%
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function AlertRow({
+  label,
+  value,
+  to,
+  tab,
+  tone,
+}: {
+  label: string;
+  value: number;
+  to: string;
+  tab?: string;
+  tone: "ok" | "warn" | "danger";
+}) {
+  const toneCls = {
+    ok: "text-emerald-300 border-emerald-400/20 bg-emerald-500/5",
+    warn: "text-amber-300 border-amber-400/30 bg-amber-500/10",
+    danger: "text-red-300 border-red-400/30 bg-red-500/10",
+  }[tone];
+  return (
+    <Link
+      to={to}
+      search={tab ? ({ tab } as never) : undefined}
+      className={cn(
+        "flex items-center justify-between rounded-2xl border px-3 py-2.5 transition hover:brightness-110",
+        toneCls,
+      )}
+    >
+      <span className="text-xs font-semibold text-white/90">{label}</span>
+      <span
+        className="text-lg font-black tabular-nums"
+        style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+      >
+        {value}
+      </span>
+    </Link>
   );
 }
 
