@@ -151,19 +151,8 @@ const groups: NavGroup[] = [
       { to: "/marketing-winback", label: "Reativação de clientes", icon: HeartHandshake },
     ],
   },
-  {
-    id: "ia",
-    label: "IA & Insights",
-    items: [
-      { to: "/copiloto", label: "Copiloto (IA)", icon: Bot },
-      { to: "/insights-diarios", label: "Insights Proativos", icon: Sparkles },
-      { to: "/ai-growth", label: "AI Growth Engine", icon: TrendingUp },
-      { to: "/previsao", label: "Previsão de demanda", icon: BarChart3 },
-      { to: "/pre-preparo", label: "Pré-preparo IA", icon: ChefHat },
-      { to: "/analise-concorrentes", label: "Análise concorrentes", icon: ScanSearch },
-      { to: "/whatsapp-ia", label: "IA no WhatsApp", icon: Bot },
-    ],
-  },
+  // Grupo "IA & Insights" temporariamente oculto do menu (rotas mantidas ativas).
+
   {
     id: "financeiro",
     label: "Financeiro",
