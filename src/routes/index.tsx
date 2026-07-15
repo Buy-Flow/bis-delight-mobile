@@ -243,7 +243,7 @@ function Content() {
 
   return (
       <div
-        className="relative mx-auto min-h-screen w-full max-w-[520px] overflow-hidden lg:overflow-visible"
+        className="relative mx-auto min-h-screen w-full max-w-[520px] overflow-hidden lg:max-w-[1240px] lg:overflow-visible lg:px-6 xl:px-10"
         style={{
           background:
             "radial-gradient(140% 900px at 50% 0%, oklch(0.24 0.15 305 / 0.92), transparent 68%), radial-gradient(120% 760px at 50% 34%, oklch(0.22 0.14 305 / 0.58), transparent 72%), linear-gradient(180deg, oklch(0.11 0.08 305) 0%, oklch(0.16 0.11 305) 28%, oklch(0.14 0.10 305) 58%, oklch(0.10 0.07 305) 100%)",
