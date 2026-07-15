@@ -1689,13 +1689,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 <div className="grid grid-cols-2 gap-2">
                   <div className="col-span-2">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF do titular *</label>
-                    <input
-                      value={formatCpf(cpf)}
-                      onChange={(e) => setCpf(e.target.value)}
-                      inputMode="numeric"
-                      placeholder="000.000.000-00"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
+                    {renderCpfInput("focus:border-neon-pink/60")}
                   </div>
                   {!(savedCard && useSavedCard) && (
                     <>
