@@ -107,8 +107,10 @@ function AccountPage() {
           "radial-gradient(120% 90% at 50% 0%, oklch(0.42 0.22 320) 0%, oklch(0.20 0.16 305) 45%, oklch(0.08 0.06 300) 100%)",
       }}
     >
+      <TopBar />
       {/* Cart-style sticky header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-[oklch(0.20_0.16_305)] via-[oklch(0.20_0.16_305)]/80 to-transparent pb-4 backdrop-blur-xl">
+
         <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-3 lg:max-w-4xl">
           {tab === "pedidos" ? (
             <button
