@@ -141,6 +141,13 @@ function TablesPage() {
   const [tab, setTab] = useState<Tab>("salao");
   const [query, setQuery] = useState("");
   const [zoneFilter, setZoneFilter] = useState<string>("todas");
+  const [waiterFilter, setWaiterFilter] = useState<string>("todos");
+  // Re-render timer for aging halos + labels
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(iv);
+  }, []);
   const [selected, setSelected] = useState<RestaurantTable | null>(null);
   const [editing, setEditing] = useState<RestaurantTable | "new" | null>(null);
   const [managingZones, setManagingZones] = useState(false);
