@@ -493,19 +493,20 @@ function RushPage() {
     if (o.status === "saiu_para_entrega") return setStatus(o, "entregue");
   };
 
-  const toggleStore = () => {
+  const toggleStore = async () => {
     if (!settings) return;
     const next = settings.openOverride === "closed" ? "auto" : "closed";
-    updateSettings.mutate(
-      { ...settings, openOverride: next },
-      {
-        onSuccess: () => {
-          toast[next === "closed" ? "warning" : "success"](
-            next === "closed" ? "Novos pedidos pausados." : "Loja aceitando pedidos.",
-          );
-        },
-        onError: (e: Error) => toast.error("Erro: " + e.message),
-      },
+    const { error } = await supabase
+      .from("site_settings")
+      .update({ open_override: next })
+      .eq("id", 1);
+    if (error) {
+      toast.error("Erro: " + error.message);
+      return;
+    }
+    await qc.invalidateQueries({ queryKey: ["menu"] });
+    toast[next === "closed" ? "warning" : "success"](
+      next === "closed" ? "Novos pedidos pausados." : "Loja aceitando pedidos.",
     );
   };
 
