@@ -494,20 +494,63 @@ function Content() {
 
 
 
-        <div className="grid grid-cols-2 gap-3">
-          {productsLoading && products.length === 0
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div key={`sk-${i}`} className="h-full">
-                  <ProductCardSkeleton delay={i * 80} />
-                </div>
-              ))
-            : visibleProducts.map((p) => (
-                <div key={p.id} className="h-full">
-                  <ProductCard product={p} onOpen={openProduct} />
-                </div>
-              ))}
-        </div>
+        {productsLoading && products.length === 0 ? (
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={`sk-${i}`} className="h-full">
+                <ProductCardSkeleton delay={i * 80} />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div
+            className="mx-auto flex max-w-sm flex-col items-center gap-3 rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-10 text-center"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="grid h-14 w-14 place-items-center rounded-full bg-neon-cyan/15 text-neon-cyan">
+              <Search className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <div className="font-display text-lg font-black text-white">
+              {query.trim() ? "Nada encontrado" : "Categoria vazia por enquanto"}
+            </div>
+            <p className="max-w-[260px] text-sm text-white/60">
+              {query.trim()
+                ? <>Nenhum item bate com <span className="font-semibold text-neon-yellow">"{query}"</span>. Tente outro sabor ou limpe a busca.</>
+                : "Ainda não temos itens ativos nesta categoria. Explore o cardápio completo."}
+            </p>
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+              {query.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="rounded-full bg-neon-pink px-4 py-2 text-[12px] font-extrabold uppercase tracking-wider text-white glow-pink active:scale-95"
+                >
+                  Limpar busca
+                </button>
+              )}
+              {activeCat !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => setActiveCat("all")}
+                  className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[12px] font-extrabold uppercase tracking-wider text-white active:scale-95"
+                >
+                  Ver tudo
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {visibleProducts.map((p) => (
+              <div key={p.id} className="h-full">
+                <ProductCard product={p} onOpen={openProduct} />
+              </div>
+            ))}
+          </div>
+        )}
         </section>
+
 
 
 
