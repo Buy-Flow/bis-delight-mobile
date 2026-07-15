@@ -16,7 +16,12 @@ type OrderRow = {
   canceled_at: string | null;
   customer_name: string | null;
   total: number | null;
+  payment_method: string | null;
 };
+
+function isOnlinePayment(method: string | null | undefined): boolean {
+  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+}
 
 function money(v: number | null | undefined): string {
   if (typeof v !== "number") return "";
@@ -42,10 +47,11 @@ export function useAdminNotificationsListener() {
         (payload) => {
           const row = payload.new as OrderRow;
           if (!row?.id) return;
+          if (row.status !== "pago" && isOnlinePayment(row.payment_method)) return;
           pushAdminNotif({
-            kind: "order_new",
-            refId: `order_new:${row.id}`,
-            title: `Novo pedido · ${shortOrder(row.id)}`,
+            kind: row.status === "pago" ? "order_paid" : "order_new",
+            refId: `${row.status === "pago" ? "order_paid" : "order_new"}:${row.id}`,
+            title: `${row.status === "pago" ? "Pagamento confirmado" : "Novo pedido"} · ${shortOrder(row.id)}`,
             description: `${row.customer_name ?? "Cliente"} · ${money(row.total)}`,
             href: `/rush?order=${row.id}`,
           });
