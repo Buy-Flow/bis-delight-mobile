@@ -377,7 +377,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     .filter((g) => g.items.length > 0);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     navigate({ to: "/auth" });
   };
 
