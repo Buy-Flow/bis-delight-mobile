@@ -4,7 +4,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+// slider: usamos input[type=range] nativo (não há shadcn slider no projeto)
 import { toast } from "sonner";
 import {
   DEFAULT_ADMIN_THEME,
@@ -347,12 +347,14 @@ function PersonalizarPainelPage() {
                       {theme.radius}px
                     </span>
                   </div>
-                  <Slider
-                    value={[theme.radius]}
+                  <input
+                    type="range"
                     min={0}
                     max={28}
                     step={1}
-                    onValueChange={(v) => patch("radius", v[0]!)}
+                    value={theme.radius}
+                    onChange={(e) => patch("radius", Number(e.target.value))}
+                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-primary"
                   />
                   <div className="mt-2 flex justify-between text-[10px] text-white/40">
                     <span>Reto</span>
@@ -368,12 +370,14 @@ function PersonalizarPainelPage() {
                       {theme.sidebarWidth}px
                     </span>
                   </div>
-                  <Slider
-                    value={[theme.sidebarWidth]}
+                  <input
+                    type="range"
                     min={200}
                     max={320}
                     step={4}
-                    onValueChange={(v) => patch("sidebarWidth", v[0]!)}
+                    value={theme.sidebarWidth}
+                    onChange={(e) => patch("sidebarWidth", Number(e.target.value))}
+                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-primary"
                   />
                   <div className="mt-2 flex justify-between text-[10px] text-white/40">
                     <span>Compacta</span>
