@@ -8,6 +8,7 @@ import { useUserAddresses } from "@/lib/user-addresses";
 import { computeDeliveryPreview } from "@/lib/delivery-preview";
 import { usePersonalizedSuggestions } from "@/lib/use-personalized-suggestions";
 import { FreeDeliveryBar } from "@/components/menu/FreeDeliveryBar";
+import { TopBar } from "@/components/menu/TopBar";
 import { createSharedCart, shareUrlFor, readRecentShares, removeRecentShare, writeShareMode, getSharedCartStatuses, type RecentShare, type SharedCartStatus } from "@/lib/shared-cart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -172,8 +173,10 @@ function CartPage() {
 
   return (
     <div className="min-h-dvh text-white">
+      <TopBar />
       {/* Header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-background via-background/70 to-transparent pb-4 backdrop-blur-xl">
+
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 pr-4">
 
 
