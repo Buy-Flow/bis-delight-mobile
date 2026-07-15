@@ -154,7 +154,7 @@ function AccountPage() {
 
       <div className="mx-auto max-w-md px-4 pb-24 pt-5">
         {tab === "fidelidade" && <LoyaltyPanel />}
-        {tab === "pedidos" && <OrdersPanel />}
+        {tab === "pedidos" && <OrdersPanelPro />}
         {tab === "favoritos" && <FavoritesPanel />}
         {tab === "perfil" && <ProfilePanel />}
         {tab === "notificacoes" && <NotificationsInbox />}
