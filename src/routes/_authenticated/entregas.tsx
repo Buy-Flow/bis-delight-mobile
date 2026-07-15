@@ -1227,28 +1227,87 @@ function CourierDialog({
           </label>
 
           {courier && (
-            <div className="mt-2 rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-2.5">
-              <div className="text-[11px] font-black uppercase text-fuchsia-300">Portal do Motoboy</div>
-              <div className="text-[11px] text-white/60 mt-1">
-                {currentUserId
-                  ? <span className="text-emerald-300">✓ Conta vinculada. Acesso em <code>/motoboy</code>.</span>
-                  : "Vincule uma conta para o motoboy acessar o app dele com GPS ao vivo."}
+            <div className="mt-2 rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-3">
+              <div className="text-[11px] font-black uppercase tracking-wider text-fuchsia-300">
+                Acesso ao portal do motoboy
               </div>
-              {!currentUserId && (
-                <div className="mt-2 flex gap-2">
-                  <input
-                    value={linkEmail}
-                    onChange={(e) => setLinkEmail(e.target.value)}
-                    placeholder="Telefone ou nome cadastrado"
-                    className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs focus:border-neon-pink/50 focus:outline-none"
-                  />
+
+              {currentUserId && !credentials && (
+                <>
+                  <div className="mt-1.5 text-[11px] text-emerald-300">
+                    ✓ Acesso ativo. O motoboy entra em <code className="rounded bg-black/30 px-1">/motoboy</code> com o login que você já entregou a ele.
+                  </div>
                   <button
-                    onClick={() => void linkAccount()}
-                    disabled={linking}
-                    className="rounded-lg bg-fuchsia-500 px-3 text-xs font-bold text-white disabled:opacity-50"
+                    onClick={() => void revokeLogin()}
+                    disabled={revoking}
+                    className="mt-2 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-[11px] font-bold text-rose-300 hover:bg-rose-500/20 disabled:opacity-50"
                   >
-                    {linking ? "..." : "Vincular"}
+                    {revoking ? "Revogando..." : "Revogar acesso"}
                   </button>
+                </>
+              )}
+
+              {!currentUserId && !credentials && (
+                <>
+                  <div className="mt-1.5 text-[11px] text-white/60">
+                    Cria um login e senha na hora — sem enviar email, sem convite. Você entrega os dados pessoalmente ao motoboy.
+                  </div>
+                  <button
+                    onClick={() => void createLogin()}
+                    disabled={creatingLogin}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-fuchsia-500 to-pink-500 px-3 py-1.5 text-[12px] font-bold text-white shadow-md hover:brightness-110 disabled:opacity-50"
+                  >
+                    {creatingLogin ? "Criando..." : "Criar acesso agora"}
+                  </button>
+                </>
+              )}
+
+              {credentials && (
+                <div className="mt-2 space-y-2 rounded-lg border border-emerald-400/30 bg-emerald-500/5 p-2.5">
+                  <div className="text-[10px] font-black uppercase text-emerald-300">
+                    ⚠ Anote agora — não será mostrado de novo
+                  </div>
+                  <div className="space-y-1.5">
+                    <div>
+                      <div className="text-[9px] uppercase text-white/50">Login</div>
+                      <div className="flex items-center gap-1.5">
+                        <code className="flex-1 truncate rounded bg-black/40 px-2 py-1 font-mono text-[11px] text-white">
+                          {credentials.email}
+                        </code>
+                        <button
+                          onClick={() => void copy(credentials.email, "Login")}
+                          className="rounded bg-white/10 px-2 py-1 text-[10px] font-bold hover:bg-white/20"
+                        >
+                          Copiar
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] uppercase text-white/50">Senha</div>
+                      <div className="flex items-center gap-1.5">
+                        <code className="flex-1 truncate rounded bg-black/40 px-2 py-1 font-mono text-[11px] text-white">
+                          {credentials.password}
+                        </code>
+                        <button
+                          onClick={() => void copy(credentials.password, "Senha")}
+                          className="rounded bg-white/10 px-2 py-1 text-[10px] font-bold hover:bg-white/20"
+                        >
+                          Copiar
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() =>
+                        void copy(
+                          `Login: ${credentials.email}\nSenha: ${credentials.password}\nAcesse: ${window.location.origin}/motoboy`,
+                          "Credenciais",
+                        )
+                      }
+                      className="w-full rounded-lg bg-emerald-500/20 py-1.5 text-[11px] font-bold text-emerald-200 hover:bg-emerald-500/30"
+                    >
+                      Copiar tudo (para WhatsApp)
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
