@@ -475,7 +475,7 @@ function ConfigTab() {
                   key={d.v}
                   onClick={() => toggleWeekday(d.v)}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                    on ? "bg-primary text-primary-foreground" : "bg-slate-100 text-muted-foreground hover:bg-slate-200"
+                    on ? "bg-primary text-primary-foreground" : "border border-border bg-muted text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {d.label}
@@ -569,7 +569,7 @@ function ConfigTab() {
 
 function Kpi({ label, value, tone }: { label: string; value: string; tone: "purple" | "green" | "blue" | "amber" }) {
   const bg = {
-    purple: "from-purple-500 to-fuchsia-500",
+    purple: "from-primary to-accent",
     green: "from-emerald-500 to-teal-500",
     blue: "from-sky-500 to-blue-500",
     amber: "from-amber-500 to-orange-500",
@@ -599,9 +599,9 @@ function StatusBadge({ status }: { status: string }) {
     sent: { label: "Enviado", className: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30", Icon: CheckCircle2 },
     partial: { label: "Parcial", className: "bg-amber-500/15 text-amber-300 border border-amber-500/30", Icon: AlertTriangle },
     failed: { label: "Falhou", className: "bg-rose-500/15 text-rose-300 border border-rose-500/30", Icon: XCircle },
-    skipped: { label: "Sem envio", className: "bg-slate-100 text-muted-foreground", Icon: Clock },
+    skipped: { label: "Sem envio", className: "bg-muted text-muted-foreground border border-border", Icon: Clock },
   };
-  const c = cfg[status] ?? { label: status, className: "bg-slate-100 text-muted-foreground", Icon: Clock };
+  const c = cfg[status] ?? { label: status, className: "bg-muted text-muted-foreground border border-border", Icon: Clock };
   const I = c.Icon;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${c.className}`}>
