@@ -780,7 +780,7 @@ function FloorPlanView({
   };
 
   const deleteWall = async (id: string) => {
-    const ok = await confirmDialog({ title: "Remover parede?", tone: "danger", confirmLabel: "Remover" });
+    const ok = await confirmDialog({ title: "Remover parede?", message: "Remover este segmento da planta?", tone: "danger", confirmLabel: "Remover" });
     if (!ok) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase.from("floor_plan_walls" as any).delete().eq("id", id) as any);
