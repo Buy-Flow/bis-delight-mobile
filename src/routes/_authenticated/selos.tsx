@@ -6,8 +6,9 @@ import { Plus, Save, Trash2, X, GripVertical, EyeOff, Eye } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useProductBadges, badgeInkFor, type ProductBadge } from "@/lib/product-badges";
-import { confirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmDialog } from "@/lib/confirm";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Tag } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/selos")({
   component: SelosPage,
