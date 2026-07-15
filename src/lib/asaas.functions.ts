@@ -255,7 +255,7 @@ export const getAsaasPaymentStatus = createServerFn({ method: "GET" })
         const { getPayment, mapAsaasStatusToOrder } = await import("@/lib/asaas.server");
         const live = await getPayment(order.asaas_payment_id);
         const { paid, canceled } = mapAsaasStatusToOrder(live.status);
-        const patch: Record<string, unknown> = { asaas_status: live.status };
+        const patch: { asaas_status: string; status?: string; paid_at?: string } = { asaas_status: live.status };
         if (paid && order.status !== "pago") {
           patch.status = "pago";
           patch.paid_at = new Date().toISOString();
