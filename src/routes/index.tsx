@@ -291,15 +291,17 @@ function Content() {
       )}
 
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
-      
-      <Hero onScrollMenu={scrollToFeitoComAmor} />
-      <StoreClosedBanner />
-      <UrgencyBanner />
-      <ActiveOrderCard />
-      <Reveal><Benefits /></Reveal>
-      <BirthdayBanner />
-      <Reveal><LoyaltyProgress /></Reveal>
-      <PushOptInCard />
+
+      <div className="lg:mx-auto lg:max-w-[600px]">
+        <Hero onScrollMenu={scrollToFeitoComAmor} />
+        <StoreClosedBanner />
+        <UrgencyBanner />
+        <ActiveOrderCard />
+        <Reveal><Benefits /></Reveal>
+        <BirthdayBanner />
+        <Reveal><LoyaltyProgress /></Reveal>
+        <PushOptInCard />
+      </div>
       
       
 
