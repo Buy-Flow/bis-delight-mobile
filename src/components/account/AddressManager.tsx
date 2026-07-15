@@ -217,6 +217,7 @@ function AddressForm({
 }) {
   const parsed = parseAddress(initial?.address ?? "");
   const [label, setLabel] = useState(initial?.label ?? "Casa");
+  const [recipientName, setRecipientName] = useState(initial?.recipient_name ?? "");
   const [street, setStreet] = useState(parsed.street);
   const [number, setNumber] = useState(parsed.number);
   const [neighborhood, setNeighborhood] = useState(parsed.neighborhood);
