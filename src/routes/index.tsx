@@ -508,8 +508,8 @@ function Content() {
 
 
         {productsLoading && products.length === 0 ? (
-          <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
               <div key={`sk-${i}`} className="h-full">
                 <ProductCardSkeleton delay={i * 80} />
               </div>
