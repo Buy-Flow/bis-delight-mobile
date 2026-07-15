@@ -148,7 +148,6 @@ function PDVPage() {
   const [showParked, setShowParked] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
-  const customerBoxRef = useRef<HTMLDivElement>(null);
 
   // Persist parked sales
   useEffect(() => {
