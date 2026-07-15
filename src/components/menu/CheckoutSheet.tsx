@@ -1651,13 +1651,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CPF para pagamento *</label>
-                  <input
-                    value={formatCpf(cpf)}
-                    onChange={(e) => setCpf(e.target.value)}
-                    inputMode="numeric"
-                    placeholder="000.000.000-00"
-                    className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-cyan/60"
-                  />
+                  {renderCpfInput("focus:border-neon-cyan/60")}
                 </div>
               </div>
             )}
