@@ -1362,6 +1362,13 @@ function ProductEditor({
                     label={p.hero ? "Aparece nos destaques" : "Não aparece"}
                   />
                 </Field>
+                <Field label="Novidade">
+                  <Toggle
+                    checked={p.badge === "Novidade"}
+                    onChange={(v) => setField("badge", (v ? "Novidade" : undefined) as Product["badge"])}
+                    label={p.badge === "Novidade" ? "Marcado como novidade" : "Não marcado"}
+                  />
+                </Field>
               </div>
             </div>
           )}
