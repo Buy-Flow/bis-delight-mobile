@@ -656,6 +656,7 @@ function Field({
   placeholder,
   inputMode,
   type,
+  error,
 }: {
   label: string;
   value: string;
@@ -663,6 +664,7 @@ function Field({
   placeholder?: string;
   inputMode?: "text" | "numeric" | "email";
   type?: string;
+  error?: string;
 }) {
   return (
     <div>
@@ -673,8 +675,13 @@ function Field({
         placeholder={placeholder}
         inputMode={inputMode}
         type={type}
-        className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+        aria-invalid={!!error}
+        className={cn(
+          "w-full rounded-2xl border bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none",
+          error ? "border-red-400/60 focus:border-red-400" : "border-white/10 focus:border-neon-pink/60",
+        )}
       />
+      {error && <div className="mt-1 text-[11px] font-semibold text-red-300">{error}</div>}
     </div>
   );
 }
