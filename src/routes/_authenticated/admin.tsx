@@ -911,7 +911,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               </div>
 
               {/* Produto */}
-              <button onClick={() => setEditing(p)} className="flex min-w-0 items-center gap-3 text-left">
+              <button onClick={() => openEditor(p)} className="flex min-w-0 items-center gap-3 text-left">
                 <div className="relative h-11 w-11 md:h-12 md:w-12 shrink-0 overflow-hidden rounded-xl bg-black/40 ring-1 ring-white/5">
                   {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
                   {paused && (
