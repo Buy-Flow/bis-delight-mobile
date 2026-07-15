@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { confirmDialog } from "@/lib/confirm";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -22,6 +22,11 @@ import {
   UserCheck,
   Receipt,
   Coffee,
+  LayoutGrid,
+  Bell,
+  Split,
+  Move,
+  TrendingUp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -85,7 +90,7 @@ type OrderItem = {
 };
 
 
-type Tab = "salao" | "lista" | "config";
+type Tab = "salao" | "planta" | "lista" | "config";
 
 const BRL = (v: number) =>
   (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -116,6 +121,18 @@ const timeAgo = (d: string | null) => {
   return `${h}h${m % 60 ? ` ${m % 60}min` : ""}`;
 };
 
+// Aging tone based on how long the table has been open (min)
+const agingRing = (openedAt: string | null): string => {
+  if (!openedAt) return "";
+  const min = (Date.now() - new Date(openedAt).getTime()) / 60000;
+  if (min < 30) return "ring-2 ring-emerald-400/40";
+  if (min < 60) return "ring-2 ring-amber-400/60 animate-[pulse_3s_ease-in-out_infinite]";
+  return "ring-2 ring-rose-400/70 animate-[pulse_1.6s_ease-in-out_infinite]";
+};
+
+const ASSIST_PREFIX = "[!ASSIST]";
+const isAssistRequested = (notes: string | null) => !!notes && notes.startsWith(ASSIST_PREFIX);
+
 function TablesPage() {
   const [tables, setTables] = useState<RestaurantTable[]>([]);
   const [waiters, setWaiters] = useState<Waiter[]>([]);
@@ -124,6 +141,13 @@ function TablesPage() {
   const [tab, setTab] = useState<Tab>("salao");
   const [query, setQuery] = useState("");
   const [zoneFilter, setZoneFilter] = useState<string>("todas");
+  const [waiterFilter, setWaiterFilter] = useState<string>("todos");
+  // Re-render timer for aging halos + labels
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(iv);
+  }, []);
   const [selected, setSelected] = useState<RestaurantTable | null>(null);
   const [editing, setEditing] = useState<RestaurantTable | "new" | null>(null);
   const [managingZones, setManagingZones] = useState(false);
@@ -183,6 +207,7 @@ function TablesPage() {
   const filteredTables = useMemo(() => {
     return tables
       .filter((t) => zoneFilter === "todas" || t.zone === zoneFilter)
+      .filter((t) => waiterFilter === "todos" || t.waiter_id === waiterFilter)
       .filter((t) => {
         if (!query) return true;
         const q = query.toLowerCase();
@@ -192,7 +217,7 @@ function TablesPage() {
           (t.zone || "").toLowerCase().includes(q)
         );
       });
-  }, [tables, query, zoneFilter]);
+  }, [tables, query, zoneFilter, waiterFilter]);
 
   const kpis = useMemo(() => {
     const active = tables;
@@ -290,6 +315,7 @@ function TablesPage() {
           {(
             [
               { id: "salao", label: "Salão", icon: Grid3x3 },
+              { id: "planta", label: "Planta", icon: LayoutGrid },
               { id: "lista", label: "Lista", icon: Utensils, badge: kpis.occ },
               { id: "config", label: "Gerenciar", icon: Pencil },
             ] as { id: Tab; label: string; icon: typeof Grid3x3; badge?: number }[]
@@ -330,49 +356,82 @@ function TablesPage() {
         </section>
 
         {/* Filters */}
-        {(tab === "salao" || tab === "lista") && (
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar mesa, zona..."
-                className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-neon-pink/50 focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center gap-1 overflow-x-auto">
-              {["todas", ...zones].map((z) => (
+        {(tab === "salao" || tab === "lista" || tab === "planta") && (
+          <div className="mb-3 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar mesa, zona..."
+                  className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-neon-pink/50 focus:outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+                {["todas", ...zones].map((z) => (
+                  <button
+                    key={z}
+                    onClick={() => setZoneFilter(z)}
+                    className={cn(
+                      "shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition capitalize",
+                      zoneFilter === z
+                        ? "border-neon-pink/50 bg-neon-pink/20 text-white"
+                        : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+                    )}
+                  >
+                    {z}
+                  </button>
+                ))}
                 <button
-                  key={z}
-                  onClick={() => setZoneFilter(z)}
-                  className={cn(
-                    "shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition capitalize",
-                    zoneFilter === z
-                      ? "border-neon-pink/50 bg-neon-pink/20 text-white"
-                      : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
-                  )}
+                  onClick={() => setManagingZones(true)}
+                  title="Gerenciar zonas"
+                  className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-white/70 transition hover:bg-white/10"
                 >
-                  {z}
+                  Zonas
                 </button>
-              ))}
-              <button
-                onClick={() => setManagingZones(true)}
-                title="Gerenciar zonas"
-                className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-white/70 transition hover:bg-white/10"
-              >
-                Gerenciar zonas
-              </button>
+              </div>
             </div>
+            {waiters.length > 0 && (
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none -mx-1 px-1">
+                <span className="shrink-0 pl-1 pr-1 text-[10px] font-black uppercase tracking-widest text-white/40">
+                  Garçom
+                </span>
+                {[{ id: "todos", name: "Todos" }, ...waiters].map((w) => (
+                  <button
+                    key={w.id}
+                    onClick={() => setWaiterFilter(w.id)}
+                    className={cn(
+                      "shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold transition",
+                      waiterFilter === w.id
+                        ? "border-cyan-400/50 bg-cyan-400/15 text-cyan-100"
+                        : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
+                    )}
+                  >
+                    {w.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {tab === "salao" && (
           <SalonView
             tables={filteredTables}
+            orders={orders}
             orderByTable={orderByTable}
             waiterById={waiterById}
             onOpen={(t) => setSelected(t)}
+          />
+        )}
+
+        {tab === "planta" && (
+          <FloorPlanView
+            tables={filteredTables}
+            orderByTable={orderByTable}
+            onOpen={(t) => setSelected(t)}
+            onReload={() => void load()}
           />
         )}
 
@@ -438,11 +497,13 @@ function TablesPage() {
 // ---------- Salon Grid ----------
 function SalonView({
   tables,
+  orders,
   orderByTable,
   waiterById,
   onOpen,
 }: {
   tables: RestaurantTable[];
+  orders: OrderLite[];
   orderByTable: Map<string, OrderLite>;
   waiterById: Map<string, Waiter>;
   onOpen: (t: RestaurantTable) => void;
@@ -451,7 +512,7 @@ function SalonView({
     return (
       <div className="rounded-3xl border border-white/10 bg-white/5 p-12 text-center">
         <Grid3x3 className="mx-auto mb-3 h-8 w-8 text-white/30" />
-        <p className="text-sm text-white/60">Nenhuma mesa cadastrada.</p>
+        <p className="text-sm text-white/60">Nenhuma mesa encontrada com os filtros atuais.</p>
       </div>
     );
 
@@ -462,29 +523,47 @@ function SalonView({
     byZone.get(z)!.push(t);
   }
 
+  const revenueByTable = new Map<string, number>();
+  for (const o of orders) if (o.table_id) revenueByTable.set(o.table_id, (revenueByTable.get(o.table_id) || 0) + (o.total || 0));
+
   return (
     <div className="space-y-6">
-      {Array.from(byZone.entries()).map(([zone, list]) => (
+      {Array.from(byZone.entries()).map(([zone, list]) => {
+        const occ = list.filter((t) => t.status === "ocupada").length;
+        const revenue = list.reduce((s, t) => s + (revenueByTable.get(t.id) || 0), 0);
+        return (
         <section key={zone}>
-          <h2 className="mb-2 flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-white/70">
-            <MapPin className="h-3.5 w-3.5" /> {zone}
+          <h2 className="mb-2 flex flex-wrap items-center gap-2 text-[13px] font-black uppercase tracking-wider text-white/70">
+            <MapPin className="h-3.5 w-3.5 shrink-0" /> {zone}
             <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/60">
-              {list.length}
+              {occ}/{list.length}
             </span>
+            {revenue > 0 && (
+              <span className="ml-auto rounded-full bg-fuchsia-500/15 px-2 py-0.5 text-[10px] font-black text-fuchsia-200">
+                {BRL(revenue)}
+              </span>
+            )}
           </h2>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {list.map((t) => {
               const order = orderByTable.get(t.id) || null;
               const waiter = t.waiter_id ? waiterById.get(t.waiter_id) : null;
+              const assist = isAssistRequested(t.notes);
               return (
                 <button
                   key={t.id}
                   onClick={() => onOpen(t)}
                   className={cn(
-                    "relative overflow-hidden rounded-2xl border bg-gradient-to-br p-3 text-left transition hover:scale-[1.02] active:scale-95",
+                    "relative min-h-[132px] overflow-hidden rounded-2xl border bg-gradient-to-br p-3 text-left transition hover:scale-[1.02] active:scale-95",
                     statusTone[t.status],
+                    t.status === "ocupada" && agingRing(t.opened_at),
                   )}
                 >
+                  {assist && (
+                    <span className="absolute right-2 top-2 z-10 grid h-6 w-6 place-items-center rounded-full bg-rose-500 text-white shadow-lg animate-bounce">
+                      <Bell className="h-3 w-3" />
+                    </span>
+                  )}
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-[10px] font-bold uppercase tracking-widest opacity-70">
@@ -538,7 +617,155 @@ function SalonView({
             })}
           </div>
         </section>
-      ))}
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------- Floor Plan (drag & drop) ----------
+function FloorPlanView({
+  tables,
+  orderByTable,
+  onOpen,
+  onReload,
+}: {
+  tables: RestaurantTable[];
+  orderByTable: Map<string, OrderLite>;
+  onOpen: (t: RestaurantTable) => void;
+  onReload: () => void;
+}) {
+  const [editMode, setEditMode] = useState(false);
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+
+  // Sync local positions from DB, distributing tables with no pos in a grid
+  useEffect(() => {
+    const next: Record<string, { x: number; y: number }> = {};
+    const cols = 6;
+    tables.forEach((t, i) => {
+      if (t.pos_x != null && t.pos_y != null) {
+        next[t.id] = { x: t.pos_x, y: t.pos_y };
+      } else {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        next[t.id] = { x: 40 + col * 110, y: 40 + row * 110 };
+      }
+    });
+    setPositions(next);
+  }, [tables]);
+
+  const pointerDown = (e: React.PointerEvent, id: string) => {
+    if (!editMode) return;
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setDragging(id);
+  };
+
+  const pointerMove = (e: React.PointerEvent) => {
+    if (!dragging || !editMode) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width - 96, e.clientX - rect.left - 48));
+    const y = Math.max(0, Math.min(rect.height - 96, e.clientY - rect.top - 48));
+    setPositions((prev) => ({ ...prev, [dragging]: { x, y } }));
+  };
+
+  const pointerUp = async () => {
+    if (!dragging) return;
+    const id = dragging;
+    setDragging(null);
+    const p = positions[id];
+    if (!p) return;
+    const { error } = await supabase
+      .from("restaurant_tables")
+      .update({ pos_x: Math.round(p.x), pos_y: Math.round(p.y) })
+      .eq("id", id);
+    if (error) toast.error("Falha ao salvar posição");
+    else onReload();
+  };
+
+  if (tables.length === 0)
+    return (
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-12 text-center">
+        <LayoutGrid className="mx-auto mb-3 h-8 w-8 text-white/30" />
+        <p className="text-sm text-white/60">Nenhuma mesa para exibir na planta.</p>
+      </div>
+    );
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 text-white/70">
+          <Move className="h-3.5 w-3.5" />
+          {editMode ? "Arraste as mesas para reposicionar" : "Toque em uma mesa para gerenciar"}
+        </div>
+        <button
+          onClick={() => setEditMode((v) => !v)}
+          className={cn(
+            "rounded-full border px-3 py-1 font-black uppercase tracking-wider transition",
+            editMode
+              ? "border-neon-pink/60 bg-neon-pink/25 text-white"
+              : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+          )}
+        >
+          {editMode ? "Concluir" : "Editar planta"}
+        </button>
+      </div>
+      <div
+        ref={canvasRef}
+        onPointerMove={pointerMove}
+        onPointerUp={pointerUp}
+        className={cn(
+          "relative h-[70vh] min-h-[520px] w-full overflow-hidden rounded-3xl border border-white/10",
+          "bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px] bg-[#0d0322]/60",
+        )}
+      >
+        {tables.map((t) => {
+          const p = positions[t.id] || { x: 40, y: 40 };
+          const order = orderByTable.get(t.id) || null;
+          const assist = isAssistRequested(t.notes);
+          return (
+            <div
+              key={t.id}
+              onPointerDown={(e) => pointerDown(e, t.id)}
+              onClick={() => !editMode && !dragging && onOpen(t)}
+              style={{ transform: `translate(${p.x}px, ${p.y}px)` }}
+              className={cn(
+                "absolute left-0 top-0 h-24 w-24 select-none rounded-2xl border bg-gradient-to-br p-2 transition",
+                statusTone[t.status],
+                t.status === "ocupada" && agingRing(t.opened_at),
+                editMode ? "cursor-grab active:cursor-grabbing" : "cursor-pointer hover:scale-[1.03] active:scale-95",
+                dragging === t.id && "z-20 scale-110 shadow-2xl",
+              )}
+            >
+              {assist && (
+                <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-rose-500 text-white shadow-lg animate-bounce">
+                  <Bell className="h-2.5 w-2.5" />
+                </span>
+              )}
+              <div className="text-[9px] font-bold uppercase tracking-widest opacity-70">Mesa</div>
+              <div className="text-2xl font-black leading-none text-white">{t.number}</div>
+              <div className="mt-1 flex items-center gap-1 text-[10px] opacity-80">
+                <Users className="h-2.5 w-2.5" />
+                {t.people_count || 0}/{t.seats}
+              </div>
+              {order && (
+                <div className="mt-0.5 truncate text-[9px] font-black text-white">{BRL(order.total)}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-[10px] text-white/60">
+        <span className="font-black uppercase tracking-widest text-white/50">Legenda</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-400" /> livre / recente</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" /> 30-60 min</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-400" /> +60 min</span>
+        <span className="flex items-center gap-1"><Bell className="h-3 w-3 text-rose-400" /> chamando</span>
+      </div>
     </div>
   );
 }
@@ -942,8 +1169,47 @@ function TableDialog({
                     <span>Total</span>
                     <span>{BRL(total)}</span>
                   </div>
+                  {/* Split by people */}
+                  {total > 0 && (table.people_count || 0) > 1 && (
+                    <div className="mt-2 flex items-center justify-between rounded-lg border border-fuchsia-500/20 bg-fuchsia-500/10 px-2 py-1.5 text-[11px]">
+                      <span className="flex items-center gap-1.5 font-black text-fuchsia-100">
+                        <Split className="h-3 w-3" /> Dividir por {table.people_count}
+                      </span>
+                      <span className="font-black text-white">
+                        {BRL(total / (table.people_count || 1))}<span className="text-white/50"> /pessoa</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Assistance flag */}
+              <button
+                onClick={async () => {
+                  const currentlyOn = isAssistRequested(table.notes);
+                  const newNotes = currentlyOn
+                    ? (table.notes || "").replace(ASSIST_PREFIX, "").trim() || null
+                    : `${ASSIST_PREFIX} ${(table.notes || "").trim()}`.trim();
+                  const { error } = await supabase
+                    .from("restaurant_tables")
+                    .update({ notes: newNotes })
+                    .eq("id", table.id);
+                  if (error) toast.error(error.message);
+                  else {
+                    toast.success(currentlyOn ? "Chamada atendida" : "Sinal de chamada ligado");
+                    onReload();
+                  }
+                }}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-xl border py-2 text-sm font-black transition",
+                  isAssistRequested(table.notes)
+                    ? "border-rose-400/50 bg-rose-500/25 text-white hover:bg-rose-500/35"
+                    : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10",
+                )}
+              >
+                <Bell className="h-4 w-4" />
+                {isAssistRequested(table.notes) ? "Marcar como atendido" : "Cliente chamando"}
+              </button>
 
               {/* Waiter assign */}
               <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
