@@ -251,20 +251,26 @@ function BirthdayAdmin() {
         </nav>
 
         {tab === "config" && (
-          <div className="space-y-4">
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">Programa</h2>
-                  <p className="text-xs text-white/60">Liga/desliga globalmente o brinde de aniversário.</p>
-                </div>
-                <Toggle checked={s.enabled} onChange={(v) => setS({ ...s, enabled: v })} />
-              </div>
-            </section>
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+            {/* Coluna de configurações em sanfona */}
+            <div className="min-w-0 space-y-3">
+              <Section
+                icon={Sparkles}
+                title="Programa"
+                subtitle={s.enabled ? "Ativo — clientes veem o banner no mês" : "Desligado — banner escondido"}
+                defaultOpen
+                right={<Toggle checked={s.enabled} onChange={(v) => setS({ ...s, enabled: v })} />}
+              >
+                <p className="text-xs text-white/60">
+                  Liga/desliga globalmente o brinde de aniversário no app e nos envios automáticos.
+                </p>
+              </Section>
 
-            <section className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 md:grid-cols-2">
-              <div>
-                <h2 className="mb-3 text-lg font-bold text-white">Cupom</h2>
+              <Section
+                icon={Ticket}
+                title="Cupom"
+                subtitle={`${s.discount_type === "percent" ? `${s.discount_value}%` : `R$ ${Number(s.discount_value).toFixed(0)}`} · mín R$ ${Number(s.min_order).toFixed(0)} · ${s.per_user_yearly}x/ano`}
+              >
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -280,39 +286,35 @@ function BirthdayAdmin() {
                     </div>
                     <div>
                       <Label className="text-xs text-white/70">Valor</Label>
-                      <Input
-                        type="number" min={0} step="0.01"
-                        value={s.discount_value}
-                        onChange={(e) => setS({ ...s, discount_value: Number(e.target.value) })}
-                      />
+                      <Input type="number" min={0} step="0.01" value={s.discount_value}
+                        onChange={(e) => setS({ ...s, discount_value: Number(e.target.value) })} />
                     </div>
                   </div>
                   <div>
                     <Label className="text-xs text-white/70">Pedido mínimo (R$)</Label>
-                    <Input
-                      type="number" min={0} step="0.01"
-                      value={s.min_order}
-                      onChange={(e) => setS({ ...s, min_order: Number(e.target.value) })}
-                    />
+                    <Input type="number" min={0} step="0.01" value={s.min_order}
+                      onChange={(e) => setS({ ...s, min_order: Number(e.target.value) })} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label className="text-xs text-white/70">Prefixo do código</Label>
-                      <Input value={s.coupon_prefix} onChange={(e) => setS({ ...s, coupon_prefix: e.target.value.toUpperCase().slice(0, 8) })} />
+                      <Input value={s.coupon_prefix}
+                        onChange={(e) => setS({ ...s, coupon_prefix: e.target.value.toUpperCase().slice(0, 8) })} />
                     </div>
                     <div>
                       <Label className="text-xs text-white/70">Usos por ano/cliente</Label>
-                      <Input
-                        type="number" min={1} max={5}
-                        value={s.per_user_yearly}
-                        onChange={(e) => setS({ ...s, per_user_yearly: Number(e.target.value) })}
-                      />
+                      <Input type="number" min={1} max={5} value={s.per_user_yearly}
+                        onChange={(e) => setS({ ...s, per_user_yearly: Number(e.target.value) })} />
                     </div>
                   </div>
                 </div>
-              </div>
-              <div>
-                <h2 className="mb-3 text-lg font-bold text-white">Validade</h2>
+              </Section>
+
+              <Section
+                icon={CalendarClock}
+                title="Validade"
+                subtitle={s.validity_mode === "month" ? "Até o fim do mês de aniversário" : `${s.validity_days} dias após resgate`}
+              >
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs text-white/70">Modo</Label>
@@ -328,74 +330,104 @@ function BirthdayAdmin() {
                   {s.validity_mode === "days_from_claim" && (
                     <div>
                       <Label className="text-xs text-white/70">Dias de validade</Label>
-                      <Input
-                        type="number" min={1} max={365}
-                        value={s.validity_days}
-                        onChange={(e) => setS({ ...s, validity_days: Number(e.target.value) })}
-                      />
+                      <Input type="number" min={1} max={365} value={s.validity_days}
+                        onChange={(e) => setS({ ...s, validity_days: Number(e.target.value) })} />
                     </div>
                   )}
                 </div>
-              </div>
-            </section>
+              </Section>
 
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-3 text-lg font-bold text-white">Banner no app</h2>
-              <div className="grid gap-3 md:grid-cols-4">
-                <div>
-                  <Label className="text-xs text-white/70">Emoji</Label>
-                  <Input value={s.banner_emoji} onChange={(e) => setS({ ...s, banner_emoji: e.target.value.slice(0, 4) })} />
+              <Section
+                icon={Eye}
+                title="Banner no app"
+                subtitle={s.banner_title || "Você ganhou um brinde!"}
+                defaultOpen
+              >
+                <div className="grid gap-3 md:grid-cols-4">
+                  <div>
+                    <Label className="text-xs text-white/70">Emoji</Label>
+                    <Input value={s.banner_emoji} onChange={(e) => setS({ ...s, banner_emoji: e.target.value.slice(0, 4) })} />
+                  </div>
+                  <div className="md:col-span-3">
+                    <Label className="text-xs text-white/70">Título</Label>
+                    <Input value={s.banner_title} onChange={(e) => setS({ ...s, banner_title: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-4">
+                    <Label className="text-xs text-white/70">Mensagem</Label>
+                    <Input value={s.banner_message} onChange={(e) => setS({ ...s, banner_message: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-4">
+                    <Label className="text-xs text-white/70">Texto do botão</Label>
+                    <Input value={s.banner_cta} onChange={(e) => setS({ ...s, banner_cta: e.target.value })} />
+                  </div>
                 </div>
-                <div className="md:col-span-3">
-                  <Label className="text-xs text-white/70">Título</Label>
-                  <Input value={s.banner_title} onChange={(e) => setS({ ...s, banner_title: e.target.value })} />
-                </div>
-                <div className="md:col-span-4">
-                  <Label className="text-xs text-white/70">Mensagem</Label>
-                  <Input value={s.banner_message} onChange={(e) => setS({ ...s, banner_message: e.target.value })} />
-                </div>
-                <div className="md:col-span-4">
-                  <Label className="text-xs text-white/70">Texto do botão</Label>
-                  <Input value={s.banner_cta} onChange={(e) => setS({ ...s, banner_cta: e.target.value })} />
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">Push automático</h2>
-                  <p className="text-xs text-white/60">Envio via cron diário para quem faz aniversário no dia.</p>
-                </div>
-                <Toggle checked={s.push_auto} onChange={(v) => setS({ ...s, push_auto: v })} />
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <Label className="text-xs text-white/70">Título</Label>
-                  <Input value={s.push_title} onChange={(e) => setS({ ...s, push_title: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs text-white/70">Dias de antecedência</Label>
-                  <Input
-                    type="number" min={0} max={7}
-                    value={s.notify_days_before}
-                    onChange={(e) => setS({ ...s, notify_days_before: Number(e.target.value) })}
+                {/* Preview mobile inline — sempre visível no mobile */}
+                <div className="mt-4 lg:hidden">
+                  <BirthdayBannerPreview
+                    emoji={s.banner_emoji}
+                    title={s.banner_title}
+                    message={s.banner_message}
+                    cta={s.banner_cta}
+                    discountType={s.discount_type}
+                    discountValue={s.discount_value}
+                    minOrder={s.min_order}
                   />
                 </div>
-                <div className="md:col-span-2">
-                  <Label className="text-xs text-white/70">Mensagem</Label>
-                  <Input value={s.push_body} onChange={(e) => setS({ ...s, push_body: e.target.value })} />
-                </div>
-              </div>
-            </section>
+              </Section>
 
-            <div className="sticky bottom-4 flex justify-end">
-              <Button onClick={save} disabled={saving} className="bg-fuchsia-500 hover:bg-fuchsia-600">
-                <Save className="mr-2 h-4 w-4" /> {saving ? "Salvando…" : "Salvar configurações"}
-              </Button>
+              <Section
+                icon={Smartphone}
+                title="Push automático"
+                subtitle={s.push_auto ? `Envio automático · ${s.notify_days_before}d de antecedência` : "Envio manual"}
+                right={<Toggle checked={s.push_auto} onChange={(v) => setS({ ...s, push_auto: v })} />}
+              >
+                <p className="mb-3 text-xs text-white/60">Envio via cron diário para quem faz aniversário no dia.</p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <Label className="text-xs text-white/70">Título</Label>
+                    <Input value={s.push_title} onChange={(e) => setS({ ...s, push_title: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-white/70">Dias de antecedência</Label>
+                    <Input type="number" min={0} max={7} value={s.notify_days_before}
+                      onChange={(e) => setS({ ...s, notify_days_before: Number(e.target.value) })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-xs text-white/70">Mensagem</Label>
+                    <Input value={s.push_body} onChange={(e) => setS({ ...s, push_body: e.target.value })} />
+                  </div>
+                </div>
+                <div className="mt-4 lg:hidden">
+                  <PushNotificationPreview emoji={s.banner_emoji} title={s.push_title} body={s.push_body} />
+                </div>
+              </Section>
+
+              <div className="sticky bottom-4 flex justify-end">
+                <Button onClick={save} disabled={saving} className="bg-fuchsia-500 hover:bg-fuchsia-600">
+                  <Save className="mr-2 h-4 w-4" /> {saving ? "Salvando…" : "Salvar configurações"}
+                </Button>
+              </div>
             </div>
+
+            {/* Preview persistente no desktop */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-4 space-y-4">
+                <BirthdayBannerPreview
+                  emoji={s.banner_emoji}
+                  title={s.banner_title}
+                  message={s.banner_message}
+                  cta={s.banner_cta}
+                  discountType={s.discount_type}
+                  discountValue={s.discount_value}
+                  minOrder={s.min_order}
+                />
+                <PushNotificationPreview emoji={s.banner_emoji} title={s.push_title} body={s.push_body} />
+              </div>
+            </aside>
           </div>
         )}
+
+
 
         {tab === "stats" && stats && (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
