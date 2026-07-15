@@ -306,6 +306,7 @@ function Content() {
         <Reveal><Benefits /></Reveal>
         <BirthdayBanner />
         <Reveal><LoyaltyProgress /></Reveal>
+        <Reveal><VipLeaderboard /></Reveal>
         <PushOptInCard />
       </div>
       
