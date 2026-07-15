@@ -7,6 +7,7 @@ import rewardTrophyAsset from "@/assets/reward-trophy.png.asset.json";
 import { TierBadge, TIER_META, type LoyaltyTier } from "@/components/menu/TierBadge";
 import { RecompensasSkeleton } from "@/components/skeleton";
 import { useLoyaltyTiers } from "@/lib/use-loyalty-tiers";
+import { TopBar } from "@/components/menu/TopBar";
 
 const rewardTrophy = rewardTrophyAsset.url;
 const TIER_ORDER: LoyaltyTier[] = ["bronze", "prata", "ouro"];
