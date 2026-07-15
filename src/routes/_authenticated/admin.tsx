@@ -697,12 +697,14 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
   const upsert = useUpsertProduct();
   const del = useDeleteProduct();
   const [editing, setEditing] = useState<Product | null>(null);
+  const [editingTab, setEditingTab] = useState<EditorTab | undefined>(undefined);
+  const openEditor = (p: Product, tab?: EditorTab) => { setEditingTab(tab); setEditing(p); };
 
   useEffect(() => {
     if (!initialEditId || !products.length) return;
     const p = products.find((p) => p.id === initialEditId);
     if (p) {
-      setEditing(p);
+      openEditor(p);
       navigate({ to: "/admin", search: {}, replace: true });
     }
   }, [initialEditId, products, navigate]);
@@ -909,7 +911,7 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
               </div>
 
               {/* Produto */}
-              <button onClick={() => setEditing(p)} className="flex min-w-0 items-center gap-3 text-left">
+              <button onClick={() => openEditor(p)} className="flex min-w-0 items-center gap-3 text-left">
                 <div className="relative h-11 w-11 md:h-12 md:w-12 shrink-0 overflow-hidden rounded-xl bg-black/40 ring-1 ring-white/5">
                   {p.image ? <img src={p.image} alt="" className="h-full w-full object-cover" /> : null}
                   {paused && (
@@ -989,33 +991,20 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
 
               {/* Ações */}
               <div className="flex shrink-0 items-center justify-end gap-1 md:gap-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      title={paused ? "Gerenciar pausa" : "Pausar temporariamente"}
-                      className={cn(
-                        "grid h-9 w-9 md:h-10 md:w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white",
-                        paused && "border-amber-400/50 bg-amber-500/15 text-amber-200",
-                      )}
-                    >
-                      <Pause className="h-4 w-4" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="end"
-                    className="w-[320px] border-white/10 bg-[oklch(0.14_0.09_305)]/95 p-3 text-white backdrop-blur-xl"
-                  >
-                    <div className="mb-2 text-[13px] font-black">Pausa temporária</div>
-                    <div className="mb-2 text-[11px] text-white/50">
-                      Some do cardápio até a data escolhida. Reativa automaticamente.
-                    </div>
-                    <PauseProductControls product={p} />
-                  </PopoverContent>
-                </Popover>
+                <button
+                  type="button"
+                  title={paused ? "Gerenciar pausa" : "Pausar temporariamente"}
+                  onClick={() => openEditor(p, "pause")}
+                  className={cn(
+                    "grid h-9 w-9 md:h-10 md:w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white",
+                    paused && "border-amber-400/50 bg-amber-500/15 text-amber-200",
+                  )}
+                >
+                  <Pause className="h-4 w-4" />
+                </button>
                 <button
                   title="Editar"
-                  onClick={() => setEditing(p)}
+                  onClick={() => openEditor(p)}
                   className="grid h-9 w-9 md:h-10 md:w-10 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   <Pencil className="h-4 w-4" />
@@ -1053,8 +1042,9 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
       {editing && (
         <ProductEditor
           initial={editing}
+          initialTab={editingTab}
           categories={catList}
-          onClose={() => setEditing(null)}
+          onClose={() => { setEditing(null); setEditingTab(undefined); }}
         />
       )}
     </div>
@@ -1150,10 +1140,12 @@ type EditorTab = "basic" | "photo" | "sizes" | "extras" | "custom" | "pause" | "
 
 function ProductEditor({
   initial,
+  initialTab,
   categories,
   onClose,
 }: {
   initial: Product;
+  initialTab?: EditorTab;
   categories: Category[];
   onClose: () => void;
 }) {
@@ -1164,7 +1156,7 @@ function ProductEditor({
   const { data: badgesList } = useProductBadges();
   const [p, setP] = useState<Product>(initial);
   const [imageBusy, setImageBusy] = useState(false);
-  const [tab, setTab] = useState<EditorTab>("basic");
+  const [tab, setTab] = useState<EditorTab>(initialTab ?? "basic");
   const [dirty, setDirty] = useState(false);
 
   const setField = <K extends keyof Product>(k: K, v: Product[K]) => {
