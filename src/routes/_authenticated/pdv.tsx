@@ -722,7 +722,7 @@ function CartPanel(p: CartPanelProps) {
       <div className="space-y-2 border-t border-white/10 pt-3">
         <div className="text-[10px] font-bold uppercase tracking-widest text-white/50">Desconto</div>
         <div className="flex gap-2">
-          <div className="flex overflow-hidden rounded-lg border border-white/10">
+          <div className="flex shrink-0 overflow-hidden rounded-lg border border-white/10">
             {(["reais", "percent"] as const).map((t) => (
               <button
                 key={t}
@@ -741,9 +741,10 @@ function CartPanel(p: CartPanelProps) {
             min={0}
             value={p.discountValue}
             onChange={(e) => p.setDiscountValue(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink/60"
+            className="w-full min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink/60"
           />
         </div>
+
       </div>
 
       {/* Payment */}
