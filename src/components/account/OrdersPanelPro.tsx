@@ -142,7 +142,7 @@ function periodStart(p: Period): number {
 
 export function OrdersPanelPro() {
   const { user } = useAuth();
-  const { items: cartItems, subtotal: cartSubtotal, count: cartCount } = useCart();
+  const { items: cartItems, subtotal: cartSubtotal, count: cartCount, add } = useCart();
   const { data: allProducts = [] } = useProducts();
   const navigate = useNavigate();
 
