@@ -1010,7 +1010,7 @@ function CartPanel(p: CartPanelProps) {
       </div>
 
       {/* Customer */}
-      <div className="space-y-2 border-t border-white/10 pt-3">
+      <div className="space-y-2 border-t border-white/10 pt-3" data-pdv-customer>
         <CustomerSearch
           name={p.customerName}
           phone={p.customerPhone}
