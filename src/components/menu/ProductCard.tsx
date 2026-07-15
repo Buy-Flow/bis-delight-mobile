@@ -6,20 +6,20 @@ import { cn } from "@/lib/utils";
 import { productImageSources } from "@/lib/image-optimize";
 import { FavoriteButton } from "./FavoriteButton";
 import { useIsAdmin, isProductPaused, isIndefinitePause } from "@/lib/menu-data";
+import { useProductBadges, badgeInkFor } from "@/lib/product-badges";
 
 
 
 /**
- * Badges compartilham a mesma tinta escura (`--badge-ink`) para manter
- * contraste WCAG AA consistente sobre qualquer fundo neon. Não trocar por
- * `text-white` em fundos claros (yellow/cyan) — falha em 4.5:1.
+ * Badges usam tokens dinâmicos da tabela `product_badges` (cor + ícone).
+ * Fallback de cor para nomes legados garante compatibilidade retroativa.
  */
-const BADGE_INK = "text-[oklch(0.18_0.11_305)]";
-const badgeStyles: Record<NonNullable<Product["badge"]>, string> = {
-  Premium: `bg-neon-yellow ${BADGE_INK}`,
-  Novidade: `bg-neon-cyan ${BADGE_INK}`,
-  Favorito: `bg-neon-pink ${BADGE_INK}`,
+const LEGACY_BADGE_COLORS: Record<string, string> = {
+  Premium: "oklch(0.87 0.19 95)",
+  Novidade: "oklch(0.80 0.16 200)",
+  Favorito: "oklch(0.72 0.22 350)",
 };
+
 
 export function ProductCard({
   product,
