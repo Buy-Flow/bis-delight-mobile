@@ -79,6 +79,7 @@ export function useUserAddresses(userId: string | undefined) {
     async (id: string, input: Partial<UserAddressInput>) => {
       const patch: {
         label?: string;
+        recipient_name?: string | null;
         address?: string;
         reference?: string | null;
         lat?: number | null;
@@ -86,6 +87,7 @@ export function useUserAddresses(userId: string | undefined) {
         is_default?: boolean;
       } = {};
       if (input.label !== undefined) patch.label = input.label.trim() || "Casa";
+      if (input.recipient_name !== undefined) patch.recipient_name = input.recipient_name?.trim() || null;
       if (input.address !== undefined) patch.address = input.address.trim();
       if (input.reference !== undefined) patch.reference = input.reference?.trim() || null;
       if (input.lat !== undefined) patch.lat = input.lat;
