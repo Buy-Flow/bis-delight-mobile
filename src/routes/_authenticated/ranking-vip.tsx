@@ -60,7 +60,7 @@ function Switch({ checked, onCheckedChange }: { checked: boolean; onCheckedChang
     <button
       type="button"
       onClick={() => onCheckedChange(!checked)}
-      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${checked ? "bg-amber-500" : "bg-slate-300"}`}
+      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${checked ? "bg-amber-500" : "bg-white/10"}`}
     >
       <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
     </button>
@@ -134,7 +134,7 @@ function RankingVipPage() {
     return (
       <AdminShell>
         <div className="mx-auto max-w-6xl p-6">
-          <div className="h-64 animate-pulse rounded-2xl bg-slate-100" />
+          <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
         </div>
       </AdminShell>
     );
@@ -145,12 +145,12 @@ function RankingVipPage() {
       <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-100 text-amber-700">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-500/15 text-amber-300">
               <Trophy className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-tight text-slate-900">Ranking VIP</h1>
-              <p className="text-sm text-slate-500">Gamificação do perfil do cliente — status vende.</p>
+              <h1 className="text-xl font-black tracking-tight text-white">Ranking VIP</h1>
+              <p className="text-sm text-white/60">Gamificação do perfil do cliente — status vende.</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -172,13 +172,13 @@ function RankingVipPage() {
         </div>
 
         {/* Tabs */}
-        <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+        <div className="inline-flex rounded-xl border border-white/10 bg-white/[0.03] p-1">
           {(["config", "tiers", "leaderboard", "preview"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
-                tab === t ? "bg-amber-500 text-white" : "text-slate-600 hover:bg-slate-50"
+                tab === t ? "bg-amber-500 text-white" : "text-white/70 hover:bg-slate-50"
               }`}
             >
               {t === "config" && "Configuração"}
@@ -226,7 +226,7 @@ function RankingVipPage() {
                       key={m}
                       onClick={() => setS({ ...s, metric: m })}
                       className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                        s.metric === m ? "border-amber-500 bg-amber-50 text-amber-700" : "border-slate-200 text-slate-600"
+                        s.metric === m ? "border-amber-400 bg-amber-500/15 text-amber-200" : "border-slate-200 text-white/70"
                       }`}
                     >
                       {m === "ltv" && "LTV (R$)"}
@@ -235,7 +235,7 @@ function RankingVipPage() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-white/60">
                   <strong>LTV</strong>: quanto mais gasta, melhor.{" "}
                   <strong>Pedidos</strong>: frequência acima de tudo.{" "}
                   <strong>Híbrido</strong>: 70% LTV + 30% frequência.
@@ -287,26 +287,26 @@ function RankingVipPage() {
 
 function Kpi({ icon: Icon, label, value, tint }: { icon: any; label: string; value: string; tint: string }) {
   const map: Record<string, string> = {
-    amber: "bg-amber-50 text-amber-700",
-    yellow: "bg-yellow-50 text-yellow-700",
-    rose: "bg-rose-50 text-rose-700",
-    violet: "bg-violet-50 text-violet-700",
+    amber: "bg-amber-500/15 text-amber-300",
+    yellow: "bg-yellow-500/15 text-yellow-300",
+    rose: "bg-rose-500/15 text-rose-300",
+    violet: "bg-violet-500/15 text-violet-300",
   };
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
       <div className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-lg ${map[tint]}`}>
         <Icon className="h-4 w-4" />
       </div>
-      <div className="text-xs text-slate-500">{label}</div>
-      <div className="text-xl font-black text-slate-900">{value}</div>
+      <div className="text-xs text-white/60">{label}</div>
+      <div className="text-xl font-black text-white">{value}</div>
     </div>
   );
 }
 
 function Card({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
-      <div className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-500">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <div className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-widest text-white/60">
         <Icon className="h-4 w-4" /> {title}
       </div>
       <div className="space-y-4">{children}</div>
@@ -316,8 +316,8 @@ function Card({ title, icon: Icon, children }: { title: string; icon: any; child
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-      <div className="text-sm text-slate-700">{label}</div>
+    <div className="flex items-center justify-between gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+      <div className="text-sm text-white/80">{label}</div>
       {children}
     </div>
   );
@@ -346,7 +346,7 @@ function TiersEditor({ tiers, onChange }: { tiers: Tier[]; onChange: (t: Tier[])
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-white/70">
           Ordene do menor para o maior. O sistema atribui ao cliente o nível mais alto cujos requisitos ele já atingiu.
         </p>
         <Button onClick={add} variant="outline" className="gap-2">
@@ -355,14 +355,14 @@ function TiersEditor({ tiers, onChange }: { tiers: Tier[]; onChange: (t: Tier[])
       </div>
       <div className="space-y-3">
         {tiers.map((t, i) => (
-          <div key={i} className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
             <div className="grid gap-3 md:grid-cols-[auto_1fr_1fr_1fr_1fr_auto]">
               <div className="flex flex-col justify-center gap-1">
-                <button onClick={() => move(i, -1)} className="rounded p-1 text-slate-400 hover:bg-slate-100" disabled={i === 0}>
+                <button onClick={() => move(i, -1)} className="rounded p-1 text-white/40 hover:bg-white/5" disabled={i === 0}>
                   <GripVertical className="h-4 w-4 rotate-90" />
                 </button>
-                <div className="text-center text-[10px] font-bold text-slate-400">#{i + 1}</div>
-                <button onClick={() => move(i, 1)} className="rounded p-1 text-slate-400 hover:bg-slate-100" disabled={i === tiers.length - 1}>
+                <div className="text-center text-[10px] font-bold text-white/40">#{i + 1}</div>
+                <button onClick={() => move(i, 1)} className="rounded p-1 text-white/40 hover:bg-white/5" disabled={i === tiers.length - 1}>
                   <GripVertical className="h-4 w-4 rotate-90" />
                 </button>
               </div>
@@ -383,7 +383,7 @@ function TiersEditor({ tiers, onChange }: { tiers: Tier[]; onChange: (t: Tier[])
                 <Input type="number" min={0} value={t.min_orders ?? 0} onChange={(e) => update(i, { min_orders: parseInt(e.target.value || "0") })} />
               </div>
               <div className="flex items-start justify-end pt-6">
-                <button onClick={() => remove(i)} className="rounded-lg p-2 text-rose-500 hover:bg-rose-50" title="Remover">
+                <button onClick={() => remove(i)} className="rounded-lg p-2 text-rose-400 hover:bg-rose-500/10" title="Remover">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -396,7 +396,7 @@ function TiersEditor({ tiers, onChange }: { tiers: Tier[]; onChange: (t: Tier[])
                     type="color"
                     value={t.color ?? "#facc15"}
                     onChange={(e) => update(i, { color: e.target.value })}
-                    className="h-9 w-14 cursor-pointer rounded border border-slate-200"
+                    className="h-9 w-14 cursor-pointer rounded border border-white/10"
                   />
                   <Input value={t.color ?? ""} onChange={(e) => update(i, { color: e.target.value })} />
                 </div>
@@ -421,14 +421,14 @@ function LeaderboardTable({ rows, tiers }: { rows: LbRow[]; tiers: Tier[] }) {
   const tierMap = new Map(tiers.map((t) => [t.key, t]));
   if (!rows.length)
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+      <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-8 text-center text-sm text-white/60">
         Nenhum cliente ranqueado ainda.
       </div>
     );
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
       <table className="w-full text-sm">
-        <thead className="bg-slate-50 text-left text-xs uppercase tracking-widest text-slate-500">
+        <thead className="bg-white/[0.04] text-left text-xs uppercase tracking-widest text-white/60">
           <tr>
             <th className="px-4 py-3">#</th>
             <th className="px-4 py-3">Cliente</th>
@@ -443,11 +443,11 @@ function LeaderboardTable({ rows, tiers }: { rows: LbRow[]; tiers: Tier[] }) {
           {rows.map((r) => {
             const t = r.tier_key ? tierMap.get(r.tier_key) : null;
             return (
-              <tr key={r.user_id} className="border-t border-slate-100 hover:bg-slate-50/50">
-                <td className="px-4 py-3 font-mono text-xs font-black text-slate-500">
+              <tr key={r.user_id} className="border-t border-white/5 hover:bg-white/[0.04]">
+                <td className="px-4 py-3 font-mono text-xs font-black text-white/60">
                   {r.rank_pos === 1 && "🥇"} {r.rank_pos === 2 && "🥈"} {r.rank_pos === 3 && "🥉"} #{r.rank_pos}
                 </td>
-                <td className="px-4 py-3 font-medium text-slate-900">{r.name || "—"}</td>
+                <td className="px-4 py-3 font-medium text-white">{r.name || "—"}</td>
                 <td className="px-4 py-3">
                   {t ? (
                     <span
@@ -457,15 +457,15 @@ function LeaderboardTable({ rows, tiers }: { rows: LbRow[]; tiers: Tier[] }) {
                       {t.emoji} {t.name}
                     </span>
                   ) : (
-                    <span className="text-xs text-slate-400">—</span>
+                    <span className="text-xs text-white/40">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right font-mono">{BRL(Number(r.ltv))}</td>
                 <td className="px-4 py-3 text-right font-mono">{r.orders_ct}</td>
-                <td className="px-4 py-3 text-xs text-slate-500">
+                <td className="px-4 py-3 text-xs text-white/60">
                   {r.phone || r.email || "—"}
                 </td>
-                <td className="px-4 py-3 text-xs text-slate-500">
+                <td className="px-4 py-3 text-xs text-white/60">
                   {r.last_order ? new Date(r.last_order).toLocaleDateString("pt-BR") : "—"}
                 </td>
               </tr>
@@ -485,7 +485,7 @@ function PreviewCustomer({ settings, rows }: { settings: Settings; rows: LbRow[]
   const tierColor = topTier?.color ?? "#facc15";
   return (
     <div className="mx-auto max-w-md">
-      <p className="mb-3 text-center text-xs uppercase tracking-widest text-slate-500">
+      <p className="mb-3 text-center text-xs uppercase tracking-widest text-white/60">
         Prévia exibida ao cliente (perfil → Fidelidade)
       </p>
       <div className="rounded-3xl bg-[oklch(0.18_0.11_305)] p-5 shadow-2xl">
