@@ -462,15 +462,43 @@ function CardSection({
     return Math.min(12, Math.max(1, Math.floor(t / 5)));
   }, [order.total]);
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const brand = detectCardBrand(number);
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!holderName.trim() || holderName.trim().length < 3) errs.holderName = "Informe o nome como está no cartão.";
+    if (number.replace(/\D/g, "").length < 12) errs.number = "Número incompleto.";
+    if (!/^\d{2}\/\d{2,4}$/.test(expiry.trim())) errs.expiry = "Formato MM/AA.";
+    else {
+      const [mm, yyRaw] = expiry.split("/");
+      const yy = yyRaw.length === 2 ? 2000 + Number(yyRaw) : Number(yyRaw);
+      const monthNum = Number(mm);
+      if (monthNum < 1 || monthNum > 12) errs.expiry = "Mês inválido.";
+      else {
+        const end = new Date(yy, monthNum, 0, 23, 59, 59);
+        if (end.getTime() < Date.now()) errs.expiry = "Cartão vencido.";
+      }
+    }
+    if (ccv.length < 3) errs.ccv = "CVV inválido.";
+    if (!isValidCpf(cpf)) errs.cpf = "CPF inválido.";
+    if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = "E-mail inválido.";
+    if (cep.replace(/\D/g, "").length !== 8) errs.cep = "CEP com 8 dígitos.";
+    if (!addrNumber.trim()) errs.addrNumber = "Obrigatório.";
+    return errs;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isValidCpf(cpf)) return toast.error("CPF inválido.");
-    if (!/^\S+@\S+\.\S+$/.test(email)) return toast.error("E-mail inválido.");
-    if (number.replace(/\D/g, "").length < 12) return toast.error("Número do cartão incompleto.");
-    if (!/^\d{2}\/\d{2,4}$/.test(expiry.trim())) return toast.error("Validade no formato MM/AA.");
-    if (ccv.length < 3) return toast.error("CVV inválido.");
-    if (cep.replace(/\D/g, "").length !== 8) return toast.error("CEP inválido.");
-    if (!addrNumber.trim()) return toast.error("Informe o número do endereço.");
+    setSubmitError(null);
+    const errs = validate();
+    setFieldErrors(errs);
+    if (Object.keys(errs).length) {
+      toast.error("Confira os campos destacados.");
+      return;
+    }
 
     const [mm, yyRaw] = expiry.split("/");
     const yy = yyRaw.length === 2 ? `20${yyRaw}` : yyRaw;
@@ -509,7 +537,9 @@ function CardSection({
       const { data } = await supabase.from("orders").select("*").eq("id", order.id).maybeSingle();
       if (data) setOrder(data as Order);
     } catch (err: any) {
-      toast.error("Pagamento recusado", { description: err?.message || "Verifique os dados e tente outro cartão.", duration: 8000 });
+      const message = err?.message || "Verifique os dados e tente outro cartão.";
+      setSubmitError(message);
+      toast.error("Pagamento recusado", { description: message, duration: 8000 });
     } finally {
       setProcessing(false);
     }
@@ -531,14 +561,22 @@ function CardSection({
         </div>
 
         <div className="grid gap-3">
-          <Field label="Nome como está no cartão" value={holderName} onChange={setHolderName} placeholder="Ex: MARIA S SILVA" />
-          <Field
-            label="Número do cartão"
-            value={formatCardNumber(number)}
-            onChange={(v) => setNumber(v.replace(/\D/g, "").slice(0, 19))}
-            placeholder="0000 0000 0000 0000"
-            inputMode="numeric"
-          />
+          <Field label="Nome como está no cartão" value={holderName} onChange={setHolderName} placeholder="Ex: MARIA S SILVA" error={fieldErrors.holderName} />
+          <div className="relative">
+            <Field
+              label="Número do cartão"
+              value={formatCardNumber(number)}
+              onChange={(v) => setNumber(v.replace(/\D/g, "").slice(0, 19))}
+              placeholder="0000 0000 0000 0000"
+              inputMode="numeric"
+              error={fieldErrors.number}
+            />
+            {brand && (
+              <span className="pointer-events-none absolute right-3 top-8 rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white ring-1 ring-white/20">
+                {brand}
+              </span>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <Field
               label="Validade (MM/AA)"
@@ -546,6 +584,7 @@ function CardSection({
               onChange={(v) => setExpiry(formatExpiry(v))}
               placeholder="12/29"
               inputMode="numeric"
+              error={fieldErrors.expiry}
             />
             <Field
               label="CVV"
@@ -554,16 +593,17 @@ function CardSection({
               placeholder="123"
               inputMode="numeric"
               type="password"
+              error={fieldErrors.ccv}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="CPF do titular" value={formatCpf(cpf)} onChange={setCpf} placeholder="000.000.000-00" inputMode="numeric" />
-            <Field label="E-mail" value={email} onChange={setEmail} placeholder="voce@email.com" />
+            <Field label="CPF do titular" value={formatCpf(cpf)} onChange={setCpf} placeholder="000.000.000-00" inputMode="numeric" error={fieldErrors.cpf} />
+            <Field label="E-mail" value={email} onChange={setEmail} placeholder="voce@email.com" error={fieldErrors.email} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="CEP" value={formatCep(cep)} onChange={setCep} placeholder="00000-000" inputMode="numeric" />
-            <Field label="Número" value={addrNumber} onChange={setAddrNumber} placeholder="123" inputMode="numeric" />
+            <Field label="CEP" value={formatCep(cep)} onChange={setCep} placeholder="00000-000" inputMode="numeric" error={fieldErrors.cep} />
+            <Field label="Número" value={addrNumber} onChange={setAddrNumber} placeholder="123" inputMode="numeric" error={fieldErrors.addrNumber} />
           </div>
 
           {maxInst > 1 && (
@@ -585,6 +625,16 @@ function CardSection({
         </div>
       </div>
 
+      {submitError && (
+        <div className="flex items-start gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-[13px] text-red-100">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+          <div>
+            <div className="font-extrabold">Pagamento recusado</div>
+            <div className="mt-0.5 text-red-100/90">{submitError}</div>
+          </div>
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={processing}
@@ -592,7 +642,7 @@ function CardSection({
           "flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-4 text-sm font-extrabold text-white active:scale-[.98] disabled:opacity-60",
         )}
       >
-        {processing && <Loader2 className="h-4 w-4 animate-spin" />}
+        {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
         {processing ? "Processando pagamento…" : `Pagar ${brl(Number(order.total))}`}
       </button>
     </form>
