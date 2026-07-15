@@ -90,7 +90,7 @@ type OrderItem = {
 };
 
 
-type Tab = "salao" | "lista" | "config";
+type Tab = "salao" | "planta" | "lista" | "config";
 
 const BRL = (v: number) =>
   (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -120,6 +120,18 @@ const timeAgo = (d: string | null) => {
   const h = Math.floor(m / 60);
   return `${h}h${m % 60 ? ` ${m % 60}min` : ""}`;
 };
+
+// Aging tone based on how long the table has been open (min)
+const agingRing = (openedAt: string | null): string => {
+  if (!openedAt) return "";
+  const min = (Date.now() - new Date(openedAt).getTime()) / 60000;
+  if (min < 30) return "ring-2 ring-emerald-400/40";
+  if (min < 60) return "ring-2 ring-amber-400/60 animate-[pulse_3s_ease-in-out_infinite]";
+  return "ring-2 ring-rose-400/70 animate-[pulse_1.6s_ease-in-out_infinite]";
+};
+
+const ASSIST_PREFIX = "[!ASSIST]";
+const isAssistRequested = (notes: string | null) => !!notes && notes.startsWith(ASSIST_PREFIX);
 
 function TablesPage() {
   const [tables, setTables] = useState<RestaurantTable[]>([]);
