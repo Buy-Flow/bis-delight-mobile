@@ -137,7 +137,7 @@ import { useProductBadges, type ProductBadge } from "@/lib/product-badges";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   validateSearch: (search: Record<string, unknown>) => {
-    const validTabs = ["dashboard", "products", "categories", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings", "announcement", "popup", "coupons"] as const;
+    const validTabs = ["dashboard", "products", "categories", "seals", "highlights", "extras", "news", "notifications", "promos", "loyalty", "settings", "announcement", "popup", "coupons"] as const;
     const rawTab = typeof search.tab === "string" ? search.tab : undefined;
     return {
       edit: typeof search.edit === "string" ? search.edit : undefined,
