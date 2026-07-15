@@ -457,8 +457,8 @@ function CardSection({
   const [ccv, setCcv] = useState("");
   const [email, setEmail] = useState(user?.email || saved.email || "");
   const [cpf, setCpf] = useState(saved.cpf || "");
-  const [cep, setCep] = useState("");
-  const [addrNumber, setAddrNumber] = useState("");
+
+
   const [installments, setInstallments] = useState(1);
 
   const maxInst = useMemo(() => {
