@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import {
   HeartHandshake, Save, Play, Users, MessageCircle, History,
   Settings2, Sparkles, AlertTriangle, CheckCircle2, XCircle, Search, RefreshCw,
+  ChevronDown, Target, Ticket, MessageSquareText, CalendarClock, TrendingUp,
+  Clock, Zap, Phone, Send, Filter,
 } from "lucide-react";
 import {
   getWinbackSettings,
@@ -25,10 +27,16 @@ export const Route = createFileRoute("/_authenticated/marketing-winback")({
   component: WinbackPage,
 });
 
+/* ============================================================== */
+/* Primitives                                                       */
+/* ============================================================== */
+
 function Switch({ checked, onCheckedChange }: { checked: boolean; onCheckedChange: (v: boolean) => void }) {
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
       onClick={() => onCheckedChange(!checked)}
       className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
         checked ? "bg-rose-600" : "bg-muted"
@@ -52,6 +60,67 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
     />
   );
 }
+
+function AccordionItem({
+  id,
+  icon: Icon,
+  title,
+  subtitle,
+  badge,
+  right,
+  defaultOpen = false,
+  children,
+  tone = "rose",
+}: {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  subtitle?: string;
+  badge?: React.ReactNode;
+  right?: React.ReactNode;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+  tone?: "rose" | "emerald" | "sky" | "amber" | "indigo";
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const tones: Record<string, string> = {
+    rose: "from-rose-500/15 to-pink-500/5 text-rose-600 border-rose-500/20",
+    emerald: "from-emerald-500/15 to-teal-500/5 text-emerald-600 border-emerald-500/20",
+    sky: "from-sky-500/15 to-blue-500/5 text-sky-600 border-sky-500/20",
+    amber: "from-amber-500/15 to-orange-500/5 text-amber-600 border-amber-500/20",
+    indigo: "from-indigo-500/15 to-violet-500/5 text-indigo-600 border-indigo-500/20",
+  };
+  return (
+    <section id={id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-4 text-left transition hover:bg-muted/40"
+        aria-expanded={open}
+      >
+        <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border bg-gradient-to-br ${tones[tone]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-base font-semibold text-foreground">{title}</h3>
+            {badge}
+          </div>
+          {subtitle && <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>}
+        </div>
+        <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          {right}
+          <ChevronDown className={`h-5 w-5 text-muted-foreground transition ${open ? "rotate-180" : ""}`} />
+        </div>
+      </button>
+      {open && <div className="border-t border-border/60 p-4 sm:p-5">{children}</div>}
+    </section>
+  );
+}
+
+/* ============================================================== */
+/* Constants & types                                                */
+/* ============================================================== */
 
 const WEEKDAYS = [
   { v: 0, label: "Dom" }, { v: 1, label: "Seg" }, { v: 2, label: "Ter" }, { v: 3, label: "Qua" },
@@ -119,6 +188,10 @@ interface SendRow {
   created_at: string;
 }
 
+/* ============================================================== */
+/* Root page                                                        */
+/* ============================================================== */
+
 function WinbackPage() {
   const [tab, setTab] = useState<Tab>("overview");
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -155,24 +228,29 @@ function WinbackPage() {
     }
   };
 
+  const tabs: { id: Tab; label: string; short: string; icon: React.ElementType }[] = [
+    { id: "overview", label: "Visão geral", short: "Visão", icon: Sparkles },
+    { id: "candidatos", label: "Candidatos", short: "Alvos", icon: Users },
+    { id: "config", label: "Configurações", short: "Config", icon: Settings2 },
+    { id: "historico", label: "Histórico", short: "Envios", icon: History },
+  ];
+
   return (
     <AdminShell>
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6">
-        <header className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 p-3 text-white shadow-lg">
-              <HeartHandshake className="h-6 w-6" />
+      <div className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:px-4 sm:py-6 sm:space-y-6">
+        {/* Hero */}
+        <header className="relative overflow-hidden rounded-3xl border border-rose-500/20 bg-gradient-to-br from-rose-500/10 via-pink-500/5 to-transparent p-4 sm:p-6">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-lg sm:h-14 sm:w-14">
+              <HeartHandshake className="h-6 w-6 sm:h-7 sm:w-7" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Reativação de Clientes</h1>
-              <p className="text-sm text-muted-foreground">
-                Traga de volta quem sumiu — cupom automático via WhatsApp após X dias sem pedir.
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">Reativação de Clientes</h1>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                Cupom automático via WhatsApp para quem sumiu.
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <span>{settings?.enabled ? "Ativo" : "Pausado"}</span>
+            <div className="flex shrink-0 flex-col items-end gap-1">
               <Switch
                 checked={!!settings?.enabled}
                 onCheckedChange={async (v) => {
@@ -185,29 +263,39 @@ function WinbackPage() {
                   }
                 }}
               />
-            </label>
+              <span className={`text-[10px] font-semibold uppercase tracking-wide ${settings?.enabled ? "text-emerald-600" : "text-muted-foreground"}`}>
+                {settings?.enabled ? "● Ativo" : "○ Pausado"}
+              </span>
+            </div>
+          </div>
+
+          {/* Mini KPIs */}
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:grid-cols-4 sm:gap-3">
+            <MiniStat icon={Send} tone="emerald" label="Enviados" value={stats?.sent_total ?? 0} />
+            <MiniStat icon={Clock} tone="sky" label="30 dias" value={stats?.sent_30d ?? 0} />
+            <MiniStat icon={Users} tone="indigo" label="Clientes" value={stats?.unique_users ?? 0} />
+            <MiniStat icon={Ticket} tone="amber" label="Resgates 90d" value={stats?.redeemed_90d ?? 0} />
           </div>
         </header>
 
-        <nav className="flex gap-1 overflow-x-auto rounded-xl bg-muted/50 p-1">
-          {[
-            { id: "overview", label: "Visão geral", icon: Sparkles },
-            { id: "candidatos", label: "Candidatos", icon: Users },
-            { id: "config", label: "Configurações", icon: Settings2 },
-            { id: "historico", label: "Histórico", icon: History },
-          ].map((t) => {
+        {/* Tabs */}
+        <nav className="sticky top-0 z-10 -mx-3 flex gap-1 overflow-x-auto bg-background/95 px-3 py-1 backdrop-blur sm:mx-0 sm:rounded-xl sm:bg-muted/50 sm:p-1">
+          {tabs.map((t) => {
             const Ic = t.icon;
             const active = tab === t.id;
             return (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id as Tab)}
-                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition ${
-                  active ? "bg-card text-rose-500 shadow-sm" : "text-muted-foreground hover:text-foreground"
+                onClick={() => setTab(t.id)}
+                className={`flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition sm:px-4 ${
+                  active
+                    ? "bg-card text-rose-500 shadow-sm ring-1 ring-rose-500/20"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Ic className="h-4 w-4" />
-                {t.label}
+                <span className="hidden sm:inline">{t.label}</span>
+                <span className="sm:hidden">{t.short}</span>
               </button>
             );
           })}
@@ -224,88 +312,160 @@ function WinbackPage() {
   );
 }
 
+function MiniStat({
+  icon: Icon, label, value, tone,
+}: { icon: React.ElementType; label: string; value: number | string; tone: "emerald" | "sky" | "indigo" | "amber" | "rose" }) {
+  const tones: Record<string, string> = {
+    emerald: "text-emerald-600 bg-emerald-500/10",
+    sky: "text-sky-600 bg-sky-500/10",
+    indigo: "text-indigo-600 bg-indigo-500/10",
+    amber: "text-amber-600 bg-amber-500/10",
+    rose: "text-rose-600 bg-rose-500/10",
+  };
+  return (
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-xl border border-border bg-card/80 p-2.5 backdrop-blur">
+      <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${tones[tone]}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <div className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="truncate text-lg font-bold text-foreground">{value}</div>
+      </div>
+    </div>
+  );
+}
+
 /* ============================================================== */
+/* Overview                                                         */
+/* ============================================================== */
+
 function OverviewTab({ settings, stats }: { settings: Settings | null; stats: Record<string, number> | null }) {
   const s = settings;
-  const cards = [
-    { label: "Enviados no total", value: stats?.sent_total ?? 0, tone: "bg-emerald-50 text-emerald-700" },
-    { label: "Enviados (30 dias)", value: stats?.sent_30d ?? 0, tone: "bg-sky-50 text-sky-700" },
-    { label: "Clientes únicos", value: stats?.unique_users ?? 0, tone: "bg-indigo-50 text-indigo-700" },
-    { label: "Falhas", value: stats?.failed_total ?? 0, tone: "bg-rose-50 text-rose-700" },
-    { label: "Resgataram cupom (90d)", value: stats?.redeemed_90d ?? 0, tone: "bg-amber-50 text-amber-700" },
-  ];
-  return (
-    <div className="space-y-6">
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {cards.map((c) => (
-          <div key={c.label} className={`rounded-xl p-4 ${c.tone}`}>
-            <div className="text-xs font-medium uppercase tracking-wide opacity-70">{c.label}</div>
-            <div className="mt-1 text-2xl font-bold">{c.value}</div>
-          </div>
-        ))}
-      </section>
+  const successRate = useMemo(() => {
+    const sent = stats?.sent_total ?? 0;
+    const failed = stats?.failed_total ?? 0;
+    const total = sent + failed;
+    if (!total) return null;
+    return Math.round((sent / total) * 100);
+  }, [stats]);
 
-      <section className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold text-foreground">Status da automação</h2>
-        <dl className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 text-sm">
-          <Row label="Estado" value={s?.enabled ? "🟢 Ativa" : "⏸️ Pausada"} />
+  return (
+    <div className="space-y-3">
+      <AccordionItem
+        id="status"
+        icon={Zap}
+        title="Status da automação"
+        subtitle={s?.enabled ? "Rodando conforme agenda" : "Automação pausada"}
+        badge={
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${s?.enabled ? "bg-emerald-500/15 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
+            {s?.enabled ? "ATIVO" : "PAUSADO"}
+          </span>
+        }
+        defaultOpen
+        tone="emerald"
+      >
+        <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           <Row label="Dias sem pedir" value={`${s?.days_inactive ?? "—"} dias`} />
-          <Row label="Cooldown por cliente" value={`${s?.cooldown_days ?? "—"} dias`} />
+          <Row label="Cooldown" value={`${s?.cooldown_days ?? "—"} dias`} />
           <Row label="Máx. por execução" value={String(s?.max_per_run ?? "—")} />
           <Row
-            label="Horário do disparo"
-            value={`${String(s?.send_hour ?? 10).padStart(2, "0")}:${String(s?.send_minute ?? 0).padStart(2, "0")} (${s?.timezone ?? "—"})`}
+            label="Horário"
+            value={`${String(s?.send_hour ?? 10).padStart(2, "0")}:${String(s?.send_minute ?? 0).padStart(2, "0")}`}
           />
           <Row
-            label="Desconto padrão"
+            label="Desconto"
             value={
               s?.discount_type === "percent"
-                ? `${s.discount_value}% OFF · válido ${s.validity_days}d`
+                ? `${s.discount_value}% · ${s.validity_days}d`
                 : s
-                  ? `${BRL(s.discount_value)} OFF · válido ${s.validity_days}d`
+                  ? `${BRL(s.discount_value)} · ${s.validity_days}d`
                   : "—"
             }
           />
           <Row label="Último disparo" value={s?.last_run_at ? new Date(s.last_run_at).toLocaleString("pt-BR") : "Nunca"} />
-          <Row label="Último resultado" value={s?.last_run_status ?? "—"} />
         </dl>
         {s?.last_run_error && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
-            <AlertTriangle className="h-4 w-4 mt-0.5" />
-            <span>{s.last_run_error}</span>
+          <div className="mt-4 flex items-start gap-2 rounded-lg bg-rose-500/10 p-3 text-sm text-rose-600">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span className="break-words">{s.last_run_error}</span>
           </div>
         )}
-      </section>
+      </AccordionItem>
 
-      <section className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold text-foreground">Como funciona</h2>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>
-            Um cron verifica a cada 15 min se está no horário/dia configurado.
-          </li>
-          <li>
-            Busca clientes com <b>{s?.days_inactive ?? 30}+ dias</b> sem comprar, respeitando cooldown de{" "}
-            <b>{s?.cooldown_days ?? 60}d</b> para não spammar.
-          </li>
-          <li>Cria cupom único de uso individual para cada cliente selecionado.</li>
-          <li>Envia mensagem personalizada no WhatsApp via Evolution API.</li>
-          <li>Registra tudo em Histórico — status, cupom, erros.</li>
+      <AccordionItem
+        id="performance"
+        icon={TrendingUp}
+        title="Performance"
+        subtitle={successRate !== null ? `${successRate}% de taxa de sucesso` : "Sem envios ainda"}
+        tone="sky"
+      >
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <StatBig label="Total enviado" value={stats?.sent_total ?? 0} tone="emerald" />
+          <StatBig label="Últimos 30 dias" value={stats?.sent_30d ?? 0} tone="sky" />
+          <StatBig label="Clientes únicos" value={stats?.unique_users ?? 0} tone="indigo" />
+          <StatBig label="Falhas" value={stats?.failed_total ?? 0} tone="rose" />
+          <StatBig label="Cupons resgatados" value={stats?.redeemed_90d ?? 0} tone="amber" />
+          <StatBig label="Taxa de sucesso" value={successRate !== null ? `${successRate}%` : "—"} tone="emerald" />
+        </div>
+      </AccordionItem>
+
+      <AccordionItem
+        id="how"
+        icon={Sparkles}
+        title="Como funciona"
+        subtitle="Fluxo automático em 5 passos"
+        tone="indigo"
+      >
+        <ol className="space-y-3 text-sm">
+          {[
+            "Um cron verifica a cada 15 min se está no horário/dia configurado.",
+            <>Busca clientes com <b>{s?.days_inactive ?? 30}+ dias</b> sem comprar, respeitando cooldown de <b>{s?.cooldown_days ?? 60}d</b>.</>,
+            "Cria cupom único de uso individual para cada cliente selecionado.",
+            "Envia mensagem personalizada no WhatsApp via Evolution API.",
+            "Registra tudo em Histórico — status, cupom, erros.",
+          ].map((step, i) => (
+            <li key={i} className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-rose-500/15 text-xs font-bold text-rose-600">
+                {i + 1}
+              </span>
+              <span className="pt-1 text-muted-foreground">{step}</span>
+            </li>
+          ))}
         </ol>
-      </section>
+      </AccordionItem>
     </div>
   );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium text-foreground">{value}</dd>
+    <div className="flex items-center justify-between gap-2 rounded-lg bg-muted/40 px-3 py-2">
+      <dt className="truncate text-muted-foreground">{label}</dt>
+      <dd className="truncate text-right font-medium text-foreground">{value}</dd>
+    </div>
+  );
+}
+
+function StatBig({ label, value, tone }: { label: string; value: number | string; tone: "emerald" | "sky" | "indigo" | "amber" | "rose" }) {
+  const tones: Record<string, string> = {
+    emerald: "from-emerald-500/15 to-emerald-500/0 text-emerald-600",
+    sky: "from-sky-500/15 to-sky-500/0 text-sky-600",
+    indigo: "from-indigo-500/15 to-indigo-500/0 text-indigo-600",
+    amber: "from-amber-500/15 to-amber-500/0 text-amber-600",
+    rose: "from-rose-500/15 to-rose-500/0 text-rose-600",
+  };
+  return (
+    <div className={`rounded-xl border border-border bg-gradient-to-br p-3 ${tones[tone]}`}>
+      <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">{label}</div>
+      <div className="mt-1 text-xl font-bold sm:text-2xl">{value}</div>
     </div>
   );
 }
 
 /* ============================================================== */
+/* Candidates                                                       */
+/* ============================================================== */
+
 function CandidatesTab({ settings }: { settings: Settings | null }) {
   const [rows, setRows] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(false);
@@ -360,6 +520,8 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
 
   const allSelected = filtered.length > 0 && filtered.every((r) => selected.has(r.user_id));
 
+  const totalLTV = useMemo(() => filtered.reduce((a, r) => a + Number(r.lifetime_spent || 0), 0), [filtered]);
+
   const runSelected = async (dryRun: boolean) => {
     const ids = Array.from(selected);
     if (!ids.length) return toast.error("Selecione ao menos um cliente.");
@@ -397,92 +559,188 @@ function CandidatesTab({ settings }: { settings: Settings | null }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[200px]">
+      {/* Summary strip */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <StatBig label="Elegíveis" value={filtered.length} tone="rose" />
+        <StatBig label="Selecionados" value={selected.size} tone="indigo" />
+        <StatBig label="LTV filtrado" value={BRL(totalLTV)} tone="emerald" />
+      </div>
+
+      {/* Filters */}
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Buscar por nome, e-mail ou telefone" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs">Dias sem comprar ≥</Label>
           <Input
-            type="number"
-            min={7}
-            max={365}
-            className="w-24"
-            value={days ?? settings?.days_inactive ?? 30}
-            onChange={(e) => setDays(Number(e.target.value))}
+            placeholder="Buscar por nome, e-mail ou telefone"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="min-h-11 pl-9"
           />
         </div>
-        <Button variant="outline" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Atualizar
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-lg border border-border bg-card px-3">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-muted-foreground">≥</span>
+            <input
+              type="number"
+              min={7}
+              max={365}
+              className="w-14 border-0 bg-transparent p-0 text-sm font-semibold outline-none"
+              value={days ?? settings?.days_inactive ?? 30}
+              onChange={(e) => setDays(Number(e.target.value))}
+            />
+            <span className="text-muted-foreground">dias</span>
+          </div>
+        </div>
+        <Button variant="outline" onClick={load} disabled={loading} className="min-h-11">
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <span className="hidden sm:inline">Atualizar</span>
         </Button>
-        <Button variant="outline" onClick={() => runSelected(true)} disabled={running || !selected.size}>
+      </div>
+
+      {/* Actions */}
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Button variant="outline" onClick={() => runSelected(true)} disabled={running || !selected.size} className="min-h-11">
           Simular {selected.size ? `(${selected.size})` : ""}
         </Button>
-        <Button onClick={() => runSelected(false)} disabled={running || !selected.size} className="bg-rose-600 hover:bg-rose-700">
-          <MessageCircle className="h-4 w-4" /> Enviar selecionados
+        <Button
+          onClick={() => runSelected(false)}
+          disabled={running || !selected.size}
+          className="min-h-11 bg-rose-600 hover:bg-rose-700"
+        >
+          <MessageCircle className="h-4 w-4" /> Enviar {selected.size ? `(${selected.size})` : "selecionados"}
         </Button>
-        <Button onClick={runAll} disabled={running} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={runAll} disabled={running} className="min-h-11 bg-emerald-600 hover:bg-emerald-700">
           <Play className="h-4 w-4" /> Disparar agora
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-left text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={() => {
-                    if (allSelected) setSelected(new Set());
-                    else setSelected(new Set(filtered.map((r) => r.user_id)));
-                  }}
-                />
-              </th>
-              <th className="px-3 py-2">Cliente</th>
-              <th className="px-3 py-2">Telefone</th>
-              <th className="px-3 py-2 text-right">Pedidos</th>
-              <th className="px-3 py-2 text-right">LTV</th>
-              <th className="px-3 py-2 text-right">Sem comprar</th>
-              <th className="px-3 py-2">Último WB</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
-                  {loading ? "Carregando…" : "Nenhum candidato elegível no momento. 🎉"}
-                </td>
-              </tr>
-            )}
-            {filtered.map((r) => (
-              <tr key={r.user_id} className="border-t border-border/60 hover:bg-muted/40">
-                <td className="px-3 py-2">
-                  <input type="checkbox" checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} />
-                </td>
-                <td className="px-3 py-2">
-                  <div className="font-medium text-foreground">{r.full_name || "(sem nome)"}</div>
-                  <div className="text-xs text-muted-foreground">{r.email}</div>
-                </td>
-                <td className="px-3 py-2 font-mono text-xs">{r.phone || "—"}</td>
-                <td className="px-3 py-2 text-right">{r.orders_count}</td>
-                <td className="px-3 py-2 text-right">{BRL(r.lifetime_spent)}</td>
-                <td className="px-3 py-2 text-right font-medium text-rose-600">{r.days_since_last_order}d</td>
-                <td className="px-3 py-2 text-xs text-muted-foreground">
-                  {r.last_winback_at ? new Date(r.last_winback_at).toLocaleDateString("pt-BR") : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Select all bar */}
+      {filtered.length > 0 && (
+        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={() => {
+              if (allSelected) setSelected(new Set());
+              else setSelected(new Set(filtered.map((r) => r.user_id)));
+            }}
+            className="h-4 w-4"
+          />
+          <span className="font-medium">{allSelected ? "Desmarcar todos" : "Selecionar todos"}</span>
+          <span className="ml-auto text-xs text-muted-foreground">{filtered.length} elegível(is)</span>
+        </label>
+      )}
+
+      {/* Mobile: card list. Desktop: table. */}
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+          {loading ? "Carregando…" : "Nenhum candidato elegível no momento. 🎉"}
+        </div>
+      ) : (
+        <>
+          <ul className="space-y-2 md:hidden">
+            {filtered.map((r) => {
+              const sel = selected.has(r.user_id);
+              return (
+                <li
+                  key={r.user_id}
+                  className={`overflow-hidden rounded-xl border transition ${
+                    sel ? "border-rose-500/50 bg-rose-500/5" : "border-border bg-card"
+                  }`}
+                >
+                  <label className="grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 p-3">
+                    <input
+                      type="checkbox"
+                      checked={sel}
+                      onChange={() => toggle(r.user_id)}
+                      className="mt-1 h-5 w-5 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold text-foreground">{r.full_name || "(sem nome)"}</div>
+                      <div className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                        <Phone className="h-3 w-3 shrink-0" />
+                        <span className="truncate font-mono">{r.phone || "sem telefone"}</span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
+                        <span className="rounded-full bg-rose-500/15 px-2 py-0.5 font-semibold text-rose-600">
+                          {r.days_since_last_order}d sem pedir
+                        </span>
+                        <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-semibold text-emerald-600">
+                          {BRL(r.lifetime_spent)}
+                        </span>
+                        <span className="rounded-full bg-muted px-2 py-0.5 font-semibold text-muted-foreground">
+                          {r.orders_count} pedido{r.orders_count === 1 ? "" : "s"}
+                        </span>
+                        {r.last_winback_at && (
+                          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-600">
+                            Já reativado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Ticket</div>
+                      <div className="text-sm font-bold text-foreground">{BRL(r.avg_ticket)}</div>
+                    </div>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden overflow-x-auto rounded-2xl border border-border bg-card md:block">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-left text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 w-10"></th>
+                  <th className="px-3 py-2">Cliente</th>
+                  <th className="px-3 py-2">Telefone</th>
+                  <th className="px-3 py-2 text-right">Pedidos</th>
+                  <th className="px-3 py-2 text-right">LTV</th>
+                  <th className="px-3 py-2 text-right">Ticket</th>
+                  <th className="px-3 py-2 text-right">Sem comprar</th>
+                  <th className="px-3 py-2">Último WB</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((r) => (
+                  <tr key={r.user_id} className="border-t border-border/60 hover:bg-muted/40">
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(r.user_id)}
+                        onChange={() => toggle(r.user_id)}
+                        className="h-4 w-4"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="font-medium text-foreground">{r.full_name || "(sem nome)"}</div>
+                      <div className="text-xs text-muted-foreground">{r.email}</div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{r.phone || "—"}</td>
+                    <td className="px-3 py-2 text-right">{r.orders_count}</td>
+                    <td className="px-3 py-2 text-right font-medium">{BRL(r.lifetime_spent)}</td>
+                    <td className="px-3 py-2 text-right text-muted-foreground">{BRL(r.avg_ticket)}</td>
+                    <td className="px-3 py-2 text-right font-semibold text-rose-600">{r.days_since_last_order}d</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                      {r.last_winback_at ? new Date(r.last_winback_at).toLocaleDateString("pt-BR") : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 /* ============================================================== */
+/* Config (accordion sections)                                      */
+/* ============================================================== */
+
 function ConfigTab({
   settings, patch, onSave, saving,
 }: {
@@ -510,39 +768,60 @@ function ConfigTab({
       .replace("{link}", "https://querobis.lovable.app/");
   }, [settings]);
 
+  const discountLabel = settings.discount_type === "percent"
+    ? `${settings.discount_value}%`
+    : BRL(settings.discount_value);
+
   return (
-    <div className="space-y-6">
-      <Card title="Público-alvo">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="space-y-3">
+      <AccordionItem
+        id="target"
+        icon={Target}
+        title="Público-alvo"
+        subtitle={`≥ ${settings.days_inactive}d sem comprar · min ${settings.min_orders} pedido(s)`}
+        defaultOpen
+        tone="rose"
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Dias sem comprar (mín.)">
-            <Input type="number" min={7} max={365} value={settings.days_inactive} onChange={(e) => patch({ days_inactive: Number(e.target.value) })} />
+            <Input type="number" min={7} max={365} className="min-h-11" value={settings.days_inactive} onChange={(e) => patch({ days_inactive: Number(e.target.value) })} />
           </Field>
           <Field label="Pedidos mínimos (histórico)">
-            <Input type="number" min={1} value={settings.min_orders} onChange={(e) => patch({ min_orders: Number(e.target.value) })} />
+            <Input type="number" min={1} className="min-h-11" value={settings.min_orders} onChange={(e) => patch({ min_orders: Number(e.target.value) })} />
           </Field>
           <Field label="Gasto mínimo acumulado (R$)">
-            <Input type="number" min={0} value={settings.min_lifetime_spent} onChange={(e) => patch({ min_lifetime_spent: Number(e.target.value) })} />
+            <Input type="number" min={0} className="min-h-11" value={settings.min_lifetime_spent} onChange={(e) => patch({ min_lifetime_spent: Number(e.target.value) })} />
           </Field>
           <Field label="Cooldown por cliente (dias)">
-            <Input type="number" min={7} max={365} value={settings.cooldown_days} onChange={(e) => patch({ cooldown_days: Number(e.target.value) })} />
+            <Input type="number" min={7} max={365} className="min-h-11" value={settings.cooldown_days} onChange={(e) => patch({ cooldown_days: Number(e.target.value) })} />
           </Field>
           <Field label="Máx. de envios por execução">
-            <Input type="number" min={1} max={500} value={settings.max_per_run} onChange={(e) => patch({ max_per_run: Number(e.target.value) })} />
+            <Input type="number" min={1} max={500} className="min-h-11" value={settings.max_per_run} onChange={(e) => patch({ max_per_run: Number(e.target.value) })} />
           </Field>
-          <Field label="Exigir telefone cadastrado">
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+            <div className="min-w-0">
+              <Label className="text-xs font-semibold text-foreground">Exigir telefone cadastrado</Label>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">Só envia se o cliente tiver WhatsApp válido</p>
+            </div>
             <Switch checked={settings.require_phone} onCheckedChange={(v) => patch({ require_phone: v })} />
-          </Field>
+          </div>
         </div>
-      </Card>
+      </AccordionItem>
 
-      <Card title="Cupom oferecido">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <AccordionItem
+        id="coupon"
+        icon={Ticket}
+        title="Cupom oferecido"
+        subtitle={`${discountLabel} OFF · válido ${settings.validity_days} dias · mín ${BRL(settings.min_order)}`}
+        tone="amber"
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Prefixo do código">
-            <Input maxLength={12} value={settings.coupon_prefix} onChange={(e) => patch({ coupon_prefix: e.target.value.toUpperCase() })} />
+            <Input maxLength={12} className="min-h-11 font-mono uppercase" value={settings.coupon_prefix} onChange={(e) => patch({ coupon_prefix: e.target.value.toUpperCase() })} />
           </Field>
           <Field label="Tipo de desconto">
             <select
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              className="min-h-11 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               value={settings.discount_type}
               onChange={(e) => patch({ discount_type: e.target.value as "percent" | "fixed" })}
             >
@@ -551,45 +830,76 @@ function ConfigTab({
             </select>
           </Field>
           <Field label={settings.discount_type === "percent" ? "Desconto (%)" : "Desconto (R$)"}>
-            <Input type="number" min={1} value={settings.discount_value} onChange={(e) => patch({ discount_value: Number(e.target.value) })} />
+            <Input type="number" min={1} className="min-h-11" value={settings.discount_value} onChange={(e) => patch({ discount_value: Number(e.target.value) })} />
           </Field>
           <Field label="Pedido mínimo (R$)">
-            <Input type="number" min={0} value={settings.min_order} onChange={(e) => patch({ min_order: Number(e.target.value) })} />
+            <Input type="number" min={0} className="min-h-11" value={settings.min_order} onChange={(e) => patch({ min_order: Number(e.target.value) })} />
           </Field>
           <Field label="Validade (dias)">
-            <Input type="number" min={1} max={90} value={settings.validity_days} onChange={(e) => patch({ validity_days: Number(e.target.value) })} />
+            <Input type="number" min={1} max={90} className="min-h-11" value={settings.validity_days} onChange={(e) => patch({ validity_days: Number(e.target.value) })} />
           </Field>
+          <div className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 p-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-amber-600">Exemplo de código</div>
+            <div className="mt-1 font-mono text-sm font-bold text-foreground">
+              {settings.coupon_prefix.toUpperCase()}A7B2C
+            </div>
+          </div>
         </div>
-      </Card>
+      </AccordionItem>
 
-      <Card title="Mensagem no WhatsApp">
-        <p className="text-xs text-muted-foreground mb-2">
-          Variáveis: <code>{"{nome}"}</code>, <code>{"{cupom}"}</code>, <code>{"{desconto}"}</code>, <code>{"{validade}"}</code>, <code>{"{link}"}</code>
-        </p>
-        <Textarea rows={4} value={settings.message_template} onChange={(e) => patch({ message_template: e.target.value })} />
-        <div className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900 whitespace-pre-wrap">
-          <b>Prévia:</b> {preview}
+      <AccordionItem
+        id="message"
+        icon={MessageSquareText}
+        title="Mensagem no WhatsApp"
+        subtitle="Personalize com variáveis e veja o preview"
+        tone="emerald"
+      >
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Variáveis:{" "}
+              {["{nome}", "{cupom}", "{desconto}", "{validade}", "{link}"].map((v) => (
+                <code key={v} className="mr-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{v}</code>
+              ))}
+            </p>
+            <Textarea rows={8} value={settings.message_template} onChange={(e) => patch({ message_template: e.target.value })} />
+            <Field label="Link que aparece na mensagem" className="mt-3">
+              <Input className="min-h-11" value={settings.order_link_path} onChange={(e) => patch({ order_link_path: e.target.value })} />
+            </Field>
+          </div>
+
+          {/* WhatsApp-style preview */}
+          <div className="rounded-2xl bg-[#0b141a] p-3 shadow-inner">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">Preview WhatsApp</div>
+            <div className="mt-2 max-w-[90%] rounded-2xl rounded-tl-sm bg-[#005c4b] p-3 text-sm text-white shadow">
+              <div className="whitespace-pre-wrap break-words leading-relaxed">{preview}</div>
+              <div className="mt-1 text-right text-[10px] text-emerald-100/70">agora ✓✓</div>
+            </div>
+          </div>
         </div>
-        <Field label="Link que aparece na mensagem" className="mt-3">
-          <Input value={settings.order_link_path} onChange={(e) => patch({ order_link_path: e.target.value })} />
-        </Field>
-      </Card>
+      </AccordionItem>
 
-      <Card title="Agenda do envio automático">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Field label="Horário (HH)">
-            <Input type="number" min={0} max={23} value={settings.send_hour} onChange={(e) => patch({ send_hour: Number(e.target.value) })} />
+      <AccordionItem
+        id="schedule"
+        icon={CalendarClock}
+        title="Agenda do envio automático"
+        subtitle={`${String(settings.send_hour).padStart(2, "0")}:${String(settings.send_minute).padStart(2, "0")} · ${settings.weekdays.length} dia(s)/semana`}
+        tone="sky"
+      >
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <Field label="Hora (HH)">
+            <Input type="number" min={0} max={23} className="min-h-11" value={settings.send_hour} onChange={(e) => patch({ send_hour: Number(e.target.value) })} />
           </Field>
           <Field label="Minuto (MM)">
-            <Input type="number" min={0} max={59} value={settings.send_minute} onChange={(e) => patch({ send_minute: Number(e.target.value) })} />
+            <Input type="number" min={0} max={59} className="min-h-11" value={settings.send_minute} onChange={(e) => patch({ send_minute: Number(e.target.value) })} />
           </Field>
-          <Field label="Fuso horário">
-            <Input value={settings.timezone} onChange={(e) => patch({ timezone: e.target.value })} />
+          <Field label="Fuso horário" className="col-span-2 sm:col-span-1">
+            <Input className="min-h-11" value={settings.timezone} onChange={(e) => patch({ timezone: e.target.value })} />
           </Field>
         </div>
         <div className="mt-4">
-          <Label className="text-xs">Dias da semana</Label>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <Label className="text-xs font-semibold text-foreground">Dias da semana</Label>
+          <div className="mt-2 grid grid-cols-7 gap-1.5">
             {WEEKDAYS.map((d) => {
               const active = settings.weekdays.includes(d.v);
               return (
@@ -597,9 +907,9 @@ function ConfigTab({
                   key={d.v}
                   type="button"
                   onClick={() => toggleWeekday(d.v)}
-                  className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+                  className={`min-h-11 rounded-lg border text-xs font-semibold transition ${
                     active
-                      ? "border-rose-500 bg-rose-500 text-white"
+                      ? "border-rose-500 bg-rose-500 text-white shadow"
                       : "border-border bg-card text-muted-foreground hover:bg-muted/40"
                   }`}
                 >
@@ -609,10 +919,15 @@ function ConfigTab({
             })}
           </div>
         </div>
-      </Card>
+      </AccordionItem>
 
-      <div className="flex justify-end">
-        <Button onClick={onSave} disabled={saving} className="bg-rose-600 hover:bg-rose-700">
+      {/* Sticky save */}
+      <div className="sticky bottom-3 z-10 flex justify-end pt-2">
+        <Button
+          onClick={onSave}
+          disabled={saving}
+          className="min-h-12 w-full bg-rose-600 shadow-lg hover:bg-rose-700 sm:w-auto"
+        >
           <Save className="h-4 w-4" /> {saving ? "Salvando…" : "Salvar configurações"}
         </Button>
       </div>
@@ -620,27 +935,23 @@ function ConfigTab({
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-2xl border border-border bg-card p-5">
-      <h3 className="mb-4 text-base font-semibold text-foreground">{title}</h3>
-      {children}
-    </section>
-  );
-}
 function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={`space-y-1 ${className}`}>
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       {children}
     </div>
   );
 }
 
 /* ============================================================== */
+/* History                                                          */
+/* ============================================================== */
+
 function HistoryTab() {
   const [rows, setRows] = useState<SendRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const list = useServerFn(listWinbackSends);
 
   const load = async () => {
@@ -656,66 +967,146 @@ function HistoryTab() {
   };
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const filtered = useMemo(
+    () => (statusFilter === "all" ? rows : rows.filter((r) => r.status === statusFilter)),
+    [rows, statusFilter],
+  );
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: rows.length, sent: 0, failed: 0, skipped: 0, partial: 0 };
+    for (const r of rows) c[r.status] = (c[r.status] ?? 0) + 1;
+    return c;
+  }, [rows]);
+
+  const filters = [
+    { id: "all", label: "Todos" },
+    { id: "sent", label: "Enviados" },
+    { id: "failed", label: "Falhas" },
+    { id: "skipped", label: "Ignorados" },
+    { id: "partial", label: "Parciais" },
+  ];
+
   return (
     <div className="space-y-3">
-      <div className="flex justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Últimos envios</h2>
-        <Button variant="outline" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Atualizar
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {filters.map((f) => {
+            const active = statusFilter === f.id;
+            const n = counts[f.id] ?? 0;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setStatusFilter(f.id)}
+                className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition ${
+                  active
+                    ? "border-rose-500 bg-rose-500 text-white"
+                    : "border-border bg-card text-muted-foreground hover:bg-muted/40"
+                }`}
+              >
+                {f.label} <span className="ml-1 opacity-70">{n}</span>
+              </button>
+            );
+          })}
+        </div>
+        <Button variant="outline" onClick={load} disabled={loading} className="min-h-9">
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <span className="hidden sm:inline">Atualizar</span>
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-left text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2">Quando</th>
-              <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Telefone</th>
-              <th className="px-3 py-2">Cupom</th>
-              <th className="px-3 py-2">Origem</th>
-              <th className="px-3 py-2">Sem comprar</th>
-              <th className="px-3 py-2">Erro</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
-                  {loading ? "Carregando…" : "Nenhum envio ainda."}
-                </td>
-              </tr>
-            )}
-            {rows.map((r) => (
-              <tr key={r.id} className="border-t border-border/60 align-top">
-                <td className="px-3 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
-                <td className="px-3 py-2">
-                  <StatusPill status={r.status} />
-                </td>
-                <td className="px-3 py-2 font-mono text-xs">{r.phone || "—"}</td>
-                <td className="px-3 py-2 font-mono text-xs">{r.coupon_code || "—"}</td>
-                <td className="px-3 py-2 text-xs">{r.triggered_by}</td>
-                <td className="px-3 py-2 text-xs">{r.days_since_last_order ? `${r.days_since_last_order}d` : "—"}</td>
-                <td className="px-3 py-2 text-xs text-rose-600 max-w-[240px] truncate" title={r.error ?? ""}>{r.error}</td>
-              </tr>
+
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+          {loading ? "Carregando…" : "Nenhum envio ainda."}
+        </div>
+      ) : (
+        <>
+          {/* Mobile: cards */}
+          <ul className="space-y-2 md:hidden">
+            {filtered.map((r) => (
+              <li key={r.id} className="overflow-hidden rounded-xl border border-border bg-card p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <StatusPill status={r.status} />
+                      <span className="truncate text-xs text-muted-foreground">
+                        {new Date(r.created_at).toLocaleString("pt-BR")}
+                      </span>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Telefone</div>
+                        <div className="truncate font-mono">{r.phone || "—"}</div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Cupom</div>
+                        <div className="truncate font-mono">{r.coupon_code || "—"}</div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Origem</div>
+                        <div className="truncate">{r.triggered_by}</div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Inativo</div>
+                        <div>{r.days_since_last_order ? `${r.days_since_last_order}d` : "—"}</div>
+                      </div>
+                    </div>
+                    {r.error && (
+                      <div className="mt-2 rounded-md bg-rose-500/10 p-2 text-[11px] text-rose-600 break-words">
+                        {r.error}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+
+          {/* Desktop: table */}
+          <div className="hidden overflow-x-auto rounded-2xl border border-border bg-card md:block">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-left text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2">Quando</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2">Telefone</th>
+                  <th className="px-3 py-2">Cupom</th>
+                  <th className="px-3 py-2">Origem</th>
+                  <th className="px-3 py-2">Sem comprar</th>
+                  <th className="px-3 py-2">Erro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((r) => (
+                  <tr key={r.id} className="border-t border-border/60 align-top">
+                    <td className="px-3 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
+                    <td className="px-3 py-2"><StatusPill status={r.status} /></td>
+                    <td className="px-3 py-2 font-mono text-xs">{r.phone || "—"}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{r.coupon_code || "—"}</td>
+                    <td className="px-3 py-2 text-xs">{r.triggered_by}</td>
+                    <td className="px-3 py-2 text-xs">{r.days_since_last_order ? `${r.days_since_last_order}d` : "—"}</td>
+                    <td className="max-w-[240px] truncate px-3 py-2 text-xs text-rose-600" title={r.error ?? ""}>{r.error}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, { c: string; ic: React.ElementType; l: string }> = {
-    sent: { c: "bg-emerald-100 text-emerald-700", ic: CheckCircle2, l: "Enviado" },
-    partial: { c: "bg-amber-100 text-amber-700", ic: AlertTriangle, l: "Parcial" },
-    failed: { c: "bg-rose-100 text-rose-700", ic: XCircle, l: "Falhou" },
-    skipped: { c: "bg-muted/50 text-muted-foreground", ic: AlertTriangle, l: "Ignorado" },
+    sent: { c: "bg-emerald-500/15 text-emerald-600", ic: CheckCircle2, l: "Enviado" },
+    partial: { c: "bg-amber-500/15 text-amber-600", ic: AlertTriangle, l: "Parcial" },
+    failed: { c: "bg-rose-500/15 text-rose-600", ic: XCircle, l: "Falhou" },
+    skipped: { c: "bg-muted/60 text-muted-foreground", ic: AlertTriangle, l: "Ignorado" },
   };
-  const meta = map[status] ?? { c: "bg-muted/50 text-muted-foreground", ic: AlertTriangle, l: status };
+  const meta = map[status] ?? { c: "bg-muted/60 text-muted-foreground", ic: AlertTriangle, l: status };
   const Ic = meta.ic;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${meta.c}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${meta.c}`}>
       <Ic className="h-3 w-3" />
       {meta.l}
     </span>
