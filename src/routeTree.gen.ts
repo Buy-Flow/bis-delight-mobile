@@ -31,7 +31,6 @@ import { Route as ApiCopilotChatRouteImport } from './routes/api/copilot-chat'
 import { Route as ApiAsaasWebhookRouteImport } from './routes/api/asaas-webhook'
 import { Route as AuthenticatedWhatsappIaRouteImport } from './routes/_authenticated/whatsapp-ia'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
-import { Route as AuthenticatedVozCopilotoRouteImport } from './routes/_authenticated/voz-copiloto'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
 import { Route as AuthenticatedSkeletonLoadingRouteImport } from './routes/_authenticated/skeleton-loading'
@@ -198,12 +197,6 @@ const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedVozCopilotoRoute =
-  AuthenticatedVozCopilotoRouteImport.update({
-    id: '/voz-copiloto',
-    path: '/voz-copiloto',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
@@ -559,7 +552,6 @@ export interface FileRoutesByFullPath {
   '/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
-  '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/asaas-webhook': typeof ApiAsaasWebhookRoute
@@ -639,7 +631,6 @@ export interface FileRoutesByTo {
   '/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
-  '/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/asaas-webhook': typeof ApiAsaasWebhookRoute
@@ -721,7 +712,6 @@ export interface FileRoutesById {
   '/_authenticated/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/_authenticated/sla': typeof AuthenticatedSlaRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
-  '/_authenticated/voz-copiloto': typeof AuthenticatedVozCopilotoRoute
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/_authenticated/whatsapp-ia': typeof AuthenticatedWhatsappIaRoute
   '/api/asaas-webhook': typeof ApiAsaasWebhookRoute
@@ -803,7 +793,6 @@ export interface FileRouteTypes {
     | '/skeleton-loading'
     | '/sla'
     | '/usuarios'
-    | '/voz-copiloto'
     | '/whatsapp'
     | '/whatsapp-ia'
     | '/api/asaas-webhook'
@@ -883,7 +872,6 @@ export interface FileRouteTypes {
     | '/skeleton-loading'
     | '/sla'
     | '/usuarios'
-    | '/voz-copiloto'
     | '/whatsapp'
     | '/whatsapp-ia'
     | '/api/asaas-webhook'
@@ -964,7 +952,6 @@ export interface FileRouteTypes {
     | '/_authenticated/skeleton-loading'
     | '/_authenticated/sla'
     | '/_authenticated/usuarios'
-    | '/_authenticated/voz-copiloto'
     | '/_authenticated/whatsapp'
     | '/_authenticated/whatsapp-ia'
     | '/api/asaas-webhook'
@@ -1176,13 +1163,6 @@ declare module '@tanstack/react-router' {
       path: '/whatsapp'
       fullPath: '/whatsapp'
       preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/voz-copiloto': {
-      id: '/_authenticated/voz-copiloto'
-      path: '/voz-copiloto'
-      fullPath: '/voz-copiloto'
-      preLoaderRoute: typeof AuthenticatedVozCopilotoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/usuarios': {
@@ -1625,7 +1605,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSkeletonLoadingRoute: typeof AuthenticatedSkeletonLoadingRoute
   AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
-  AuthenticatedVozCopilotoRoute: typeof AuthenticatedVozCopilotoRoute
   AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
   AuthenticatedWhatsappIaRoute: typeof AuthenticatedWhatsappIaRoute
   AuthenticatedAvaliarOrderIdRoute: typeof AuthenticatedAvaliarOrderIdRoute
@@ -1677,7 +1656,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSkeletonLoadingRoute: AuthenticatedSkeletonLoadingRoute,
   AuthenticatedSlaRoute: AuthenticatedSlaRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
-  AuthenticatedVozCopilotoRoute: AuthenticatedVozCopilotoRoute,
   AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
   AuthenticatedWhatsappIaRoute: AuthenticatedWhatsappIaRoute,
   AuthenticatedAvaliarOrderIdRoute: AuthenticatedAvaliarOrderIdRoute,
