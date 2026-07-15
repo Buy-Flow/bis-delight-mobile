@@ -635,6 +635,7 @@ function PDVPage() {
             changeQty={changeQty}
             removeLine={removeLine}
             onEditLine={onEditLine}
+            onDuplicateLine={onDuplicateLine}
             clearAll={clearAll}
             finalize={finalize}
             sending={sending}
@@ -702,6 +703,7 @@ function PDVPage() {
               changeQty={changeQty}
               removeLine={removeLine}
               onEditLine={onEditLine}
+            onDuplicateLine={onDuplicateLine}
               clearAll={clearAll}
               finalize={finalize}
               sending={sending}
