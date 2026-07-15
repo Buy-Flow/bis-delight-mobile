@@ -656,64 +656,125 @@ function IngredientsTable({
       {ingredients.map((i) => {
         const s = statusFor(i.stock, i.low_stock_threshold);
         return (
-          <div
-            key={i.id}
-            className="grid grid-cols-2 md:grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] items-center px-4 py-3 border-t border-white/5 hover:bg-white/[0.03]"
-          >
-            <div className="col-span-2 md:col-span-1 min-w-0">
-              <div className="text-sm font-medium truncate">{i.name}</div>
-              <div className="text-[11px] text-white/50 truncate">
-                {i.category ? i.category + " · " : ""}{i.unit}
-                {i.sku ? " · SKU " + i.sku : ""}
+          <div key={i.id} className="border-t border-white/5 hover:bg-white/[0.03]">
+            {/* MOBILE CARD */}
+            <div className="md:hidden p-3 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold truncate">{i.name}</div>
+                  <div className="text-[11px] text-white/50 truncate">
+                    {i.category ? i.category + " · " : ""}{i.unit}
+                    {i.sku ? " · SKU " + i.sku : ""}
+                  </div>
+                </div>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0", s.className)}>{s.label}</span>
               </div>
-            </div>
-            <div className="hidden md:block text-xs text-white/60 truncate">
-              {i.supplier ? (
-                <>
-                  <div className="flex items-center gap-1"><Truck className="w-3 h-3" /> {i.supplier}</div>
+              <div className="grid grid-cols-3 gap-2 text-[11px]">
+                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <div className="text-white/40">Estoque</div>
+                  <div className="text-sm font-bold text-white truncate">{fmtQty(i.stock, i.unit)}</div>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <div className="text-white/40">Alerta</div>
+                  <div className="text-sm font-semibold text-white/80 truncate">{fmtQty(i.low_stock_threshold, i.unit)}</div>
+                </div>
+                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <div className="text-white/40">Valor</div>
+                  <div className="text-sm font-semibold text-white/80 truncate">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+                </div>
+              </div>
+              {i.supplier && (
+                <div className="flex items-center gap-2 text-[11px] text-white/60">
+                  <Truck className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{i.supplier}</span>
                   {i.supplier_phone && (
-                    <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-white/70 mt-0.5">
+                    <a href={`tel:${i.supplier_phone}`} className="ml-auto flex items-center gap-1 text-white/50 shrink-0">
                       <Phone className="w-3 h-3" /> {i.supplier_phone}
                     </a>
                   )}
-                </>
-              ) : (
-                <span className="text-white/30">—</span>
+                </div>
               )}
+              <div className="flex gap-1.5 pt-1">
+                <button
+                  onClick={() => onOpenMovement(i)}
+                  className="flex-1 px-3 py-2 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-medium hover:bg-yellow-400/30"
+                >
+                  Movimento
+                </button>
+                <button
+                  onClick={() => onEdit(i)}
+                  className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10"
+                  aria-label="Editar"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onDelete(i.id)}
+                  className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="text-sm font-semibold">
-              {fmtQty(i.stock, i.unit)}
-              <div className={cn("mt-0.5 md:mt-1 text-[10px] inline-block px-1.5 py-0.5 rounded border", s.className)}>{s.label}</div>
-            </div>
-            <div className="hidden md:block text-xs text-white/60">{fmtQty(i.low_stock_threshold, i.unit)}</div>
-            <div className="hidden md:block text-xs text-white/60">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
-            <div className="hidden md:block text-xs text-white/80">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
-            <div className="flex justify-end gap-1 flex-wrap">
-              <button
-                onClick={() => onOpenMovement(i)}
-                className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
-                title="Registrar movimento"
-              >
-                Movimento
-              </button>
-              <button
-                onClick={() => onEdit(i)}
-                className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10"
-                title="Editar"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onDelete(i.id)}
-                className="p-1.5 rounded bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
-                title="Excluir"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+
+            {/* DESKTOP ROW */}
+            <div className="hidden md:grid md:grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] items-center px-4 py-3">
+              <div className="min-w-0">
+                <div className="text-sm font-medium truncate">{i.name}</div>
+                <div className="text-[11px] text-white/50 truncate">
+                  {i.category ? i.category + " · " : ""}{i.unit}
+                  {i.sku ? " · SKU " + i.sku : ""}
+                </div>
+              </div>
+              <div className="text-xs text-white/60 truncate">
+                {i.supplier ? (
+                  <>
+                    <div className="flex items-center gap-1"><Truck className="w-3 h-3" /> {i.supplier}</div>
+                    {i.supplier_phone && (
+                      <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-white/70 mt-0.5">
+                        <Phone className="w-3 h-3" /> {i.supplier_phone}
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-white/30">—</span>
+                )}
+              </div>
+              <div className="text-sm font-semibold">
+                {fmtQty(i.stock, i.unit)}
+                <div className={cn("mt-1 text-[10px] inline-block px-1.5 py-0.5 rounded border", s.className)}>{s.label}</div>
+              </div>
+              <div className="text-xs text-white/60">{fmtQty(i.low_stock_threshold, i.unit)}</div>
+              <div className="text-xs text-white/60">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
+              <div className="text-xs text-white/80">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+              <div className="flex justify-end gap-1 flex-wrap">
+                <button
+                  onClick={() => onOpenMovement(i)}
+                  className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
+                >
+                  Movimento
+                </button>
+                <button
+                  onClick={() => onEdit(i)}
+                  className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10"
+                  aria-label="Editar"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => onDelete(i.id)}
+                  className="p-1.5 rounded bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         );
       })}
+
     </div>
   );
 }
