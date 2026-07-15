@@ -14,6 +14,11 @@ export const Route = createFileRoute("/_authenticated/selos")({
   component: SelosPage,
 });
 
+export function SelosContent() {
+  return <SelosInner />;
+}
+
+
 const DEFAULT_COLORS = [
   "oklch(0.87 0.19 95)", // amarelo
   "oklch(0.80 0.16 200)", // ciano
