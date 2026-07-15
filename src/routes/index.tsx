@@ -18,6 +18,7 @@ import { UrgencyBanner } from "@/components/menu/UrgencyBanner";
 import { StoreClosedBanner } from "@/components/menu/StoreClosedBanner";
 import { ActiveOrderCard } from "@/components/menu/ActiveOrderCard";
 import { BirthdayBanner } from "@/components/menu/BirthdayBanner";
+import { VipLeaderboard } from "@/components/menu/VipLeaderboard";
 
 
 import { FloatingActions } from "@/components/menu/FloatingActions";
