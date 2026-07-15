@@ -2817,8 +2817,25 @@ function HeroImageEditor({
   };
 
   return (
-    <div className="relative rounded-2xl border border-white/10 bg-white/[0.03]">
-      <div className="flex w-full items-center gap-3 p-3">
+    <div
+      draggable={!!onDragStart}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      className={cn(
+        "relative rounded-2xl border border-white/10 bg-white/[0.03] transition",
+        dragging && "opacity-40",
+      )}
+    >
+      <div className="flex w-full items-center gap-2 p-3">
+        {onDragStart && (
+          <div
+            className="grid h-full w-6 shrink-0 cursor-grab place-items-center text-white/30 hover:text-white/70 active:cursor-grabbing"
+            aria-label="Arraste para reordenar"
+          >
+            <GripVertical className="h-4 w-4" />
+          </div>
+        )}
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
