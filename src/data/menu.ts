@@ -188,6 +188,7 @@ export type Product = {
   removable?: string[];
   badge?: string;
   hero?: boolean;
+  heroOrder?: number;
   active?: boolean;
   imagePosX?: number;
   imagePosY?: number;

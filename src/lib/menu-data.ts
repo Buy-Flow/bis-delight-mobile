@@ -170,6 +170,7 @@ function rowToProduct(row: Record<string, unknown>): Product {
     removable: (row.removable as string[] | null) ?? undefined,
     badge: (row.badge as Product["badge"]) ?? undefined,
     hero: Boolean(row.hero),
+    heroOrder: row.hero_order !== undefined && row.hero_order !== null ? Number(row.hero_order) : 0,
     active: row.active === undefined ? true : Boolean(row.active),
     imagePosX: row.image_pos_x !== undefined && row.image_pos_x !== null ? Number(row.image_pos_x) : 0,
     imagePosY: row.image_pos_y !== undefined && row.image_pos_y !== null ? Number(row.image_pos_y) : 0,
@@ -903,6 +904,21 @@ export function useReorderProducts() {
       await Promise.all(
         items.map((it) =>
           supabase.from("products").update({ sort_order: it.sort_order }).eq("id", it.id),
+        ),
+      );
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useReorderHero() {
+  const invalidate = useInvalidateMenu();
+  return useMutation({
+    mutationFn: async (items: { id: string; hero_order: number }[]) => {
+      await Promise.all(
+        items.map((it) =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase.from("products") as any).update({ hero_order: it.hero_order }).eq("id", it.id),
         ),
       );
     },
