@@ -168,22 +168,17 @@ export function Hero({
 
         {/* Offer chips */}
         <div
-          className="mt-5 flex flex-col items-center gap-1.5"
+          className="mt-5 flex w-full items-center justify-center gap-1.5"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          <div className="flex items-center justify-center gap-1.5">
-            {["Açaí", "Shakes"].map((chip) => (
-              <span
-                key={chip}
-                className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm"
-              >
-                {chip}
-              </span>
-            ))}
-          </div>
-          <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm">
-            Sorvetes
-          </span>
+          {["Açaí", "Shakes", "Sorvetes"].map((chip) => (
+            <span
+              key={chip}
+              className="whitespace-nowrap rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.10em] text-white/90 backdrop-blur-sm"
+            >
+              {chip}
+            </span>
+          ))}
         </div>
 
         <p
