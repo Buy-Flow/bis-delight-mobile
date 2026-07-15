@@ -638,7 +638,12 @@ function BibliotecaPage() {
             setDragActive(true);
           }}
           onDragLeave={() => setDragActive(false)}
-          onDrop={onDrop}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragActive(false);
+            if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
+          }}
+
           className={cn(
             "rounded-2xl border-2 border-dashed transition",
             dragActive
