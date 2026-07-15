@@ -287,7 +287,7 @@ function EstoquePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b0518] via-[#150829] to-[#0b0518] text-white pb-24 md:pb-6">
+    <div className="min-h-screen bg-background text-white pb-24 md:pb-6">
       <div className="mx-auto max-w-7xl p-3 md:p-6 space-y-4 md:space-y-6">
         {/* HEADER */}
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">

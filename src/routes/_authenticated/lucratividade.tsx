@@ -553,7 +553,7 @@ function LucratividadePage() {
   const maxDailyAbsProfit = Math.max(1, ...daily.map((d) => Math.abs(d.profit)));
 
   return (
-    <div className="min-h-screen bg-black text-white pb-24">
+    <div className="min-h-screen bg-background text-white pb-24">
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-6 md:pt-8 space-y-6">
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
