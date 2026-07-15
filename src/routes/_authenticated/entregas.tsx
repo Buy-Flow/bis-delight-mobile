@@ -1061,37 +1061,49 @@ function CourierDialog({
     avatar_url: courier?.avatar_url ?? "",
   });
   const [saving, setSaving] = useState(false);
-  const [linkEmail, setLinkEmail] = useState("");
-  const [linking, setLinking] = useState(false);
+  const [creatingLogin, setCreatingLogin] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+  const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
   const currentUserId = (courier as unknown as { user_id?: string | null } | null)?.user_id ?? null;
 
-  const linkAccount = async () => {
+  const createLogin = async () => {
     if (!courier) { toast.error("Salve o motoboy primeiro"); return; }
-    if (!linkEmail.trim()) { toast.error("Digite o email da conta"); return; }
-    setLinking(true);
+    setCreatingLogin(true);
     try {
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("id, full_name, phone")
-        .or(`phone.eq.${linkEmail.trim()},full_name.ilike.%${linkEmail.trim()}%`)
-        .limit(1)
-        .maybeSingle();
-      if (!prof?.id) {
-        toast.error("Usuário não encontrado. Peça para criar conta em /auth e informe o telefone cadastrado.");
-        setLinking(false); return;
-      }
-      const { data, error } = await supabase.rpc("link_courier_to_user", {
-        _courier_id: courier.id, _user_id: prof.id,
-      });
-      if (error || !(data as { ok: boolean })?.ok) {
-        toast.error("Falha ao vincular conta");
-      } else {
-        toast.success(`Conta vinculada a ${prof.full_name ?? prof.id}! Ele já pode acessar /motoboy`);
-        setLinkEmail("");
-        await onSaved();
-      }
-    } finally { setLinking(false); }
+      const { createCourierLogin } = await import("@/lib/courier.functions");
+      const res = await createCourierLogin({ data: { courierId: courier.id } });
+      setCredentials({ email: res.email, password: res.password });
+      toast.success("Acesso criado! Anote os dados abaixo.");
+      await onSaved();
+    } catch (e) {
+      toast.error("Falha ao criar acesso: " + (e as Error).message);
+    } finally { setCreatingLogin(false); }
   };
+
+  const revokeLogin = async () => {
+    if (!courier) return;
+    if (!(await confirmDialog({ message: "Revogar o acesso deste motoboy ao app? Ele não conseguirá mais entrar." }))) return;
+    setRevoking(true);
+    try {
+      const { revokeCourierLogin } = await import("@/lib/courier.functions");
+      await revokeCourierLogin({ data: { courierId: courier.id } });
+      toast.success("Acesso revogado");
+      setCredentials(null);
+      await onSaved();
+    } catch (e) {
+      toast.error("Falha ao revogar: " + (e as Error).message);
+    } finally { setRevoking(false); }
+  };
+
+  const copy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copiado`);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
+
 
 
 
