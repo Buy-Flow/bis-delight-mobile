@@ -1113,6 +1113,8 @@ function ProductEditor({
   const upsert = useUpsertProduct();
   const del = useDeleteProduct();
   const isNew = !initial.id;
+  const navigate = useNavigate();
+  const { data: badgesList } = useProductBadges();
   const [p, setP] = useState<Product>(initial);
   const [imageBusy, setImageBusy] = useState(false);
   const [tab, setTab] = useState<EditorTab>("basic");
