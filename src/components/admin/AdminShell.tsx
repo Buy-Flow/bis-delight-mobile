@@ -54,6 +54,7 @@ import {
   Mic,
   WifiOff,
   Stethoscope,
+  History as HistoryIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
