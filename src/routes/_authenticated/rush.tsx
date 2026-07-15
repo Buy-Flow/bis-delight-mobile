@@ -88,6 +88,8 @@ type Order = {
   delivery_fee: number;
   total: number;
   status: OrderStatus;
+  payment_method: string | null;
+  paid_at: string | null;
   created_at: string;
   preparing_at: string | null;
   dispatched_at: string | null;
@@ -137,6 +139,14 @@ const STATUS_PUSH: Partial<Record<OrderStatus, { title: string; body: string }>>
     body: "Bom apetite, {{primeiro_nome}}! Aproveita e nos conta o que achou 💜",
   },
 };
+
+function isOnlinePayment(method: string | null | undefined): boolean {
+  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+}
+
+function isActionableOrder(order: Pick<Order, "status" | "payment_method">): boolean {
+  return order.status === "pago" || order.status !== "pendente" || !isOnlinePayment(order.payment_method);
+}
 
 async function notifyOrderStatus(order: Order, status: OrderStatus) {
   const preset = STATUS_PUSH[status];
@@ -316,7 +326,7 @@ function RushPage() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,user_id,mode,customer_name,phone,address,reference,note,subtotal,delivery_fee,total,status,created_at,preparing_at,dispatched_at,delivered_at,delivery_lat,delivery_lng,order_items(id,name,quantity,size,flavor,extras,removed,note,unit_price)",
+          "id,user_id,mode,customer_name,phone,address,reference,note,subtotal,delivery_fee,total,status,payment_method,paid_at,created_at,preparing_at,dispatched_at,delivered_at,delivery_lat,delivery_lng,order_items(id,name,quantity,size,flavor,extras,removed,note,unit_price)",
         )
         .order("created_at", { ascending: false })
         .limit(200);
@@ -325,7 +335,7 @@ function RushPage() {
         toast.error("Não consegui carregar pedidos.");
         return;
       }
-      const list = (data ?? []) as unknown as Order[];
+      const list = ((data ?? []) as unknown as Order[]).filter(isActionableOrder);
       // detect new incoming orders after first load
       if (initialized.current) {
         const incoming = list.filter(

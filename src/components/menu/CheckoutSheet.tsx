@@ -738,12 +738,12 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
             },
           });
           const st = String(result?.status ?? "").toUpperCase();
-          if (["CONFIRMED", "RECEIVED", "AUTHORIZED"].includes(st)) {
+          if (["CONFIRMED", "RECEIVED", "RECEIVED_IN_CASH", "PAID"].includes(st)) {
             toast.success("Pagamento aprovado! 🎉");
-          } else if (st === "PENDING") {
-            toast.info("Pagamento em processamento — vamos avisar assim que confirmar.");
+          } else if (["PENDING", "AUTHORIZED"].includes(st)) {
+            toast.info("Pagamento em análise — o pedido só será confirmado quando a operadora aprovar.");
           } else {
-            toast.warning(`Status: ${st}`);
+            throw new Error(`Pagamento não aprovado (${st || "status desconhecido"}). Tente outro cartão ou PIX.`);
           }
           clear();
           closeCheckout();

@@ -22,7 +22,12 @@ type OrderRow = {
   dispatched_at: string | null;
   delivered_at: string | null;
   canceled_at: string | null;
+  payment_method: string | null;
 };
+
+function isOnlinePayment(method: string | null | undefined): boolean {
+  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+}
 
 export function useSoundAlertsListener() {
   const alertsRef = useRef<Record<string, SoundAlert>>({});
@@ -64,8 +69,10 @@ export function useSoundAlertsListener() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "orders" },
-        () => {
-          void fire("new_order");
+        (payload) => {
+          const row = payload.new as OrderRow;
+          if (row.status !== "pago" && isOnlinePayment(row.payment_method)) return;
+          void fire(row.status === "pago" ? "paid_order" : "new_order");
         },
       )
       .on(
