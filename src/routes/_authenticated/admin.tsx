@@ -697,6 +697,8 @@ function ProductsTab({ initialEditId }: { initialEditId?: string }) {
   const upsert = useUpsertProduct();
   const del = useDeleteProduct();
   const [editing, setEditing] = useState<Product | null>(null);
+  const [editingTab, setEditingTab] = useState<EditorTab | undefined>(undefined);
+  const openEditor = (p: Product, tab?: EditorTab) => { setEditingTab(tab); setEditing(p); };
 
   useEffect(() => {
     if (!initialEditId || !products.length) return;
