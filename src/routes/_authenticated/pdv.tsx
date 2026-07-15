@@ -26,7 +26,7 @@ import {
   Copy,
   PauseCircle,
   PlayCircle,
-  TrendingUp,
+  
   Keyboard,
   ChefHat,
   Receipt,
