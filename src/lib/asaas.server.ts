@@ -255,7 +255,17 @@ export async function createCheckoutSession(input: {
   expiredUrl: string;
   minutesToExpire?: number;
   customerId?: string;
-  customer?: { name?: string; email?: string; cpfCnpj?: string; phone?: string };
+  customer?: {
+    name?: string;
+    email?: string;
+    cpfCnpj?: string;
+    phone?: string;
+    postalCode?: string;
+    address?: string;
+    addressNumber?: string;
+    province?: string;
+    complement?: string;
+  };
   billingTypes?: Array<"CREDIT_CARD" | "PIX">;
 }): Promise<AsaasCheckoutSession> {
   const body: Record<string, unknown> = {
@@ -280,18 +290,24 @@ export async function createCheckoutSession(input: {
     body.customer = input.customerId;
   }
   if (input.customer) {
-    body.customerData = {
+    body.customerData = cleanPayload({
       name: input.customer.name,
       email: input.customer.email,
-      cpfCnpj: input.customer.cpfCnpj,
-      phone: input.customer.phone,
-    };
+      cpfCnpj: onlyDigits(input.customer.cpfCnpj) || undefined,
+      phone: normalizeBrazilianPhone(input.customer.phone),
+      postalCode: onlyDigits(input.customer.postalCode) || undefined,
+      address: input.customer.address,
+      addressNumber: input.customer.addressNumber,
+      province: input.customer.province,
+      complement: input.customer.complement,
+    });
   }
   return await asaasFetch<AsaasCheckoutSession>("/checkouts", {
     method: "POST",
     body: JSON.stringify(body),
   });
 }
+
 
 
 // Map Asaas status → local order status
