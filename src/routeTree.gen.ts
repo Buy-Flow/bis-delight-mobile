@@ -17,6 +17,7 @@ import { Route as FinalizarRouteImport } from './routes/finalizar'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as BaixarAppRouteImport } from './routes/baixar-app'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AsaasWebhookRouteImport } from './routes/asaas-webhook'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RastrearTokenRouteImport } from './routes/rastrear.$token'
@@ -122,6 +123,11 @@ const BaixarAppRoute = BaixarAppRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AsaasWebhookRoute = AsaasWebhookRouteImport.update({
+  id: '/asaas-webhook',
+  path: '/asaas-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -475,6 +481,7 @@ const ApiPublicWebhookAsaasRoute = ApiPublicWebhookAsaasRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
@@ -550,6 +557,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
@@ -627,6 +635,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/asaas-webhook': typeof AsaasWebhookRoute
   '/auth': typeof AuthRoute
   '/baixar-app': typeof BaixarAppRoute
   '/carrinho': typeof CarrinhoRoute
@@ -704,6 +713,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
@@ -779,6 +789,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
@@ -855,6 +866,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/asaas-webhook'
     | '/auth'
     | '/baixar-app'
     | '/carrinho'
@@ -932,6 +944,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AsaasWebhookRoute: typeof AsaasWebhookRoute
   AuthRoute: typeof AuthRoute
   BaixarAppRoute: typeof BaixarAppRoute
   CarrinhoRoute: typeof CarrinhoRoute
@@ -1014,6 +1027,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/asaas-webhook': {
+      id: '/asaas-webhook'
+      path: '/asaas-webhook'
+      fullPath: '/asaas-webhook'
+      preLoaderRoute: typeof AsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1601,6 +1621,7 @@ const ApiPublicWhatsappWebhookRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AsaasWebhookRoute: AsaasWebhookRoute,
   AuthRoute: AuthRoute,
   BaixarAppRoute: BaixarAppRoute,
   CarrinhoRoute: CarrinhoRoute,
