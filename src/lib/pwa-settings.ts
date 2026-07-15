@@ -88,7 +88,7 @@ export function usePwaSettings(): { settings: PwaSettings; loading: boolean; ref
   useEffect(() => {
     void refresh();
     const channel = supabase
-      .channel("pwa_settings_stream")
+      .channel(`pwa_settings_stream_${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "pwa_settings" },
@@ -100,6 +100,7 @@ export function usePwaSettings(): { settings: PwaSettings; loading: boolean; ref
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   return { settings, loading, refresh };
 }
