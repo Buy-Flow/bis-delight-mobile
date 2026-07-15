@@ -168,13 +168,13 @@ function RecompensasPage() {
               <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
                 <div aria-hidden className={cn("absolute inset-0 rounded-full bg-gradient-to-br blur-xl opacity-70", meta.gradient)} />
                 <img
-                  src={status ? meta.image : rewardTrophy}
-                  alt={status ? `Nível ${meta.label}` : "Troféu"}
+                  src={meta.image}
+                  alt={`Nível ${meta.label}`}
                   width={128}
                   height={128}
-                  loading="lazy"
                   className="relative h-16 w-16 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
                 />
+
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
