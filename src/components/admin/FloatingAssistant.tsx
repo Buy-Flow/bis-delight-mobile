@@ -304,6 +304,30 @@ function useCurrentPage(): PageInfo {
   }, [pathname, tab]);
 }
 
+export function AssistantTrigger({ className }: { className?: string }) {
+  const page = useCurrentPage();
+  return (
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new CustomEvent("assistant:open"))}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-gradient-to-br from-neon-pink to-purple-600 px-2.5 py-1.5 text-white shadow-lg shadow-neon-pink/30 hover:scale-105 transition",
+        className,
+      )}
+      aria-label={`Abrir assistente · ${page.label}`}
+      title={`IA · ${page.label}`}
+    >
+      <div className="relative">
+        <Bot className="h-4 w-4" />
+        <span className="absolute -top-1 -right-1 h-1.5 w-1.5 rounded-full bg-neon-yellow animate-pulse" />
+      </div>
+      <span className="hidden text-[10px] font-bold uppercase tracking-wider md:inline">
+        IA · {page.label}
+      </span>
+    </button>
+  );
+}
+
 export function FloatingAssistant() {
   const [open, setOpen] = useState(false);
   const page = useCurrentPage();
@@ -316,6 +340,12 @@ export function FloatingAssistant() {
     supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setToken(s?.access_token ?? null));
     return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("assistant:open", handler);
+    return () => window.removeEventListener("assistant:open", handler);
   }, []);
 
   const transport = useMemo(
@@ -385,23 +415,7 @@ export function FloatingAssistant() {
 
   return (
     <>
-      {/* Trigger button — fixed bottom-right */}
-      {!open && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="fixed bottom-4 right-4 z-[60] flex items-center gap-2 rounded-full border border-white/10 bg-gradient-to-br from-neon-pink to-purple-600 px-4 py-3 text-white shadow-2xl shadow-neon-pink/40 hover:scale-105 transition"
-          aria-label="Abrir assistente virtual"
-        >
-          <div className="relative">
-            <Bot className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-neon-yellow animate-pulse" />
-          </div>
-          <span className="hidden sm:inline text-xs font-bold uppercase tracking-wide">
-            IA · {page.label}
-          </span>
-        </button>
-      )}
+
 
       {/* Chat popover — compacto, ancorado no canto inferior direito, sem backdrop */}
       {open && (
