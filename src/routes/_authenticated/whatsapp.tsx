@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
@@ -10,9 +10,14 @@ import {
   CheckCheck,
   ChevronDown,
   Clock,
+  FileText,
+  Image as ImageIcon,
   Loader2,
   MessageCircle,
+  Mic,
+  Paperclip,
   Phone,
+  Play,
   Plus,
   Radio,
   RefreshCw,
@@ -20,6 +25,9 @@ import {
   Send,
   Settings,
   Smartphone,
+  Square,
+  Trash2,
+  Video as VideoIcon,
   WifiOff,
   Wrench,
   X,
@@ -42,6 +50,7 @@ import {
   syncWhatsappRecentMessages,
   updateWhatsappConversationPhone,
 } from "@/lib/whatsapp.functions";
+import { resolveWhatsappInboundMedia, sendWhatsappMediaMessage } from "@/lib/whatsapp-media.functions";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
   component: WhatsappPage,
