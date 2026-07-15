@@ -624,10 +624,10 @@ function RushPage() {
             type="button"
             onClick={toggleStore}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-bold transition",
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-sm transition",
               isPaused
-                ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40"
-                : "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40",
+                ? "bg-red-600 ring-1 ring-red-400/60 hover:bg-red-500"
+                : "bg-emerald-600 ring-1 ring-emerald-400/60 hover:bg-emerald-500",
             )}
             aria-label={isPaused ? "Retomar pedidos" : "Pausar pedidos"}
           >
