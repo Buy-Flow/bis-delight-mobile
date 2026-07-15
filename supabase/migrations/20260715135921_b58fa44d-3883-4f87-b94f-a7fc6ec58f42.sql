@@ -1,0 +1,20 @@
+
+REVOKE EXECUTE ON FUNCTION public.apply_inventory_movement() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.apply_pending_role_grants() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.consume_ingredients_on_paid() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.decrement_stock_on_paid() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.enforce_order_item_pricing() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.grant_loyalty_stamp() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.guard_courier_self_update() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.guard_order_courier_update() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.guard_order_financials() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.notify_admin_new_order() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.recompute_order_totals() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.release_table_on_paid() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.reviews_stamp_reply() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.reviews_touch_updated_at() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.reward_referrer_on_paid() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.sync_review_helpful_count() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.user_addresses_enforce_single_default() FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.validate_order_item_price() FROM anon, authenticated, PUBLIC;
