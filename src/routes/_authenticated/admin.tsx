@@ -124,6 +124,7 @@ import { CATEGORY_ICON_LIST, getCategoryIcon } from "@/lib/category-icons";
 import { DeliveryZoneEditor } from "@/components/admin/DeliveryZoneEditor";
 import type { DeliveryZoneConfig } from "@/lib/delivery-zone";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useProductBadges, type ProductBadge } from "@/lib/product-badges";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
