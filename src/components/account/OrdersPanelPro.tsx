@@ -159,6 +159,18 @@ export function OrdersPanelPro() {
   const [sortBy, setSortBy] = useState<SortBy>("recent");
   const [showFilters, setShowFilters] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [localRecent, setLocalRecent] = useState<Array<{ id: string; at: number; payment_method?: string; total?: number; needs_payment?: boolean }>>([]);
+
+  // Recupera pedidos recentes do próprio dispositivo (mesmo se a sessão trocou de conta)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("querobis:recent_orders");
+      const arr = raw ? JSON.parse(raw) : [];
+      const cutoff = Date.now() - 48 * 3600 * 1000;
+      const valid = (Array.isArray(arr) ? arr : []).filter((x: any) => x?.id && x?.at > cutoff);
+      setLocalRecent(valid);
+    } catch {}
+  }, []);
 
   const productImageById = useMemo(() => {
     const m = new Map<string, string>();
