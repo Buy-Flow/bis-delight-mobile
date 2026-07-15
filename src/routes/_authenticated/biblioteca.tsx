@@ -965,11 +965,12 @@ function MediaDetailDialog({
 
   return (
     <Dialog open={!!item} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-3xl border-white/10 bg-[#0d0d14] p-0 text-white">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-3xl sm:w-[95vw] max-h-[90vh] overflow-y-auto border-white/10 bg-[#0d0d14] p-0 text-white">
         <DialogHeader className="sr-only">
           <DialogTitle>{item.name}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_320px]">
+
           <div className="bg-black/40 p-4">
             <div className="aspect-square overflow-hidden rounded-xl bg-white/5">
               <img src={item.url} alt={item.alt_text ?? item.name} className="h-full w-full object-contain" />
