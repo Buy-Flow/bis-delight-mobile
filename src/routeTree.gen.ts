@@ -75,7 +75,6 @@ import { Route as ApiPublicWinbackCronRouteImport } from './routes/api/public/wi
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp-webhook'
 import { Route as ApiPublicDailyInsightsCronRouteImport } from './routes/api/public/daily-insights-cron'
 import { Route as ApiPublicCashCloseCronRouteImport } from './routes/api/public/cash-close-cron'
-import { Route as ApiPublicAsaasWebhookAliasRouteImport } from './routes/api/public/asaas-webhook-alias'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 import { Route as ApiPublicAsaasCheckRouteImport } from './routes/api/public/asaas-check'
 import { Route as ApiPublicAsaasRouteImport } from './routes/api/public/asaas'
@@ -429,12 +428,6 @@ const ApiPublicCashCloseCronRoute = ApiPublicCashCloseCronRouteImport.update({
   path: '/api/public/cash-close-cron',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicAsaasWebhookAliasRoute =
-  ApiPublicAsaasWebhookAliasRouteImport.update({
-    id: '/api/public/asaas-webhook-alias',
-    path: '/api/public/asaas-webhook-alias',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas-webhook',
   path: '/api/public/asaas-webhook',
@@ -541,7 +534,6 @@ export interface FileRoutesByFullPath {
   '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
-  '/api/public/asaas-webhook-alias': typeof ApiPublicAsaasWebhookAliasRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -616,7 +608,6 @@ export interface FileRoutesByTo {
   '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
-  '/api/public/asaas-webhook-alias': typeof ApiPublicAsaasWebhookAliasRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -693,7 +684,6 @@ export interface FileRoutesById {
   '/api/public/asaas': typeof ApiPublicAsaasRoute
   '/api/public/asaas-check': typeof ApiPublicAsaasCheckRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
-  '/api/public/asaas-webhook-alias': typeof ApiPublicAsaasWebhookAliasRoute
   '/api/public/cash-close-cron': typeof ApiPublicCashCloseCronRoute
   '/api/public/daily-insights-cron': typeof ApiPublicDailyInsightsCronRoute
   '/api/public/whatsapp-webhook': typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -770,7 +760,6 @@ export interface FileRouteTypes {
     | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
-    | '/api/public/asaas-webhook-alias'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
@@ -845,7 +834,6 @@ export interface FileRouteTypes {
     | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
-    | '/api/public/asaas-webhook-alias'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
@@ -921,7 +909,6 @@ export interface FileRouteTypes {
     | '/api/public/asaas'
     | '/api/public/asaas-check'
     | '/api/public/asaas-webhook'
-    | '/api/public/asaas-webhook-alias'
     | '/api/public/cash-close-cron'
     | '/api/public/daily-insights-cron'
     | '/api/public/whatsapp-webhook'
@@ -951,7 +938,6 @@ export interface RootRouteChildren {
   ApiPublicAsaasRoute: typeof ApiPublicAsaasRoute
   ApiPublicAsaasCheckRoute: typeof ApiPublicAsaasCheckRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
-  ApiPublicAsaasWebhookAliasRoute: typeof ApiPublicAsaasWebhookAliasRoute
   ApiPublicCashCloseCronRoute: typeof ApiPublicCashCloseCronRoute
   ApiPublicDailyInsightsCronRoute: typeof ApiPublicDailyInsightsCronRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRouteWithChildren
@@ -1423,13 +1409,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCashCloseCronRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/asaas-webhook-alias': {
-      id: '/api/public/asaas-webhook-alias'
-      path: '/api/public/asaas-webhook-alias'
-      fullPath: '/api/public/asaas-webhook-alias'
-      preLoaderRoute: typeof ApiPublicAsaasWebhookAliasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/asaas-webhook': {
       id: '/api/public/asaas-webhook'
       path: '/api/public/asaas-webhook'
@@ -1620,7 +1599,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAsaasRoute: ApiPublicAsaasRoute,
   ApiPublicAsaasCheckRoute: ApiPublicAsaasCheckRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
-  ApiPublicAsaasWebhookAliasRoute: ApiPublicAsaasWebhookAliasRoute,
   ApiPublicCashCloseCronRoute: ApiPublicCashCloseCronRoute,
   ApiPublicDailyInsightsCronRoute: ApiPublicDailyInsightsCronRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRouteWithChildren,
