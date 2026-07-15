@@ -260,6 +260,7 @@ function RushPage() {
   const canOperate = canAccess("/rush");
   const { data: settings } = useSiteSettings();
   const updateSettings = useUpdateSettings();
+  const invalidateMenu = useInvalidateMenu();
   const sendTestPush = useServerFn(sendAdminTestPush);
 
   const [orders, setOrders] = useState<Order[] | null>(null);
