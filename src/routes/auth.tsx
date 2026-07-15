@@ -536,6 +536,23 @@ function AuthPage() {
                 </button>
               </Field>
 
+              {mode === "signin" && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmail(email);
+                      setForgotSent(false);
+                      setForgotError(null);
+                      setForgotOpen(true);
+                    }}
+                    className="text-xs font-semibold text-neon-cyan transition hover:text-white"
+                  >
+                    Esqueci minha senha
+                  </button>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -544,6 +561,7 @@ function AuthPage() {
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {mode === "signin" ? "Entrar agora" : "Criar minha conta"}
               </button>
+
             </form>
 
             {/* Perks */}
