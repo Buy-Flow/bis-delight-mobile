@@ -36,6 +36,7 @@ import { Route as AuthenticatedVozCopilotoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedSlaRouteImport } from './routes/_authenticated/sla'
 import { Route as AuthenticatedSkeletonLoadingRouteImport } from './routes/_authenticated/skeleton-loading'
+import { Route as AuthenticatedSelosRouteImport } from './routes/_authenticated/selos'
 import { Route as AuthenticatedRushRouteImport } from './routes/_authenticated/rush'
 import { Route as AuthenticatedRotasRouteImport } from './routes/_authenticated/rotas'
 import { Route as AuthenticatedRankingVipRouteImport } from './routes/_authenticated/ranking-vip'
@@ -226,6 +227,11 @@ const AuthenticatedSkeletonLoadingRoute =
     path: '/skeleton-loading',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSelosRoute = AuthenticatedSelosRouteImport.update({
+  id: '/selos',
+  path: '/selos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRushRoute = AuthenticatedRushRouteImport.update({
   id: '/rush',
   path: '/rush',
@@ -556,6 +562,7 @@ export interface FileRoutesByFullPath {
   '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/selos': typeof AuthenticatedSelosRoute
   '/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -636,6 +643,7 @@ export interface FileRoutesByTo {
   '/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/rotas': typeof AuthenticatedRotasRoute
   '/rush': typeof AuthenticatedRushRoute
+  '/selos': typeof AuthenticatedSelosRoute
   '/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/sla': typeof AuthenticatedSlaRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -718,6 +726,7 @@ export interface FileRoutesById {
   '/_authenticated/ranking-vip': typeof AuthenticatedRankingVipRoute
   '/_authenticated/rotas': typeof AuthenticatedRotasRoute
   '/_authenticated/rush': typeof AuthenticatedRushRoute
+  '/_authenticated/selos': typeof AuthenticatedSelosRoute
   '/_authenticated/skeleton-loading': typeof AuthenticatedSkeletonLoadingRoute
   '/_authenticated/sla': typeof AuthenticatedSlaRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
@@ -800,6 +809,7 @@ export interface FileRouteTypes {
     | '/ranking-vip'
     | '/rotas'
     | '/rush'
+    | '/selos'
     | '/skeleton-loading'
     | '/sla'
     | '/usuarios'
@@ -880,6 +890,7 @@ export interface FileRouteTypes {
     | '/ranking-vip'
     | '/rotas'
     | '/rush'
+    | '/selos'
     | '/skeleton-loading'
     | '/sla'
     | '/usuarios'
@@ -961,6 +972,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ranking-vip'
     | '/_authenticated/rotas'
     | '/_authenticated/rush'
+    | '/_authenticated/selos'
     | '/_authenticated/skeleton-loading'
     | '/_authenticated/sla'
     | '/_authenticated/usuarios'
@@ -1212,6 +1224,13 @@ declare module '@tanstack/react-router' {
       path: '/skeleton-loading'
       fullPath: '/skeleton-loading'
       preLoaderRoute: typeof AuthenticatedSkeletonLoadingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/selos': {
+      id: '/_authenticated/selos'
+      path: '/selos'
+      fullPath: '/selos'
+      preLoaderRoute: typeof AuthenticatedSelosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rush': {
@@ -1622,6 +1641,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRankingVipRoute: typeof AuthenticatedRankingVipRoute
   AuthenticatedRotasRoute: typeof AuthenticatedRotasRoute
   AuthenticatedRushRoute: typeof AuthenticatedRushRoute
+  AuthenticatedSelosRoute: typeof AuthenticatedSelosRoute
   AuthenticatedSkeletonLoadingRoute: typeof AuthenticatedSkeletonLoadingRoute
   AuthenticatedSlaRoute: typeof AuthenticatedSlaRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
@@ -1674,6 +1694,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRankingVipRoute: AuthenticatedRankingVipRoute,
   AuthenticatedRotasRoute: AuthenticatedRotasRoute,
   AuthenticatedRushRoute: AuthenticatedRushRoute,
+  AuthenticatedSelosRoute: AuthenticatedSelosRoute,
   AuthenticatedSkeletonLoadingRoute: AuthenticatedSkeletonLoadingRoute,
   AuthenticatedSlaRoute: AuthenticatedSlaRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
