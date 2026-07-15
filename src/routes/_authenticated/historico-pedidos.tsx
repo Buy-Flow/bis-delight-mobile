@@ -34,6 +34,7 @@ import {
   ShoppingBag,
   Star,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
