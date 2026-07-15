@@ -162,7 +162,7 @@ export function CategoryChip({
 
         <div
           className={cn(
-            "absolute left-1/2 top-[68px] grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full transition-transform duration-300",
+            "absolute left-1/2 top-[68px] grid h-7 w-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full transition-transform duration-300",
             active && "animate-wiggle",
           )}
           style={{
@@ -170,10 +170,11 @@ export function CategoryChip({
               "radial-gradient(circle at 35% 30%, #4a1a9c 0%, #2a0a5c 70%, #180533 100%)",
             boxShadow: "0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.35)",
           }}
+          title={category.icon ?? undefined}
         >
           <Icon
-            className="h-[12px] w-[12px]"
-            strokeWidth={2.4}
+            className="h-4 w-4"
+            strokeWidth={2.2}
             style={{ color: "#ffffff" }}
           />
         </div>
