@@ -114,10 +114,52 @@ export function themeToCss(t: AdminTheme) {
   const surface = t.surface;
   const primary = t.primary;
   const accent = t.accent;
-  // Escape helper para selecionar classes Tailwind com [#hex]
-  const primarySoft = rgba(primary, 0.15);
   const primaryStrong = mix(primary, "#000000", 0.15);
+  const accentSoft = rgba(accent, 0.15);
   const surfaceEle = mix(surface, "#ffffff", 0.04);
+
+  // Famílias Tailwind coloridas que aparecem no painel são reescritas:
+  // warm (yellow/amber/orange) -> accent; resto -> primary.
+  const WARM = ["yellow", "amber", "orange"];
+  const COLD = [
+    "fuchsia","pink","rose","red","purple","violet","indigo",
+    "blue","sky","cyan","teal","emerald","green","lime",
+  ];
+  const SHADES = ["300","400","500","600","700","800","900"];
+  const ALPHAS = ["5","10","15","20","25","30","40","50","60","70","80"];
+
+  const emitFamily = (family: string, target: string) => {
+    const lines: string[] = [];
+    for (const s of SHADES) {
+      lines.push(
+        `[data-scope="admin"] .bg-${family}-${s}{ background-color: ${target} !important; }`,
+        `[data-scope="admin"] .text-${family}-${s}{ color: ${target} !important; }`,
+        `[data-scope="admin"] .border-${family}-${s}{ border-color: ${target} !important; }`,
+        `[data-scope="admin"] .from-${family}-${s}{ --tw-gradient-from: ${target} !important; --tw-gradient-to: ${rgba(target, 0)} !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }`,
+        `[data-scope="admin"] .to-${family}-${s}{ --tw-gradient-to: ${target === accent ? accent : primaryStrong} !important; }`,
+        `[data-scope="admin"] .via-${family}-${s}{ --tw-gradient-stops: var(--tw-gradient-from), ${target} var(--tw-gradient-via-position, 50%), var(--tw-gradient-to) !important; }`,
+        `[data-scope="admin"] .ring-${family}-${s}{ --tw-ring-color: ${target} !important; }`,
+      );
+      for (const a of ALPHAS) {
+        const rgbaVal = rgba(target, Number(a) / 100);
+        lines.push(
+          `[data-scope="admin"] .bg-${family}-${s}\\/${a}{ background-color: ${rgbaVal} !important; }`,
+          `[data-scope="admin"] .text-${family}-${s}\\/${a}{ color: ${rgbaVal} !important; }`,
+          `[data-scope="admin"] .border-${family}-${s}\\/${a}{ border-color: ${rgbaVal} !important; }`,
+          `[data-scope="admin"] .from-${family}-${s}\\/${a}{ --tw-gradient-from: ${rgbaVal} !important; }`,
+          `[data-scope="admin"] .to-${family}-${s}\\/${a}{ --tw-gradient-to: ${rgbaVal} !important; }`,
+          `[data-scope="admin"] .ring-${family}-${s}\\/${a}{ --tw-ring-color: ${rgbaVal} !important; }`,
+        );
+      }
+    }
+    return lines.join("\n");
+  };
+
+  const familyCss = [
+    ...COLD.map((f) => emitFamily(f, primary)),
+    ...WARM.map((f) => emitFamily(f, accent)),
+  ].join("\n");
+
   return `
 [data-scope="admin"]{
   --background: ${bg};
@@ -136,7 +178,7 @@ export function themeToCss(t: AdminTheme) {
   --accent: ${accent};
   --accent-foreground: #0b0512;
   --neon-yellow: ${accent};
-  --neon-yellow-soft: ${accent};
+  --neon-yellow-soft: ${accentSoft};
   --neon-pink: ${primary};
   --ring: ${primary};
   --radius: ${t.radius}px;
@@ -150,7 +192,7 @@ export function themeToCss(t: AdminTheme) {
 [data-scope="admin"] .text-white\\/80{ color: ${t.mutedText} !important; }
 [data-scope="admin"] aside.md\\:flex{ --qb-sidebar-w: ${t.sidebarWidth}px; }
 
-/* === Overrides de cores fixas dos painéis (hardcoded hex do tema default) === */
+/* Hex hardcoded do tema default */
 [data-scope="admin"] .bg-\\[\\#0b0512\\],
 [data-scope="admin"] [class*="bg-[#0b0512"]{ background-color: ${bg} !important; }
 [data-scope="admin"] .bg-\\[\\#170826\\],
@@ -165,50 +207,10 @@ export function themeToCss(t: AdminTheme) {
 [data-scope="admin"] .text-\\[\\#f5e14a\\]{ color: ${accent} !important; }
 [data-scope="admin"] .bg-\\[\\#f5e14a\\]{ background-color: ${accent} !important; }
 
-/* === Overrides para paletas Tailwind usadas como "cor da marca" no painel === */
-[data-scope="admin"] .bg-fuchsia-500,
-[data-scope="admin"] .bg-fuchsia-600,
-[data-scope="admin"] .bg-pink-500,
-[data-scope="admin"] .bg-pink-600{ background-color: ${primary} !important; }
-[data-scope="admin"] .text-fuchsia-400,
-[data-scope="admin"] .text-fuchsia-500,
-[data-scope="admin"] .text-pink-400,
-[data-scope="admin"] .text-pink-500{ color: ${primary} !important; }
-[data-scope="admin"] .border-fuchsia-500,
-[data-scope="admin"] .border-fuchsia-500\\/40,
-[data-scope="admin"] .border-pink-500,
-[data-scope="admin"] .border-pink-500\\/40{ border-color: ${primary} !important; }
-[data-scope="admin"] .from-fuchsia-500,
-[data-scope="admin"] .from-fuchsia-600,
-[data-scope="admin"] .from-pink-500,
-[data-scope="admin"] .from-pink-600{ --tw-gradient-from: ${primary} !important; --tw-gradient-to: ${rgba(primary, 0)} !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
-[data-scope="admin"] .to-fuchsia-500,
-[data-scope="admin"] .to-fuchsia-600,
-[data-scope="admin"] .to-pink-500,
-[data-scope="admin"] .to-pink-600,
-[data-scope="admin"] .to-purple-600{ --tw-gradient-to: ${primaryStrong} !important; }
-[data-scope="admin"] .via-fuchsia-500,
-[data-scope="admin"] .via-pink-500,
-[data-scope="admin"] .via-purple-600{ --tw-gradient-via: ${primary} !important; --tw-gradient-stops: var(--tw-gradient-from), ${primary} var(--tw-gradient-via-position, 50%), var(--tw-gradient-to) !important; }
-[data-scope="admin"] .bg-fuchsia-500\\/10,
-[data-scope="admin"] .bg-fuchsia-500\\/15,
-[data-scope="admin"] .bg-fuchsia-500\\/20,
-[data-scope="admin"] .bg-pink-500\\/10,
-[data-scope="admin"] .bg-pink-500\\/20{ background-color: ${primarySoft} !important; }
+/* Sweeping overrides: todas as famílias Tailwind coloridas viram primary/accent */
+${familyCss}
 
-/* === Amarelo neon (accent) === */
-[data-scope="admin"] .bg-yellow-300,
-[data-scope="admin"] .bg-yellow-400,
-[data-scope="admin"] .bg-amber-300,
-[data-scope="admin"] .bg-amber-400{ background-color: ${accent} !important; }
-[data-scope="admin"] .text-yellow-300,
-[data-scope="admin"] .text-yellow-400,
-[data-scope="admin"] .text-amber-300,
-[data-scope="admin"] .text-amber-400{ color: ${accent} !important; }
-[data-scope="admin"] .border-yellow-400\\/40,
-[data-scope="admin"] .border-amber-400\\/40{ border-color: ${rgba(accent, 0.4)} !important; }
-
-/* Garante que "bg-background" e cartões brancos herdem o tema mesmo com Tailwind bg-white residual */
+/* Resíduos brancos/pretos herdam o tema */
 [data-scope="admin"] .bg-white{ background-color: ${surface} !important; color: ${t.text} !important; }
 [data-scope="admin"] .text-black{ color: ${t.text} !important; }
 `;
