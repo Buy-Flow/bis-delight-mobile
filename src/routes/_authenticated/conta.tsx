@@ -28,6 +28,10 @@ import {
   KeyRound,
   BadgeCheck,
   ChevronLeft,
+  Eye,
+  EyeOff,
+  Loader2 as Loader2Icon,
+  X as XIcon,
 } from "lucide-react";
 
 
