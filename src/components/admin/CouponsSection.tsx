@@ -257,27 +257,18 @@ export function CouponsSection() {
   return (
     <div className="space-y-5">
       {/* HERO HEADER */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neon-yellow/15 via-neon-pink/15 to-neon-purple/15 p-5">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-neon-yellow/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-neon-pink/20 blur-3xl" />
-
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-neon-yellow to-neon-pink text-white shadow-lg shadow-neon-pink/30">
-              <Ticket className="h-6 w-6" />
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/80">
+              <Ticket className="h-5 w-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-display text-2xl font-black text-white">
-                  Cupons de desconto
-                </h3>
-                <span className="rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-neon-cyan">
-                  <Sparkles className="mr-1 inline h-2.5 w-2.5" /> Marketing
-                </span>
-              </div>
-              <p className="mt-1 max-w-md text-[13px] leading-relaxed text-white/60">
-                Crie códigos promocionais, agende lançamentos e acompanhe o uso
-                em tempo real.
+            <div className="min-w-0">
+              <h3 className="font-display text-lg font-black text-white">
+                Cupons de desconto
+              </h3>
+              <p className="mt-0.5 max-w-md text-[12px] text-white/50">
+                Crie códigos, agende lançamentos e acompanhe o uso em tempo real.
               </p>
             </div>
           </div>
@@ -287,47 +278,31 @@ export function CouponsSection() {
               setEditing(null);
               setShowForm(true);
             }}
-            className="group flex items-center gap-2 self-start rounded-2xl bg-neon-pink px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-neon-pink/40 transition-transform hover:scale-[1.02] active:scale-95 glow-pink sm:self-auto"
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-white/15 sm:self-auto"
           >
-            <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+            <Plus className="h-4 w-4" />
             Novo cupom
           </button>
         </div>
 
         {/* KPI strip */}
-        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <KpiChip
-            icon={Flame}
-            label="Ativos agora"
-            value={kpis.active}
-            tone="cyan"
-          />
-          <KpiChip
-            icon={Clock}
-            label="Agendados"
-            value={kpis.scheduled}
-            tone="yellow"
-          />
-          <KpiChip
-            icon={TrendingUp}
-            label="Usos totais"
-            value={kpis.totalUses}
-            tone="pink"
-          />
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <KpiChip icon={Flame} label="Ativos agora" value={kpis.active} />
+          <KpiChip icon={Clock} label="Agendados" value={kpis.scheduled} />
+          <KpiChip icon={TrendingUp} label="Usos totais" value={kpis.totalUses} />
           <KpiChip
             icon={Percent}
             label="Taxa média"
             value={kpis.avgUsage != null ? `${kpis.avgUsage}%` : "—"}
-            tone="white"
           />
         </div>
 
         {kpis.bestCoupon && (
-          <div className="relative mt-3 inline-flex items-center gap-2 rounded-full border border-neon-yellow/30 bg-black/30 px-3 py-1.5 backdrop-blur-sm">
-            <Sparkles className="h-3 w-3 text-neon-yellow" />
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+            <Sparkles className="h-3 w-3 text-white/60" />
             <span className="text-[11px] text-white/70">
               Mais usado:{" "}
-              <span className="font-mono font-bold text-neon-yellow">
+              <span className="font-mono font-bold text-white">
                 {kpis.bestCoupon.code}
               </span>{" "}
               · {kpis.bestCoupon.uses} resgates
@@ -337,16 +312,16 @@ export function CouponsSection() {
       </div>
 
       {/* Tabs + Filters */}
-      <div className="space-y-3 rounded-3xl border border-white/10 bg-white/[0.02] p-3">
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
         <div className="flex flex-wrap gap-1.5">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={cn(
-                "group flex items-center gap-2 rounded-2xl px-3.5 py-2 text-xs font-bold uppercase tracking-wider transition",
+                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition",
                 tab === t.key
-                  ? "bg-gradient-to-r from-neon-pink to-neon-purple text-white shadow-lg shadow-neon-pink/30"
+                  ? "bg-white/15 text-white ring-1 ring-white/20"
                   : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/90",
               )}
             >
@@ -355,7 +330,7 @@ export function CouponsSection() {
                 className={cn(
                   "grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[10px] font-black",
                   tab === t.key
-                    ? "bg-white/25 text-white"
+                    ? "bg-white/20 text-white"
                     : "bg-white/10 text-white/70",
                 )}
               >
@@ -372,7 +347,7 @@ export function CouponsSection() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar código ou observação…"
-              className="w-full rounded-xl border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink"
+              className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
             />
           </div>
           <select
@@ -380,7 +355,7 @@ export function CouponsSection() {
             onChange={(e) =>
               setTypeFilter(e.target.value as "all" | "fixed" | "percent")
             }
-            className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+            className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
           >
             <option value="all">Todos os tipos</option>
             <option value="fixed">Valor fixo (R$)</option>
@@ -396,15 +371,14 @@ export function CouponsSection() {
       )}
 
       {items && filtered.length === 0 && (
-        <div className="relative overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-14 text-center">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,235,59,0.10),transparent_60%)]" />
-          <div className="relative mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-neon-yellow/30 to-neon-pink/30 text-neon-yellow">
-            <Ticket className="h-8 w-8" />
+        <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-12 text-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/5 text-white/60">
+            <Ticket className="h-6 w-6" />
           </div>
-          <h4 className="relative mt-4 font-display text-xl font-black text-white">
+          <h4 className="mt-4 font-display text-lg font-black text-white">
             {items.length === 0 ? "Nenhum cupom ainda" : "Nada por aqui"}
           </h4>
-          <p className="relative mx-auto mt-1 max-w-sm text-sm text-white/50">
+          <p className="mx-auto mt-1 max-w-sm text-sm text-white/50">
             {items.length === 0
               ? "Crie códigos promocionais para atrair novos clientes e recompensar os fiéis."
               : "Ajuste os filtros ou tente outra busca."}
@@ -415,7 +389,7 @@ export function CouponsSection() {
                 setEditing(null);
                 setShowForm(true);
               }}
-              className="relative mt-5 inline-flex items-center gap-2 rounded-2xl bg-neon-pink px-5 py-3 text-sm font-extrabold text-white glow-pink"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-white/15"
             >
               <Plus className="h-4 w-4" /> Criar primeiro cupom
             </button>
@@ -465,29 +439,19 @@ function KpiChip({
   icon: Icon,
   label,
   value,
-  tone,
 }: {
   icon: any;
   label: string;
   value: string | number;
-  tone: "pink" | "cyan" | "yellow" | "white";
 }) {
-  const toneMap = {
-    pink: "text-neon-pink border-neon-pink/30 bg-neon-pink/10",
-    cyan: "text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10",
-    yellow: "text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10",
-    white: "text-white border-white/15 bg-white/5",
-  }[tone];
   return (
-    <div
-      className={`flex items-center gap-2.5 rounded-2xl border ${toneMap} px-3 py-2 backdrop-blur-sm`}
-    >
-      <Icon className="h-4 w-4 shrink-0" />
+    <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+      <Icon className="h-4 w-4 shrink-0 text-white/60" />
       <div className="min-w-0">
-        <div className="truncate text-[10px] font-bold uppercase tracking-wider opacity-80">
+        <div className="truncate text-[10px] font-bold uppercase tracking-wider text-white/50">
           {label}
         </div>
-        <div className="font-display text-lg font-black leading-none">
+        <div className="font-display text-lg font-black leading-none text-white">
           {value}
         </div>
       </div>
@@ -516,43 +480,26 @@ function CouponCard({
       ? Math.min(100, (c.uses / c.max_uses) * 100)
       : null;
 
-  const toneRing = {
-    active: "border-emerald-500/30 hover:border-emerald-500/50",
-    scheduled: "border-amber-500/30 hover:border-amber-500/50",
-    expired: "border-red-500/25 opacity-70",
-    inactive: "border-white/10 opacity-60",
-    all: "border-white/10",
-  }[status.key];
+  const isDim = status.key === "expired" || status.key === "inactive";
 
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-3xl border bg-white/[0.03] transition-all hover:bg-white/[0.05]",
-        toneRing,
+        "rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:bg-white/[0.05]",
+        isDim && "opacity-70",
       )}
     >
-      {/* perforated left edge — ticket look */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 flex w-6 flex-col items-center justify-around">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <span
-            key={i}
-            className="h-1.5 w-1.5 rounded-full bg-[oklch(0.11_0.08_305)]"
-          />
-        ))}
-      </div>
-      <div className="pointer-events-none absolute inset-y-0 left-6 w-px bg-white/5" />
-
-      <div className="relative pl-8 pr-4 pt-4">
+      <div className="px-4 pt-4">
         <div className="flex items-start justify-between gap-3">
           {/* code + status */}
           <div className="min-w-0 flex-1">
             <button
               onClick={onCopy}
-              className="group/code inline-flex items-center gap-1.5 rounded-xl bg-neon-yellow/12 px-2.5 py-1.5 font-mono text-sm font-black text-neon-yellow transition hover:bg-neon-yellow/20"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 font-mono text-sm font-black text-white transition hover:bg-white/10"
               title="Copiar código"
             >
               <span className="max-w-[160px] truncate">{c.code}</span>
-              <Copy className="h-3 w-3 opacity-60 transition group-hover/code:opacity-100" />
+              <Copy className="h-3 w-3 text-white/50" />
             </button>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span
@@ -561,7 +508,7 @@ function CouponCard({
                   status.tone,
                 )}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-current shadow-[0_0_6px_currentColor]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 {status.label}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10.5px] font-bold text-white/80">
@@ -578,13 +525,13 @@ function CouponCard({
           </div>
 
           {/* discount badge */}
-          <div className="grid shrink-0 place-items-center rounded-2xl border border-neon-pink/40 bg-gradient-to-br from-neon-pink/25 to-neon-purple/20 px-3 py-2 backdrop-blur-sm">
+          <div className="grid shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 px-3 py-2">
             <div className="font-display text-xl font-black leading-none text-white">
               {c.discount_type === "percent"
                 ? `${c.discount_value}%`
                 : brl(c.discount_value).replace("R$", "").trim()}
             </div>
-            <div className="mt-0.5 text-[8.5px] font-black uppercase tracking-wider text-white/70">
+            <div className="mt-0.5 text-[8.5px] font-black uppercase tracking-wider text-white/50">
               {c.discount_type === "percent" ? "off" : "reais"}
             </div>
           </div>
@@ -628,30 +575,30 @@ function CouponCard({
               {c.max_uses != null ? ` / ${c.max_uses}` : " · ilimitado"}
             </span>
           </div>
-          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/8">
+          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
             {usagePct != null ? (
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
                   usagePct >= 100
-                    ? "bg-red-400"
+                    ? "bg-red-400/80"
                     : usagePct >= 80
-                      ? "bg-gradient-to-r from-neon-yellow to-red-400"
-                      : "bg-gradient-to-r from-neon-pink to-neon-yellow",
+                      ? "bg-amber-300/80"
+                      : "bg-white/60",
                 )}
                 style={{ width: `${Math.max(4, usagePct)}%` }}
               />
             ) : (
               <div
-                className="h-full rounded-full bg-gradient-to-r from-neon-cyan/40 via-neon-pink/40 to-neon-purple/40"
-                style={{ width: "100%", opacity: 0.5 }}
+                className="h-full rounded-full bg-white/30"
+                style={{ width: "100%" }}
               />
             )}
           </div>
         </div>
 
         {c.note && (
-          <div className="mt-3 rounded-xl border border-white/5 bg-black/20 px-2.5 py-1.5 text-[11px] italic text-white/50">
+          <div className="mt-3 rounded-lg border border-white/5 bg-black/20 px-2.5 py-1.5 text-[11px] italic text-white/50">
             "{c.note}"
           </div>
         )}
@@ -859,7 +806,7 @@ function CouponForm({
                   setCode(e.target.value.toUpperCase());
                   setCodeAutoGenerated(false);
                 }}
-                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-white outline-none focus:border-neon-pink disabled:opacity-60"
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 disabled:opacity-60"
                 placeholder={generatingCode ? "Gerando…" : "EX: PROMO10"}
                 disabled={isEdit || generatingCode}
               />
@@ -889,7 +836,7 @@ function CouponForm({
                 onChange={(e) =>
                   setDiscountType(e.target.value as "fixed" | "percent")
                 }
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
               >
                 <option value="fixed">Valor fixo (R$)</option>
                 <option value="percent">Percentual (%)</option>
@@ -905,7 +852,7 @@ function CouponForm({
                 min="0"
                 value={discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
               />
             </label>
           </div>
@@ -920,7 +867,7 @@ function CouponForm({
               min="0"
               value={minOrder}
               onChange={(e) => setMinOrder(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
             />
           </label>
 
@@ -933,7 +880,7 @@ function CouponForm({
                 type="datetime-local"
                 value={startsAt}
                 onChange={(e) => setStartsAt(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
               />
               <span className="mt-1 block text-[10px] text-white/40">
                 Deixe vazio para ativar imediatamente.
@@ -947,7 +894,7 @@ function CouponForm({
                 type="datetime-local"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
               />
             </label>
           </div>
@@ -963,7 +910,7 @@ function CouponForm({
                 value={maxUses}
                 onChange={(e) => setMaxUses(e.target.value)}
                 placeholder="Ilimitado"
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
               />
             </label>
             <label className="block">
@@ -975,7 +922,7 @@ function CouponForm({
                 min="1"
                 value={perUserLimit}
                 onChange={(e) => setPerUserLimit(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
               />
             </label>
           </div>
@@ -988,7 +935,7 @@ function CouponForm({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Ex: Campanha de aniversário"
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-neon-pink"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
             />
           </label>
         </div>
@@ -1003,7 +950,7 @@ function CouponForm({
           <button
             onClick={save}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-neon-pink px-4 py-2 text-sm font-bold text-white glow-pink disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/15 px-4 py-2 text-sm font-bold text-white hover:bg-white/20 disabled:opacity-50"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
