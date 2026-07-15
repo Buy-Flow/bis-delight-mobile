@@ -55,6 +55,9 @@ type MediaItem = {
   updated_at: string;
 };
 
+const CATEGORIES = ["produto", "banner", "categoria", "popup", "logo", "outros"] as const;
+type Category = (typeof CATEGORIES)[number];
+
 type PendingUpload = {
   file: File;
   previewUrl: string;
@@ -64,9 +67,6 @@ type PendingUpload = {
   alt: string;
 };
 
-
-const CATEGORIES = ["produto", "banner", "categoria", "popup", "logo", "outros"] as const;
-type Category = (typeof CATEGORIES)[number];
 
 const BUCKET = "product-images";
 const SIGNED_TTL_SECONDS = 60 * 60 * 24 * 365 * 10; // 10y
