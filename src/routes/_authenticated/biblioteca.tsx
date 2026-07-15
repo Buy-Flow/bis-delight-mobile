@@ -101,6 +101,8 @@ function BibliotecaPage() {
   const [selection, setSelection] = useState<Set<string>>(new Set());
   const [activeItem, setActiveItem] = useState<MediaItem | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadItems = useCallback(async () => {
@@ -393,126 +395,169 @@ function BibliotecaPage() {
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[180px]">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nome, tag ou alt…"
-              className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] pl-9 pr-3 text-sm outline-none focus:border-fuchsia-400/40"
-            />
-          </div>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value as "todos" | Category)}
-            className="h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm outline-none"
-          >
-            <option value="todos">Todas categorias</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm outline-none"
-          >
-            <option value="recent">Mais recentes</option>
-            <option value="oldest">Mais antigas</option>
-            <option value="name">Nome (A-Z)</option>
-            <option value="size">Maior tamanho</option>
-            <option value="usage">Mais usadas</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => setOnlyFavorites((v) => !v)}
-            className={cn(
-              "h-10 inline-flex items-center gap-1.5 rounded-xl border px-3 text-sm",
-              onlyFavorites
-                ? "border-yellow-400/50 bg-yellow-400/10 text-yellow-200"
-                : "border-white/10 bg-white/[0.04] text-white/70",
-            )}
-          >
-            <Star className="h-3.5 w-3.5" />
-            Favoritas
-          </button>
-          <button
-            type="button"
-            onClick={() => setOnlyUnused((v) => !v)}
-            className={cn(
-              "h-10 inline-flex items-center gap-1.5 rounded-xl border px-3 text-sm",
-              onlyUnused
-                ? "border-rose-400/50 bg-rose-400/10 text-rose-200"
-                : "border-white/10 bg-white/[0.04] text-white/70",
-            )}
-          >
-            <Filter className="h-3.5 w-3.5" />
-            Não usadas
-          </button>
-          <div className="ml-auto inline-flex overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
-            <button
-              type="button"
-              onClick={() => setView("grid")}
-              className={cn("px-3 py-2", view === "grid" ? "bg-white/10 text-white" : "text-white/50")}
-              aria-label="Grade"
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("list")}
-              className={cn("px-3 py-2", view === "list" ? "bg-white/10 text-white" : "text-white/50")}
-              aria-label="Lista"
-            >
-              <ListIcon className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Tag chips */}
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {allTags.slice(0, 30).map((t) => {
-              const active = activeTags.has(t);
-              return (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
+          {/* Row 1: search + selects */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto]">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por nome, tag ou alt…"
+                className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] pl-9 pr-9 text-sm outline-none focus:border-fuchsia-400/40"
+              />
+              {search && (
                 <button
-                  key={t}
                   type="button"
-                  onClick={() => {
-                    setActiveTags((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(t)) next.delete(t);
-                      else next.add(t);
-                      return next;
-                    });
-                  }}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs",
-                    active
-                      ? "border-fuchsia-400/50 bg-fuchsia-400/10 text-fuchsia-200"
-                      : "border-white/10 bg-white/[0.04] text-white/60",
-                  )}
+                  onClick={() => setSearch("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-full text-white/40 hover:bg-white/10 hover:text-white"
                 >
-                  <TagIcon className="h-3 w-3" />
-                  {t}
+                  <X className="h-3.5 w-3.5" />
                 </button>
-              );
-            })}
-            {activeTags.size > 0 && (
+              )}
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value as "todos" | Category)}
+              className="h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm outline-none"
+            >
+              <option value="todos">Todas categorias</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              className="h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm outline-none"
+            >
+              <option value="recent">Mais recentes</option>
+              <option value="oldest">Mais antigas</option>
+              <option value="name">Nome (A-Z)</option>
+              <option value="size">Maior tamanho</option>
+              <option value="usage">Mais usadas</option>
+            </select>
+          </div>
+
+          {/* Row 2: filter chips + view */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOnlyFavorites((v) => !v)}
+              className={cn(
+                "inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold",
+                onlyFavorites
+                  ? "border-yellow-400/50 bg-yellow-400/10 text-yellow-200"
+                  : "border-white/10 bg-white/[0.04] text-white/70",
+              )}
+            >
+              <Star className="h-3.5 w-3.5" />
+              Favoritas
+            </button>
+            <button
+              type="button"
+              onClick={() => setOnlyUnused((v) => !v)}
+              className={cn(
+                "inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold",
+                onlyUnused
+                  ? "border-rose-400/50 bg-rose-400/10 text-rose-200"
+                  : "border-white/10 bg-white/[0.04] text-white/70",
+              )}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              Não usadas
+            </button>
+            {allTags.length > 0 && (
               <button
                 type="button"
-                onClick={() => setActiveTags(new Set())}
-                className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-white/60"
+                onClick={() => setTagsOpen((v) => !v)}
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold",
+                  activeTags.size > 0
+                    ? "border-fuchsia-400/50 bg-fuchsia-400/10 text-fuchsia-200"
+                    : "border-white/10 bg-white/[0.04] text-white/70",
+                )}
               >
-                <X className="h-3 w-3" />
-                Limpar tags
+                <TagIcon className="h-3.5 w-3.5" />
+                Tags
+                <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] tabular-nums">
+                  {activeTags.size > 0 ? `${activeTags.size}/${allTags.length}` : allTags.length}
+                </span>
               </button>
             )}
+            {(activeTags.size > 0 || onlyFavorites || onlyUnused || categoryFilter !== "todos" || search) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTags(new Set());
+                  setOnlyFavorites(false);
+                  setOnlyUnused(false);
+                  setCategoryFilter("todos");
+                  setSearch("");
+                }}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.02] px-3 text-xs font-semibold text-white/60 hover:bg-white/10"
+              >
+                <X className="h-3.5 w-3.5" />
+                Limpar filtros
+              </button>
+            )}
+            <div className="ml-auto inline-flex overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
+              <button
+                type="button"
+                onClick={() => setView("grid")}
+                className={cn("px-3 py-2", view === "grid" ? "bg-white/10 text-white" : "text-white/50")}
+                aria-label="Grade"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setView("list")}
+                className={cn("px-3 py-2", view === "list" ? "bg-white/10 text-white" : "text-white/50")}
+                aria-label="Lista"
+              >
+                <ListIcon className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Row 3: Tag chips (collapsible) */}
+          {tagsOpen && allTags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 border-t border-white/5 pt-3">
+              {allTags.map((t) => {
+                const active = activeTags.has(t);
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      setActiveTags((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(t)) next.delete(t);
+                        else next.add(t);
+                        return next;
+                      });
+                    }}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition",
+                      active
+                        ? "border-fuchsia-400/50 bg-fuchsia-400/15 text-fuchsia-100"
+                        : "border-white/10 bg-white/[0.04] text-white/60 hover:bg-white/10",
+                    )}
+                  >
+                    <TagIcon className="h-3 w-3" />
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+
 
         {/* Selection bar */}
         {selection.size > 0 && (
