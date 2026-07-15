@@ -661,7 +661,7 @@ function RushPage() {
       </div>
 
 
-      <main className="mx-auto max-w-2xl px-3 pt-3">
+      <main className="mx-auto w-full max-w-6xl px-3 pt-3 pb-6 md:px-6 lg:px-8">
         {/* KPIs */}
         <section className="grid grid-cols-3 gap-2">
           <KpiTile
@@ -777,7 +777,7 @@ function RushPage() {
         )}
 
         {/* Lane list */}
-        <section className="mt-3 space-y-2.5">
+        <section className="mt-3 grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
           {orders === null ? (
             <div className="flex items-center justify-center py-16 text-white/50">
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -805,18 +805,6 @@ function RushPage() {
         </section>
       </main>
 
-      {/* Bottom bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[oklch(0.09_0.08_305)]/90 px-3 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-2xl items-center gap-2">
-          <div className="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl bg-gradient-to-r from-neon-pink/15 to-neon-yellow/15 px-2 py-3 text-[10px] font-bold ring-1 ring-white/10 sm:text-[11px]">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
-            <span className="text-emerald-200">{kpis.delivered} <span className="hidden sm:inline">entregues</span><span className="sm:hidden">entr.</span></span>
-            <span className="text-white/30">·</span>
-            <XCircle className="h-3.5 w-3.5 shrink-0 text-red-300" />
-            <span className="text-red-200">{kpis.cancelled} cancel.</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
