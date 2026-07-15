@@ -103,8 +103,8 @@ const cardInput = z.object({
     email: z.string().email(),
     cpfCnpj: z.string().min(11).max(18),
     phone: z.string().optional(),
-    postalCode: z.string().min(8),
-    addressNumber: z.string().min(1),
+    postalCode: z.string().optional(),
+    addressNumber: z.string().optional(),
   }),
   card: z.object({
     holderName: z.string().min(2),
