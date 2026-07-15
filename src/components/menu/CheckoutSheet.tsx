@@ -628,7 +628,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
           distance_km: mode === "entrega" && quote ? Number(quote.km.toFixed(3)) : null,
           delivery_lat: mode === "entrega" && quote ? quote.lat : null,
           delivery_lng: mode === "entrega" && quote ? quote.lng : null,
-          payment_method: paymentMethod === "whatsapp" ? null : paymentMethod,
+          payment_method: paymentMethod, // "whatsapp" | "pix" | "cartao" | "asaas_checkout"
         })
         .select("id")
         .single();

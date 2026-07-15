@@ -140,13 +140,16 @@ const STATUS_PUSH: Partial<Record<OrderStatus, { title: string; body: string }>>
   },
 };
 
-function isOnlinePayment(method: string | null | undefined): boolean {
-  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+const OFFLINE_METHODS = new Set(["whatsapp", "dinheiro", "cash", "pos", "presencial"]);
+function isOfflinePayment(method: string | null | undefined): boolean {
+  return OFFLINE_METHODS.has(String(method ?? "").toLowerCase());
 }
 
 function isActionableOrder(order: Pick<Order, "status" | "payment_method">): boolean {
-  return order.status === "pago" || order.status !== "pendente" || !isOnlinePayment(order.payment_method);
+  // Actionable = already paid, OR non-pending (in-kitchen/dispatched/etc), OR explicit offline method.
+  return order.status === "pago" || order.status !== "pendente" || isOfflinePayment(order.payment_method);
 }
+
 
 async function notifyOrderStatus(order: Order, status: OrderStatus) {
   const preset = STATUS_PUSH[status];

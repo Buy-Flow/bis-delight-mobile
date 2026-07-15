@@ -98,7 +98,10 @@ type OrderRow = {
   address: string | null;
   created_at: string;
   coupon_code: string | null;
+  payment_method?: string | null;
 };
+
+
 
 type OrderItemRow = {
   id: string;
@@ -293,7 +296,12 @@ function PrintCenterPage() {
           const order = payload.new as OrderRow;
           if (seenOrdersRef.current.has(order.id)) return;
           seenOrdersRef.current.add(order.id);
-          if (settings.only_paid_orders && order.status !== "pago" && order.status !== "confirmado") return;
+          // Never auto-print online orders until paid; only offline methods print at INSERT.
+          const offline = ["whatsapp", "dinheiro", "cash", "pos", "presencial"].includes(String(order.payment_method ?? "").toLowerCase());
+          const paidOrConfirmed = order.status === "pago" || order.status === "confirmado";
+          if (!paidOrConfirmed && !offline) return;
+          if (settings.only_paid_orders && !paidOrConfirmed) return;
+
           if (settings.beep_on_new) beep();
           if (settings.auto_delay_ms > 0) {
             await new Promise((r) => setTimeout(r, settings.auto_delay_ms));

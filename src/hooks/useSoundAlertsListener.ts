@@ -25,9 +25,11 @@ type OrderRow = {
   payment_method: string | null;
 };
 
-function isOnlinePayment(method: string | null | undefined): boolean {
-  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+const OFFLINE_METHODS = new Set(["whatsapp", "dinheiro", "cash", "pos", "presencial"]);
+function isOfflinePayment(method: string | null | undefined): boolean {
+  return OFFLINE_METHODS.has(String(method ?? "").toLowerCase());
 }
+
 
 export function useSoundAlertsListener() {
   const alertsRef = useRef<Record<string, SoundAlert>>({});
@@ -71,7 +73,7 @@ export function useSoundAlertsListener() {
         { event: "INSERT", schema: "public", table: "orders" },
         (payload) => {
           const row = payload.new as OrderRow;
-          if (row.status !== "pago" && isOnlinePayment(row.payment_method)) return;
+          if (row.status !== "pago" && !isOfflinePayment(row.payment_method)) return;
           void fire(row.status === "pago" ? "paid_order" : "new_order");
         },
       )

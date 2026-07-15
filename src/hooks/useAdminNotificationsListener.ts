@@ -19,9 +19,13 @@ type OrderRow = {
   payment_method: string | null;
 };
 
-function isOnlinePayment(method: string | null | undefined): boolean {
-  return ["pix", "cartao", "credit_card", "asaas_checkout"].includes(String(method ?? "").toLowerCase());
+// Only these payment methods are actionable at INSERT time (before payment is confirmed).
+// Everything else (pix, cartao, credit_card, asaas_checkout, null, unknown) must wait for status='pago'.
+const OFFLINE_METHODS = new Set(["whatsapp", "dinheiro", "cash", "pos", "presencial"]);
+function isOfflinePayment(method: string | null | undefined): boolean {
+  return OFFLINE_METHODS.has(String(method ?? "").toLowerCase());
 }
+
 
 function money(v: number | null | undefined): string {
   if (typeof v !== "number") return "";
@@ -47,7 +51,7 @@ export function useAdminNotificationsListener() {
         (payload) => {
           const row = payload.new as OrderRow;
           if (!row?.id) return;
-          if (row.status !== "pago" && isOnlinePayment(row.payment_method)) return;
+          if (row.status !== "pago" && !isOfflinePayment(row.payment_method)) return;
           pushAdminNotif({
             kind: row.status === "pago" ? "order_paid" : "order_new",
             refId: `${row.status === "pago" ? "order_paid" : "order_new"}:${row.id}`,
