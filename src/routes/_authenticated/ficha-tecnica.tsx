@@ -21,7 +21,10 @@ import {
   Sparkles,
   X,
   Wand2,
+  ChevronLeft,
+  MoreHorizontal,
 } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
