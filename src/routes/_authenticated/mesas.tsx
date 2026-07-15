@@ -623,11 +623,13 @@ function SalonView({
   );
 }
 
-// ---------- Floor Plan (drag & drop) ----------
+// ---------- Floor Plan (drag & drop + walls) ----------
 // Real-time drag with zero-lag: writes transform directly to the DOM during
 // pointermove (no React re-render per frame). State is only committed on drop.
-const TILE_SIZE = 96;
+const TILE_SIZE = 72;
 const GRID = 8;
+
+type Wall = { id: string; x1: number; y1: number; x2: number; y2: number };
 
 function FloorPlanView({
   tables,
@@ -641,13 +643,42 @@ function FloorPlanView({
   onReload: () => void;
 }) {
   const [editMode, setEditMode] = useState(false);
+  const [wallMode, setWallMode] = useState(false);
   const [snap, setSnap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
-  const [activeId, setActiveId] = useState<string | null>(null); // only for visual highlight, set on drop start/end
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [walls, setWalls] = useState<Wall[]>([]);
+  const [wallStart, setWallStart] = useState<{ x: number; y: number } | null>(null);
+  const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const nodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const posRef = useRef<Record<string, { x: number; y: number }>>({});
   const dragRef = useRef<{ id: string; dx: number; dy: number; moved: boolean; raf: number | null } | null>(null);
+
+  // ----- Walls: load + realtime -----
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.from("floor_plan_walls" as any).select("id,x1,y1,x2,y2") as any);
+      if (!mounted) return;
+      if (error) return;
+      setWalls((data ?? []).map((w: Wall) => ({ ...w })));
+    })();
+    const ch = supabase
+      .channel("floor_plan_walls")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .on("postgres_changes" as any, { event: "*", schema: "public", table: "floor_plan_walls" }, async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (supabase.from("floor_plan_walls" as any).select("id,x1,y1,x2,y2") as any);
+        setWalls((data ?? []).map((w: Wall) => ({ ...w })));
+      })
+      .subscribe();
+    return () => {
+      mounted = false;
+      supabase.removeChannel(ch);
+    };
+  }, []);
 
   const setNodeRef = useCallback((id: string) => (el: HTMLDivElement | null) => {
     nodeRefs.current[id] = el;
@@ -660,8 +691,8 @@ function FloorPlanView({
       const canvas = canvasRef.current;
       if (!canvas) return;
       const width = canvas.clientWidth;
-      const pad = 16;
-      const gap = 12;
+      const pad = 12;
+      const gap = 8;
       const cols = Math.max(1, Math.floor((width - pad * 2 + gap) / (TILE_SIZE + gap)));
       tables.forEach((t, i) => {
         let x: number, y: number;
@@ -694,7 +725,6 @@ function FloorPlanView({
   );
 
   useEffect(() => {
-    // reset positions when tables list changes identity/length
     posRef.current = {};
     applyLayout();
   }, [tables, applyLayout]);
@@ -703,7 +733,6 @@ function FloorPlanView({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ro = new ResizeObserver(() => {
-      // re-clamp positions inside the new canvas rect
       const rect = canvas.getBoundingClientRect();
       Object.entries(posRef.current).forEach(([id, p]) => {
         const x = Math.max(0, Math.min(rect.width - TILE_SIZE, p.x));
@@ -717,8 +746,64 @@ function FloorPlanView({
     return () => ro.disconnect();
   }, []);
 
+  const snapPt = (v: number) => (snap ? Math.round(v / GRID) * GRID : v);
+
+  const getCanvasPoint = (e: React.PointerEvent | React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const r = canvas.getBoundingClientRect();
+    return { x: snapPt(e.clientX - r.left), y: snapPt(e.clientY - r.top) };
+  };
+
+  const onCanvasClick = async (e: React.MouseEvent) => {
+    if (!wallMode) return;
+    if ((e.target as HTMLElement).closest("[data-wall-line]")) return;
+    const pt = getCanvasPoint(e);
+    if (!pt) return;
+    if (!wallStart) {
+      setWallStart(pt);
+      return;
+    }
+    if (Math.hypot(pt.x - wallStart.x, pt.y - wallStart.y) < 6) {
+      setWallStart(null);
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from("floor_plan_walls" as any).insert({
+      x1: wallStart.x,
+      y1: wallStart.y,
+      x2: pt.x,
+      y2: pt.y,
+    } as any) as any);
+    setWallStart(null);
+    if (error) toast.error("Não foi possível salvar a parede");
+  };
+
+  const deleteWall = async (id: string) => {
+    const ok = await confirmDialog({ title: "Remover parede?", message: "Remover este segmento da planta?", tone: "danger", confirmLabel: "Remover" });
+    if (!ok) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from("floor_plan_walls" as any).delete().eq("id", id) as any);
+    if (error) toast.error("Falha ao remover");
+  };
+
+  const clearWalls = async () => {
+    if (walls.length === 0) return;
+    const ok = await confirmDialog({
+      title: "Apagar todas as paredes?",
+      message: "Isso remove o desenho da planta.",
+      tone: "danger",
+      confirmLabel: "Apagar tudo",
+    });
+    if (!ok) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from("floor_plan_walls" as any).delete().neq("id", "00000000-0000-0000-0000-000000000000") as any);
+    if (error) toast.error("Falha ao apagar");
+    else toast.success("Paredes removidas");
+  };
+
   const onPointerDown = (e: React.PointerEvent, id: string) => {
-    if (!editMode) return;
+    if (!editMode || wallMode) return;
     e.preventDefault();
     const el = nodeRefs.current[id];
     if (!el) return;
@@ -733,13 +818,17 @@ function FloorPlanView({
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
+    if (wallMode && wallStart) {
+      const pt = getCanvasPoint(e);
+      if (pt) setCursor(pt);
+    }
     const d = dragRef.current;
     if (!d) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const clientX = e.clientX;
     const clientY = e.clientY;
-    if (d.raf != null) return; // coalesce to next frame → ultra-smooth, no queue
+    if (d.raf != null) return;
     d.raf = requestAnimationFrame(() => {
       d.raf = null;
       const rect = canvas.getBoundingClientRect();
@@ -771,7 +860,9 @@ function FloorPlanView({
       el.style.boxShadow = "";
       try {
         el.releasePointerCapture(e.pointerId);
-      } catch {}
+      } catch {
+        /* noop */
+      }
     }
     setActiveId(null);
     if (!d.moved) return;
@@ -811,12 +902,41 @@ function FloorPlanView({
         <div className="flex min-w-0 items-center gap-2 text-white/70">
           <Move className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">
-            {editMode ? "Arraste para posicionar · toque duplo para abrir" : "Toque em uma mesa para gerenciar"}
+            {wallMode
+              ? wallStart
+                ? "Toque no 2º ponto para fechar a parede · toque na parede para remover"
+                : "Toque em 2 pontos para desenhar uma parede"
+              : editMode
+                ? "Arraste para posicionar · toque duplo para abrir"
+                : "Toque em uma mesa para gerenciar"}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           {editMode && (
             <>
+              <button
+                onClick={() => {
+                  setWallMode((v) => !v);
+                  setWallStart(null);
+                }}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition",
+                  wallMode
+                    ? "border-fuchsia-400/60 bg-fuchsia-400/25 text-fuchsia-100"
+                    : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10",
+                )}
+                title="Desenhar paredes/limites da loja"
+              >
+                Parede
+              </button>
+              {wallMode && walls.length > 0 && (
+                <button
+                  onClick={clearWalls}
+                  className="rounded-full border border-rose-400/50 bg-rose-400/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-rose-100 hover:bg-rose-400/25"
+                >
+                  Limpar
+                </button>
+              )}
               <button
                 onClick={() => setSnap((v) => !v)}
                 className={cn(
@@ -840,16 +960,22 @@ function FloorPlanView({
               >
                 Grade
               </button>
-              <button
-                onClick={autoOrganize}
-                className="rounded-full border border-amber-400/50 bg-amber-400/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-100 hover:bg-amber-400/30"
-              >
-                Auto-organizar
-              </button>
+              {!wallMode && (
+                <button
+                  onClick={autoOrganize}
+                  className="rounded-full border border-amber-400/50 bg-amber-400/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-100 hover:bg-amber-400/30"
+                >
+                  Auto-organizar
+                </button>
+              )}
             </>
           )}
           <button
-            onClick={() => setEditMode((v) => !v)}
+            onClick={() => {
+              setEditMode((v) => !v);
+              setWallMode(false);
+              setWallStart(null);
+            }}
             className={cn(
               "rounded-full border px-3 py-1 font-black uppercase tracking-wider transition",
               editMode
@@ -868,6 +994,7 @@ function FloorPlanView({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onClick={onCanvasClick}
         className={cn(
           "relative h-[70vh] min-h-[520px] w-full touch-none select-none overflow-hidden rounded-3xl border transition",
           editMode
@@ -875,8 +1002,47 @@ function FloorPlanView({
             : "border-white/10 bg-[#0d0322]/60",
           showGrid &&
             "bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px]",
+          wallMode && "cursor-crosshair",
         )}
       >
+        {/* Walls SVG layer */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" style={{ overflow: "visible" }}>
+          {walls.map((w) => (
+            <line
+              key={w.id}
+              data-wall-line
+              x1={w.x1}
+              y1={w.y1}
+              x2={w.x2}
+              y2={w.y2}
+              stroke="rgba(255,255,255,0.85)"
+              strokeWidth={6}
+              strokeLinecap="round"
+              className={cn(wallMode && "pointer-events-auto cursor-pointer")}
+              onClick={(e) => {
+                if (!wallMode) return;
+                e.stopPropagation();
+                deleteWall(w.id);
+              }}
+            />
+          ))}
+          {wallMode && wallStart && cursor && (
+            <line
+              x1={wallStart.x}
+              y1={wallStart.y}
+              x2={cursor.x}
+              y2={cursor.y}
+              stroke="rgba(232,121,249,0.9)"
+              strokeWidth={6}
+              strokeLinecap="round"
+              strokeDasharray="6 6"
+            />
+          )}
+          {wallMode && wallStart && (
+            <circle cx={wallStart.x} cy={wallStart.y} r={5} fill="#e879f9" />
+          )}
+        </svg>
+
         {tables.map((t) => {
           const order = orderByTable.get(t.id) || null;
           const assist = isAssistRequested(t.notes);
@@ -886,29 +1052,32 @@ function FloorPlanView({
               ref={setNodeRef(t.id)}
               onPointerDown={(e) => onPointerDown(e, t.id)}
               onClick={() => !editMode && !dragRef.current && onOpen(t)}
+              style={{ width: TILE_SIZE, height: TILE_SIZE }}
               className={cn(
-                "absolute left-0 top-0 h-24 w-24 select-none rounded-2xl border bg-gradient-to-br p-2",
+                "absolute left-0 top-0 select-none rounded-xl border bg-gradient-to-br p-1.5",
                 statusTone[t.status],
                 t.status === "ocupada" && agingRing(t.opened_at),
-                editMode
+                editMode && !wallMode
                   ? "cursor-grab touch-none active:cursor-grabbing"
-                  : "cursor-pointer transition hover:scale-[1.03] active:scale-95",
+                  : wallMode
+                    ? "pointer-events-none opacity-70"
+                    : "cursor-pointer transition hover:scale-[1.03] active:scale-95",
                 activeId === t.id && "ring-2 ring-neon-pink/70",
               )}
             >
               {assist && (
-                <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-rose-500 text-white shadow-lg animate-bounce">
-                  <Bell className="h-2.5 w-2.5" />
+                <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-rose-500 text-white shadow-lg animate-bounce">
+                  <Bell className="h-2 w-2" />
                 </span>
               )}
-              <div className="text-[9px] font-bold uppercase tracking-widest opacity-70">Mesa</div>
-              <div className="text-2xl font-black leading-none text-white">{t.number}</div>
-              <div className="mt-1 flex items-center gap-1 text-[10px] opacity-80">
-                <Users className="h-2.5 w-2.5" />
+              <div className="text-[8px] font-bold uppercase tracking-widest opacity-70 leading-none">Mesa</div>
+              <div className="text-lg font-black leading-tight text-white">{t.number}</div>
+              <div className="mt-0.5 flex items-center gap-0.5 text-[9px] opacity-80">
+                <Users className="h-2 w-2" />
                 {t.people_count || 0}/{t.seats}
               </div>
               {order && (
-                <div className="mt-0.5 truncate text-[9px] font-black text-white">{BRL(order.total)}</div>
+                <div className="truncate text-[8px] font-black text-white/90 leading-tight">{BRL(order.total)}</div>
               )}
             </div>
           );
@@ -922,10 +1091,12 @@ function FloorPlanView({
         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" /> 30-60 min</span>
         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-400" /> +60 min</span>
         <span className="flex items-center gap-1"><Bell className="h-3 w-3 text-rose-400" /> chamando</span>
+        <span className="flex items-center gap-1"><span className="h-0.5 w-4 rounded-full bg-white/80" /> parede</span>
       </div>
     </div>
   );
 }
+
 
 // ---------- List View ----------
 function ListView({

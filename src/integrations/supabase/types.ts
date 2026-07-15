@@ -1324,6 +1324,39 @@ export type Database = {
           },
         ]
       }
+      floor_plan_walls: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          thickness: number
+          x1: number
+          x2: number
+          y1: number
+          y2: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          thickness?: number
+          x1: number
+          x2: number
+          y1: number
+          y2: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          thickness?: number
+          x1?: number
+          x2?: number
+          y1?: number
+          y2?: number
+        }
+        Relationships: []
+      }
       inventory_items: {
         Row: {
           active: boolean
