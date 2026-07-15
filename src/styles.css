@@ -691,6 +691,31 @@ select:-webkit-autofill {
 [data-scope="admin"] .placeholder\:text-white\/50::placeholder { color: rgb(255 255 255 / 0.92) !important; }
 
 /* ============================================================
+ * WhatsApp scope — tokens derivados do tema admin
+ * ============================================================
+ * Antes: `/whatsapp` usava #0b141a, #111b21, #202c33, #2a3942,
+ * #06140f, emerald-500/#005c4b hardcoded — imutável ao trocar
+ * cores em "Personalizar painel".
+ * Agora: cada superfície é um token que deriva do tema ativo do
+ * admin (--background, --card, --primary…). O look "WhatsApp"
+ * é preservado por padrão porque o preset dark do painel é bem
+ * escuro; ao trocar o preset (rosa, âmbar, minimal claro), a
+ * página inteira acompanha. Overrides podem redefinir apenas o
+ * bloco `[data-scope="admin"]` abaixo.
+ * ============================================================ */
+[data-scope="admin"] {
+  --wa-bg: color-mix(in oklab, var(--background) 88%, black);
+  --wa-panel: color-mix(in oklab, var(--card) 92%, black);
+  --wa-panel-2: var(--card);
+  --wa-bubble-in: color-mix(in oklab, var(--card) 82%, black);
+  --wa-bubble-out: var(--primary);
+  --wa-bubble-out-ink: var(--primary-foreground);
+  --wa-accent: var(--primary);
+  --wa-accent-ink: var(--primary-foreground);
+  --wa-input: color-mix(in oklab, var(--card) 78%, black);
+}
+
+/* ============================================================
  * Focus-visible fallback (WCAG 2.4.7)
  * ============================================================
  * Muitos componentes usam `focus:outline-none` (Tailwind zera o
