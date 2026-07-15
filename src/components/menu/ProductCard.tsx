@@ -158,18 +158,21 @@ export function ProductCard({
 
 
         {/* Badge sticker tilted */}
-        {product.badge && (
+        {product.badge && badgeColor && (
           <div
-            className={cn(
-              "absolute left-2 top-2 z-20 flex -rotate-6 items-center gap-1 rounded-md px-2 py-[3px] text-[9px] font-black uppercase tracking-[0.14em] shadow-lg",
-              badgeStyles[product.badge],
-            )}
+            className="absolute left-2 top-2 z-20 flex -rotate-6 items-center gap-1 rounded-md px-2 py-[3px] text-[9px] font-black uppercase tracking-[0.14em] shadow-lg"
             style={{
+              backgroundColor: badgeColor,
+              color: badgeInkFor(badgeColor),
               boxShadow:
                 "0 6px 12px -3px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
             }}
           >
-            <Flame className="h-[10px] w-[10px] fill-current" strokeWidth={2.5} />
+            {badgeIcon ? (
+              <span className="text-[10px] leading-none">{badgeIcon}</span>
+            ) : (
+              <Flame className="h-[10px] w-[10px] fill-current" strokeWidth={2.5} />
+            )}
             {product.badge}
           </div>
         )}
