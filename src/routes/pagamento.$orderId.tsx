@@ -240,49 +240,68 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pixError, setPixError] = useState<string | null>(null);
+  const attemptRef = useRef(0);
+
+  const generate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    setPixError(null);
+    attemptRef.current += 1;
+    try {
+      const saved = safeLoadCustomer();
+      await genPix({
+        data: {
+          orderId: order.id,
+          customer: {
+            name: order.customer_name || saved.name || "Cliente",
+            email: saved.email || undefined,
+            cpfCnpj: saved.cpf || undefined,
+            phone: order.phone || saved.phone || undefined,
+            externalReference: order.id,
+          },
+        },
+      });
+      const { data } = await supabase.from("orders").select("*").eq("id", order.id).maybeSingle();
+      if (data) setOrder(data as Order);
+    } catch (e: any) {
+      const message = e?.message || "Tente novamente em alguns instantes.";
+      setPixError(message);
+      toast.error("Não foi possível gerar o PIX", { description: message, duration: 8000 });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   useEffect(() => {
-    if (order.pix_qr_code_base64 || generating) return;
-    setGenerating(true);
-    (async () => {
-      try {
-        setPixError(null);
-        const saved = safeLoadCustomer();
-        await genPix({
-          data: {
-            orderId: order.id,
-            customer: {
-              name: order.customer_name || saved.name || "Cliente",
-              email: saved.email || undefined,
-              cpfCnpj: saved.cpf || undefined,
-              phone: order.phone || saved.phone || undefined,
-              externalReference: order.id,
-            },
-          },
-        });
-        // realtime will hydrate; fallback fetch:
-        const { data } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("id", order.id)
-          .maybeSingle();
-        if (data) setOrder(data as Order);
-      } catch (e: any) {
-        const message = e?.message || "Tente novamente.";
-        setPixError(message);
-        toast.error("Não foi possível gerar o PIX", { description: message, duration: 8000 });
-      } finally {
-        setGenerating(false);
-      }
-    })();
+    if (order.pix_qr_code_base64 || generating || attemptRef.current > 0) return;
+    generate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order.id]);
 
-  const expires = useMemo(() => {
+  const expiresAt = useMemo(() => {
     if (!order.pix_expires_at) return null;
     const d = new Date(order.pix_expires_at);
     return isNaN(d.getTime()) ? null : d;
   }, [order.pix_expires_at]);
+
+  // Live countdown
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!expiresAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+  const msLeft = expiresAt ? expiresAt.getTime() - now : 0;
+  const expired = expiresAt !== null && msLeft <= 0;
+  const urgent = expiresAt !== null && msLeft > 0 && msLeft < 5 * 60_000;
+  const countdown = expiresAt
+    ? (() => {
+        const total = Math.max(0, Math.floor(msLeft / 1000));
+        const mm = Math.floor(total / 60).toString().padStart(2, "0");
+        const ss = (total % 60).toString().padStart(2, "0");
+        return `${mm}:${ss}`;
+      })()
+    : null;
 
   const copy = async () => {
     if (!order.pix_copy_paste) return;
@@ -301,25 +320,77 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
       <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center">
         <Loader2 className="mx-auto h-8 w-8 animate-spin text-neon-yellow" />
         <div className="mt-3 text-sm text-white/70">Gerando QR Code PIX…</div>
+        <div className="mt-1 text-[11px] text-white/50">Isso costuma levar 2–3 segundos.</div>
+      </div>
+    );
+  }
+
+  if (pixError && !order.pix_qr_code_base64) {
+    return (
+      <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-5">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-300" />
+          <div className="flex-1">
+            <div className="font-extrabold text-white">Não conseguimos gerar o PIX</div>
+            <div className="mt-1 text-[13px] text-red-100/90">{pixError}</div>
+          </div>
+        </div>
+        <button
+          onClick={generate}
+          disabled={generating}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-yellow px-4 py-3 text-sm font-extrabold text-[oklch(0.18_0.11_305)] disabled:opacity-60"
+        >
+          {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          Tentar novamente
+        </button>
       </div>
     );
   }
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-      <div className="mb-3 flex items-center gap-2">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow">
-          <QrCode className="h-5 w-5" />
-        </div>
-        <div>
-          <div className="font-display text-lg font-extrabold text-white">Pague com PIX</div>
-          <div className="text-[11px] text-white/60">
-            Aponte a câmera do banco para o QR Code ou copie o código.
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-yellow/15 text-neon-yellow">
+            <QrCode className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-display text-lg font-extrabold text-white">Pague com PIX</div>
+            <div className="text-[11px] text-white/60">Aponte a câmera do banco ou copie o código.</div>
           </div>
         </div>
+        {countdown && !expired && (
+          <div
+            className={cn(
+              "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black tabular-nums ring-1",
+              urgent
+                ? "animate-pulse bg-red-500/20 text-red-100 ring-red-400/40"
+                : "bg-emerald-500/15 text-emerald-100 ring-emerald-400/30",
+            )}
+            aria-live="polite"
+          >
+            <Clock className="h-3 w-3" />
+            {countdown}
+          </div>
+        )}
       </div>
 
-      {order.pix_qr_code_base64 ? (
+      {expired ? (
+        <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-center">
+          <div className="font-extrabold text-amber-100">Este PIX expirou</div>
+          <div className="mt-1 text-[12px] text-amber-100/80">
+            Gere um novo código para concluir o pagamento — o pedido continua ativo.
+          </div>
+          <button
+            onClick={generate}
+            disabled={generating}
+            className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-neon-yellow px-4 py-2.5 text-sm font-extrabold text-[oklch(0.18_0.11_305)] disabled:opacity-60"
+          >
+            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Gerar novo PIX
+          </button>
+        </div>
+      ) : order.pix_qr_code_base64 ? (
         <div className="rounded-2xl bg-white p-3">
           <img
             src={`data:image/png;base64,${order.pix_qr_code_base64}`}
@@ -329,16 +400,20 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center text-sm text-white/60">
-          {pixError ? "Não foi possível gerar o QR Code." : "QR Code indisponível."}
-          {pixError && <div className="mt-2 text-xs text-red-200">{pixError}</div>}
+          QR Code indisponível.
         </div>
       )}
 
-      {order.pix_copy_paste && (
+      {order.pix_copy_paste && !expired && (
         <>
-          <div className="mt-3 break-all rounded-2xl border border-white/10 bg-white/[0.04] p-3 font-mono text-[11px] text-white/80">
+          <button
+            type="button"
+            onClick={copy}
+            title="Toque para copiar"
+            className="mt-3 block w-full break-all rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left font-mono text-[11px] text-white/80 transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-yellow/60"
+          >
             {order.pix_copy_paste}
-          </div>
+          </button>
           <button
             onClick={copy}
             className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-yellow px-4 py-3 text-sm font-extrabold text-[oklch(0.18_0.11_305)] active:scale-95"
@@ -349,17 +424,12 @@ function PixSection({ order, setOrder }: { order: Order; setOrder: (o: Order) =>
         </>
       )}
 
-      {expires && (
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-[11.5px] text-white/60">
-          <Clock className="h-3.5 w-3.5" />
-          Válido até {formatSP(expires)}
+      {!expired && (
+        <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/[0.03] p-3 text-[11.5px] text-white/70">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-neon-cyan" />
+          Aguardando pagamento — assim que o PIX cair, seu pedido é confirmado automaticamente.
         </div>
       )}
-
-      <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/[0.03] p-3 text-[11.5px] text-white/70">
-        <Loader2 className="h-3.5 w-3.5 animate-spin text-neon-cyan" />
-        Aguardando pagamento — assim que o PIX cair, seu pedido é confirmado automaticamente.
-      </div>
     </div>
   );
 }
