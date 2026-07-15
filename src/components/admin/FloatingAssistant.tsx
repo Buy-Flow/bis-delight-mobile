@@ -415,23 +415,7 @@ export function FloatingAssistant() {
 
   return (
     <>
-      {/* Trigger button — fixed bottom-right */}
-      {!open && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="fixed bottom-4 right-4 z-[60] flex items-center gap-2 rounded-full border border-white/10 bg-gradient-to-br from-neon-pink to-purple-600 px-4 py-3 text-white shadow-2xl shadow-neon-pink/40 hover:scale-105 transition"
-          aria-label="Abrir assistente virtual"
-        >
-          <div className="relative">
-            <Bot className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-neon-yellow animate-pulse" />
-          </div>
-          <span className="hidden sm:inline text-xs font-bold uppercase tracking-wide">
-            IA · {page.label}
-          </span>
-        </button>
-      )}
+
 
       {/* Chat popover — compacto, ancorado no canto inferior direito, sem backdrop */}
       {open && (
