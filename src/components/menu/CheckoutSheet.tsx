@@ -440,7 +440,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
     ? Math.max(0, subtotal - MIN_INVOICE_BRL)
     : rawDiscount;
   const discount = couponApplied ? Math.min(rawDiscount, maxDiscountKeepingMin) : rawDiscount;
-  const discountCappedByMin = couponApplied && rawDiscount > discount;
+  void discountCappedByMin;
   const total = Math.max(0, subtotal + fee - discount);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
   const billableAfterDiscount = Math.max(0, subtotal - discount);
