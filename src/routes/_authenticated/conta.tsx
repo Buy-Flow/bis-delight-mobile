@@ -28,6 +28,9 @@ import {
   KeyRound,
   BadgeCheck,
   ChevronLeft,
+  Eye,
+  EyeOff,
+  X as XIcon,
 } from "lucide-react";
 
 
@@ -655,6 +658,11 @@ function ProfilePanel() {
   const [birthday, setBirthday] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pw1, setPw1] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwShow, setPwShow] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -965,14 +973,7 @@ function ProfilePanel() {
 
             <div className="flex gap-2 pt-1">
               <button
-                onClick={async () => {
-                  if (!user?.email) return;
-                  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-                    redirectTo: `${window.location.origin}/auth`,
-                  });
-                  if (error) toast.error("Erro ao enviar e-mail");
-                  else toast.success("Enviamos um link para redefinir sua senha!");
-                }}
+                onClick={() => { setPw1(""); setPw2(""); setPwOpen(true); }}
                 className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-[12px] font-bold text-white/80 transition hover:bg-white/10"
               >
                 <KeyRound className="h-3.5 w-3.5" /> Trocar senha
@@ -986,6 +987,122 @@ function ProfilePanel() {
                 Salvar perfil
               </button>
             </div>
+
+            {pwOpen && (
+              <div
+                className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
+                onClick={() => !pwSaving && setPwOpen(false)}
+              >
+                <div
+                  className="w-full max-w-md rounded-t-3xl border border-white/10 bg-gradient-to-b from-neutral-900 to-black p-5 shadow-2xl sm:rounded-3xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-xl bg-neon-cyan/15 p-2 text-neon-cyan ring-1 ring-neon-cyan/30">
+                        <KeyRound className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-black uppercase tracking-wide text-white">Trocar senha</div>
+                        <div className="text-[11px] text-white/50">Defina uma nova senha para sua conta</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => !pwSaving && setPwOpen(false)}
+                      className="rounded-lg p-1.5 text-white/60 hover:bg-white/10 hover:text-white"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-white/50">Nova senha</label>
+                      <div className="relative">
+                        <input
+                          type={pwShow ? "text" : "password"}
+                          value={pw1}
+                          onChange={(e) => setPw1(e.target.value)}
+                          placeholder="Mínimo 6 caracteres"
+                          autoComplete="new-password"
+                          className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 pr-10 text-sm text-white outline-none focus:border-neon-cyan"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setPwShow((s) => !s)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-white/60 hover:bg-white/10 hover:text-white"
+                          aria-label={pwShow ? "Ocultar senha" : "Mostrar senha"}
+                        >
+                          {pwShow ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-black uppercase tracking-[0.18em] text-white/50">Confirmar</label>
+                      <input
+                        type={pwShow ? "text" : "password"}
+                        value={pw2}
+                        onChange={(e) => setPw2(e.target.value)}
+                        placeholder="Repita a senha"
+                        autoComplete="new-password"
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-neon-cyan"
+                      />
+                      {pw2 && pw1 !== pw2 && (
+                        <div className="mt-1 text-[11px] font-bold text-red-400">As senhas não coincidem</div>
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-white/5 bg-white/[.03] p-3 text-[11px] text-white/50">
+                      Dica: use pelo menos 8 caracteres, misturando letras, números e símbolos.
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => !pwSaving && setPwOpen(false)}
+                      className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-[12px] font-bold text-white/80 hover:bg-white/10"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (pw1.length < 6) { toast.error("A senha precisa ter no mínimo 6 caracteres"); return; }
+                        if (pw1 !== pw2) { toast.error("As senhas não coincidem"); return; }
+                        setPwSaving(true);
+                        const { error } = await supabase.auth.updateUser({ password: pw1 });
+                        setPwSaving(false);
+                        if (error) {
+                          toast.error(error.message || "Não foi possível alterar a senha");
+                          return;
+                        }
+                        toast.success("Senha alterada com sucesso!");
+                        setPwOpen(false);
+                        setPw1(""); setPw2("");
+                      }}
+                      disabled={pwSaving || !pw1 || !pw2}
+                      className="flex flex-[1.4] items-center justify-center gap-2 rounded-xl bg-neon-cyan px-4 py-2.5 text-sm font-extrabold text-black active:scale-[.98] disabled:opacity-60"
+                    >
+                      {pwSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                      Salvar nova senha
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      if (!user?.email) return;
+                      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+                        redirectTo: `${window.location.origin}/auth`,
+                      });
+                      if (error) toast.error("Erro ao enviar e-mail");
+                      else toast.success("Enviamos um link para redefinir sua senha!");
+                    }}
+                    className="mt-3 w-full rounded-xl border border-dashed border-white/10 bg-transparent px-3 py-2 text-[11px] font-bold text-white/60 hover:bg-white/5"
+                  >
+                    Prefere receber por e-mail? Enviar link de redefinição
+                  </button>
+                </div>
+              </div>
+            )}
           </AccordionCard>
         );
       })()}
