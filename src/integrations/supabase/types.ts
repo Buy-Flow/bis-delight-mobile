@@ -1491,10 +1491,14 @@ export type Database = {
       }
       loyalty_tiers: {
         Row: {
+          color: string | null
           coupon_value: number
+          description: string | null
+          icon_url: string | null
           label: string
           min_lifetime: number
           min_order_value: number
+          perks: string | null
           redeem_cost: number
           sort_order: number
           stamps_per_order: number
@@ -1502,10 +1506,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          color?: string | null
           coupon_value?: number
+          description?: string | null
+          icon_url?: string | null
           label: string
           min_lifetime?: number
           min_order_value?: number
+          perks?: string | null
           redeem_cost?: number
           sort_order: number
           stamps_per_order?: number
@@ -1513,10 +1521,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          color?: string | null
           coupon_value?: number
+          description?: string | null
+          icon_url?: string | null
           label?: string
           min_lifetime?: number
           min_order_value?: number
+          perks?: string | null
           redeem_cost?: number
           sort_order?: number
           stamps_per_order?: number
