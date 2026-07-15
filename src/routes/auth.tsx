@@ -578,9 +578,101 @@ function AuthPage() {
         </div>
         </div>
       </div>
+
+      {/* Forgot password modal */}
+      {forgotOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !forgotSending && setForgotOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/10 bg-[oklch(0.14_0.09_305)] p-6 shadow-2xl"
+          >
+            <button
+              type="button"
+              onClick={() => setForgotOpen(false)}
+              aria-label="Fechar"
+              className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-neon-cyan/15 text-neon-cyan ring-1 ring-neon-cyan/30">
+                <Mail className="h-4 w-4" />
+              </div>
+              <div>
+                <h2
+                  className="font-display text-xl font-black uppercase leading-none text-white"
+                  style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+                >
+                  Recuperar senha
+                </h2>
+                <p className="mt-1 text-xs text-white/60">
+                  Enviaremos um link para redefinir sua senha.
+                </p>
+              </div>
+            </div>
+
+            {forgotSent ? (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-emerald-100">
+                  <p className="text-sm font-bold">E-mail enviado!</p>
+                  <p className="mt-1 text-xs text-emerald-200/80">
+                    Enviamos um link de recuperação para <strong>{forgotEmail}</strong>. Clique no link para definir uma nova senha. Verifique também sua pasta de spam.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setForgotOpen(false)}
+                  className="w-full rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold uppercase tracking-wide text-white glow-pink"
+                >
+                  Entendi
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={sendPasswordReset} className="space-y-3">
+                <label className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3 transition focus-within:border-neon-cyan focus-within:ring-2 focus-within:ring-neon-cyan/20">
+                  <Mail className="h-4 w-4 shrink-0 text-white/40" />
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    autoComplete="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    className="w-full bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+                  />
+                </label>
+                {forgotError && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-2 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3 text-rose-100"
+                  >
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />
+                    <p className="text-xs">{forgotError}</p>
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={forgotSending}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-3 text-sm font-extrabold uppercase tracking-wide text-white glow-pink transition active:scale-[.98] disabled:opacity-60"
+                >
+                  {forgotSending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Enviar link de recuperação
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function TabButton({
   active,
