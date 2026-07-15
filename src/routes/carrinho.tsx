@@ -533,7 +533,10 @@ function CartPage() {
 
             </div>
             <button
-              onClick={() => navigate({ to: "/finalizar" })}
+              onClick={() => {
+                haptic.tap();
+                navigate({ to: "/finalizar" });
+              }}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-pink px-4 py-4 text-base font-extrabold text-white glow-pink active:scale-[.98]"
             >
               <Lock className="h-4 w-4" />
