@@ -5439,7 +5439,7 @@ export type Database = {
           expires_at: string
         }[]
       }
-      auto_cancel_expired_pending_orders: { Args: never; Returns: number }
+      auto_cancel_expired_pending_orders: { Args: never; Returns: undefined }
       broadcast_delivery_offer: {
         Args: { _fee?: number; _order_id: string }
         Returns: Json
