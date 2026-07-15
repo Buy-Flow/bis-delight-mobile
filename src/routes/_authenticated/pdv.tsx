@@ -194,7 +194,9 @@ function PDVPage() {
       }
       if (e.key === "F8") {
         e.preventDefault();
-        const input = customerBoxRef.current?.querySelector("input");
+        const input = document.querySelector<HTMLInputElement>(
+          '[data-pdv-customer] input',
+        );
         input?.focus();
         return;
       }
