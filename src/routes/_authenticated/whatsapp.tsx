@@ -901,17 +901,6 @@ function WhatsappPage() {
               </div>
             )}
           </main>
-              </>
-            ) : (
-              <div className="grid h-full place-items-center text-center">
-                <div className="max-w-sm px-6">
-                  <Smartphone className="mx-auto mb-4 h-16 w-16 text-white/20" />
-                  <h1 className="text-xl font-bold">Selecione uma conversa</h1>
-                  <p className="mt-2 text-sm text-white/45">As mensagens chegam em tempo real pelo webhook; use sincronizar apenas para buscar histórico do telefone.</p>
-                </div>
-              </div>
-            )}
-          </main>
         </div>
 
         {newOpen && (
