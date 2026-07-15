@@ -58,16 +58,16 @@ const WEEKDAYS = [
 function Switch({ checked, onCheckedChange }: { checked: boolean; onCheckedChange: (v: boolean) => void }) {
   return (
     <button type="button" onClick={() => onCheckedChange(!checked)}
-      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${checked ? "bg-violet-600" : "bg-slate-300"}`}>
-      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
+      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${checked ? "bg-primary" : "bg-muted"}`}>
+      <span className={`inline-block h-5 w-5 transform rounded-full bg-background shadow transition ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
     </button>
   );
 }
 
 const SEV_STYLE: Record<string, { bg: string; text: string; label: string; Icon: typeof AlertTriangle }> = {
-  critical: { bg: "bg-rose-100", text: "text-rose-700", label: "Crítico", Icon: AlertTriangle },
-  warning:  { bg: "bg-amber-100", text: "text-amber-700", label: "Atenção", Icon: TrendingDown },
-  info:     { bg: "bg-sky-100",   text: "text-sky-700",   label: "Info",    Icon: TrendingUp },
+  critical: { bg: "bg-rose-500/15 border border-rose-500/30", text: "text-rose-300", label: "Crítico", Icon: AlertTriangle },
+  warning:  { bg: "bg-amber-500/15 border border-amber-500/30", text: "text-amber-300", label: "Atenção", Icon: TrendingDown },
+  info:     { bg: "bg-sky-500/15 border border-sky-500/30",     text: "text-sky-300",   label: "Info",    Icon: TrendingUp },
 };
 
 function InsightsPage() {
@@ -142,11 +142,18 @@ function InsightsPage() {
     try { await _del({ data: { id } }); await refresh(); } catch (e) { toast.error((e as Error).message); }
   };
 
+  const kpiAccent: Record<string, string> = {
+    violet: "text-primary",
+    sky: "text-sky-400",
+    rose: "text-rose-400",
+    emerald: "text-emerald-400",
+  };
+
   return (
     <AdminShell>
       <div className="mb-4">
-        <h1 className="text-2xl font-bold text-slate-800">Copiloto Proativo</h1>
-        <p className="text-sm text-slate-500">Insights diários automáticos com sugestões de ação</p>
+        <h1 className="text-2xl font-bold text-foreground">Copiloto Proativo</h1>
+        <p className="text-sm text-muted-foreground">Insights diários automáticos com sugestões de ação</p>
       </div>
 
       <div className="mb-6 grid gap-3 sm:grid-cols-4">
@@ -156,11 +163,11 @@ function InsightsPage() {
           { label: "Críticos abertos", value: stats?.critical ?? "—", icon: AlertTriangle, color: "rose" },
           { label: "Resolvidos", value: stats?.done ?? "—", icon: CheckCircle2, color: "emerald" },
         ].map((k) => (
-          <div key={k.label} className="rounded-xl border bg-white p-4">
-            <div className="flex items-center gap-2 text-slate-500 text-xs uppercase tracking-wide">
-              <k.icon className={`h-4 w-4 text-${k.color}-600`} /> {k.label}
+          <div key={k.label} className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+              <k.icon className={`h-4 w-4 ${kpiAccent[k.color]}`} /> {k.label}
             </div>
-            <div className="mt-1 text-2xl font-bold text-slate-800">{k.value}</div>
+            <div className="mt-1 text-2xl font-bold text-foreground">{k.value}</div>
           </div>
         ))}
       </div>
@@ -169,7 +176,10 @@ function InsightsPage() {
         {(["feed", "config", "historico"] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              tab === t ? "bg-violet-600 text-white" : "bg-white border text-slate-600 hover:bg-slate-50"}`}>
+              tab === t
+                ? "bg-primary text-primary-foreground"
+                : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}>
             {t === "feed" ? "Feed" : t === "config" ? "Configurações" : "Histórico"}
           </button>
         ))}
@@ -177,28 +187,32 @@ function InsightsPage() {
           <Button variant="outline" size="sm" onClick={() => runNow(true)} disabled={running}>
             <RefreshCw className={`mr-1 h-4 w-4 ${running ? "animate-spin" : ""}`} /> Prévia
           </Button>
-          <Button size="sm" onClick={() => runNow(false)} disabled={running} className="bg-violet-600 hover:bg-violet-700">
+          <Button size="sm" onClick={() => runNow(false)} disabled={running}>
             <Play className="mr-1 h-4 w-4" /> Gerar agora
           </Button>
         </div>
       </div>
 
-      {loading && <div className="text-center text-slate-500 py-10">Carregando…</div>}
+      {loading && <div className="text-center text-muted-foreground py-10">Carregando…</div>}
 
       {!loading && tab === "feed" && (
         <>
           <div className="mb-3 flex flex-wrap gap-2 text-xs">
             {(["new", "all", "done", "dismissed"] as const).map((f) => (
               <button key={f} onClick={() => setStatusFilter(f)}
-                className={`rounded-full px-3 py-1 ${statusFilter === f ? "bg-slate-800 text-white" : "bg-white border"}`}>
+                className={`rounded-full px-3 py-1 transition ${
+                  statusFilter === f
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}>
                 {f === "new" ? "Novos" : f === "all" ? "Todos" : f === "done" ? "Resolvidos" : "Descartados"}
               </button>
             ))}
           </div>
 
           {insights.length === 0 ? (
-            <div className="rounded-xl border bg-white p-10 text-center text-slate-500">
-              <Sparkles className="mx-auto h-10 w-10 mb-2 text-violet-400" />
+            <div className="rounded-xl border border-border bg-card p-10 text-center text-muted-foreground">
+              <Sparkles className="mx-auto h-10 w-10 mb-2 text-primary" />
               Nenhum insight ainda. Clique em <b>Gerar agora</b> para analisar os últimos dias.
             </div>
           ) : (
@@ -206,26 +220,26 @@ function InsightsPage() {
               {insights.map((it) => {
                 const s = SEV_STYLE[it.severity] ?? SEV_STYLE.info;
                 return (
-                  <div key={it.id} className="rounded-xl border bg-white p-4 shadow-sm">
+                  <div key={it.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                     <div className="flex flex-wrap items-start gap-3">
                       <div className={`rounded-lg p-2 ${s.bg} ${s.text}`}><s.Icon className="h-5 w-5" /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-semibold text-slate-800">{it.title}</h3>
+                          <h3 className="font-semibold text-foreground">{it.title}</h3>
                           <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${s.bg} ${s.text}`}>{s.label}</span>
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">{it.kind}</span>
-                          {it.delivered_whatsapp && <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />}
-                          <span className="ml-auto text-[11px] text-slate-400">
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{it.kind}</span>
+                          {it.delivered_whatsapp && <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />}
+                          <span className="ml-auto text-[11px] text-muted-foreground">
                             {new Date(it.created_at).toLocaleString("pt-BR")}
                           </span>
                         </div>
-                        <p className="mt-2 text-sm text-slate-700">{it.finding}</p>
+                        <p className="mt-2 text-sm text-foreground/90">{it.finding}</p>
                         {it.hypothesis && (
-                          <p className="mt-1 text-sm text-slate-500"><b>Hipótese:</b> {it.hypothesis}</p>
+                          <p className="mt-1 text-sm text-muted-foreground"><b>Hipótese:</b> {it.hypothesis}</p>
                         )}
                         {it.suggested_action && (
-                          <div className="mt-2 rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm text-violet-900">
-                            <b>💡 Ação sugerida:</b> {it.suggested_action}
+                          <div className="mt-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
+                            <b className="text-primary">💡 Ação sugerida:</b> {it.suggested_action}
                           </div>
                         )}
                         <div className="mt-3 flex flex-wrap gap-2">
@@ -247,7 +261,7 @@ function InsightsPage() {
                               <Clock className="mr-1 h-3.5 w-3.5" /> Adiar
                             </Button>
                           )}
-                          <Button size="sm" variant="ghost" className="text-rose-600" onClick={() => remove(it.id)}>
+                          <Button size="sm" variant="ghost" className="text-rose-400 hover:text-rose-300" onClick={() => remove(it.id)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
@@ -266,13 +280,13 @@ function InsightsPage() {
       )}
 
       {!loading && tab === "historico" && settings && (
-        <div className="rounded-xl border bg-white p-6 space-y-2 text-sm">
-          <div className="flex items-center gap-2 font-semibold text-slate-800"><History className="h-4 w-4" /> Última execução</div>
-          <div>Quando: <b>{settings.last_run_at ? new Date(settings.last_run_at).toLocaleString("pt-BR") : "—"}</b></div>
-          <div>Status: <b className={settings.last_run_status === "ok" ? "text-emerald-700" : "text-rose-700"}>{settings.last_run_status ?? "—"}</b></div>
-          <div>Insights gerados: <b>{settings.last_run_count ?? 0}</b></div>
+        <div className="rounded-xl border border-border bg-card p-6 space-y-2 text-sm text-foreground">
+          <div className="flex items-center gap-2 font-semibold text-foreground"><History className="h-4 w-4" /> Última execução</div>
+          <div className="text-muted-foreground">Quando: <b className="text-foreground">{settings.last_run_at ? new Date(settings.last_run_at).toLocaleString("pt-BR") : "—"}</b></div>
+          <div className="text-muted-foreground">Status: <b className={settings.last_run_status === "ok" ? "text-emerald-400" : "text-rose-400"}>{settings.last_run_status ?? "—"}</b></div>
+          <div className="text-muted-foreground">Insights gerados: <b className="text-foreground">{settings.last_run_count ?? 0}</b></div>
           {settings.last_run_error && (
-            <div className="mt-2 rounded bg-rose-50 border border-rose-200 p-3 text-rose-800">{settings.last_run_error}</div>
+            <div className="mt-2 rounded border border-rose-500/30 bg-rose-500/10 p-3 text-rose-300">{settings.last_run_error}</div>
           )}
         </div>
       )}
@@ -298,15 +312,17 @@ function ConfigPanel({ s, setS, save, saving }: {
     ["monitor_new_customers", "Novos clientes", "Detecta quedas em clientes únicos."],
   ], []);
 
+  const selectClass = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
   return (
     <div className="space-y-4">
-      <section className="rounded-xl border bg-white p-5 space-y-4">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2"><Settings2 className="h-4 w-4" /> Geral</h3>
+      <section className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="font-semibold text-foreground flex items-center gap-2"><Settings2 className="h-4 w-4" /> Geral</h3>
         <div className="flex items-center gap-3">
           <Switch checked={s.enabled} onCheckedChange={(v) => upd("enabled", v)} />
           <div>
-            <div className="text-sm font-medium">Copiloto proativo ativo</div>
-            <div className="text-xs text-slate-500">Executa análise automaticamente no horário configurado.</div>
+            <div className="text-sm font-medium text-foreground">Copiloto proativo ativo</div>
+            <div className="text-xs text-muted-foreground">Executa análise automaticamente no horário configurado.</div>
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-4">
@@ -337,7 +353,11 @@ function ConfigPanel({ s, setS, save, saving }: {
               const active = s.weekdays.includes(d.v);
               return (
                 <button key={d.v} type="button" onClick={() => toggleWd(d.v)}
-                  className={`rounded-full px-3 py-1 text-xs ${active ? "bg-violet-600 text-white" : "bg-slate-100"}`}>
+                  className={`rounded-full px-3 py-1 text-xs transition ${
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border bg-muted text-muted-foreground hover:text-foreground"
+                  }`}>
                   {d.label}
                 </button>
               );
@@ -346,24 +366,24 @@ function ConfigPanel({ s, setS, save, saving }: {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-slate-800">O que monitorar</h3>
+      <section className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <h3 className="font-semibold text-foreground">O que monitorar</h3>
         <div className="grid gap-3 sm:grid-cols-2">
           {monitors.map(([k, label, desc]) => (
-            <label key={k as string} className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-slate-50">
+            <label key={k as string} className="flex items-start gap-3 rounded-lg border border-border bg-background/40 p-3 cursor-pointer hover:bg-muted/60 transition">
               <Switch checked={Boolean(s[k])} onCheckedChange={(v) => upd(k, v as never)} />
               <div>
-                <div className="text-sm font-medium">{label}</div>
-                <div className="text-xs text-slate-500">{desc}</div>
+                <div className="text-sm font-medium text-foreground">{label}</div>
+                <div className="text-xs text-muted-foreground">{desc}</div>
               </div>
             </label>
           ))}
         </div>
       </section>
 
-      <section className="rounded-xl border bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-slate-800">Sensibilidade (thresholds)</h3>
-        <p className="text-xs text-slate-500">Só gera insight quando a variação passa desses limites.</p>
+      <section className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <h3 className="font-semibold text-foreground">Sensibilidade (thresholds)</h3>
+        <p className="text-xs text-muted-foreground">Só gera insight quando a variação passa desses limites.</p>
         <div className="grid gap-3 sm:grid-cols-3">
           <ThresholdInput label="Queda de receita (%)" val={s.revenue_drop_threshold} onChange={(v) => upd("revenue_drop_threshold", v)} />
           <ThresholdInput label="Queda por categoria (%)" val={s.category_drop_threshold} onChange={(v) => upd("category_drop_threshold", v)} />
@@ -373,7 +393,7 @@ function ConfigPanel({ s, setS, save, saving }: {
           <div>
             <Label>Severidade mínima</Label>
             <select value={s.min_severity} onChange={(e) => upd("min_severity", e.target.value as Settings["min_severity"])}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              className={selectClass}>
               <option value="info">Info (mostrar tudo)</option>
               <option value="warning">Atenção</option>
               <option value="critical">Apenas críticos</option>
@@ -383,13 +403,13 @@ function ConfigPanel({ s, setS, save, saving }: {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-slate-800">Inteligência</h3>
+      <section className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <h3 className="font-semibold text-foreground">Inteligência</h3>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <Label>Tom das mensagens</Label>
             <select value={s.ai_tone} onChange={(e) => upd("ai_tone", e.target.value as Settings["ai_tone"])}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              className={selectClass}>
               <option value="coach">Coach (motivador)</option>
               <option value="direto">Direto ao ponto</option>
               <option value="descontraido">Descontraído</option>
@@ -399,7 +419,7 @@ function ConfigPanel({ s, setS, save, saving }: {
           <div>
             <Label>Modelo IA</Label>
             <select value={s.ai_model} onChange={(e) => upd("ai_model", e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+              className={selectClass}>
               <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (rápido)</option>
               <option value="google/gemini-2.5-pro">Gemini 2.5 Pro (mais raciocínio)</option>
               <option value="google/gemini-3.5-flash">Gemini 3.5 Flash</option>
@@ -409,21 +429,21 @@ function ConfigPanel({ s, setS, save, saving }: {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-white p-5 space-y-3">
-        <h3 className="font-semibold text-slate-800">Como você recebe os insights</h3>
-        <label className="flex items-start gap-3 rounded-lg border p-3">
+      <section className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <h3 className="font-semibold text-foreground">Como você recebe os insights</h3>
+        <label className="flex items-start gap-3 rounded-lg border border-border bg-background/40 p-3">
           <Switch checked={s.send_whatsapp} onCheckedChange={(v) => upd("send_whatsapp", v)} />
           <div className="flex-1">
-            <div className="text-sm font-medium">Enviar resumo no WhatsApp</div>
-            <div className="text-xs text-slate-500 mb-2">Um bilhete diário com o top de insights.</div>
+            <div className="text-sm font-medium text-foreground">Enviar resumo no WhatsApp</div>
+            <div className="text-xs text-muted-foreground mb-2">Um bilhete diário com o top de insights.</div>
             <Input placeholder="Número do dono (ex: 5541999999999)"
               value={s.whatsapp_target ?? ""} onChange={(e) => upd("whatsapp_target", e.target.value)} />
           </div>
         </label>
       </section>
 
-      <div className="sticky bottom-0 z-10 -mx-4 sm:mx-0 bg-white/95 backdrop-blur border-t p-3 sm:rounded-xl sm:border flex justify-end">
-        <Button onClick={save} disabled={saving} className="bg-violet-600 hover:bg-violet-700">
+      <div className="sticky bottom-0 z-10 -mx-4 sm:mx-0 bg-card/95 backdrop-blur border-t border-border p-3 sm:rounded-xl sm:border flex justify-end">
+        <Button onClick={save} disabled={saving}>
           <Save className="mr-1 h-4 w-4" /> {saving ? "Salvando…" : "Salvar configurações"}
         </Button>
       </div>
