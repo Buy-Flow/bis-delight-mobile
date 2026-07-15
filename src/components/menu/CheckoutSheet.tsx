@@ -1630,37 +1630,60 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                       className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
                     />
                   </div>
-                  <div>
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CEP *</label>
-                    <input
-                      value={formatCep(cardCep || cep)}
-                      onChange={(e) => setCardCep(e.target.value)}
-                      inputMode="numeric"
-                      placeholder="00000-000"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nº endereço *</label>
-                    <input
-                      value={cardAddrNumber || addrNumber}
-                      onChange={(e) => setCardAddrNumber(e.target.value)}
-                      inputMode="numeric"
-                      placeholder="123"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
-                  </div>
                   <div className="col-span-2">
-                    <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">E-mail *</label>
-                    <input
-                      value={cardEmail || (user?.email ?? "")}
-                      onChange={(e) => setCardEmail(e.target.value)}
-                      inputMode="email"
-                      autoComplete="email"
-                      placeholder="voce@email.com"
-                      className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setCardBillingOpen((v) => !v)}
+                      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-[11px] font-bold text-white/70 hover:border-white/25"
+                    >
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-3.5 w-3.5 text-neon-pink" />
+                        Dados de cobrança
+                        <span className="text-[10px] font-normal text-white/50">
+                          · {formatCep(cardCep || cep) || "sem CEP"} · nº {cardAddrNumber || addrNumber || "—"}
+                        </span>
+                      </span>
+                      <ChevronDown className={cn("h-3.5 w-3.5 transition", cardBillingOpen && "rotate-180")} />
+                    </button>
+                    <div className="mt-1 text-[10px] text-white/40">
+                      Usamos os dados do endereço automaticamente. Toque para editar.
+                    </div>
                   </div>
+                  {cardBillingOpen && (
+                    <>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">CEP *</label>
+                        <input
+                          value={formatCep(cardCep || cep)}
+                          onChange={(e) => setCardCep(e.target.value)}
+                          inputMode="numeric"
+                          placeholder="00000-000"
+                          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">Nº endereço *</label>
+                        <input
+                          value={cardAddrNumber || addrNumber}
+                          onChange={(e) => setCardAddrNumber(e.target.value)}
+                          inputMode="numeric"
+                          placeholder="123"
+                          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-white/50">E-mail *</label>
+                        <input
+                          value={cardEmail || (user?.email ?? "")}
+                          onChange={(e) => setCardEmail(e.target.value)}
+                          inputMode="email"
+                          autoComplete="email"
+                          placeholder="voce@email.com"
+                          className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-neon-pink/60"
+                        />
+                      </div>
+                    </>
+                  )}
                     </>
                   )}
                   <div className="col-span-2">
