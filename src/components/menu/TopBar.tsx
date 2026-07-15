@@ -57,13 +57,23 @@ export function TopBar({ onOpenCategories }: { onOpenCategories?: () => void }) 
         }}
       >
         {/* Mobile categories button */}
-        <button
-          onClick={onOpenCategories}
-          aria-label="Categorias"
-          className="grid h-11 w-11 place-items-center rounded-2xl bg-neon-pink text-white glow-pink active:scale-95 transition md:hidden"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        {onOpenCategories ? (
+          <button
+            onClick={onOpenCategories}
+            aria-label="Categorias"
+            className="grid h-11 w-11 place-items-center rounded-2xl bg-neon-pink text-white glow-pink active:scale-95 transition md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        ) : (
+          <Link
+            to="/"
+            aria-label="Voltar ao cardápio"
+            className="grid h-11 w-11 place-items-center rounded-2xl bg-neon-pink text-white glow-pink active:scale-95 transition md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Link>
+        )}
 
         <div className="flex items-center gap-2 md:shrink-0">
           <img
