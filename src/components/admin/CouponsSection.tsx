@@ -480,43 +480,26 @@ function CouponCard({
       ? Math.min(100, (c.uses / c.max_uses) * 100)
       : null;
 
-  const toneRing = {
-    active: "border-emerald-500/30 hover:border-emerald-500/50",
-    scheduled: "border-amber-500/30 hover:border-amber-500/50",
-    expired: "border-red-500/25 opacity-70",
-    inactive: "border-white/10 opacity-60",
-    all: "border-white/10",
-  }[status.key];
+  const isDim = status.key === "expired" || status.key === "inactive";
 
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-3xl border bg-white/[0.03] transition-all hover:bg-white/[0.05]",
-        toneRing,
+        "rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:bg-white/[0.05]",
+        isDim && "opacity-70",
       )}
     >
-      {/* perforated left edge — ticket look */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 flex w-6 flex-col items-center justify-around">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <span
-            key={i}
-            className="h-1.5 w-1.5 rounded-full bg-[oklch(0.11_0.08_305)]"
-          />
-        ))}
-      </div>
-      <div className="pointer-events-none absolute inset-y-0 left-6 w-px bg-white/5" />
-
-      <div className="relative pl-8 pr-4 pt-4">
+      <div className="px-4 pt-4">
         <div className="flex items-start justify-between gap-3">
           {/* code + status */}
           <div className="min-w-0 flex-1">
             <button
               onClick={onCopy}
-              className="group/code inline-flex items-center gap-1.5 rounded-xl bg-neon-yellow/12 px-2.5 py-1.5 font-mono text-sm font-black text-neon-yellow transition hover:bg-neon-yellow/20"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 font-mono text-sm font-black text-white transition hover:bg-white/10"
               title="Copiar código"
             >
               <span className="max-w-[160px] truncate">{c.code}</span>
-              <Copy className="h-3 w-3 opacity-60 transition group-hover/code:opacity-100" />
+              <Copy className="h-3 w-3 text-white/50" />
             </button>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span
@@ -525,7 +508,7 @@ function CouponCard({
                   status.tone,
                 )}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-current shadow-[0_0_6px_currentColor]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 {status.label}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10.5px] font-bold text-white/80">
@@ -542,13 +525,13 @@ function CouponCard({
           </div>
 
           {/* discount badge */}
-          <div className="grid shrink-0 place-items-center rounded-2xl border border-neon-pink/40 bg-gradient-to-br from-neon-pink/25 to-neon-purple/20 px-3 py-2 backdrop-blur-sm">
+          <div className="grid shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 px-3 py-2">
             <div className="font-display text-xl font-black leading-none text-white">
               {c.discount_type === "percent"
                 ? `${c.discount_value}%`
                 : brl(c.discount_value).replace("R$", "").trim()}
             </div>
-            <div className="mt-0.5 text-[8.5px] font-black uppercase tracking-wider text-white/70">
+            <div className="mt-0.5 text-[8.5px] font-black uppercase tracking-wider text-white/50">
               {c.discount_type === "percent" ? "off" : "reais"}
             </div>
           </div>
@@ -592,30 +575,30 @@ function CouponCard({
               {c.max_uses != null ? ` / ${c.max_uses}` : " · ilimitado"}
             </span>
           </div>
-          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/8">
+          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
             {usagePct != null ? (
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
                   usagePct >= 100
-                    ? "bg-red-400"
+                    ? "bg-red-400/80"
                     : usagePct >= 80
-                      ? "bg-gradient-to-r from-neon-yellow to-red-400"
-                      : "bg-gradient-to-r from-neon-pink to-neon-yellow",
+                      ? "bg-amber-300/80"
+                      : "bg-white/60",
                 )}
                 style={{ width: `${Math.max(4, usagePct)}%` }}
               />
             ) : (
               <div
-                className="h-full rounded-full bg-gradient-to-r from-neon-cyan/40 via-neon-pink/40 to-neon-purple/40"
-                style={{ width: "100%", opacity: 0.5 }}
+                className="h-full rounded-full bg-white/30"
+                style={{ width: "100%" }}
               />
             )}
           </div>
         </div>
 
         {c.note && (
-          <div className="mt-3 rounded-xl border border-white/5 bg-black/20 px-2.5 py-1.5 text-[11px] italic text-white/50">
+          <div className="mt-3 rounded-lg border border-white/5 bg-black/20 px-2.5 py-1.5 text-[11px] italic text-white/50">
             "{c.note}"
           </div>
         )}
