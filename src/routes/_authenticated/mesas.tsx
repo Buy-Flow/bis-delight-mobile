@@ -497,11 +497,13 @@ function TablesPage() {
 // ---------- Salon Grid ----------
 function SalonView({
   tables,
+  orders,
   orderByTable,
   waiterById,
   onOpen,
 }: {
   tables: RestaurantTable[];
+  orders: OrderLite[];
   orderByTable: Map<string, OrderLite>;
   waiterById: Map<string, Waiter>;
   onOpen: (t: RestaurantTable) => void;
@@ -510,7 +512,7 @@ function SalonView({
     return (
       <div className="rounded-3xl border border-white/10 bg-white/5 p-12 text-center">
         <Grid3x3 className="mx-auto mb-3 h-8 w-8 text-white/30" />
-        <p className="text-sm text-white/60">Nenhuma mesa cadastrada.</p>
+        <p className="text-sm text-white/60">Nenhuma mesa encontrada com os filtros atuais.</p>
       </div>
     );
 
@@ -521,29 +523,47 @@ function SalonView({
     byZone.get(z)!.push(t);
   }
 
+  const revenueByTable = new Map<string, number>();
+  for (const o of orders) if (o.table_id) revenueByTable.set(o.table_id, (revenueByTable.get(o.table_id) || 0) + (o.total || 0));
+
   return (
     <div className="space-y-6">
-      {Array.from(byZone.entries()).map(([zone, list]) => (
+      {Array.from(byZone.entries()).map(([zone, list]) => {
+        const occ = list.filter((t) => t.status === "ocupada").length;
+        const revenue = list.reduce((s, t) => s + (revenueByTable.get(t.id) || 0), 0);
+        return (
         <section key={zone}>
-          <h2 className="mb-2 flex items-center gap-2 text-[13px] font-black uppercase tracking-wider text-white/70">
-            <MapPin className="h-3.5 w-3.5" /> {zone}
+          <h2 className="mb-2 flex flex-wrap items-center gap-2 text-[13px] font-black uppercase tracking-wider text-white/70">
+            <MapPin className="h-3.5 w-3.5 shrink-0" /> {zone}
             <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-white/60">
-              {list.length}
+              {occ}/{list.length}
             </span>
+            {revenue > 0 && (
+              <span className="ml-auto rounded-full bg-fuchsia-500/15 px-2 py-0.5 text-[10px] font-black text-fuchsia-200">
+                {BRL(revenue)}
+              </span>
+            )}
           </h2>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {list.map((t) => {
               const order = orderByTable.get(t.id) || null;
               const waiter = t.waiter_id ? waiterById.get(t.waiter_id) : null;
+              const assist = isAssistRequested(t.notes);
               return (
                 <button
                   key={t.id}
                   onClick={() => onOpen(t)}
                   className={cn(
-                    "relative overflow-hidden rounded-2xl border bg-gradient-to-br p-3 text-left transition hover:scale-[1.02] active:scale-95",
+                    "relative min-h-[132px] overflow-hidden rounded-2xl border bg-gradient-to-br p-3 text-left transition hover:scale-[1.02] active:scale-95",
                     statusTone[t.status],
+                    t.status === "ocupada" && agingRing(t.opened_at),
                   )}
                 >
+                  {assist && (
+                    <span className="absolute right-2 top-2 z-10 grid h-6 w-6 place-items-center rounded-full bg-rose-500 text-white shadow-lg animate-bounce">
+                      <Bell className="h-3 w-3" />
+                    </span>
+                  )}
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-[10px] font-bold uppercase tracking-widest opacity-70">
