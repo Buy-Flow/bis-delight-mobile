@@ -19,7 +19,7 @@ import {
   FormSkeleton,
   AdminPageSkeleton,
 } from "@/components/skeleton";
-import { Sk } from "@/components/skeleton";
+
 import {
   Save,
   RotateCcw,
@@ -85,14 +85,18 @@ function SkeletonAdmin() {
     },
   });
 
-  const [draft, setDraft] = useState<SkeletonSettings | null>(null);
+  const [draft, setDraft] = useState<SkeletonSettings>({ ...DEFAULT_SKELETON_SETTINGS });
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    if (settingsQ.data) setDraft(settingsQ.data);
-  }, [settingsQ.data]);
+    if (settingsQ.data && !hydrated) {
+      setDraft(settingsQ.data);
+      setHydrated(true);
+    }
+  }, [settingsQ.data, hydrated]);
 
   // Live preview — apply draft to :root as user tweaks, revert on unmount.
   useEffect(() => {
-    if (draft) applySkeletonSettings(draft);
+    applySkeletonSettings(draft);
     return () => {
       if (settingsQ.data) applySkeletonSettings(settingsQ.data);
     };
@@ -114,17 +118,6 @@ function SkeletonAdmin() {
     setDraft({ ...DEFAULT_SKELETON_SETTINGS });
   };
 
-  if (!draft) {
-    return (
-      <AdminShell>
-        <div className="p-6 max-w-6xl mx-auto space-y-4">
-          <Sk className="h-8 w-48" />
-          <Sk className="h-4 w-64" />
-          <KpiRowSkeleton />
-        </div>
-      </AdminShell>
-    );
-  }
 
   const set = (patch: Partial<SkeletonSettings>) => setDraft({ ...draft, ...patch });
   const dirty = settingsQ.data && JSON.stringify(draft) !== JSON.stringify(settingsQ.data);
