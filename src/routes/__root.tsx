@@ -290,15 +290,34 @@ function RootComponent() {
           visibleToasts={3}
           expand={false}
           duration={4000}
-          gap={8}
+          gap={10}
+          closeButton
           toastOptions={{
-            style: {
-              background: "oklch(0.24 0.14 305)",
-              border: "1px solid oklch(0.86 0.18 200 / 0.35)",
-              color: "white",
+            unstyled: false,
+            classNames: {
+              toast:
+                "group !rounded-2xl !border !border-white/15 !bg-[linear-gradient(135deg,oklch(0.28_0.16_305)_0%,oklch(0.24_0.14_290)_55%,oklch(0.22_0.12_260)_100%)] !text-white !shadow-[0_18px_50px_-12px_oklch(0.15_0.12_290/0.65),0_0_0_1px_oklch(1_0_0/0.06)_inset] backdrop-blur-xl !px-4 !py-3.5 !gap-3",
+              title: "!text-[0.95rem] !font-semibold !leading-snug !tracking-[-0.01em]",
+              description: "!text-[0.82rem] !text-white/75 !leading-relaxed",
+              icon: "!text-[oklch(0.86_0.18_200)] drop-shadow-[0_0_8px_oklch(0.86_0.18_200/0.6)]",
+              actionButton:
+                "!bg-white !text-[oklch(0.24_0.14_305)] !font-semibold !rounded-lg !px-3 !py-1.5 hover:!bg-white/90",
+              cancelButton:
+                "!bg-white/10 !text-white !rounded-lg !px-3 !py-1.5 hover:!bg-white/20",
+              closeButton:
+                "!left-auto !right-2 !top-2 !translate-x-0 !translate-y-0 !bg-white/10 !border-white/20 !text-white/90 hover:!bg-white/20 hover:!text-white !size-6 !rounded-full transition-colors",
+              success:
+                "!bg-[linear-gradient(135deg,oklch(0.32_0.17_305)_0%,oklch(0.26_0.15_180)_100%)]",
+              error:
+                "!bg-[linear-gradient(135deg,oklch(0.32_0.19_25)_0%,oklch(0.24_0.16_305)_100%)]",
+              warning:
+                "!bg-[linear-gradient(135deg,oklch(0.34_0.16_70)_0%,oklch(0.24_0.14_305)_100%)]",
+              info:
+                "!bg-[linear-gradient(135deg,oklch(0.30_0.14_240)_0%,oklch(0.24_0.14_305)_100%)]",
             },
           }}
         />
+
       </CartProvider>
     </QueryClientProvider>
 
