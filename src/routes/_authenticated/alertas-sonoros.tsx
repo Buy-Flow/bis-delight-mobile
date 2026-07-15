@@ -254,195 +254,237 @@ function AlertasSonorosPage() {
           </section>
         )}
 
-        {/* Per-event alerts */}
+        {/* Per-event alerts - accordion */}
         <section className="space-y-3">
-          <h2 className="text-lg font-bold text-white">Alertas por tipo de evento</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-white">Alertas por tipo de evento</h2>
+            <span className="text-xs text-white/50">{totalEnabled}/{alerts.length} ativos</span>
+          </div>
           {loading && <p className="text-sm text-white/50">Carregando…</p>}
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-2">
             {alerts.map((a) => {
               const Icon = ICONS[a.event_key] ?? Bell;
               const accent = ACCENT[a.event_key] ?? "from-white/10 to-white/5 text-white";
               return (
-                <article
+                <details
                   key={a.event_key}
                   className={cn(
-                    "rounded-2xl border border-white/10 bg-gradient-to-br p-4 transition",
+                    "group rounded-2xl border border-white/10 bg-gradient-to-br transition overflow-hidden",
                     accent,
-                    !a.enabled && "opacity-60",
+                    !a.enabled && "opacity-70",
                   )}
                 >
-                  <div className="mb-3 flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-xl bg-black/40 p-2">
-                        <Icon className="h-5 w-5" />
+                  <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-3 sm:px-4 [&::-webkit-details-marker]:hidden">
+                    <div className="rounded-xl bg-black/40 p-2 shrink-0">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="truncate text-sm sm:text-base font-bold text-white">{a.label}</h3>
+                        <span
+                          className={cn(
+                            "shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                            a.enabled
+                              ? "bg-emerald-500/20 text-emerald-200"
+                              : "bg-white/10 text-white/50",
+                          )}
+                        >
+                          {a.enabled ? "ativo" : "off"}
+                        </span>
                       </div>
-                      <div>
-                        <h3 className="text-base font-bold text-white">{a.label}</h3>
-                        {a.description && (
-                          <p className="text-xs text-white/60">{a.description}</p>
+                      <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/60">
+                        <span className="capitalize">{a.preset}</span>
+                        <span className="opacity-40">·</span>
+                        <span>{a.frequency}Hz · {a.repeats}×</span>
+                        <span className="opacity-40">·</span>
+                        <span>{a.volume}%</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); void testAlert(a); }}
+                      className="shrink-0 rounded-lg border border-white/15 bg-black/40 p-2 text-white hover:bg-white/10"
+                      aria-label="Testar som"
+                      title="Testar som"
+                    >
+                      <Play className="h-4 w-4" />
+                    </button>
+                    <div onClick={(e) => e.preventDefault()} className="shrink-0">
+                      <ToggleSwitch
+                        checked={a.enabled}
+                        onChange={(v) => updateAlert(a.event_key, { enabled: v })}
+                      />
+                    </div>
+                    <svg
+                      className="h-4 w-4 shrink-0 text-white/50 transition group-open:rotate-180"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                    </svg>
+                  </summary>
+
+                  <div className="border-t border-white/10 bg-black/20 p-3 sm:p-4">
+                    {a.description && (
+                      <p className="mb-3 text-xs text-white/60">{a.description}</p>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <label className="col-span-2">
+                        <span className="text-white/60">Preset</span>
+                        <select
+                          value={a.preset}
+                          onChange={(e) => applyPreset(a.event_key, e.target.value)}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        >
+                          <option value="beep">Beep clássico</option>
+                          <option value="chime">Sino (chime)</option>
+                          <option value="ding">Ding agudo</option>
+                          <option value="alarm">Alarme insistente</option>
+                          <option value="buzz">Buzz grave</option>
+                          <option value="klaxon">Klaxon</option>
+                          <option value="custom">Personalizado</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        <span className="text-white/60">Forma de onda</span>
+                        <select
+                          value={a.waveform}
+                          onChange={(e) => updateAlert(a.event_key, { waveform: e.target.value as SoundAlert["waveform"] })}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        >
+                          <option value="sine">Senoide</option>
+                          <option value="square">Quadrada</option>
+                          <option value="triangle">Triangular</option>
+                          <option value="sawtooth">Dente-de-serra</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        <span className="text-white/60">Frequência (Hz)</span>
+                        <input
+                          type="number"
+                          min={80}
+                          max={8000}
+                          value={a.frequency}
+                          onChange={(e) => updateAlert(a.event_key, { frequency: Number(e.target.value) || 0 })}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        />
+                      </label>
+
+                      <label>
+                        <span className="text-white/60">Duração (ms)</span>
+                        <input
+                          type="number"
+                          min={40}
+                          max={5000}
+                          value={a.duration_ms}
+                          onChange={(e) => updateAlert(a.event_key, { duration_ms: Number(e.target.value) || 0 })}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        />
+                      </label>
+
+                      <label>
+                        <span className="text-white/60">Repetições</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={10}
+                          value={a.repeats}
+                          onChange={(e) => updateAlert(a.event_key, { repeats: Math.max(1, Number(e.target.value) || 1) })}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        />
+                      </label>
+
+                      <label>
+                        <span className="text-white/60">Intervalo (ms)</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={3000}
+                          value={a.interval_ms}
+                          onChange={(e) => updateAlert(a.event_key, { interval_ms: Math.max(0, Number(e.target.value) || 0) })}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        />
+                      </label>
+
+                      <label className="col-span-2">
+                        <div className="mb-1 flex items-center justify-between">
+                          <span className="text-white/60">Volume</span>
+                          <span className="text-white/70">{a.volume}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={a.volume}
+                          onChange={(e) => updateAlert(a.event_key, { volume: Number(e.target.value) })}
+                          className="w-full accent-neon-pink"
+                        />
+                      </label>
+
+                      <label className="col-span-2">
+                        <span className="text-white/60">URL de som personalizado (opcional)</span>
+                        <input
+                          type="url"
+                          placeholder="https://…/som.mp3"
+                          value={a.custom_url ?? ""}
+                          onChange={(e) => updateAlert(a.event_key, { custom_url: e.target.value })}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        />
+                        {a.custom_url && (
+                          <p className="mt-1 text-[10px] text-white/40">
+                            Quando preenchido, substitui o som sintetizado.
+                          </p>
+                        )}
+                      </label>
+
+                      <div className="col-span-2 rounded-xl border border-white/10 bg-black/30 p-2">
+                        <ToggleField
+                          label="Narrar por voz (TTS)"
+                          description="Fala em português a mensagem abaixo depois do som."
+                          checked={a.speak_enabled}
+                          onChange={(v) => updateAlert(a.event_key, { speak_enabled: v })}
+                          compact
+                        />
+                        {a.speak_enabled && (
+                          <input
+                            type="text"
+                            placeholder="Ex.: Novo pedido recebido"
+                            value={a.speak_text ?? ""}
+                            onChange={(e) => updateAlert(a.event_key, { speak_text: e.target.value })}
+                            className="mt-2 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                          />
                         )}
                       </div>
                     </div>
-                    <ToggleSwitch
-                      checked={a.enabled}
-                      onChange={(v) => updateAlert(a.event_key, { enabled: v })}
-                    />
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <label className="col-span-2">
-                      <span className="text-white/60">Preset</span>
-                      <select
-                        value={a.preset}
-                        onChange={(e) => applyPreset(a.event_key, e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                    <div className="mt-3 flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => testAlert(a)}
+                        className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
                       >
-                        <option value="beep">Beep clássico</option>
-                        <option value="chime">Sino (chime)</option>
-                        <option value="ding">Ding agudo</option>
-                        <option value="alarm">Alarme insistente</option>
-                        <option value="buzz">Buzz grave</option>
-                        <option value="klaxon">Klaxon</option>
-                        <option value="custom">Personalizado</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      <span className="text-white/60">Forma de onda</span>
-                      <select
-                        value={a.waveform}
-                        onChange={(e) => updateAlert(a.event_key, { waveform: e.target.value as SoundAlert["waveform"] })}
-                        className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
+                        <Play className="h-3.5 w-3.5" /> Testar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => saveAlert(a)}
+                        disabled={saving === a.event_key}
+                        className="flex items-center gap-1.5 rounded-lg bg-neon-pink px-3 py-1.5 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50"
                       >
-                        <option value="sine">Senoide</option>
-                        <option value="square">Quadrada</option>
-                        <option value="triangle">Triangular</option>
-                        <option value="sawtooth">Dente-de-serra</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      <span className="text-white/60">Frequência (Hz)</span>
-                      <input
-                        type="number"
-                        min={80}
-                        max={8000}
-                        value={a.frequency}
-                        onChange={(e) => updateAlert(a.event_key, { frequency: Number(e.target.value) || 0 })}
-                        className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
-                      />
-                    </label>
-
-                    <label>
-                      <span className="text-white/60">Duração (ms)</span>
-                      <input
-                        type="number"
-                        min={40}
-                        max={5000}
-                        value={a.duration_ms}
-                        onChange={(e) => updateAlert(a.event_key, { duration_ms: Number(e.target.value) || 0 })}
-                        className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
-                      />
-                    </label>
-
-                    <label>
-                      <span className="text-white/60">Repetições</span>
-                      <input
-                        type="number"
-                        min={1}
-                        max={10}
-                        value={a.repeats}
-                        onChange={(e) => updateAlert(a.event_key, { repeats: Math.max(1, Number(e.target.value) || 1) })}
-                        className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
-                      />
-                    </label>
-
-                    <label>
-                      <span className="text-white/60">Intervalo (ms)</span>
-                      <input
-                        type="number"
-                        min={0}
-                        max={3000}
-                        value={a.interval_ms}
-                        onChange={(e) => updateAlert(a.event_key, { interval_ms: Math.max(0, Number(e.target.value) || 0) })}
-                        className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
-                      />
-                    </label>
-
-                    <label className="col-span-2">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="text-white/60">Volume</span>
-                        <span className="text-white/70">{a.volume}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        value={a.volume}
-                        onChange={(e) => updateAlert(a.event_key, { volume: Number(e.target.value) })}
-                        className="w-full accent-neon-pink"
-                      />
-                    </label>
-
-                    <label className="col-span-2">
-                      <span className="text-white/60">URL de som personalizado (opcional)</span>
-                      <input
-                        type="url"
-                        placeholder="https://…/som.mp3"
-                        value={a.custom_url ?? ""}
-                        onChange={(e) => updateAlert(a.event_key, { custom_url: e.target.value })}
-                        className="mt-1 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
-                      />
-                      {a.custom_url && (
-                        <p className="mt-1 text-[10px] text-white/40">
-                          Quando preenchido, substitui o som sintetizado.
-                        </p>
-                      )}
-                    </label>
-
-                    <div className="col-span-2 rounded-xl border border-white/10 bg-black/30 p-2">
-                      <ToggleField
-                        label="Narrar por voz (TTS)"
-                        description="Fala em português a mensagem abaixo depois do som."
-                        checked={a.speak_enabled}
-                        onChange={(v) => updateAlert(a.event_key, { speak_enabled: v })}
-                        compact
-                      />
-                      {a.speak_enabled && (
-                        <input
-                          type="text"
-                          placeholder="Ex.: Novo pedido recebido"
-                          value={a.speak_text ?? ""}
-                          onChange={(e) => updateAlert(a.event_key, { speak_text: e.target.value })}
-                          className="mt-2 w-full rounded-lg border border-white/10 bg-black/50 px-2 py-1.5 text-white outline-none focus:border-neon-pink"
-                        />
-                      )}
+                        <Save className="h-3.5 w-3.5" />
+                        {saving === a.event_key ? "Salvando…" : "Salvar"}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="mt-3 flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => testAlert(a)}
-                      className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
-                    >
-                      <Play className="h-3.5 w-3.5" /> Testar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => saveAlert(a)}
-                      disabled={saving === a.event_key}
-                      className="flex items-center gap-1.5 rounded-lg bg-neon-pink px-3 py-1.5 text-xs font-bold text-white hover:brightness-110 disabled:opacity-50"
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                      {saving === a.event_key ? "Salvando…" : "Salvar"}
-                    </button>
-                  </div>
-                </article>
+                </details>
               );
             })}
           </div>
         </section>
+
 
         <footer className="rounded-xl border border-white/10 bg-black/30 p-3 text-xs text-white/50">
           Dica: o navegador exige um clique inicial para autorizar áudio.
