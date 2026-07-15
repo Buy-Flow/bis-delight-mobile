@@ -191,7 +191,13 @@ function Content() {
   };
 
 
-  const highlights = useMemo(() => products.filter((p) => p.hero), [products]);
+  const highlights = useMemo(
+    () =>
+      products
+        .filter((p) => p.hero)
+        .sort((a, b) => (a.heroOrder ?? 0) - (b.heroOrder ?? 0)),
+    [products],
+  );
   const newsItems = useMemo(() => {
     const ids = settings?.newsProductIds ?? [];
     if (!ids.length) return [];
