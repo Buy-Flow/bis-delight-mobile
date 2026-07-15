@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Gift, Check, Ticket, Star, ShoppingBag, CreditCard, Award, Tag, Lock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import rewardTrophyAsset from "@/assets/reward-trophy.png.asset.json";
 import { TierBadge, TIER_META, type LoyaltyTier } from "@/components/menu/TierBadge";
+
 import { RecompensasSkeleton } from "@/components/skeleton";
 import { useLoyaltyTiers } from "@/lib/use-loyalty-tiers";
 
-const rewardTrophy = rewardTrophyAsset.url;
+
 const TIER_ORDER: LoyaltyTier[] = ["bronze", "prata", "ouro"];
 
 export const Route = createFileRoute("/recompensas")({
@@ -168,13 +168,13 @@ function RecompensasPage() {
               <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
                 <div aria-hidden className={cn("absolute inset-0 rounded-full bg-gradient-to-br blur-xl opacity-70", meta.gradient)} />
                 <img
-                  src={status ? meta.image : rewardTrophy}
-                  alt={status ? `Nível ${meta.label}` : "Troféu"}
+                  src={meta.image}
+                  alt={`Nível ${meta.label}`}
                   width={128}
                   height={128}
-                  loading="lazy"
                   className="relative h-16 w-16 object-contain drop-shadow-[0_6px_16px_rgba(255,52,153,0.55)]"
                 />
+
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-neon-yellow/90">
