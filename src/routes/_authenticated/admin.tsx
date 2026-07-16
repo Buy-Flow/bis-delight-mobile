@@ -3720,6 +3720,157 @@ function NewsTab() {
   );
 }
 
+function LojaOverview({
+  s,
+  completion,
+  doneCount,
+  totalCount,
+}: {
+  s: SiteSettings;
+  completion: number;
+  doneCount: number;
+  totalCount: number;
+}) {
+  const hours = s.hoursJson?.length ? s.hoursJson : DEFAULT_HOURS;
+  const open = isOpenNow(hours, s.openOverride ?? "auto");
+  const overrideLabel =
+    s.openOverride === "open"
+      ? "Forçado aberto"
+      : s.openOverride === "closed"
+        ? "Forçado fechado"
+        : "Automático pelo horário";
+
+  const quickStats: { icon: React.ElementType; label: string; value: string; ok: boolean }[] = [
+    {
+      icon: Phone,
+      label: "WhatsApp",
+      value: s.whatsappDisplay || s.whatsapp || "Não configurado",
+      ok: Boolean(s.whatsapp?.trim()),
+    },
+    {
+      icon: MapPin,
+      label: "Endereço",
+      value: s.address || "Não configurado",
+      ok: Boolean(s.address?.trim()),
+    },
+    {
+      icon: CreditCard,
+      label: "Chave PIX",
+      value: s.pixKey ? "Configurada" : "Não configurada",
+      ok: Boolean(s.pixKey?.trim()),
+    },
+    {
+      icon: Truck,
+      label: "Entrega",
+      value: s.acceptsDelivery ? `A partir de R$ ${s.deliveryFee?.toFixed(2) ?? "0,00"}` : "Desativada",
+      ok: s.acceptsDelivery,
+    },
+  ];
+
+  return (
+    <div className="mb-5 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[oklch(0.20_0.14_305)] via-[oklch(0.14_0.10_300)] to-[oklch(0.10_0.08_300)] shadow-[0_30px_80px_-40px_rgba(0,0,0,0.7)]">
+      <div className="pointer-events-none absolute" />
+      {/* Top: identity + status */}
+      <div className="relative flex flex-col gap-4 border-b border-white/10 p-5 sm:flex-row sm:items-center sm:gap-5">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-neon-pink/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-neon-cyan/15 blur-3xl" />
+
+        <div className="relative flex flex-1 items-center gap-4">
+          {s.logo ? (
+            <img
+              src={s.logo}
+              alt={s.name}
+              className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-2 ring-white/10 drop-shadow-[0_10px_24px_rgba(0,0,0,0.5)]"
+            />
+          ) : (
+            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-dashed border-white/20 bg-white/5 text-white/30">
+              <Store className="h-6 w-6" />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40">Minha loja</div>
+            <div
+              className="truncate font-display text-xl font-black uppercase text-white sm:text-2xl"
+              style={{ fontFamily: "'Barlow Condensed', 'Poppins', sans-serif" }}
+            >
+              {s.name || "Sem nome"}
+            </div>
+            <div className="truncate text-[12px] text-white/60">{s.tagline || "Adicione um slogan curto"}</div>
+          </div>
+        </div>
+
+        <div className="relative flex flex-col items-start gap-2 sm:items-end">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wider",
+              open
+                ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                : "border-rose-400/40 bg-rose-500/10 text-rose-300",
+            )}
+          >
+            <span className={cn("h-1.5 w-1.5 rounded-full bg-current", open && "animate-pulse")} />
+            {open ? "Aberto agora" : "Fechado"}
+          </span>
+          <div className="text-[10.5px] text-white/45">{overrideLabel}</div>
+        </div>
+      </div>
+
+      {/* Completion bar */}
+      <div className="relative px-5 py-4">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-neon-yellow" />
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-white/60">
+              Configuração da loja
+            </div>
+          </div>
+          <div className="text-[11px] font-bold tabular-nums text-white/70">
+            {doneCount}/{totalCount} · <span className="text-white">{completion}%</span>
+          </div>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-pink to-neon-cyan transition-[width] duration-500"
+            style={{ width: `${completion}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Quick stats grid */}
+      <div className="relative grid grid-cols-2 gap-px bg-white/[0.05] lg:grid-cols-4">
+        {quickStats.map((stat) => (
+          <div
+            key={stat.label}
+            className="flex items-start gap-2.5 bg-[oklch(0.12_0.09_305)] p-3.5"
+          >
+            <div
+              className={cn(
+                "grid h-8 w-8 shrink-0 place-items-center rounded-xl ring-1",
+                stat.ok
+                  ? "bg-emerald-500/10 text-emerald-300 ring-emerald-400/30"
+                  : "bg-neon-yellow/10 text-neon-yellow ring-neon-yellow/30",
+              )}
+            >
+              <stat.icon className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-white/50">
+                  {stat.label}
+                </span>
+                {!stat.ok && <AlertTriangle className="h-3 w-3 text-neon-yellow" />}
+              </div>
+              <div className="mt-0.5 truncate text-[12px] font-semibold text-white/90">
+                {stat.value}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SettingsTab({ initialSection = "identity", hideNav = false }: { initialSection?: SettingsSection; hideNav?: boolean } = {}) {
   const { data } = useSiteSettings();
   const update = useUpdateSettings();
@@ -3789,31 +3940,91 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
     }
   };
 
-  const sections: { id: SettingsSection; label: string; icon: React.ElementType }[] = [
-    { id: "identity", label: "Identidade", icon: Store },
-    { id: "hero", label: "Início (Hero)", icon: Home },
-    { id: "contact", label: "Contato & Local", icon: MapPin },
-    { id: "hours", label: "Horários", icon: Clock },
-    { id: "delivery", label: "Entrega", icon: Truck },
-    { id: "payment", label: "Pagamento", icon: CreditCard },
-    { id: "social", label: "Redes sociais", icon: Globe },
-    { id: "appearance", label: "Aparência", icon: Palette },
+  const sections: {
+    id: SettingsSection;
+    label: string;
+    icon: React.ElementType;
+    hint: string;
+    done: boolean;
+  }[] = [
+    {
+      id: "identity",
+      label: "Identidade",
+      icon: Store,
+      hint: "Nome, slogan e logo",
+      done: Boolean(s.name?.trim() && s.logo?.trim()),
+    },
+    {
+      id: "hero",
+      label: "Início (Hero)",
+      icon: Home,
+      hint: "Imagens de destaque",
+      done: Boolean(s.heroImages?.left?.url || s.heroImages?.right?.url),
+    },
+    {
+      id: "contact",
+      label: "Contato & Local",
+      icon: MapPin,
+      hint: "Endereço e WhatsApp",
+      done: Boolean(s.address?.trim() && s.whatsapp?.trim()),
+    },
+    {
+      id: "hours",
+      label: "Horários",
+      icon: Clock,
+      hint: "Dias e faixas de atendimento",
+      done: (s.hoursJson?.length ?? 0) > 0,
+    },
+    {
+      id: "delivery",
+      label: "Entrega",
+      icon: Truck,
+      hint: "Zonas, frete e pedido mínimo",
+      done: s.acceptsDelivery || s.acceptsPickup,
+    },
+    {
+      id: "payment",
+      label: "Pagamento",
+      icon: CreditCard,
+      hint: "PIX e métodos aceitos",
+      done: Boolean(s.pixKey?.trim()) || (s.paymentMethods?.length ?? 0) > 0,
+    },
+    {
+      id: "social",
+      label: "Redes sociais",
+      icon: Globe,
+      hint: "Instagram, Facebook, TikTok",
+      done: Boolean(s.instagram || s.facebook || s.tiktok),
+    },
   ];
+
+  const doneCount = sections.filter((sec) => sec.done).length;
+  const totalCount = sections.length;
+  const completion = Math.round((doneCount / totalCount) * 100);
 
 
   const activeSection = sections.find((sec) => sec.id === section) ?? sections[0];
 
   return (
     <div className="pb-28">
+      {!hideNav && (
+        <LojaOverview s={s} completion={completion} doneCount={doneCount} totalCount={totalCount} />
+      )}
+
 
       {/* Two-column layout */}
       <div className={cn("grid gap-5", !hideNav && "lg:grid-cols-[260px_1fr]")}>
         {!hideNav && (<>
         {/* Section nav — desktop rail */}
         <aside className="hidden lg:block">
-          <div className="sticky top-4 rounded-3xl border border-white/10 bg-white/[0.03] p-2">
-            <div className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">
-              Seções
+          <div className="sticky top-4 space-y-3 rounded-3xl border border-white/10 bg-white/[0.03] p-2">
+            <div className="flex items-center justify-between px-3 pb-1 pt-2">
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                Seções
+              </div>
+              <div className="text-[10px] font-bold tabular-nums text-white/60">
+                {doneCount}/{totalCount}
+              </div>
             </div>
             <nav className="flex flex-col gap-0.5">
               {sections.map((sec) => {
@@ -3839,12 +4050,29 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
                     >
                       <sec.icon className="h-4 w-4" />
                     </span>
-                    <span className="flex-1 truncate">{sec.label}</span>
-                    {active && <span className="h-1.5 w-1.5 rounded-full bg-neon-pink" />}
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate">{sec.label}</span>
+                      <span className="truncate text-[10.5px] font-medium text-white/40">{sec.hint}</span>
+                    </span>
+                    {sec.done ? (
+                      <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-400/30" title="Configurado">
+                        <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                      </span>
+                    ) : (
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-neon-yellow" title="Falta configurar" />
+                    )}
                   </button>
                 );
               })}
             </nav>
+            <Link
+              to="/personalizar-painel"
+              className="mx-1 flex items-center gap-2 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-2 text-[11.5px] font-semibold text-white/55 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white"
+            >
+              <Palette className="h-3.5 w-3.5 text-neon-cyan" />
+              <span className="flex-1">Aparência do painel</span>
+              <span className="text-[10px] text-white/30">›</span>
+            </Link>
           </div>
         </aside>
 
@@ -3865,6 +4093,11 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
               >
                 <sec.icon className="h-3.5 w-3.5" />
                 {sec.label}
+                {sec.done ? (
+                  <Check className="h-3 w-3 text-emerald-300" strokeWidth={3} />
+                ) : (
+                  <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow" />
+                )}
               </button>
             );
           })}
@@ -3897,7 +4130,22 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
             {section === "news" && <NewsSection s={s} set={set} />}
             {section === "coupons" && <CouponsSection />}
             {section === "appearance" && (
-              <AppearanceSection s={s} set={set} onTexture={uploadTexture} textureBusy={textureBusy} />
+              <div className="space-y-5">
+                <SectionTitle icon={Palette} title="Aparência" sub="A customização visual do painel foi movida para a página dedicada." />
+                <Link
+                  to="/personalizar-painel"
+                  className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-neon-cyan/10 via-white/[0.03] to-neon-pink/10 p-5 transition hover:border-neon-cyan/40"
+                >
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-neon-cyan/20 text-neon-cyan ring-1 ring-neon-cyan/40">
+                    <Palette className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display text-sm font-black text-white">Personalizar painel</div>
+                    <div className="text-[11.5px] text-white/60">Cores, tipografia, textura e temas — tudo em um lugar só.</div>
+                  </div>
+                  <span className="text-lg text-white/40 transition group-hover:translate-x-1 group-hover:text-neon-cyan">→</span>
+                </Link>
+              </div>
             )}
           </div>
         </section>
