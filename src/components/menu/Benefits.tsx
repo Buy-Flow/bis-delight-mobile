@@ -28,7 +28,7 @@ const items = [
 
 export function Benefits() {
   return (
-    <section className="relative z-30 -mt-10 px-4 pb-6">
+    <section className="relative z-30 -mt-4 px-4 pb-6">
       <div
         className="rounded-4xl border border-white/10 bg-white/[0.04] px-2 py-4 shadow-lg backdrop-blur-sm"
       >
