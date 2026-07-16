@@ -300,17 +300,16 @@ function Content() {
       <TopBar onOpenCategories={scrollToFeitoComAmor} />
 
       <div className="lg:mx-auto lg:max-w-[600px]">
-        <Reveal><Benefits /></Reveal>
         <Hero onScrollMenu={scrollToFeitoComAmor} />
         <StoreClosedBanner />
         <UrgencyBanner />
         <ActiveOrderCard />
+        <Reveal><Benefits /></Reveal>
         <BirthdayBanner />
         <Reveal><LoyaltyProgress /></Reveal>
         <Reveal><VipLeaderboard /></Reveal>
         <PushOptInCard />
       </div>
-
       
       
 
