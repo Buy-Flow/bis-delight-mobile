@@ -3754,12 +3754,6 @@ function LojaOverview({
       ok: Boolean(s.address?.trim()),
     },
     {
-      icon: CreditCard,
-      label: "Chave PIX",
-      value: s.pixKey ? "Configurada" : "Não configurada",
-      ok: Boolean(s.pixKey?.trim()),
-    },
-    {
       icon: Truck,
       label: "Entrega",
       value: s.acceptsDelivery ? `A partir de R$ ${s.deliveryFee?.toFixed(2) ?? "0,00"}` : "Desativada",
