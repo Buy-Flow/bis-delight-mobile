@@ -868,12 +868,12 @@ function MovementsTable({
   }
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[140px,120px,1fr,120px,120px,1fr] px-4 py-2.5 bg-white/5 text-[11px] uppercase tracking-wide text-white/50 font-medium">
+      <div className="hidden md:grid grid-cols-[140px,120px,1fr,120px,120px,1fr] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
         <div>Quando</div>
         <div>Tipo</div>
         <div>Item</div>
-        <div>Qtd</div>
-        <div>Custo</div>
+        <div className="text-right">Qtd</div>
+        <div className="text-right">Custo</div>
         <div>Motivo</div>
       </div>
       {movements.map((m) => {
