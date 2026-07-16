@@ -1155,7 +1155,8 @@ function CourierDialog({
       );
     }
     setSaving(false);
-    await onSaved();
+    // Não fecha o diálogo: mantém aberto para exibir as credenciais recém-criadas.
+    await reload();
   };
 
   return (
