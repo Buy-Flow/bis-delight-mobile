@@ -3809,26 +3809,8 @@ function LojaOverview({
         </div>
       </div>
 
-      {/* Completion bar */}
-      <div className="relative px-5 py-4">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-neon-yellow" />
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-white/60">
-              Configuração da loja
-            </div>
-          </div>
-          <div className="text-[11px] font-bold tabular-nums text-white/70">
-            {doneCount}/{totalCount} · <span className="text-white">{completion}%</span>
-          </div>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-neon-pink via-neon-pink to-neon-cyan transition-[width] duration-500"
-            style={{ width: `${completion}%` }}
-          />
-        </div>
-      </div>
+
+
 
       {/* Quick stats grid */}
       <div className="relative grid grid-cols-2 gap-px bg-white/[0.05] lg:grid-cols-4">
