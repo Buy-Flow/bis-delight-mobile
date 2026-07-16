@@ -1072,14 +1072,15 @@ function RushOrderCard({
 
   const laneAccent =
     order.status === "preparando"
-      ? "from-neon-cyan/30 to-neon-cyan/5 border-neon-cyan/40"
+      ? "border-neon-cyan/25 before:bg-neon-cyan"
       : order.status === "saiu_para_entrega"
-      ? "from-neon-pink/30 to-neon-pink/5 border-neon-pink/40"
+      ? "border-neon-pink/25 before:bg-neon-pink"
       : order.status === "entregue"
-      ? "from-emerald-400/20 to-emerald-400/5 border-emerald-400/30"
+      ? "border-emerald-400/25 before:bg-emerald-400"
       : order.status === "cancelado"
-      ? "from-red-500/20 to-red-500/5 border-red-500/30"
-      : "from-neon-yellow/30 to-neon-yellow/5 border-neon-yellow/40";
+      ? "border-red-500/25 before:bg-red-500"
+      : "border-neon-yellow/25 before:bg-neon-yellow";
+
 
   const itemsCount = order.order_items.reduce((s, i) => s + (i.quantity || 1), 0);
   const wa = digitsOnly(order.phone);
@@ -1087,9 +1088,10 @@ function RushOrderCard({
   return (
     <article
       className={cn(
-        "relative overflow-hidden rounded-3xl border bg-gradient-to-br p-3 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)]",
+        "relative overflow-hidden rounded-2xl border bg-[oklch(0.18_0.03_305)] p-3.5 shadow-sm",
+        "before:absolute before:inset-y-0 before:left-0 before:w-1",
         laneAccent,
-        critical && "ring-1 ring-red-500/60 shadow-[0_0_30px_-10px_theme(colors.red.500)]",
+        critical && "ring-1 ring-red-500/50",
       )}
     >
       {/* header row */}
@@ -1282,7 +1284,7 @@ function RushOrderCard({
             onClick={onAdvance}
             disabled={busy}
             className={cn(
-              "flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-neon-pink to-neon-yellow px-4 text-sm font-black text-[oklch(0.13_0.08_305)] shadow-[0_10px_30px_-8px_var(--neon-pink)] transition active:scale-[0.98]",
+              "flex flex-1 items-center justify-center gap-2 rounded-xl bg-neon-pink px-4 text-sm font-black uppercase tracking-wide text-[oklch(0.13_0.08_305)] transition hover:brightness-110 active:scale-[0.99]",
               "min-h-[52px]",
               busy && "opacity-70",
             )}
