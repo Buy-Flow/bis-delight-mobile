@@ -523,6 +523,12 @@ function RushPage() {
     if (o.status === "saiu_para_entrega") return setStatus(o, "entregue");
   };
 
+  const revert = (o: Order) => {
+    if (o.status === "saiu_para_entrega") return setStatus(o, "preparando");
+    if (o.status === "preparando") return setStatus(o, "pago");
+    if (o.status === "pago") return setStatus(o, "pendente");
+  };
+
   const toggleStore = async () => {
     if (!settings) return;
     const next = settings.openOverride === "closed" ? "auto" : "closed";
@@ -865,6 +871,7 @@ function RushPage() {
                 onCancel={() => setStatus(o, "cancelado")}
                 onConfirmPayment={() => setStatus(o, "pago")}
                 onRestore={() => setStatus(o, "pendente")}
+                onRevert={() => revert(o)}
               />
             ))
           )}
@@ -977,6 +984,7 @@ function RushOrderCard({
   onCancel,
   onConfirmPayment,
   onRestore,
+  onRevert,
 }: {
   order: Order;
   tick: number;
@@ -989,6 +997,7 @@ function RushOrderCard({
   onCancel: () => void;
   onConfirmPayment: () => void;
   onRestore: () => void;
+  onRevert: () => void;
 }) {
   const min = ageMinutes(order.created_at);
   const hot = min >= 15;
@@ -1275,6 +1284,24 @@ function RushOrderCard({
           >
             <Phone className="h-4 w-4" />
           </a>
+        )}
+        {!done && (order.status === "preparando" || order.status === "saiu_para_entrega" || order.status === "pago") && (
+          <button
+            type="button"
+            onClick={onRevert}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-white/15 bg-white/5 px-3 text-[11px] font-bold uppercase tracking-tighter text-white/70 hover:bg-white/10"
+            aria-label="Voltar etapa"
+            title={
+              order.status === "saiu_para_entrega"
+                ? "Voltar para cozinha"
+                : order.status === "preparando"
+                ? "Voltar para pago"
+                : "Voltar para pendente"
+            }
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Voltar
+          </button>
         )}
         {!done && (
           <button
