@@ -883,8 +883,21 @@ function MovementsTable({
             ? productMap.get(m.product_id ?? "") ?? "Produto removido"
             : ingMap.get(m.ingredient_id ?? "")?.name ?? "Insumo removido";
         const unit = m.item_type === "ingredient" ? ingMap.get(m.ingredient_id ?? "")?.unit : undefined;
+        const sign = m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−";
+        const qtyClass =
+          m.movement_type === "entrada"
+            ? "text-emerald-300"
+            : m.movement_type === "perda" || m.movement_type === "saida" || m.movement_type === "venda"
+              ? "text-orange-300"
+              : "text-white";
         return (
-          <div key={m.id} className="border-t border-white/5 text-sm">
+          <div
+            key={m.id}
+            className={cn(
+              "border-t border-white/5 text-sm transition-colors hover:bg-yellow-400/[0.04]",
+              idx % 2 === 1 && "md:bg-white/[0.015]",
+            )}
+          >
             {/* MOBILE CARD */}
             <div className="md:hidden p-3 flex items-start gap-3">
               <div className={cn("shrink-0 w-9 h-9 rounded-lg grid place-items-center border", info.color)}>
@@ -893,19 +906,19 @@ function MovementsTable({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-sm font-semibold truncate">{name}</div>
-                  <div className="text-sm font-bold shrink-0">
-                    {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
-                    {fmtQty(Math.abs(m.qty), unit)}
+                  <div className={cn("text-sm font-bold shrink-0 tabular-nums", qtyClass)}>
+                    {sign}{fmtQty(Math.abs(m.qty), unit)}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-white/50 mt-0.5">
-                  <span>{info.label}</span>
-                  <span className="text-white/20">·</span>
+                <div className="flex items-center gap-2 text-[11px] text-white/50 mt-0.5 flex-wrap">
+                  <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px]", info.color)}>
+                    <info.icon className="w-2.5 h-2.5" /> {info.label}
+                  </span>
                   <span>{fmtDateTime(m.created_at)}</span>
                   {m.unit_cost ? (
                     <>
                       <span className="text-white/20">·</span>
-                      <span>{fmtBRL(m.unit_cost)}</span>
+                      <span className="tabular-nums">{fmtBRL(m.unit_cost)}</span>
                     </>
                   ) : null}
                 </div>
@@ -914,24 +927,24 @@ function MovementsTable({
             </div>
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5">
-              <div className="text-xs text-white/60">{fmtDateTime(m.created_at)}</div>
+            <div className="hidden md:grid md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5 gap-2">
+              <div className="text-xs text-white/60 tabular-nums">{fmtDateTime(m.created_at)}</div>
               <div>
-                <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border", info.color)}>
+                <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border font-medium", info.color)}>
                   <info.icon className="w-3 h-3" /> {info.label}
                 </span>
               </div>
-              <div className="truncate">{name}</div>
-              <div className="text-sm font-semibold">
-                {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
-                {fmtQty(Math.abs(m.qty), unit)}
+              <div className="truncate text-sm">{name}</div>
+              <div className={cn("text-sm font-bold tabular-nums text-right", qtyClass)}>
+                {sign}{fmtQty(Math.abs(m.qty), unit)}
               </div>
-              <div className="text-xs text-white/60">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
+              <div className="text-xs text-white/60 tabular-nums text-right">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
               <div className="text-xs text-white/50 truncate">{m.reason || "—"}</div>
             </div>
           </div>
         );
       })}
+
 
     </div>
   );
