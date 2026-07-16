@@ -3808,7 +3808,7 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
       label: "Início (Hero)",
       icon: Home,
       hint: "Imagens de destaque",
-      done: Boolean(s.heroImages?.leftUrl || s.heroImages?.rightUrl),
+      done: Boolean(s.heroImages?.left?.url || s.heroImages?.right?.url),
     },
     {
       id: "contact",
