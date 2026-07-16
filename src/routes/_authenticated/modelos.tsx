@@ -189,7 +189,7 @@ function ModelosPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 pb-16 pt-4 sm:pt-6">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-950/60 via-[#1a0324]/70 to-purple-950/50 p-5 sm:p-6">
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-950/60 via-card/70 to-purple-950/50 p-5 sm:p-6">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-8 h-48 w-48 rounded-full bg-purple-500/20 blur-3xl" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -225,7 +225,7 @@ function ModelosPage() {
       </div>
 
       {/* Filters bar */}
-      <div className="rounded-2xl border border-white/10 bg-[#160121]/70 p-3 shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)] backdrop-blur">
+      <div className="rounded-2xl border border-white/10 bg-card/70 p-3 shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)] backdrop-blur">
         <div className="flex flex-col gap-3">
           {/* segmented + search */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -438,7 +438,7 @@ function SortDropdown({ value, onChange }: { value: SortKey; onChange: (v: SortK
       {open && (
         <>
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-30 mt-1 min-w-[180px] overflow-hidden rounded-xl border border-white/10 bg-[#1a0324] p-1 shadow-2xl">
+          <div className="absolute right-0 z-30 mt-1 min-w-[180px] overflow-hidden rounded-xl border border-white/10 bg-card p-1 shadow-2xl">
             {opts.map((o) => (
               <button
                 key={o.k}
@@ -484,9 +484,9 @@ function TemplateCard({
       : null;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#160121]/80 shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)] transition hover:border-fuchsia-500/40 hover:shadow-[0_20px_45px_-15px_rgba(236,72,153,0.35)]">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-card/80 shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)] transition hover:border-fuchsia-500/40 hover:shadow-[0_20px_45px_-15px_rgba(236,72,153,0.35)]">
       {/* Media */}
-      <div className="relative h-40 w-full overflow-hidden bg-gradient-to-br from-fuchsia-950/60 via-purple-950/50 to-[#1a0324]">
+      <div className="relative h-40 w-full overflow-hidden bg-gradient-to-br from-fuchsia-950/60 via-purple-950/50 to-card">
         {t.image_url ? (
           <img
             src={t.image_url}
@@ -686,7 +686,7 @@ function ApplyDialog({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-white/10 bg-[#160121] text-white sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-white/10 bg-card text-white sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Sparkles className="h-5 w-5 text-fuchsia-400" /> Adicionar ao cardápio
@@ -886,7 +886,7 @@ function TemplateEditor({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto border-white/10 bg-[#160121] text-white sm:max-w-3xl">
+      <DialogContent className="max-h-[92vh] overflow-y-auto border-white/10 bg-card text-white sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             {isNew ? <Plus className="h-5 w-5 text-fuchsia-400" /> : <Pencil className="h-5 w-5 text-fuchsia-400" />}

@@ -280,7 +280,7 @@ function AvaliacoesPage() {
     });
 
   return (
-    <div className="min-h-full bg-[#0e0a1a] pb-24 text-white">
+    <div className="min-h-full bg-background pb-24 text-white">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
@@ -317,7 +317,7 @@ function AvaliacoesPage() {
         </header>
 
         <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-          <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto border-white/10 bg-[#0e0a1a] text-white">
+          <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto border-white/10 bg-background text-white">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-xl font-black">
                 <Settings2 className="h-5 w-5 text-neon-pink" />
@@ -810,7 +810,7 @@ function ReviewDetailDialog({
   const [reply, setReply] = useState(review.reply ?? "");
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg border-white/10 bg-[#120a24] text-white">
+      <DialogContent className="max-w-lg border-white/10 bg-card text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Star className="h-4 w-4 fill-yellow-300 text-yellow-300" />

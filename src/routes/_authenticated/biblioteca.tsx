@@ -395,7 +395,7 @@ function BibliotecaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white pb-24">
+    <div className="min-h-screen bg-background text-white pb-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 space-y-6">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -965,7 +965,7 @@ function MediaDetailDialog({
 
   return (
     <Dialog open={!!item} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-3xl sm:w-[95vw] max-h-[90vh] overflow-y-auto border-white/10 bg-[#0d0d14] p-0 text-white">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-3xl sm:w-[95vw] max-h-[90vh] overflow-y-auto border-white/10 bg-background p-0 text-white">
         <DialogHeader className="sr-only">
           <DialogTitle>{item.name}</DialogTitle>
         </DialogHeader>

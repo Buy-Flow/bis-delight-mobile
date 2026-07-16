@@ -289,7 +289,7 @@ function TablesPage() {
 
   return (
     <div className="min-h-screen bg-transparent pb-16">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0d0322]/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white shadow-lg">
@@ -998,8 +998,8 @@ function FloorPlanView({
         className={cn(
           "relative h-[70vh] min-h-[520px] w-full touch-none select-none overflow-hidden rounded-3xl border transition",
           editMode
-            ? "border-neon-pink/40 bg-[#0d0322]/70 shadow-[inset_0_0_60px_rgba(255,46,147,.08)]"
-            : "border-white/10 bg-[#0d0322]/60",
+            ? "border-neon-pink/40 bg-background/70 shadow-[inset_0_0_60px_rgba(255,46,147,.08)]"
+            : "border-white/10 bg-background/60",
           showGrid &&
             "bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px]",
           wallMode && "cursor-crosshair",
@@ -1399,7 +1399,7 @@ function TableDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="w-full max-w-2xl overflow-hidden rounded-t-3xl border border-white/10 bg-[#120833] sm:rounded-3xl">
+      <div className="w-full max-w-2xl overflow-hidden rounded-t-3xl border border-white/10 bg-card sm:rounded-3xl">
         {/* Header */}
         <div
           className={cn(
@@ -1459,7 +1459,7 @@ function TableDialog({
                     >
                       <option value="">Sem atribuição</option>
                       {waiters.map((w) => (
-                        <option key={w.id} value={w.id} className="bg-[#0d0322]">
+                        <option key={w.id} value={w.id} className="bg-background">
                           {w.name} ({w.code})
                         </option>
                       ))}
@@ -1720,7 +1720,7 @@ function TableDialog({
                 >
                   <option value="">Sem atribuição</option>
                   {waiters.map((w) => (
-                    <option key={w.id} value={w.id} className="bg-[#0d0322]">
+                    <option key={w.id} value={w.id} className="bg-background">
                       {w.name} ({w.code})
                     </option>
                   ))}
@@ -1742,7 +1742,7 @@ function TableDialog({
                     {tables
                       .filter((t) => t.id !== table.id && t.status !== "ocupada")
                       .map((t) => (
-                        <option key={t.id} value={t.id} className="bg-[#0d0322]">
+                        <option key={t.id} value={t.id} className="bg-background">
                           Mesa {t.number} {t.label ? `— ${t.label}` : ""} ({statusLabel[t.status]})
                         </option>
                       ))}
@@ -1877,7 +1877,7 @@ function EditTableDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#120833]">
+      <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-card">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
           <h3 className="text-base font-black text-white">
             {table ? `Editar mesa ${table.number}` : "Nova mesa"}
@@ -1922,7 +1922,7 @@ function EditTableDialog({
                   className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm text-white focus:border-neon-pink/50 focus:outline-none"
                 >
                   {zoneOptions.map((z) => (
-                    <option key={z} value={z} className="bg-[#120833]">
+                    <option key={z} value={z} className="bg-card">
                       {z}
                     </option>
                   ))}
@@ -2092,7 +2092,7 @@ function ManageZonesDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-[#120833]"
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-card"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">

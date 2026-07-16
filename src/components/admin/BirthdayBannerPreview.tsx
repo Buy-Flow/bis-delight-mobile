@@ -30,7 +30,7 @@ export function BirthdayBannerPreview({
         <span>Preview no app</span>
         <span>iPhone · 375px</span>
       </div>
-      <div className="rounded-3xl bg-[#0a0410] p-3">
+      <div className="rounded-3xl bg-background p-3">
         <div
           className="relative overflow-hidden rounded-3xl p-5 ring-1 ring-neon-pink/40"
           style={{
@@ -98,7 +98,7 @@ export function PushNotificationPreview({ emoji, title, body }: PushProps) {
         <span>Preview do push</span>
         <span>Notificação · lock screen</span>
       </div>
-      <div className="rounded-3xl bg-gradient-to-br from-[#1a0a20] via-[#0a0410] to-[#050208] p-4">
+      <div className="rounded-3xl bg-gradient-to-br from-card via-background to-background p-4">
         <div className="rounded-2xl bg-white/[0.08] backdrop-blur-md p-3 ring-1 ring-white/10">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neon-pink text-lg">
