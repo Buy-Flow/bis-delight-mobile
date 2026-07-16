@@ -3789,16 +3789,67 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
     }
   };
 
-  const sections: { id: SettingsSection; label: string; icon: React.ElementType }[] = [
-    { id: "identity", label: "Identidade", icon: Store },
-    { id: "hero", label: "Início (Hero)", icon: Home },
-    { id: "contact", label: "Contato & Local", icon: MapPin },
-    { id: "hours", label: "Horários", icon: Clock },
-    { id: "delivery", label: "Entrega", icon: Truck },
-    { id: "payment", label: "Pagamento", icon: CreditCard },
-    { id: "social", label: "Redes sociais", icon: Globe },
-    { id: "appearance", label: "Aparência", icon: Palette },
+  const sections: {
+    id: SettingsSection;
+    label: string;
+    icon: React.ElementType;
+    hint: string;
+    done: boolean;
+  }[] = [
+    {
+      id: "identity",
+      label: "Identidade",
+      icon: Store,
+      hint: "Nome, slogan e logo",
+      done: Boolean(s.name?.trim() && s.logo?.trim()),
+    },
+    {
+      id: "hero",
+      label: "Início (Hero)",
+      icon: Home,
+      hint: "Imagens de destaque",
+      done: Boolean(s.heroImages?.leftUrl || s.heroImages?.rightUrl),
+    },
+    {
+      id: "contact",
+      label: "Contato & Local",
+      icon: MapPin,
+      hint: "Endereço e WhatsApp",
+      done: Boolean(s.address?.trim() && s.whatsapp?.trim()),
+    },
+    {
+      id: "hours",
+      label: "Horários",
+      icon: Clock,
+      hint: "Dias e faixas de atendimento",
+      done: (s.hoursJson?.length ?? 0) > 0,
+    },
+    {
+      id: "delivery",
+      label: "Entrega",
+      icon: Truck,
+      hint: "Zonas, frete e pedido mínimo",
+      done: s.acceptsDelivery || s.acceptsPickup,
+    },
+    {
+      id: "payment",
+      label: "Pagamento",
+      icon: CreditCard,
+      hint: "PIX e métodos aceitos",
+      done: Boolean(s.pixKey?.trim()) || (s.paymentMethods?.length ?? 0) > 0,
+    },
+    {
+      id: "social",
+      label: "Redes sociais",
+      icon: Globe,
+      hint: "Instagram, Facebook, TikTok",
+      done: Boolean(s.instagram || s.facebook || s.tiktok),
+    },
   ];
+
+  const doneCount = sections.filter((sec) => sec.done).length;
+  const totalCount = sections.length;
+  const completion = Math.round((doneCount / totalCount) * 100);
 
 
   const activeSection = sections.find((sec) => sec.id === section) ?? sections[0];
