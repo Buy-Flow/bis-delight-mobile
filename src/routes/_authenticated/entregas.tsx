@@ -1249,7 +1249,7 @@ function CourierDialog({
             Ativo (disponível para receber entregas)
           </label>
 
-          {courier && (
+          {(courier || credentials) && (
             <div className="mt-2 rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-3">
               <div className="text-[11px] font-black uppercase tracking-wider text-fuchsia-300">
                 Acesso ao portal do motoboy
