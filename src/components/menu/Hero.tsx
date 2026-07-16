@@ -84,15 +84,9 @@ export function Hero({
           />
         )}
 
-        {/* Bottom fade — knits the hero glow smoothly into the page background,
-            removing the visible seam between the hero and the section below. */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent 0%, var(--background) 100%)",
-          }}
-        />
+        {/* No bottom fade — the hero glow bleeds naturally into the page
+            background so the whole surface reads as one continuous purple. */}
+
       </div>
 
 
