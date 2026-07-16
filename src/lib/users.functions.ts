@@ -68,6 +68,21 @@ export const assignUserRole = createServerFn({ method: "POST" })
         role: data.role,
         note: data.note ?? "Papel atribuído diretamente",
       });
+      // Ensure a couriers row exists so the person appears in Entregas
+      if (data.role === "delivery") {
+        const { data: existingCourier } = await supabaseAdmin
+          .from("couriers")
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (!existingCourier) {
+          await supabaseAdmin.from("couriers").insert({
+            user_id: userId,
+            name: data.fullName || email.split("@")[0],
+            active: true,
+          });
+        }
+      }
       return { status: "granted" as const, userId };
     }
 
