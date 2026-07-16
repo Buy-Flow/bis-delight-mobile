@@ -1,6 +1,8 @@
 import { useSiteSettings, DEFAULT_HERO_IMAGES } from "@/lib/menu-data";
 import { type HeroImagesConfig } from "@/lib/menu-data";
 import { AdminEditButton } from "./AdminEditButton";
+import { Timer, GlassWater, Heart } from "lucide-react";
+
 
 
 export function Hero({
