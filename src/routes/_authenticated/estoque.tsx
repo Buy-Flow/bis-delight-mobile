@@ -480,32 +480,38 @@ function EstoquePage() {
 function KpiCard({
   title,
   value,
+  subtitle,
   icon: Icon,
   color,
   highlight,
+  large,
 }: {
   title: string;
   value: string;
+  subtitle?: string;
   icon: typeof Boxes;
   color: string;
   highlight?: boolean;
+  large?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border p-4 bg-gradient-to-br",
+        "rounded-2xl border p-4 bg-gradient-to-br transition-all",
         color,
         highlight ? "border-orange-500/40 ring-1 ring-orange-500/30" : "border-white/10",
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs text-white/60 uppercase tracking-wide">{title}</span>
+        <span className="text-[10px] md:text-xs text-white/60 uppercase tracking-wide font-medium">{title}</span>
         <Icon className={cn("w-4 h-4", highlight ? "text-orange-400" : "text-white/40")} />
       </div>
-      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className={cn("mt-1.5 font-bold tabular-nums truncate", large ? "text-3xl" : "text-2xl")}>{value}</div>
+      {subtitle && <div className="text-[11px] text-white/50 mt-0.5 truncate">{subtitle}</div>}
     </div>
   );
 }
+
 
 function statusFor(stock: number, threshold: number): { label: string; className: string } {
   if (stock <= 0) return { label: "Sem estoque", className: "bg-red-500/15 text-red-300 border-red-500/40" };
