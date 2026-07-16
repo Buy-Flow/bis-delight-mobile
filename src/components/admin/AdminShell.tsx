@@ -89,6 +89,7 @@ type NavItem = {
   label: string;
   icon: LucideIcon;
   soon?: boolean;
+  activePaths?: string[];
 };
 
 type NavGroup = { id: string; label: string; items: NavItem[]; defaultOpen?: boolean };
