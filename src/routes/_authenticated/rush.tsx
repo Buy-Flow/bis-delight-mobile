@@ -1284,7 +1284,7 @@ function RushOrderCard({
             onClick={onAdvance}
             disabled={busy}
             className={cn(
-              "flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-neon-pink to-neon-yellow px-4 text-sm font-black text-[oklch(0.13_0.08_305)] shadow-[0_10px_30px_-8px_var(--neon-pink)] transition active:scale-[0.98]",
+              "flex flex-1 items-center justify-center gap-2 rounded-xl bg-neon-pink px-4 text-sm font-black uppercase tracking-wide text-[oklch(0.13_0.08_305)] transition hover:brightness-110 active:scale-[0.99]",
               "min-h-[52px]",
               busy && "opacity-70",
             )}
