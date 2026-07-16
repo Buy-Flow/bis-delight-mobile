@@ -1088,7 +1088,7 @@ function RushOrderCard({
   return (
     <article
       className={cn(
-        "relative overflow-hidden rounded-2xl border bg-[oklch(0.19_0.006_270)] p-3.5 shadow-sm",
+        "relative overflow-hidden rounded-2xl border border-border bg-card text-card-foreground p-3.5 shadow-sm",
         "before:absolute before:inset-y-0 before:left-0 before:w-1",
         laneAccent,
         critical && "ring-1 ring-red-500/50",
