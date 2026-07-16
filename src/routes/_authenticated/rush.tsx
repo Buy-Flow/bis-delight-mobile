@@ -898,7 +898,19 @@ function RushPage() {
                 onAdvance={() => advance(o)}
                 onCancel={() => setStatus(o, "cancelado")}
                 onConfirmPayment={() => setStatus(o, "pago")}
-                onRestore={() => setStatus(o, "pendente")}
+                onRestore={() => {
+                  // Reabrir volta para um status ativo (não some da tela): entregue → volta pra rota/preparando; cancelado → volta pra pago.
+                  const target: OrderStatus =
+                    o.status === "cancelado"
+                      ? "pago"
+                      : o.mode === "entrega"
+                      ? "saiu_para_entrega"
+                      : "preparando";
+                  const nextLane: LaneId =
+                    target === "saiu_para_entrega" ? "rota" : target === "preparando" ? "cozinha" : "novos";
+                  setStatus(o, target);
+                  setLane(nextLane);
+                }}
                 onRevert={() => revert(o)}
               />
             ))
