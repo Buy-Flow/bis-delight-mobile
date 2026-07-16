@@ -1,6 +1,8 @@
 import { useSiteSettings, DEFAULT_HERO_IMAGES } from "@/lib/menu-data";
 import { type HeroImagesConfig } from "@/lib/menu-data";
 import { AdminEditButton } from "./AdminEditButton";
+import { Timer, GlassWater, Heart } from "lucide-react";
+
 
 
 export function Hero({
@@ -221,7 +223,32 @@ export function Hero({
             <span>Prático</span>
             <span className="text-white">&amp;</span>
             <span className="text-neon-yellow">extraordinário</span>
-          </div>
+        </div>
+
+        {/* Trust strip — fixed right below the "extraordinário" tagline */}
+        <div
+          className="relative z-20 mt-5 w-full rounded-2xl border border-white/10 bg-[oklch(0.20_0.06_300_/_0.85)] px-3 py-3 backdrop-blur-sm shadow-[0_10px_30px_-14px_rgba(0,0,0,0.7)]"
+          style={{ fontFamily: "'Poppins', sans-serif" }}
+        >
+          <ul className="grid grid-cols-3 gap-2 text-left">
+            {[
+              { Icon: Timer, tint: "text-neon-cyan", ring: "ring-neon-cyan/40", title: "Entrega\u00A0rápida", sub: "em toda região" },
+              { Icon: GlassWater, tint: "text-neon-pink", ring: "ring-neon-pink/40", title: "Produtos", sub: "preparados com amor" },
+              { Icon: Heart, tint: "text-neon-yellow", ring: "ring-neon-yellow/40", title: "Feito com amor", sub: "os melhores ingredientes" },
+            ].map(({ Icon, tint, ring, title, sub }) => (
+              <li key={title} className="flex items-start gap-1.5">
+                <span className={`mt-0.5 inline-grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ${ring}`}>
+                  <Icon className={`h-3.5 w-3.5 ${tint}`} strokeWidth={2.4} />
+                </span>
+                <div className="min-w-0 leading-tight">
+                  <div className="text-[11px] font-extrabold text-white">{title}</div>
+                  <div className="text-[10px] text-white/60">{sub}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
 
         </div>
 
