@@ -129,8 +129,8 @@ export const DEFAULT_POPUP: PopupConfig = {
 
 export type HeroImageConfig = {
   url: string;
-  offsetX: number; // px, negative = further off-screen
-  offsetY: number; // px, positive = further down from bottom
+  offsetX: number; // px offset from container center (negative = left, positive = right)
+  offsetY: number; // px offset from container center (negative = up, positive = down)
   scale: number;   // 0.5 – 2
 };
 export type HeroImagesConfig = {
@@ -141,17 +141,18 @@ export type HeroImagesConfig = {
 export const DEFAULT_HERO_IMAGES: HeroImagesConfig = {
   left: {
     url: "/__l5e/assets-v1/b223ea5c-b37e-460c-b0d8-2fe9ea8f220e/hero-bg-left-v2.png",
-    offsetX: -150,
-    offsetY: 0,
+    offsetX: -160,
+    offsetY: 120,
     scale: 1,
   },
   right: {
     url: "/__l5e/assets-v1/acfa9b61-d1d7-4481-8a28-678c1a6df4f7/hero-bg-right-v2.png",
-    offsetX: -150,
-    offsetY: 0,
+    offsetX: 160,
+    offsetY: 120,
     scale: 1,
   },
 };
+
 
 
 
