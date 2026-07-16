@@ -4957,11 +4957,6 @@ export type Database = {
           popup_image_url: string | null
           popup_link: string | null
           popup_title: string | null
-          pricing_card_fee_pct: number | null
-          pricing_expected_sales_monthly: number | null
-          pricing_fixed_cost_monthly: number | null
-          pricing_platform_fee_pct: number | null
-          pricing_tax_pct: number | null
           store_lat: number | null
           store_lng: number | null
           tagline: string | null
@@ -5022,11 +5017,6 @@ export type Database = {
           popup_image_url?: string | null
           popup_link?: string | null
           popup_title?: string | null
-          pricing_card_fee_pct?: number | null
-          pricing_expected_sales_monthly?: number | null
-          pricing_fixed_cost_monthly?: number | null
-          pricing_platform_fee_pct?: number | null
-          pricing_tax_pct?: number | null
           store_lat?: number | null
           store_lng?: number | null
           tagline?: string | null
@@ -5087,11 +5077,6 @@ export type Database = {
           popup_image_url?: string | null
           popup_link?: string | null
           popup_title?: string | null
-          pricing_card_fee_pct?: number | null
-          pricing_expected_sales_monthly?: number | null
-          pricing_fixed_cost_monthly?: number | null
-          pricing_platform_fee_pct?: number | null
-          pricing_tax_pct?: number | null
           store_lat?: number | null
           store_lng?: number | null
           tagline?: string | null
