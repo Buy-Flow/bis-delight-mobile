@@ -6969,11 +6969,13 @@ function HeroImagesSection({
     const scale = previewScale || 1;
     const deltaX = (event.clientX - drag.startX) / scale;
     const deltaY = (event.clientY - drag.startY) / scale;
+    // Offsets are now pure deltas from the container center — no inversion.
     updateSide(drag.side, {
-      offsetX: clampHeroOffset(Math.round(drag.startOffsetX + (drag.side === "left" ? deltaX : -deltaX)), -800, 400),
+      offsetX: clampHeroOffset(Math.round(drag.startOffsetX + deltaX), -600, 600),
       offsetY: clampHeroOffset(Math.round(drag.startOffsetY + deltaY), -400, 400),
     });
   };
+
 
   const stopDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
