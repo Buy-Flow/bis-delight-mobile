@@ -610,7 +610,7 @@ function RushPage() {
   const isPaused = settings?.openOverride === "closed";
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_oklch(0.18_0.15_305)_0%,_oklch(0.08_0.08_305)_60%)] pb-32 text-white">
+    <div className="min-h-screen bg-background pb-32 text-white">
 
 
       {/* Sub-bar: live status + actions */}
