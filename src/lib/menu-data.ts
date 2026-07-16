@@ -293,13 +293,13 @@ export function useCategories() {
 }
 
 export const DEFAULT_HOURS: DayHours[] = [
-  { day: "mon", closed: false, open: "14:00", close: "22:00" },
-  { day: "tue", closed: false, open: "14:00", close: "22:00" },
-  { day: "wed", closed: false, open: "14:00", close: "22:00" },
-  { day: "thu", closed: false, open: "14:00", close: "22:00" },
-  { day: "fri", closed: false, open: "14:00", close: "23:00" },
-  { day: "sat", closed: false, open: "14:00", close: "23:00" },
-  { day: "sun", closed: false, open: "14:00", close: "22:00" },
+  { day: "mon", closed: false, open: "11:00", close: "23:00" },
+  { day: "tue", closed: true, open: "11:00", close: "23:00" },
+  { day: "wed", closed: false, open: "11:00", close: "23:00" },
+  { day: "thu", closed: false, open: "11:00", close: "23:00" },
+  { day: "fri", closed: false, open: "11:00", close: "23:00" },
+  { day: "sat", closed: false, open: "11:00", close: "23:00" },
+  { day: "sun", closed: false, open: "11:00", close: "23:00" },
 ];
 
 const DEFAULT_EXTRA: Pick<
@@ -396,7 +396,8 @@ export const siteSettingsQueryOptions = queryOptions({
   queryFn: async (): Promise<SiteSettings> => {
     // site_settings_public is a view that excludes the admin-only pix_key column.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase.from("site_settings_public" as any) as any).select("*").eq("id", 1).maybeSingle();
+    const { data, error } = await (supabase.from("site_settings_public" as any) as any).select("*").eq("id", 1).maybeSingle();
+    if (error) throw error;
     if (!data) {
       return {
         name: STATIC_BRAND.name,
@@ -490,7 +491,7 @@ export const siteSettingsQueryOptions = queryOptions({
       deliveryZone: parseDeliveryZone((data as Record<string, unknown>).delivery_zone_json),
     };
   },
-  staleTime: 60_000,
+  staleTime: 0,
 });
 
 export function useSiteSettings() {
@@ -824,6 +825,7 @@ export function useDeleteCategory() {
 }
 
 export function useUpdateSettings() {
+  const qc = useQueryClient();
   const invalidate = useInvalidateMenu();
   return useMutation({
     mutationFn: async (s: SiteSettings) => {
@@ -893,7 +895,10 @@ export function useUpdateSettings() {
       const { error: pixErr } = await (supabase.rpc as any)("set_pix_key", { _val: s.pixKey ?? "" });
       if (pixErr) throw pixErr;
     },
-    onSuccess: invalidate,
+    onSuccess: (_data, settings) => {
+      qc.setQueryData(siteSettingsQueryOptions.queryKey, settings);
+      invalidate();
+    },
   });
 }
 
