@@ -97,6 +97,8 @@ type Order = {
   delivered_at: string | null;
   delivery_lat: number | null;
   delivery_lng: number | null;
+  distance_km: number | null;
+  courier_id: string | null;
   order_items: OrderItem[];
 };
 
@@ -332,7 +334,7 @@ function RushPage() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,user_id,mode,customer_name,phone,address,reference,note,subtotal,delivery_fee,total,status,payment_method,paid_at,created_at,preparing_at,dispatched_at,delivered_at,delivery_lat,delivery_lng,order_items(id,name,quantity,size,flavor,extras,removed,note,unit_price)",
+          "id,user_id,mode,customer_name,phone,address,reference,note,subtotal,delivery_fee,total,status,payment_method,paid_at,created_at,preparing_at,dispatched_at,delivered_at,delivery_lat,delivery_lng,distance_km,courier_id,order_items(id,name,quantity,size,flavor,extras,removed,note,unit_price)",
         )
         .order("created_at", { ascending: false })
         .limit(200);
@@ -490,6 +492,26 @@ function RushPage() {
     if (navigator.vibrate) navigator.vibrate(20);
     toast.success("Pedido atualizado.");
     void notifyOrderStatus(order, status);
+    // Kitchen → delivery: broadcast a delivery_offer to all online couriers
+    // when the order goes into route without an assigned courier.
+    if (
+      status === "saiu_para_entrega" &&
+      order.mode === "entrega" &&
+      !order.courier_id
+    ) {
+      const { error: offerErr } = await supabase.from("delivery_offers").insert({
+        order_id: order.id,
+        broadcast: true,
+        status: "pending",
+        fee: order.delivery_fee ?? null,
+        distance_km: (order as any).distance_km ?? null,
+      });
+      if (offerErr) {
+        toast.warning("Pedido em rota, mas não consegui avisar os motoboys: " + offerErr.message);
+      } else {
+        toast.success("Motoboys notificados — aguardando aceitar.");
+      }
+    }
   };
 
   const advance = (o: Order) => {
