@@ -65,15 +65,15 @@ export const Route = createFileRoute("/")({
       },
     },
   },
-  loader: async ({ context }) => {
-    // Pré-aquece o cache do Query: HTML/hidratação chega com dados prontos.
-    // Evita a renderização "em ondas" (letras > imagens > seções).
-    await Promise.all([
-      context.queryClient.ensureQueryData(productsQueryOptions),
-      context.queryClient.ensureQueryData(categoriesQueryOptions),
-      context.queryClient.ensureQueryData(siteSettingsQueryOptions),
-    ]);
+  loader: ({ context }) => {
+    // Dispara o pré-aquecimento SEM bloquear a navegação: o Router mostra a
+    // rota imediatamente e o React Query resolve as consultas em paralelo,
+    // evitando a "piscada" e o topo duplicado durante a espera do loader.
+    void context.queryClient.prefetchQuery(productsQueryOptions);
+    void context.queryClient.prefetchQuery(categoriesQueryOptions);
+    void context.queryClient.prefetchQuery(siteSettingsQueryOptions);
   },
+
   head: () => ({
     meta: [
       { title: "Quero Bis — Sorveteria & Açaí | Cardápio Digital" },
