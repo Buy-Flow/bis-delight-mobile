@@ -326,13 +326,21 @@ function EstoquePage() {
           </div>
         </div>
 
-        {/* KPIs — mobile: 2 destacados + scroll horizontal para o resto */}
-        <div className="md:hidden grid grid-cols-1 gap-2.5">
-          <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
-          <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
+        {/* KPIs */}
+        <div className="md:hidden grid grid-cols-2 gap-2.5">
+          <div className="col-span-2">
+            <KpiCard
+              title="Precisam de atenção"
+              value={kpi.alerts.toString()}
+              subtitle={kpi.alerts > 0 ? `${kpi.out} sem estoque · ${kpi.low} baixo` : "Tudo em ordem"}
+              icon={AlertTriangle}
+              color="from-orange-500/25 to-red-600/10"
+              highlight={kpi.alerts > 0}
+              large
+            />
+          </div>
           <KpiCard title="Itens" value={kpi.totalItems.toString()} icon={Boxes} color="from-blue-500/20 to-blue-600/5" />
-          <KpiCard title="Valor em estoque" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" />
-          <KpiCard title="Movimentos" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
+          <KpiCard title="Valor" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" />
         </div>
 
         <div className="hidden md:grid md:grid-cols-5 gap-3">
@@ -340,13 +348,13 @@ function EstoquePage() {
           <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
           <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
           <KpiCard title="Valor em estoque" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" />
-          <KpiCard title="Movimentos (30d)" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
+          <KpiCard title="Movimentos" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
         </div>
 
-        {/* TABS — sticky no mobile, roláveis */}
-        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-[#0b0518]/85 backdrop-blur supports-[backdrop-filter]:bg-[#0b0518]/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0">
+        {/* TABS + FILTROS */}
+        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-[#0b0518]/85 backdrop-blur supports-[backdrop-filter]:bg-[#0b0518]/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0 space-y-2">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
-            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0">
+            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 w-full md:w-auto">
               {(
                 [
                   { id: "produtos", label: "Produtos", icon: Package, count: products.filter((p) => p.stock !== null).length },
@@ -358,28 +366,27 @@ function EstoquePage() {
                   key={t.id}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 font-medium transition-colors whitespace-nowrap",
-                    tab === t.id ? "bg-yellow-400 text-black" : "text-white/70 hover:bg-white/10",
+                    "flex-1 md:flex-none px-3 py-1.5 rounded-lg text-sm flex items-center justify-center gap-1.5 font-medium transition-colors whitespace-nowrap",
+                    tab === t.id ? "bg-yellow-400 text-black shadow-sm shadow-yellow-500/30" : "text-white/70 hover:bg-white/10",
                   )}
                 >
                   <t.icon className="w-4 h-4" />
                   {t.label}
-                  <span className={cn("text-[10px] px-1.5 rounded-full", tab === t.id ? "bg-black/20" : "bg-white/10")}>
+                  <span className={cn("text-[10px] px-1.5 rounded-full font-bold tabular-nums", tab === t.id ? "bg-black/20" : "bg-white/10")}>
                     {t.count}
                   </span>
                 </button>
               ))}
             </div>
           </div>
-          {/* FILTROS */}
-          <div className="mt-2 flex gap-2 items-center">
+          <div className="flex gap-2 items-center">
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Buscar..."
-                className="w-full pl-8 pr-8 py-2 rounded-lg bg-white/5 border border-white/10 text-sm md:w-52 focus:outline-none focus:border-yellow-400/50"
+                placeholder={tab === "movimentos" ? "Buscar por item ou motivo…" : "Buscar por nome, categoria…"}
+                className="w-full pl-8 pr-8 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-yellow-400/50"
               />
               {q && (
                 <button
@@ -391,19 +398,33 @@ function EstoquePage() {
                 </button>
               )}
             </div>
-            {tab !== "movimentos" && (
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value as typeof filter)}
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-yellow-400/50 shrink-0"
-              >
-                <option value="all">Todos</option>
-                <option value="out">Sem estoque</option>
-                <option value="low">Baixo</option>
-                <option value="ok">Regular</option>
-              </select>
-            )}
           </div>
+          {tab !== "movimentos" && (
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1">
+              {(
+                [
+                  { id: "all", label: "Todos", dot: "" },
+                  { id: "out", label: "Sem estoque", dot: "bg-red-400" },
+                  { id: "low", label: "Baixo", dot: "bg-orange-400" },
+                  { id: "ok", label: "Regular", dot: "bg-emerald-400" },
+                ] as const
+              ).map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilter(f.id as typeof filter)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-colors flex items-center gap-1.5",
+                    filter === f.id
+                      ? "bg-white/10 border-white/25 text-white"
+                      : "bg-transparent border-white/10 text-white/60 hover:bg-white/5",
+                  )}
+                >
+                  {f.dot && <span className={cn("w-1.5 h-1.5 rounded-full", f.dot)} />}
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* CONTENT */}
@@ -459,38 +480,60 @@ function EstoquePage() {
 function KpiCard({
   title,
   value,
+  subtitle,
   icon: Icon,
   color,
   highlight,
+  large,
 }: {
   title: string;
   value: string;
+  subtitle?: string;
   icon: typeof Boxes;
   color: string;
   highlight?: boolean;
+  large?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border p-4 bg-gradient-to-br",
+        "rounded-2xl border p-4 bg-gradient-to-br transition-all",
         color,
         highlight ? "border-orange-500/40 ring-1 ring-orange-500/30" : "border-white/10",
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs text-white/60 uppercase tracking-wide">{title}</span>
+        <span className="text-[10px] md:text-xs text-white/60 uppercase tracking-wide font-medium">{title}</span>
         <Icon className={cn("w-4 h-4", highlight ? "text-orange-400" : "text-white/40")} />
       </div>
-      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className={cn("mt-1.5 font-bold tabular-nums truncate", large ? "text-3xl" : "text-2xl")}>{value}</div>
+      {subtitle && <div className="text-[11px] text-white/50 mt-0.5 truncate">{subtitle}</div>}
     </div>
   );
 }
 
-function statusFor(stock: number, threshold: number): { label: string; className: string } {
-  if (stock <= 0) return { label: "Sem estoque", className: "bg-red-500/15 text-red-300 border-red-500/40" };
-  if (stock <= threshold) return { label: "Baixo", className: "bg-orange-500/15 text-orange-300 border-orange-500/40" };
-  return { label: "OK", className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40" };
+
+function statusFor(stock: number, threshold: number): { label: string; className: string; tone: "red" | "orange" | "green" } {
+  if (stock <= 0) return { label: "Sem estoque", className: "bg-red-500/15 text-red-300 border-red-500/40", tone: "red" };
+  if (stock <= threshold) return { label: "Baixo", className: "bg-orange-500/15 text-orange-300 border-orange-500/40", tone: "orange" };
+  return { label: "OK", className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40", tone: "green" };
 }
+
+function StockBar({ stock, threshold, tone }: { stock: number; threshold: number; tone: "red" | "orange" | "green" }) {
+  // Escala: threshold representa ~40% da barra. Assim é fácil ler alertas.
+  const target = Math.max(threshold * 2.5, 1);
+  const pct = Math.max(0, Math.min(100, (stock / target) * 100));
+  const bar = tone === "red" ? "bg-red-400" : tone === "orange" ? "bg-orange-400" : "bg-emerald-400";
+  return (
+    <div className="relative h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
+      <div className={cn("h-full rounded-full transition-all", bar)} style={{ width: `${pct}%` }} />
+      {threshold > 0 && (
+        <div className="absolute top-0 bottom-0 w-px bg-white/30" style={{ left: `${Math.min(100, (threshold / target) * 100)}%` }} />
+      )}
+    </div>
+  );
+}
+
 
 function ProductsTable({
   products,
@@ -505,90 +548,102 @@ function ProductsTable({
   const untracked = products.filter((p) => p.stock === null);
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[1fr,120px,140px,120px,120px,120px] px-4 py-2.5 bg-white/5 text-[11px] uppercase tracking-wide text-white/50 font-medium">
+      <div className="hidden md:grid grid-cols-[1fr,140px,180px,110px,120px,110px] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
         <div>Produto</div>
         <div>Categoria</div>
         <div>Estoque</div>
-        <div>Alerta</div>
-        <div>Valor</div>
+        <div>Alerta ≤</div>
+        <div className="text-right">Valor</div>
         <div className="text-right">Ações</div>
       </div>
       {tracked.length === 0 && (
-        <div className="p-6 text-center text-sm text-white/50">
+        <div className="p-8 text-center text-sm text-white/50">
           Nenhum produto rastreando estoque. Marque um produto com estoque no cadastro pra começar.
         </div>
       )}
-      {tracked.map((p) => {
+      {tracked.map((p, idx) => {
         const s = statusFor(p.stock ?? 0, p.low_stock_threshold);
         return (
           <div
             key={p.id}
-            className="border-t border-white/5 hover:bg-white/[0.03]"
+            className={cn(
+              "border-t border-white/5 transition-colors hover:bg-yellow-400/[0.04]",
+              idx % 2 === 1 && "md:bg-white/[0.015]",
+            )}
           >
             {/* MOBILE CARD */}
-            <div className="md:hidden p-3 flex gap-3">
-              {p.image_url ? (
-                <img src={p.image_url} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
-              ) : (
-                <div className="w-14 h-14 rounded-xl bg-white/10 grid place-items-center shrink-0">
-                  <Package className="w-6 h-6 text-white/40" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">{p.name}</div>
-                    <div className="text-[11px] text-white/50 truncate">{p.category}</div>
+            <div className="md:hidden p-3 space-y-2">
+              <div className="flex gap-3">
+                {p.image_url ? (
+                  <img src={p.image_url} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" loading="lazy" />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-white/10 grid place-items-center shrink-0">
+                    <Package className="w-6 h-6 text-white/40" />
                   </div>
-                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0", s.className)}>{s.label}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <div className="text-xs text-white/60">
-                    <span className="text-base font-bold text-white">{p.stock ?? 0}</span>
-                    <span className="ml-1">un</span>
-                    <span className="mx-2 text-white/30">·</span>
-                    <span>Alerta ≤</span>
-                    <input
-                      type="number"
-                      min={0}
-                      defaultValue={p.low_stock_threshold}
-                      onBlur={(e) => {
-                        const v = Math.max(0, Number(e.target.value) || 0);
-                        if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
-                      }}
-                      className="ml-1 w-12 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-xs"
-                    />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate">{p.name}</div>
+                      <div className="text-[11px] text-white/50 truncate">{p.category}</div>
+                    </div>
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0 font-medium", s.className)}>{s.label}</span>
                   </div>
-                  <button
-                    onClick={() => onOpenMovement(p)}
-                    className="px-3 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-medium hover:bg-yellow-400/30 shrink-0"
-                  >
-                    Movimento
-                  </button>
+                  <div className="mt-1.5 flex items-baseline gap-1.5">
+                    <span className="text-xl font-bold text-white tabular-nums">{p.stock ?? 0}</span>
+                    <span className="text-[11px] text-white/50">un no estoque</span>
+                  </div>
                 </div>
+              </div>
+              <StockBar stock={p.stock ?? 0} threshold={p.low_stock_threshold} tone={s.tone} />
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                <label className="flex items-center gap-1.5 text-[11px] text-white/50">
+                  Alerta ≤
+                  <input
+                    type="number"
+                    min={0}
+                    defaultValue={p.low_stock_threshold}
+                    onBlur={(e) => {
+                      const v = Math.max(0, Number(e.target.value) || 0);
+                      if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
+                    }}
+                    className="w-14 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs tabular-nums"
+                  />
+                </label>
+                <button
+                  onClick={() => onOpenMovement(p)}
+                  className="px-3 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30 shrink-0"
+                >
+                  + Movimento
+                </button>
               </div>
             </div>
 
+
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[1fr,120px,140px,120px,120px,120px] items-center px-4 py-3">
-              <div className="flex items-center gap-3">
+            <div className="hidden md:grid md:grid-cols-[1fr,140px,180px,110px,120px,110px] items-center px-4 py-3 gap-2">
+              <div className="flex items-center gap-3 min-w-0">
                 {p.image_url ? (
-                  <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                  <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" loading="lazy" />
                 ) : (
-                  <div className="w-10 h-10 rounded-lg bg-white/10 grid place-items-center">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 grid place-items-center shrink-0">
                     <Package className="w-5 h-5 text-white/40" />
                   </div>
                 )}
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{p.name}</div>
+                  <div className="text-[10px] text-white/40 truncate">{fmtBRL(p.cost_price ?? 0)} · custo</div>
                 </div>
               </div>
               <div className="text-xs text-white/60 truncate">{p.category}</div>
-              <div className="text-sm font-semibold">
-                {p.stock ?? 0}
-                <span className={cn("ml-2 text-[10px] px-1.5 py-0.5 rounded border", s.className)}>{s.label}</span>
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold tabular-nums">{p.stock ?? 0}</span>
+                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded border font-medium", s.className)}>{s.label}</span>
+                </div>
+                <StockBar stock={p.stock ?? 0} threshold={p.low_stock_threshold} tone={s.tone} />
               </div>
-              <div className="text-xs">
+              <div>
                 <input
                   type="number"
                   min={0}
@@ -597,19 +652,20 @@ function ProductsTable({
                     const v = Math.max(0, Number(e.target.value) || 0);
                     if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
                   }}
-                  className="w-16 px-2 py-1 rounded bg-white/5 border border-white/10 text-xs"
+                  className="w-16 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs tabular-nums focus:outline-none focus:border-yellow-400/50"
                 />
               </div>
-              <div className="text-xs text-white/70">{fmtBRL((p.stock ?? 0) * (p.cost_price ?? 0))}</div>
+              <div className="text-xs text-white/70 tabular-nums text-right">{fmtBRL((p.stock ?? 0) * (p.cost_price ?? 0))}</div>
               <div className="flex justify-end gap-1">
                 <button
                   onClick={() => onOpenMovement(p)}
-                  className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
+                  className="px-2.5 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30"
                 >
                   Movimento
                 </button>
               </div>
             </div>
+
           </div>
         );
       })}
@@ -636,13 +692,13 @@ function IngredientsTable({
 }) {
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] px-4 py-2.5 bg-white/5 text-[11px] uppercase tracking-wide text-white/50 font-medium">
+      <div className="hidden md:grid grid-cols-[1.5fr,1fr,200px,110px,110px,130px,130px] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
         <div>Insumo</div>
         <div>Fornecedor</div>
         <div>Estoque</div>
         <div>Alerta</div>
-        <div>Custo</div>
-        <div>Valor total</div>
+        <div className="text-right">Custo</div>
+        <div className="text-right">Valor total</div>
         <div className="text-right">Ações</div>
       </div>
       {ingredients.length === 0 && (
@@ -650,53 +706,64 @@ function IngredientsTable({
           Nenhum insumo cadastrado. Clique em <span className="font-semibold text-yellow-300">Novo insumo</span> pra começar.
         </div>
       )}
-      {ingredients.map((i) => {
+      {ingredients.map((i, idx) => {
         const s = statusFor(i.stock, i.low_stock_threshold);
         return (
-          <div key={i.id} className="border-t border-white/5 hover:bg-white/[0.03]">
+          <div
+            key={i.id}
+            className={cn(
+              "border-t border-white/5 transition-colors hover:bg-yellow-400/[0.04]",
+              idx % 2 === 1 && "md:bg-white/[0.015]",
+              !i.active && "opacity-60",
+            )}
+          >
             {/* MOBILE CARD */}
-            <div className="md:hidden p-3 space-y-2">
+            <div className="md:hidden p-3 space-y-2.5">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold truncate">{i.name}</div>
+                  <div className="text-sm font-semibold truncate flex items-center gap-1.5">
+                    {i.name}
+                    {!i.active && <span className="text-[9px] px-1 rounded bg-white/10 text-white/50">inativo</span>}
+                  </div>
                   <div className="text-[11px] text-white/50 truncate">
                     {i.category ? i.category + " · " : ""}{i.unit}
                     {i.sku ? " · SKU " + i.sku : ""}
                   </div>
                 </div>
-                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0", s.className)}>{s.label}</span>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0 font-medium", s.className)}>{s.label}</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-[11px]">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-bold tabular-nums">{fmtQty(i.stock, i.unit)}</span>
+                <span className="text-[11px] text-white/40">/ alerta {fmtQty(i.low_stock_threshold, i.unit)}</span>
+              </div>
+              <StockBar stock={i.stock} threshold={i.low_stock_threshold} tone={s.tone} />
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
-                  <div className="text-white/40">Estoque</div>
-                  <div className="text-sm font-bold text-white truncate">{fmtQty(i.stock, i.unit)}</div>
+                  <div className="text-white/40">Custo unitário</div>
+                  <div className="text-sm font-semibold text-white/90 tabular-nums truncate">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
                 </div>
                 <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
-                  <div className="text-white/40">Alerta</div>
-                  <div className="text-sm font-semibold text-white/80 truncate">{fmtQty(i.low_stock_threshold, i.unit)}</div>
-                </div>
-                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
-                  <div className="text-white/40">Valor</div>
-                  <div className="text-sm font-semibold text-white/80 truncate">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+                  <div className="text-white/40">Valor total</div>
+                  <div className="text-sm font-semibold text-emerald-300 tabular-nums truncate">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
                 </div>
               </div>
               {i.supplier && (
-                <div className="flex items-center gap-2 text-[11px] text-white/60">
-                  <Truck className="w-3 h-3 shrink-0" />
+                <div className="flex items-center gap-2 text-[11px] text-white/60 rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <Truck className="w-3.5 h-3.5 shrink-0 text-white/40" />
                   <span className="truncate">{i.supplier}</span>
                   {i.supplier_phone && (
-                    <a href={`tel:${i.supplier_phone}`} className="ml-auto flex items-center gap-1 text-white/50 shrink-0">
+                    <a href={`tel:${i.supplier_phone}`} className="ml-auto flex items-center gap-1 text-yellow-300 shrink-0 font-medium">
                       <Phone className="w-3 h-3" /> {i.supplier_phone}
                     </a>
                   )}
                 </div>
               )}
-              <div className="flex gap-1.5 pt-1">
+              <div className="flex gap-1.5">
                 <button
                   onClick={() => onOpenMovement(i)}
-                  className="flex-1 px-3 py-2 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-medium hover:bg-yellow-400/30"
+                  className="flex-1 px-3 py-2 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30"
                 >
-                  Movimento
+                  + Movimento
                 </button>
                 <button
                   onClick={() => onEdit(i)}
@@ -716,20 +783,23 @@ function IngredientsTable({
             </div>
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] items-center px-4 py-3">
+            <div className="hidden md:grid md:grid-cols-[1.5fr,1fr,200px,110px,110px,130px,130px] items-center px-4 py-3 gap-2">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{i.name}</div>
+                <div className="text-sm font-medium truncate flex items-center gap-1.5">
+                  {i.name}
+                  {!i.active && <span className="text-[9px] px-1 rounded bg-white/10 text-white/50">inativo</span>}
+                </div>
                 <div className="text-[11px] text-white/50 truncate">
                   {i.category ? i.category + " · " : ""}{i.unit}
                   {i.sku ? " · SKU " + i.sku : ""}
                 </div>
               </div>
-              <div className="text-xs text-white/60 truncate">
+              <div className="text-xs text-white/60 truncate min-w-0">
                 {i.supplier ? (
                   <>
-                    <div className="flex items-center gap-1"><Truck className="w-3 h-3" /> {i.supplier}</div>
+                    <div className="flex items-center gap-1 truncate"><Truck className="w-3 h-3 shrink-0" /> <span className="truncate">{i.supplier}</span></div>
                     {i.supplier_phone && (
-                      <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-white/70 mt-0.5">
+                      <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-yellow-300 mt-0.5 tabular-nums">
                         <Phone className="w-3 h-3" /> {i.supplier_phone}
                       </a>
                     )}
@@ -738,30 +808,33 @@ function IngredientsTable({
                   <span className="text-white/30">—</span>
                 )}
               </div>
-              <div className="text-sm font-semibold">
-                {fmtQty(i.stock, i.unit)}
-                <div className={cn("mt-1 text-[10px] inline-block px-1.5 py-0.5 rounded border", s.className)}>{s.label}</div>
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold tabular-nums">{fmtQty(i.stock, i.unit)}</span>
+                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded border font-medium", s.className)}>{s.label}</span>
+                </div>
+                <StockBar stock={i.stock} threshold={i.low_stock_threshold} tone={s.tone} />
               </div>
-              <div className="text-xs text-white/60">{fmtQty(i.low_stock_threshold, i.unit)}</div>
-              <div className="text-xs text-white/60">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
-              <div className="text-xs text-white/80">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
-              <div className="flex justify-end gap-1 flex-wrap">
+              <div className="text-xs text-white/60 tabular-nums">{fmtQty(i.low_stock_threshold, i.unit)}</div>
+              <div className="text-xs text-white/60 tabular-nums text-right">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
+              <div className="text-xs text-emerald-300/90 tabular-nums text-right font-medium">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+              <div className="flex justify-end gap-1">
                 <button
                   onClick={() => onOpenMovement(i)}
-                  className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
+                  className="px-2.5 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30"
                 >
                   Movimento
                 </button>
                 <button
                   onClick={() => onEdit(i)}
-                  className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10"
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10"
                   aria-label="Editar"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => onDelete(i.id)}
-                  className="p-1.5 rounded bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
+                  className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
                   aria-label="Excluir"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -775,6 +848,7 @@ function IngredientsTable({
     </div>
   );
 }
+
 
 function MovementsTable({
   movements,
@@ -794,23 +868,36 @@ function MovementsTable({
   }
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[140px,120px,1fr,120px,120px,1fr] px-4 py-2.5 bg-white/5 text-[11px] uppercase tracking-wide text-white/50 font-medium">
+      <div className="hidden md:grid grid-cols-[140px,120px,1fr,120px,120px,1fr] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
         <div>Quando</div>
         <div>Tipo</div>
         <div>Item</div>
-        <div>Qtd</div>
-        <div>Custo</div>
+        <div className="text-right">Qtd</div>
+        <div className="text-right">Custo</div>
         <div>Motivo</div>
       </div>
-      {movements.map((m) => {
+      {movements.map((m, idx) => {
         const info = MOVE_LABELS[m.movement_type];
         const name =
           m.item_type === "product"
             ? productMap.get(m.product_id ?? "") ?? "Produto removido"
             : ingMap.get(m.ingredient_id ?? "")?.name ?? "Insumo removido";
         const unit = m.item_type === "ingredient" ? ingMap.get(m.ingredient_id ?? "")?.unit : undefined;
+        const sign = m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−";
+        const qtyClass =
+          m.movement_type === "entrada"
+            ? "text-emerald-300"
+            : m.movement_type === "perda" || m.movement_type === "saida" || m.movement_type === "venda"
+              ? "text-orange-300"
+              : "text-white";
         return (
-          <div key={m.id} className="border-t border-white/5 text-sm">
+          <div
+            key={m.id}
+            className={cn(
+              "border-t border-white/5 text-sm transition-colors hover:bg-yellow-400/[0.04]",
+              idx % 2 === 1 && "md:bg-white/[0.015]",
+            )}
+          >
             {/* MOBILE CARD */}
             <div className="md:hidden p-3 flex items-start gap-3">
               <div className={cn("shrink-0 w-9 h-9 rounded-lg grid place-items-center border", info.color)}>
@@ -819,19 +906,19 @@ function MovementsTable({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-sm font-semibold truncate">{name}</div>
-                  <div className="text-sm font-bold shrink-0">
-                    {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
-                    {fmtQty(Math.abs(m.qty), unit)}
+                  <div className={cn("text-sm font-bold shrink-0 tabular-nums", qtyClass)}>
+                    {sign}{fmtQty(Math.abs(m.qty), unit)}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-white/50 mt-0.5">
-                  <span>{info.label}</span>
-                  <span className="text-white/20">·</span>
+                <div className="flex items-center gap-2 text-[11px] text-white/50 mt-0.5 flex-wrap">
+                  <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px]", info.color)}>
+                    <info.icon className="w-2.5 h-2.5" /> {info.label}
+                  </span>
                   <span>{fmtDateTime(m.created_at)}</span>
                   {m.unit_cost ? (
                     <>
                       <span className="text-white/20">·</span>
-                      <span>{fmtBRL(m.unit_cost)}</span>
+                      <span className="tabular-nums">{fmtBRL(m.unit_cost)}</span>
                     </>
                   ) : null}
                 </div>
@@ -840,24 +927,24 @@ function MovementsTable({
             </div>
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5">
-              <div className="text-xs text-white/60">{fmtDateTime(m.created_at)}</div>
+            <div className="hidden md:grid md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5 gap-2">
+              <div className="text-xs text-white/60 tabular-nums">{fmtDateTime(m.created_at)}</div>
               <div>
-                <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border", info.color)}>
+                <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border font-medium", info.color)}>
                   <info.icon className="w-3 h-3" /> {info.label}
                 </span>
               </div>
-              <div className="truncate">{name}</div>
-              <div className="text-sm font-semibold">
-                {m.movement_type === "ajuste" ? (m.qty > 0 ? "+" : "") : m.movement_type === "entrada" ? "+" : "−"}
-                {fmtQty(Math.abs(m.qty), unit)}
+              <div className="truncate text-sm">{name}</div>
+              <div className={cn("text-sm font-bold tabular-nums text-right", qtyClass)}>
+                {sign}{fmtQty(Math.abs(m.qty), unit)}
               </div>
-              <div className="text-xs text-white/60">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
+              <div className="text-xs text-white/60 tabular-nums text-right">{m.unit_cost ? fmtBRL(m.unit_cost) : "—"}</div>
               <div className="text-xs text-white/50 truncate">{m.reason || "—"}</div>
             </div>
           </div>
         );
       })}
+
 
     </div>
   );
