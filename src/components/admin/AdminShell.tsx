@@ -193,6 +193,7 @@ function isItemActive(
   pathname: string,
   currentTab: string | undefined,
 ) {
+  if (it.activePaths?.includes(pathname)) return true;
   if (!it.to) return false;
   if (it.to !== pathname) return false;
   if (it.tab) return currentTab === it.tab;
