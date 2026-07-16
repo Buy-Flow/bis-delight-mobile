@@ -876,7 +876,7 @@ function MovementsTable({
         <div className="text-right">Custo</div>
         <div>Motivo</div>
       </div>
-      {movements.map((m) => {
+      {movements.map((m, idx) => {
         const info = MOVE_LABELS[m.movement_type];
         const name =
           m.item_type === "product"
