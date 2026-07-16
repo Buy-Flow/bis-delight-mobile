@@ -233,7 +233,7 @@ export function Hero({
           <ul className="grid grid-cols-3 gap-2 text-left">
             {[
               { Icon: Timer, tint: "text-neon-cyan", ring: "ring-neon-cyan/40", title: "Entrega\u00A0rápida", sub: "em toda região" },
-              { Icon: GlassWater, tint: "text-neon-magenta", ring: "ring-neon-magenta/40", title: "Produtos", sub: "preparados com amor" },
+              { Icon: GlassWater, tint: "text-neon-pink", ring: "ring-neon-pink/40", title: "Produtos", sub: "preparados com amor" },
               { Icon: Heart, tint: "text-neon-yellow", ring: "ring-neon-yellow/40", title: "Feito com amor", sub: "os melhores ingredientes" },
             ].map(({ Icon, tint, ring, title, sub }) => (
               <li key={title} className="flex items-start gap-1.5">
