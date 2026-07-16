@@ -60,7 +60,7 @@ export function Hero({
               left: `${heroImages.left.offsetX}px`,
               bottom: `${-heroImages.left.offsetY}px`,
               transform: `scale(${heroImages.left.scale})`,
-              transformOrigin: "bottom right",
+              transformOrigin: "center center",
               filter: "drop-shadow(0 40px 60px rgba(180, 40, 200, 0.35))",
             }}
           />
@@ -76,7 +76,7 @@ export function Hero({
               right: `${heroImages.right.offsetX}px`,
               bottom: `${-heroImages.right.offsetY}px`,
               transform: `scale(${heroImages.right.scale})`,
-              transformOrigin: "bottom left",
+              transformOrigin: "center center",
               filter: "drop-shadow(0 40px 60px rgba(180, 40, 200, 0.35))",
             }}
           />
