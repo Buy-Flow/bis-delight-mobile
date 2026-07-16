@@ -470,10 +470,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-background"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-[280px] max-w-[85vw] flex-col border-r border-white/10 bg-card shadow-2xl">
+          <aside
+            className="absolute left-0 top-0 flex h-full w-[280px] max-w-[85vw] flex-col border-r border-white/10 bg-card shadow-2xl"
+            style={{ backgroundColor: "var(--card)" }}
+          >
             <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
               <div className="flex items-center gap-2">
                 <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-neon-yellow to-amber-400 text-black">
