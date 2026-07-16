@@ -547,8 +547,8 @@ function ProductsTable({
   const tracked = products.filter((p) => p.stock !== null);
   const untracked = products.filter((p) => p.stock === null);
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[1fr,140px,180px,110px,120px,110px] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
+    <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
+      <div className="hidden md:grid grid-cols-[minmax(0,1fr)_140px_180px_110px_120px_110px] px-4 py-2.5 bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground font-semibold sticky top-0 backdrop-blur">
         <div>Produto</div>
         <div>Categoria</div>
         <div>Estoque</div>
@@ -567,8 +567,8 @@ function ProductsTable({
           <div
             key={p.id}
             className={cn(
-              "border-t border-white/5 transition-colors hover:bg-yellow-400/[0.04]",
-              idx % 2 === 1 && "md:bg-white/[0.015]",
+              "border-t border-border transition-colors hover:bg-muted/30",
+              idx % 2 === 1 && "md:bg-muted/15",
             )}
           >
             {/* MOBILE CARD */}
@@ -621,7 +621,7 @@ function ProductsTable({
 
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[1fr,140px,180px,110px,120px,110px] items-center px-4 py-3 gap-2">
+            <div className="hidden md:grid md:grid-cols-[minmax(0,1fr)_140px_180px_110px_120px_110px] items-center px-4 py-3 gap-2">
               <div className="flex items-center gap-3 min-w-0">
                 {p.image_url ? (
                   <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" loading="lazy" />
@@ -691,8 +691,8 @@ function IngredientsTable({
   onOpenMovement: (i: Ingredient) => void;
 }) {
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[1.5fr,1fr,200px,110px,110px,130px,130px] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
+    <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
+      <div className="hidden md:grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_200px_110px_110px_130px_130px] px-4 py-2.5 bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground font-semibold sticky top-0 backdrop-blur">
         <div>Insumo</div>
         <div>Fornecedor</div>
         <div>Estoque</div>
@@ -712,8 +712,8 @@ function IngredientsTable({
           <div
             key={i.id}
             className={cn(
-              "border-t border-white/5 transition-colors hover:bg-yellow-400/[0.04]",
-              idx % 2 === 1 && "md:bg-white/[0.015]",
+              "border-t border-border transition-colors hover:bg-muted/30",
+              idx % 2 === 1 && "md:bg-muted/15",
               !i.active && "opacity-60",
             )}
           >
@@ -783,7 +783,7 @@ function IngredientsTable({
             </div>
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[1.5fr,1fr,200px,110px,110px,130px,130px] items-center px-4 py-3 gap-2">
+            <div className="hidden md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_200px_110px_110px_130px_130px] items-center px-4 py-3 gap-2">
               <div className="min-w-0">
                 <div className="text-sm font-medium truncate flex items-center gap-1.5">
                   {i.name}
