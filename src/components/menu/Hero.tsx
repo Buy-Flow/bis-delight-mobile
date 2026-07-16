@@ -227,10 +227,10 @@ export function Hero({
 
         {/* Trust strip — fixed right below the "extraordinário" tagline */}
         <div
-          className="relative z-20 mt-5 w-full rounded-2xl border border-white/10 bg-[oklch(0.20_0.06_300_/_0.85)] px-3 py-3 backdrop-blur-sm shadow-[0_10px_30px_-14px_rgba(0,0,0,0.7)]"
+          className="relative z-20 mt-5 -mx-4 sm:-mx-8 rounded-2xl border border-white/10 bg-[oklch(0.20_0.06_300_/_0.85)] px-3 py-3 backdrop-blur-sm shadow-[0_10px_30px_-14px_rgba(0,0,0,0.7)]"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          <ul className="grid grid-cols-3 gap-2 sm:gap-4 text-left">
+          <ul className="grid grid-cols-3 gap-3 sm:gap-5 text-left">
             {[
               { Icon: Timer, tint: "text-neon-cyan", ring: "ring-neon-cyan/40", title: "Entrega rápida", sub: "em toda região" },
               { Icon: GlassWater, tint: "text-neon-pink", ring: "ring-neon-pink/40", title: "Produtos", sub: "preparados com amor" },
@@ -241,17 +241,18 @@ export function Hero({
                   <span className={`inline-grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ${ring}`}>
                     <Icon className={`h-4 w-4 ${tint}`} strokeWidth={2.4} />
                   </span>
-                  <div className="text-[11px] sm:text-[13px] font-extrabold text-white leading-tight break-words">
+                  <div className="text-[11px] sm:text-[13px] font-extrabold text-white leading-tight whitespace-nowrap">
                     {title}
                   </div>
                 </div>
-                <div className="mt-1 text-[10px] sm:text-[11px] text-white/60 leading-tight break-words">
+                <div className="mt-1 text-[10px] sm:text-[11px] text-white/60 leading-tight">
                   {sub}
                 </div>
               </li>
             ))}
           </ul>
         </div>
+
 
 
 
