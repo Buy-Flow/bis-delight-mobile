@@ -567,9 +567,26 @@ function DashboardTab() {
         })),
       });
       setLoading(false);
-    })();
+      setPulse((n) => n + 1);
+    };
+    reloadRef.current = run;
+    void run();
+    const scheduleReload = () => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        if (!cancelled) void run();
+      }, 800);
+    };
+    const channel = supabase
+      .channel("admin-dashboard-orders")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, scheduleReload)
+      .subscribe();
+    const interval = setInterval(scheduleReload, 60_000);
     return () => {
       cancelled = true;
+      if (debounce) clearTimeout(debounce);
+      clearInterval(interval);
+      void supabase.removeChannel(channel);
     };
   }, [categories]);
 
