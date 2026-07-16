@@ -1339,19 +1339,30 @@ function CourierDialog({
 
 
         <div className="mt-4 flex gap-2">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => void save()}
-            disabled={saving}
-            className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 py-2 text-sm font-bold text-white shadow-md hover:brightness-110 disabled:opacity-50"
-          >
-            {saving ? "Salvando..." : "Salvar"}
-          </button>
+          {credentials && !courier ? (
+            <button
+              onClick={() => void onSaved()}
+              className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-2 text-sm font-bold text-white shadow-md hover:brightness-110"
+            >
+              Concluir
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={onClose}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => void save()}
+                disabled={saving}
+                className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 py-2 text-sm font-bold text-white shadow-md hover:brightness-110 disabled:opacity-50"
+              >
+                {saving ? "Salvando..." : "Salvar"}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
