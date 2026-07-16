@@ -857,7 +857,7 @@ function OrderCard({
                   if (!ok) return;
                   const { error } = await supabase
                     .from("orders")
-                    .update({ status: "confirmado", paid_at: new Date().toISOString() })
+                    .update({ status: "pago", paid_at: new Date().toISOString() })
                     .eq("id", o.id);
                   if (error) toast.error("Falha ao confirmar", { description: error.message });
                   else toast.success("Pagamento confirmado");
