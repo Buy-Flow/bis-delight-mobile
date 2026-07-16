@@ -621,25 +621,29 @@ function ProductsTable({
 
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[1fr,120px,140px,120px,120px,120px] items-center px-4 py-3">
-              <div className="flex items-center gap-3">
+            <div className="hidden md:grid md:grid-cols-[1fr,140px,180px,110px,120px,110px] items-center px-4 py-3 gap-2">
+              <div className="flex items-center gap-3 min-w-0">
                 {p.image_url ? (
-                  <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                  <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" loading="lazy" />
                 ) : (
-                  <div className="w-10 h-10 rounded-lg bg-white/10 grid place-items-center">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 grid place-items-center shrink-0">
                     <Package className="w-5 h-5 text-white/40" />
                   </div>
                 )}
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{p.name}</div>
+                  <div className="text-[10px] text-white/40 truncate">{fmtBRL(p.cost_price ?? 0)} · custo</div>
                 </div>
               </div>
               <div className="text-xs text-white/60 truncate">{p.category}</div>
-              <div className="text-sm font-semibold">
-                {p.stock ?? 0}
-                <span className={cn("ml-2 text-[10px] px-1.5 py-0.5 rounded border", s.className)}>{s.label}</span>
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold tabular-nums">{p.stock ?? 0}</span>
+                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded border font-medium", s.className)}>{s.label}</span>
+                </div>
+                <StockBar stock={p.stock ?? 0} threshold={p.low_stock_threshold} tone={s.tone} />
               </div>
-              <div className="text-xs">
+              <div>
                 <input
                   type="number"
                   min={0}
@@ -648,19 +652,20 @@ function ProductsTable({
                     const v = Math.max(0, Number(e.target.value) || 0);
                     if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
                   }}
-                  className="w-16 px-2 py-1 rounded bg-white/5 border border-white/10 text-xs"
+                  className="w-16 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs tabular-nums focus:outline-none focus:border-yellow-400/50"
                 />
               </div>
-              <div className="text-xs text-white/70">{fmtBRL((p.stock ?? 0) * (p.cost_price ?? 0))}</div>
+              <div className="text-xs text-white/70 tabular-nums text-right">{fmtBRL((p.stock ?? 0) * (p.cost_price ?? 0))}</div>
               <div className="flex justify-end gap-1">
                 <button
                   onClick={() => onOpenMovement(p)}
-                  className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
+                  className="px-2.5 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30"
                 >
                   Movimento
                 </button>
               </div>
             </div>
+
           </div>
         );
       })}
