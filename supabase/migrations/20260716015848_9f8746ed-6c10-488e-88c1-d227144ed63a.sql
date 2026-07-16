@@ -1,0 +1,1 @@
+update public.site_settings set hero_images = jsonb_set(jsonb_set(hero_images, '{left,offsetX}', '-150'::jsonb), '{right,offsetX}', '-150'::jsonb) where id is not null;
