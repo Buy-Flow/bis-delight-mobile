@@ -48,18 +48,20 @@ export function Hero({
           }}
         />
 
-        {/* Side illustrations — configurable via admin (Início) */}
+        {/* Side illustrations — anchored to the EXACT CENTER of the container.
+            Offsets are pure deltas from center, so images can never escape the
+            frame unless the user explicitly pushes them past its bounds. */}
         {heroImages?.left?.url && (
           <img
             src={heroImages.left.url}
             alt=""
             decoding="async"
             fetchPriority="high"
-            className="pointer-events-none absolute bottom-0 h-[480px] w-[300px] max-w-none select-none object-contain object-right sm:h-[560px] sm:w-[340px] lg:h-[820px] lg:w-[560px]"
+            className="pointer-events-none absolute z-[1] h-[480px] w-[300px] max-w-none select-none object-contain object-center sm:h-[560px] sm:w-[340px] lg:h-[820px] lg:w-[560px]"
             style={{
-              left: `${heroImages.left.offsetX}px`,
-              bottom: `${-heroImages.left.offsetY}px`,
-              transform: `scale(${heroImages.left.scale})`,
+              top: "50%",
+              left: "50%",
+              transform: `translate(calc(-50% + ${heroImages.left.offsetX}px), calc(-50% + ${heroImages.left.offsetY}px)) scale(${heroImages.left.scale})`,
               transformOrigin: "center center",
               filter: "drop-shadow(0 40px 60px rgba(180, 40, 200, 0.35))",
             }}
@@ -71,16 +73,17 @@ export function Hero({
             alt=""
             decoding="async"
             fetchPriority="high"
-            className="pointer-events-none absolute bottom-0 h-[410px] w-[300px] max-w-none select-none object-contain object-left sm:h-[480px] sm:w-[340px] lg:h-[760px] lg:w-[540px]"
+            className="pointer-events-none absolute z-[1] h-[410px] w-[300px] max-w-none select-none object-contain object-center sm:h-[480px] sm:w-[340px] lg:h-[760px] lg:w-[540px]"
             style={{
-              right: `${heroImages.right.offsetX}px`,
-              bottom: `${-heroImages.right.offsetY}px`,
-              transform: `scale(${heroImages.right.scale})`,
+              top: "50%",
+              left: "50%",
+              transform: `translate(calc(-50% + ${heroImages.right.offsetX}px), calc(-50% + ${heroImages.right.offsetY}px)) scale(${heroImages.right.scale})`,
               transformOrigin: "center center",
               filter: "drop-shadow(0 40px 60px rgba(180, 40, 200, 0.35))",
             }}
           />
         )}
+
       </div>
 
 

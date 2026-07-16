@@ -6969,11 +6969,13 @@ function HeroImagesSection({
     const scale = previewScale || 1;
     const deltaX = (event.clientX - drag.startX) / scale;
     const deltaY = (event.clientY - drag.startY) / scale;
+    // Offsets are now pure deltas from the container center — no inversion.
     updateSide(drag.side, {
-      offsetX: clampHeroOffset(Math.round(drag.startOffsetX + (drag.side === "left" ? deltaX : -deltaX)), -800, 400),
+      offsetX: clampHeroOffset(Math.round(drag.startOffsetX + deltaX), -600, 600),
       offsetY: clampHeroOffset(Math.round(drag.startOffsetY + deltaY), -400, 400),
     });
   };
+
 
   const stopDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
@@ -7209,10 +7211,10 @@ function HeroSideEditor({
       {/* Offset X */}
       <SliderRow
         label="Deslocamento horizontal"
-        hint="Negativo = para fora da tela"
+        hint="Negativo = esquerda • Positivo = direita (0 = centro da tela)"
         value={config.offsetX}
-        min={-400}
-        max={200}
+        min={-500}
+        max={500}
         step={5}
         unit="px"
         onChange={(v) => onChange({ offsetX: v })}
@@ -7220,14 +7222,15 @@ function HeroSideEditor({
       {/* Offset Y */}
       <SliderRow
         label="Deslocamento vertical"
-        hint="Positivo = mais para baixo"
+        hint="Negativo = cima • Positivo = baixo (0 = centro da tela)"
         value={config.offsetY}
-        min={-200}
-        max={200}
+        min={-400}
+        max={400}
         step={5}
         unit="px"
         onChange={(v) => onChange({ offsetY: v })}
       />
+
       {/* Scale */}
       <SliderRow
         label="Tamanho"
