@@ -513,11 +513,27 @@ function KpiCard({
 }
 
 
-function statusFor(stock: number, threshold: number): { label: string; className: string } {
-  if (stock <= 0) return { label: "Sem estoque", className: "bg-red-500/15 text-red-300 border-red-500/40" };
-  if (stock <= threshold) return { label: "Baixo", className: "bg-orange-500/15 text-orange-300 border-orange-500/40" };
-  return { label: "OK", className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40" };
+function statusFor(stock: number, threshold: number): { label: string; className: string; tone: "red" | "orange" | "green" } {
+  if (stock <= 0) return { label: "Sem estoque", className: "bg-red-500/15 text-red-300 border-red-500/40", tone: "red" };
+  if (stock <= threshold) return { label: "Baixo", className: "bg-orange-500/15 text-orange-300 border-orange-500/40", tone: "orange" };
+  return { label: "OK", className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40", tone: "green" };
 }
+
+function StockBar({ stock, threshold, tone }: { stock: number; threshold: number; tone: "red" | "orange" | "green" }) {
+  // Escala: threshold representa ~40% da barra. Assim é fácil ler alertas.
+  const target = Math.max(threshold * 2.5, 1);
+  const pct = Math.max(0, Math.min(100, (stock / target) * 100));
+  const bar = tone === "red" ? "bg-red-400" : tone === "orange" ? "bg-orange-400" : "bg-emerald-400";
+  return (
+    <div className="relative h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
+      <div className={cn("h-full rounded-full transition-all", bar)} style={{ width: `${pct}%` }} />
+      {threshold > 0 && (
+        <div className="absolute top-0 bottom-0 w-px bg-white/30" style={{ left: `${Math.min(100, (threshold / target) * 100)}%` }} />
+      )}
+    </div>
+  );
+}
+
 
 function ProductsTable({
   products,
