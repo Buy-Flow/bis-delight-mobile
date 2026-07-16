@@ -354,7 +354,7 @@ function EstoquePage() {
         {/* TABS + FILTROS */}
         <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-[#0b0518]/85 backdrop-blur supports-[backdrop-filter]:bg-[#0b0518]/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0 space-y-2">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
-            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 w-full md:w-auto">
+            <div className="grid grid-cols-3 gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 w-full md:flex md:w-auto">
               {(
                 [
                   { id: "produtos", label: "Produtos", icon: Package, count: products.filter((p) => p.stock !== null).length },
@@ -366,12 +366,12 @@ function EstoquePage() {
                   key={t.id}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    "flex-1 md:flex-none px-3 py-1.5 rounded-lg text-sm flex items-center justify-center gap-1.5 font-medium transition-colors whitespace-nowrap",
+                    "min-w-0 px-2.5 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-1.5 font-medium transition-colors whitespace-nowrap",
                     tab === t.id ? "bg-yellow-400 text-black shadow-sm shadow-yellow-500/30" : "text-white/70 hover:bg-white/10",
                   )}
                 >
-                  <t.icon className="w-4 h-4" />
-                  {t.label}
+                  <t.icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{t.label}</span>
                   <span className={cn("text-[10px] px-1.5 rounded-full font-bold tabular-nums", tab === t.id ? "bg-black/20" : "bg-white/10")}>
                     {t.count}
                   </span>
