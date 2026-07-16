@@ -6913,7 +6913,23 @@ function HeroImagesSection({
   set: <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
 }) {
   const heroImages = s.heroImages ?? DEFAULT_HERO_IMAGES;
-  const previewScale = 0.75;
+  const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
+  const [previewScale, setPreviewScale] = useState(1);
+  const previewWrapRef = useRef<HTMLDivElement | null>(null);
+  const BASE_W = device === "mobile" ? 390 : 1200;
+  const BASE_H = device === "mobile" ? 660 : 560;
+
+  useEffect(() => {
+    const wrap = previewWrapRef.current;
+    if (!wrap) return;
+    const ro = new ResizeObserver(() => {
+      const w = wrap.clientWidth;
+      setPreviewScale(Math.min(1, w / BASE_W));
+    });
+    ro.observe(wrap);
+    return () => ro.disconnect();
+  }, [BASE_W]);
+
   const dragRef = useRef<{
     side: "left" | "right";
     pointerId: number;
@@ -6934,6 +6950,7 @@ function HeroImagesSection({
 
   const startDrag = (side: "left" | "right", event: React.PointerEvent<HTMLDivElement>) => {
     event.preventDefault();
+    event.stopPropagation();
     const target = event.currentTarget;
     target.setPointerCapture(event.pointerId);
     dragRef.current = {
@@ -6949,11 +6966,12 @@ function HeroImagesSection({
   const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    const deltaX = (event.clientX - drag.startX) / previewScale;
-    const deltaY = (event.clientY - drag.startY) / previewScale;
+    const scale = previewScale || 1;
+    const deltaX = (event.clientX - drag.startX) / scale;
+    const deltaY = (event.clientY - drag.startY) / scale;
     updateSide(drag.side, {
-      offsetX: clampHeroOffset(Math.round(drag.startOffsetX + (drag.side === "left" ? deltaX : -deltaX)), -600, 300),
-      offsetY: clampHeroOffset(Math.round(drag.startOffsetY + deltaY), -300, 300),
+      offsetX: clampHeroOffset(Math.round(drag.startOffsetX + (drag.side === "left" ? deltaX : -deltaX)), -800, 400),
+      offsetY: clampHeroOffset(Math.round(drag.startOffsetY + deltaY), -400, 400),
     });
   };
 
@@ -6964,35 +6982,87 @@ function HeroImagesSection({
     }
   };
 
+  const centerSide = (side: "left" | "right") => updateSide(side, { offsetX: 0, offsetY: 0 });
+
   return (
     <div className="space-y-5">
-      <div>
-        <h3 className="font-display text-lg font-black">Imagens da Tela Inicial</h3>
-        <p className="text-xs text-white/50">
-          Ajuste as imagens dos cantos do hero. Arraste direto na prévia e use os controles finos abaixo.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-black">Imagens da Tela Inicial</h3>
+          <p className="text-xs text-white/50">
+            Arraste direto na prévia ou use os controles finos. A prévia usa o tamanho real da tela.
+          </p>
+        </div>
+        <div className="inline-flex rounded-xl border border-white/10 bg-white/5 p-1 text-[11px] font-bold">
+          <button
+            type="button"
+            onClick={() => setDevice("mobile")}
+            className={cn(
+              "rounded-lg px-3 py-1.5 transition",
+              device === "mobile" ? "bg-neon-cyan text-background" : "text-white/60 hover:text-white",
+            )}
+          >
+            Mobile
+          </button>
+          <button
+            type="button"
+            onClick={() => setDevice("desktop")}
+            className={cn(
+              "rounded-lg px-3 py-1.5 transition",
+              device === "desktop" ? "bg-neon-cyan text-background" : "text-white/60 hover:text-white",
+            )}
+          >
+            Desktop
+          </button>
+        </div>
       </div>
 
-      {/* Live preview — real Hero, sticky while scrolling */}
-      <div className="sticky top-2 z-30">
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-          Preview real da tela inicial
+      <div>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/50">
+          <span>Prévia real ({device})</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => centerSide("left")}
+              className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold text-white/70 normal-case tracking-normal hover:bg-white/10"
+            >
+              Centralizar esquerda
+            </button>
+            <button
+              type="button"
+              onClick={() => centerSide("right")}
+              className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold text-white/70 normal-case tracking-normal hover:bg-white/10"
+            >
+              Centralizar direita
+            </button>
+          </div>
         </div>
         <div
+          ref={previewWrapRef}
           className="relative mx-auto overflow-hidden rounded-3xl border border-white/10 bg-card shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]"
-          style={{ width: 293, height: 495 /* 390 x ~660 scaled by 0.75 */ }}
+          style={{ width: "100%", height: BASE_H * previewScale }}
         >
           <div
-            className="pointer-events-none absolute left-0 top-0"
-            style={{ width: 390, transform: `scale(${previewScale})`, transformOrigin: "top left" }}
+            className="pointer-events-none absolute left-1/2 top-0"
+            style={{
+              width: BASE_W,
+              transform: `translateX(-50%) scale(${previewScale})`,
+              transformOrigin: "top center",
+            }}
           >
             <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
           </div>
-          <div className="absolute inset-0 z-40 grid grid-cols-2">
+          <div
+            className="absolute left-1/2 top-0 z-40 grid -translate-x-1/2 grid-cols-2"
+            style={{ width: BASE_W * previewScale, height: BASE_H * previewScale }}
+          >
             <HeroDragHandle side="left" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} />
             <HeroDragHandle side="right" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} />
           </div>
         </div>
+        <p className="mt-2 text-center text-[10px] text-white/40">
+          Dica: se a imagem sumiu, clique em “Centralizar” do lado correspondente e reajuste.
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -7045,11 +7115,11 @@ function HeroDragHandle({
     >
       <span
         className={cn(
-          "pointer-events-none absolute bottom-3 rounded-full border border-white/15 bg-black/55 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white/80 opacity-0 shadow-lg transition group-hover:opacity-100 group-active:opacity-100",
+          "pointer-events-none absolute bottom-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-background/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white shadow-lg backdrop-blur",
           side === "left" ? "left-3" : "right-3",
         )}
       >
-        Arrastar
+        ⇕⇔ Arrastar {side === "left" ? "esq." : "dir."}
       </span>
     </div>
   );
