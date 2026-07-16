@@ -849,15 +849,14 @@ function OrderCard({
                 onClick={async () => {
                   const ok = await confirmDialog({
                     title: "Confirmar pagamento?",
-                    description: `Marcar o pedido #${(o.id || "").slice(0, 8)} como pago manualmente. Esta ação envia o pedido para preparo.`,
+                    message: `Marcar o pedido #${(o.id || "").slice(0, 8)} como pago manualmente. Esta ação envia o pedido para preparo.`,
                     confirmLabel: "Sim, confirmar",
                     cancelLabel: "Cancelar",
-                    tone: "primary",
                   });
                   if (!ok) return;
                   const { error } = await supabase
                     .from("orders")
-                    .update({ status: "confirmado", payment_status: "paid", paid_at: new Date().toISOString() })
+                    .update({ status: "confirmado", paid_at: new Date().toISOString() })
                     .eq("id", o.id);
                   if (error) toast.error("Falha ao confirmar", { description: error.message });
                   else toast.success("Pagamento confirmado");
