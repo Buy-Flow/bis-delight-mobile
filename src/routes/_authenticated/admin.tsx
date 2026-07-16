@@ -3866,9 +3866,14 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
         {!hideNav && (<>
         {/* Section nav — desktop rail */}
         <aside className="hidden lg:block">
-          <div className="sticky top-4 rounded-3xl border border-white/10 bg-white/[0.03] p-2">
-            <div className="px-3 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">
-              Seções
+          <div className="sticky top-4 space-y-3 rounded-3xl border border-white/10 bg-white/[0.03] p-2">
+            <div className="flex items-center justify-between px-3 pb-1 pt-2">
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                Seções
+              </div>
+              <div className="text-[10px] font-bold tabular-nums text-white/60">
+                {doneCount}/{totalCount}
+              </div>
             </div>
             <nav className="flex flex-col gap-0.5">
               {sections.map((sec) => {
@@ -3894,14 +3899,59 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
                     >
                       <sec.icon className="h-4 w-4" />
                     </span>
-                    <span className="flex-1 truncate">{sec.label}</span>
-                    {active && <span className="h-1.5 w-1.5 rounded-full bg-neon-pink" />}
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate">{sec.label}</span>
+                      <span className="truncate text-[10.5px] font-medium text-white/40">{sec.hint}</span>
+                    </span>
+                    {sec.done ? (
+                      <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-400/30" title="Configurado">
+                        <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                      </span>
+                    ) : (
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-neon-yellow" title="Falta configurar" />
+                    )}
                   </button>
                 );
               })}
             </nav>
+            <Link
+              to="/personalizar-painel"
+              className="mx-1 flex items-center gap-2 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-2 text-[11.5px] font-semibold text-white/55 transition hover:border-white/20 hover:bg-white/[0.05] hover:text-white"
+            >
+              <Palette className="h-3.5 w-3.5 text-neon-cyan" />
+              <span className="flex-1">Aparência do painel</span>
+              <span className="text-[10px] text-white/30">›</span>
+            </Link>
           </div>
         </aside>
+
+        {/* Mobile section chips */}
+        <div className="-mx-1 flex gap-1.5 overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {sections.map((sec) => {
+            const active = section === sec.id;
+            return (
+              <button
+                key={sec.id}
+                onClick={() => setSection(sec.id)}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition",
+                  active
+                    ? "bg-neon-pink text-white glow-pink"
+                    : "border border-white/10 bg-white/[0.03] text-white/70",
+                )}
+              >
+                <sec.icon className="h-3.5 w-3.5" />
+                {sec.label}
+                {sec.done ? (
+                  <Check className="h-3 w-3 text-emerald-300" strokeWidth={3} />
+                ) : (
+                  <span className="h-1.5 w-1.5 rounded-full bg-neon-yellow" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        </>)}
 
         {/* Mobile section chips */}
         <div className="-mx-1 flex gap-1.5 overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
