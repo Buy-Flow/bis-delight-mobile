@@ -97,6 +97,8 @@ type Order = {
   delivered_at: string | null;
   delivery_lat: number | null;
   delivery_lng: number | null;
+  distance_km: number | null;
+  courier_id: string | null;
   order_items: OrderItem[];
 };
 
