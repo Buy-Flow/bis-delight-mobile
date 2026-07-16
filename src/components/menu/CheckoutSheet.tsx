@@ -1241,7 +1241,7 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                           Digite o CEP ou toque em GPS — completamos rua, bairro e cidade automaticamente.
                         </div>
                       </div>
-                      <div className="grid grid-cols-[1fr_110px] gap-2">
+                      <div className="grid grid-cols-[minmax(0,1fr)_130px] gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
 
                         <IconField
                           icon={MapPin}
@@ -1254,16 +1254,17 @@ export function CheckoutSheet({ pageMode = false }: { pageMode?: boolean } = {})
                         />
                         <IconField
                           icon={MapPin}
-                          label="Número"
+                          label="Nº"
                           value={addrNumber}
                           onChange={(v) => updatePart({ number: v })}
-                          placeholder="Nº"
+                          placeholder="Número"
                           inputMode="numeric"
                           autoComplete="off"
                           name="street-number"
 
                         />
                       </div>
+
                       <div className="grid grid-cols-2 gap-2">
                         <IconField
                           icon={MapPin}
