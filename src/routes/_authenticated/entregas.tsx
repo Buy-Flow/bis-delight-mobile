@@ -1115,16 +1115,43 @@ function CourierDialog({
       note: form.note.trim() || null,
       avatar_url: form.avatar_url.trim() || null,
     };
-    const q = courier
-      ? supabase.from("couriers").update(payload).eq("id", courier.id)
-      : supabase.from("couriers").insert(payload);
-    const { error } = await q;
-    setSaving(false);
-    if (error) {
-      toast.error("Falha ao salvar: " + error.message);
+    if (courier) {
+      const { error } = await supabase.from("couriers").update(payload).eq("id", courier.id);
+      setSaving(false);
+      if (error) {
+        toast.error("Falha ao salvar: " + error.message);
+        return;
+      }
+      toast.success("Motoboy atualizado");
+      await onSaved();
       return;
     }
-    toast.success(courier ? "Motoboy atualizado" : "Motoboy cadastrado");
+
+    // Novo motoboy: cria registro + já provisiona login/senha e papel `delivery`
+    // para que ele apareça automaticamente em Usuários & Permissões.
+    const { data: inserted, error: insErr } = await supabase
+      .from("couriers")
+      .insert(payload)
+      .select("id")
+      .single();
+    if (insErr || !inserted?.id) {
+      setSaving(false);
+      toast.error("Falha ao salvar: " + (insErr?.message ?? "desconhecido"));
+      return;
+    }
+    try {
+      const { createCourierLogin } = await import("@/lib/courier.functions");
+      const res = await createCourierLogin({ data: { courierId: inserted.id } });
+      setCredentials({ email: res.email, password: res.password });
+      toast.success("Motoboy cadastrado com acesso ao portal — anote os dados abaixo.");
+    } catch (e) {
+      toast.warning(
+        "Motoboy cadastrado, mas não consegui criar o acesso automático: " +
+          (e as Error).message +
+          ". Reabra e clique em 'Criar acesso agora'.",
+      );
+    }
+    setSaving(false);
     await onSaved();
   };
 
