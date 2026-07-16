@@ -871,6 +871,7 @@ function RushPage() {
                 onCancel={() => setStatus(o, "cancelado")}
                 onConfirmPayment={() => setStatus(o, "pago")}
                 onRestore={() => setStatus(o, "pendente")}
+                onRevert={() => revert(o)}
               />
             ))
           )}
