@@ -861,14 +861,14 @@ function MovementsTable({
 }) {
   if (movements.length === 0) {
     return (
-      <div className="rounded-2xl bg-white/5 border border-white/10 p-8 text-center text-sm text-white/50">
+      <div className="rounded-xl bg-card border border-border p-8 text-center text-sm text-muted-foreground">
         Sem movimentações registradas ainda.
       </div>
     );
   }
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[140px,120px,1fr,120px,120px,1fr] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
+    <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
+      <div className="hidden md:grid grid-cols-[140px_120px_minmax(0,1fr)_120px_120px_minmax(0,1fr)] px-4 py-2.5 bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground font-semibold sticky top-0 backdrop-blur">
         <div>Quando</div>
         <div>Tipo</div>
         <div>Item</div>
@@ -894,8 +894,8 @@ function MovementsTable({
           <div
             key={m.id}
             className={cn(
-              "border-t border-white/5 text-sm transition-colors hover:bg-yellow-400/[0.04]",
-              idx % 2 === 1 && "md:bg-white/[0.015]",
+              "border-t border-border text-sm transition-colors hover:bg-muted/30",
+              idx % 2 === 1 && "md:bg-muted/15",
             )}
           >
             {/* MOBILE CARD */}
@@ -927,7 +927,7 @@ function MovementsTable({
             </div>
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[140px,120px,1fr,120px,120px,1fr] items-center px-4 py-2.5 gap-2">
+            <div className="hidden md:grid md:grid-cols-[140px_120px_minmax(0,1fr)_120px_120px_minmax(0,1fr)] items-center px-4 py-2.5 gap-2">
               <div className="text-xs text-white/60 tabular-nums">{fmtDateTime(m.created_at)}</div>
               <div>
                 <span className={cn("inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border font-medium", info.color)}>
