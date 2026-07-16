@@ -118,7 +118,7 @@ const groups: NavGroup[] = [
     items: [
       { to: "/admin", tab: "products", label: "Produtos", icon: Package },
       { to: "/admin", tab: "categories", label: "Organizar cardápio", icon: Tag, activePaths: ["/selos"] },
-      { to: "/admin", tab: "promos", label: "Promos & Combos", icon: Ticket },
+      
       { to: "/admin", tab: "coupons", label: "Cupons", icon: Ticket },
       { to: "/estoque", label: "Estoque", icon: Archive },
       { to: "/ficha-tecnica", label: "Ficha técnica", icon: ClipboardCheck },
