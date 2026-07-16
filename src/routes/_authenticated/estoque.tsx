@@ -326,13 +326,21 @@ function EstoquePage() {
           </div>
         </div>
 
-        {/* KPIs — mobile: 2 destacados + scroll horizontal para o resto */}
-        <div className="md:hidden grid grid-cols-1 gap-2.5">
-          <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
-          <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
+        {/* KPIs */}
+        <div className="md:hidden grid grid-cols-2 gap-2.5">
+          <div className="col-span-2">
+            <KpiCard
+              title="Precisam de atenção"
+              value={kpi.alerts.toString()}
+              subtitle={kpi.alerts > 0 ? `${kpi.out} sem estoque · ${kpi.low} baixo` : "Tudo em ordem"}
+              icon={AlertTriangle}
+              color="from-orange-500/25 to-red-600/10"
+              highlight={kpi.alerts > 0}
+              large
+            />
+          </div>
           <KpiCard title="Itens" value={kpi.totalItems.toString()} icon={Boxes} color="from-blue-500/20 to-blue-600/5" />
-          <KpiCard title="Valor em estoque" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" />
-          <KpiCard title="Movimentos" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
+          <KpiCard title="Valor" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" />
         </div>
 
         <div className="hidden md:grid md:grid-cols-5 gap-3">
@@ -340,13 +348,13 @@ function EstoquePage() {
           <KpiCard title="Sem estoque" value={kpi.out.toString()} icon={Ban} color="from-red-500/20 to-red-600/5" highlight={kpi.out > 0} />
           <KpiCard title="Estoque baixo" value={kpi.low.toString()} icon={AlertTriangle} color="from-orange-500/20 to-orange-600/5" highlight={kpi.low > 0} />
           <KpiCard title="Valor em estoque" value={fmtBRL(kpi.value)} icon={DollarSign} color="from-emerald-500/20 to-emerald-600/5" />
-          <KpiCard title="Movimentos (30d)" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
+          <KpiCard title="Movimentos" value={movements.length.toString()} icon={History} color="from-purple-500/20 to-purple-600/5" />
         </div>
 
-        {/* TABS — sticky no mobile, roláveis */}
-        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-[#0b0518]/85 backdrop-blur supports-[backdrop-filter]:bg-[#0b0518]/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0">
+        {/* TABS + FILTROS */}
+        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-[#0b0518]/85 backdrop-blur supports-[backdrop-filter]:bg-[#0b0518]/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0 space-y-2">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
-            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0">
+            <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 w-full md:w-auto">
               {(
                 [
                   { id: "produtos", label: "Produtos", icon: Package, count: products.filter((p) => p.stock !== null).length },
@@ -358,28 +366,27 @@ function EstoquePage() {
                   key={t.id}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 font-medium transition-colors whitespace-nowrap",
-                    tab === t.id ? "bg-yellow-400 text-black" : "text-white/70 hover:bg-white/10",
+                    "flex-1 md:flex-none px-3 py-1.5 rounded-lg text-sm flex items-center justify-center gap-1.5 font-medium transition-colors whitespace-nowrap",
+                    tab === t.id ? "bg-yellow-400 text-black shadow-sm shadow-yellow-500/30" : "text-white/70 hover:bg-white/10",
                   )}
                 >
                   <t.icon className="w-4 h-4" />
                   {t.label}
-                  <span className={cn("text-[10px] px-1.5 rounded-full", tab === t.id ? "bg-black/20" : "bg-white/10")}>
+                  <span className={cn("text-[10px] px-1.5 rounded-full font-bold tabular-nums", tab === t.id ? "bg-black/20" : "bg-white/10")}>
                     {t.count}
                   </span>
                 </button>
               ))}
             </div>
           </div>
-          {/* FILTROS */}
-          <div className="mt-2 flex gap-2 items-center">
+          <div className="flex gap-2 items-center">
             <div className="relative flex-1 min-w-0">
               <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Buscar..."
-                className="w-full pl-8 pr-8 py-2 rounded-lg bg-white/5 border border-white/10 text-sm md:w-52 focus:outline-none focus:border-yellow-400/50"
+                placeholder={tab === "movimentos" ? "Buscar por item ou motivo…" : "Buscar por nome, categoria…"}
+                className="w-full pl-8 pr-8 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-yellow-400/50"
               />
               {q && (
                 <button
@@ -391,19 +398,33 @@ function EstoquePage() {
                 </button>
               )}
             </div>
-            {tab !== "movimentos" && (
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value as typeof filter)}
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-yellow-400/50 shrink-0"
-              >
-                <option value="all">Todos</option>
-                <option value="out">Sem estoque</option>
-                <option value="low">Baixo</option>
-                <option value="ok">Regular</option>
-              </select>
-            )}
           </div>
+          {tab !== "movimentos" && (
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1">
+              {(
+                [
+                  { id: "all", label: "Todos", dot: "" },
+                  { id: "out", label: "Sem estoque", dot: "bg-red-400" },
+                  { id: "low", label: "Baixo", dot: "bg-orange-400" },
+                  { id: "ok", label: "Regular", dot: "bg-emerald-400" },
+                ] as const
+              ).map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilter(f.id as typeof filter)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-colors flex items-center gap-1.5",
+                    filter === f.id
+                      ? "bg-white/10 border-white/25 text-white"
+                      : "bg-transparent border-white/10 text-white/60 hover:bg-white/5",
+                  )}
+                >
+                  {f.dot && <span className={cn("w-1.5 h-1.5 rounded-full", f.dot)} />}
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* CONTENT */}
