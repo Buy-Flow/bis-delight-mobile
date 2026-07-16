@@ -844,13 +844,28 @@ function OrderCard({
               <ChevronDown className="h-3.5 w-3.5 rotate-[-90deg]" /> Abrir na Cozinha
             </Link>
             {o.status === "pendente" && (
-              <Link
-                to="/pagamento/$orderId"
-                params={{ orderId: o.id }}
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-500/15 px-3 py-2 text-xs font-bold text-amber-100 hover:bg-amber-500/25"
+              <button
+                type="button"
+                onClick={async () => {
+                  const ok = await confirmDialog({
+                    title: "Confirmar pagamento?",
+                    description: `Marcar o pedido #${(o.id || "").slice(0, 8)} como pago manualmente. Esta ação envia o pedido para preparo.`,
+                    confirmLabel: "Sim, confirmar",
+                    cancelLabel: "Cancelar",
+                    tone: "primary",
+                  });
+                  if (!ok) return;
+                  const { error } = await supabase
+                    .from("orders")
+                    .update({ status: "confirmado", payment_status: "paid", paid_at: new Date().toISOString() })
+                    .eq("id", o.id);
+                  if (error) toast.error("Falha ao confirmar", { description: error.message });
+                  else toast.success("Pagamento confirmado");
+                }}
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-3 py-2 text-xs font-bold text-emerald-100 hover:bg-emerald-500/25"
               >
-                <Timer className="h-3.5 w-3.5" /> Ver página de pagamento
-              </Link>
+                <Timer className="h-3.5 w-3.5" /> Confirmar pagamento
+              </button>
             )}
           </div>
         </div>
