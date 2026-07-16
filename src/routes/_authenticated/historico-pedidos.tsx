@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { brl } from "@/lib/cart-context";
 import { cn } from "@/lib/utils";
+import { confirmDialog } from "@/lib/confirm";
 
 export const Route = createFileRoute("/_authenticated/historico-pedidos")({
   head: () => ({
