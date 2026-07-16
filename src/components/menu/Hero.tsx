@@ -230,28 +230,29 @@ export function Hero({
           className="relative z-20 mt-5 -mx-4 sm:-mx-8 rounded-2xl border border-white/10 bg-[oklch(0.20_0.06_300_/_0.85)] px-3 py-3 backdrop-blur-sm shadow-[0_10px_30px_-14px_rgba(0,0,0,0.7)]"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          <ul className="grid grid-cols-3 gap-3 sm:gap-5 text-left">
+          <ul className="grid grid-cols-3 gap-2 sm:gap-4 text-left">
             {[
               { Icon: Timer, tint: "text-neon-cyan", ring: "ring-neon-cyan/40", title: "Entrega rápida", sub: "em toda região" },
               { Icon: GlassWater, tint: "text-neon-pink", ring: "ring-neon-pink/40", title: "Produtos", sub: "preparados com amor" },
               { Icon: Heart, tint: "text-neon-yellow", ring: "ring-neon-yellow/40", title: "Feito com amor", sub: "os melhores ingredientes" },
             ].map(({ Icon, tint, ring, title, sub }) => (
-              <li key={title} className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ${ring}`}>
-                    <Icon className={`h-4 w-4 ${tint}`} strokeWidth={2.4} />
-                  </span>
-                  <div className="text-[11px] sm:text-[13px] font-extrabold text-white leading-tight whitespace-nowrap">
+              <li key={title} className="flex items-center gap-2 min-w-0">
+                <span className={`inline-grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ${ring}`}>
+                  <Icon className={`h-4 w-4 ${tint}`} strokeWidth={2.4} />
+                </span>
+                <div className="min-w-0 leading-tight">
+                  <div className="text-[11px] sm:text-[13px] font-extrabold text-white break-words">
                     {title}
                   </div>
-                </div>
-                <div className="mt-1 text-[10px] sm:text-[11px] text-white/60 leading-tight">
-                  {sub}
+                  <div className="mt-0.5 text-[10px] sm:text-[11px] text-white/60 break-words">
+                    {sub}
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
         </div>
+
 
 
 
