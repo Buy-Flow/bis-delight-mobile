@@ -523,6 +523,12 @@ function RushPage() {
     if (o.status === "saiu_para_entrega") return setStatus(o, "entregue");
   };
 
+  const revert = (o: Order) => {
+    if (o.status === "saiu_para_entrega") return setStatus(o, "preparando");
+    if (o.status === "preparando") return setStatus(o, "pago");
+    if (o.status === "pago") return setStatus(o, "pendente");
+  };
+
   const toggleStore = async () => {
     if (!settings) return;
     const next = settings.openOverride === "closed" ? "auto" : "closed";
