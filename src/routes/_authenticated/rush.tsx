@@ -490,6 +490,26 @@ function RushPage() {
     if (navigator.vibrate) navigator.vibrate(20);
     toast.success("Pedido atualizado.");
     void notifyOrderStatus(order, status);
+    // Kitchen → delivery: broadcast a delivery_offer to all online couriers
+    // when the order goes into route without an assigned courier.
+    if (
+      status === "saiu_para_entrega" &&
+      order.mode === "entrega" &&
+      !order.courier_id
+    ) {
+      const { error: offerErr } = await supabase.from("delivery_offers").insert({
+        order_id: order.id,
+        broadcast: true,
+        status: "pending",
+        fee: order.delivery_fee ?? null,
+        distance_km: (order as any).distance_km ?? null,
+      });
+      if (offerErr) {
+        toast.warning("Pedido em rota, mas não consegui avisar os motoboys: " + offerErr.message);
+      } else {
+        toast.success("Motoboys notificados — aguardando aceitar.");
+      }
+    }
   };
 
   const advance = (o: Order) => {
