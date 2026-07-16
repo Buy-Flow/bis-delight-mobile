@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { ProductReviews } from "@/components/reviews/ProductReviews";
 import { useBackDismiss } from "@/lib/use-back-dismiss";
-import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown, Share2 } from "lucide-react";
+import { Minus, Plus, X, Check, Sparkles, ChevronsUpDown, Share2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { FavoriteButton } from "@/components/menu/FavoriteButton";
 import type { ExtraOption, OptionGroup, OptionItem, Product } from "@/data/menu";
@@ -1088,9 +1088,11 @@ export function ProductModal({
                 {isWizard && clampedStep > 0 && !isLast && (
                   <button
                     onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-                    className="h-12 rounded-2xl border border-white/15 bg-white/5 px-4 font-display text-sm font-bold uppercase tracking-wider text-white/80 active:scale-95"
+                    aria-label="Voltar"
+                    title="Voltar"
+                    className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/5 text-white/80 active:scale-95"
                   >
-                    Voltar
+                    <ArrowLeft className="h-5 w-5" />
                   </button>
                 )}
                 {isLast && (
