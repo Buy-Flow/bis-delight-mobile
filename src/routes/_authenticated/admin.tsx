@@ -343,9 +343,12 @@ function DashboardTab() {
   const [lowStockCount, setLowStockCount] = useState<number | null>(null);
   const [pendingReviewsCount, setPendingReviewsCount] = useState<number | null>(null);
 
+  const reloadRef = useRef<() => void>(() => {});
+  const [pulse, setPulse] = useState(0);
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
+    let debounce: ReturnType<typeof setTimeout> | null = null;
+    const run = async () => {
       const now = new Date();
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const startOfYesterday = new Date(startOfDay.getTime() - 24 * 60 * 60 * 1000);
