@@ -1072,14 +1072,15 @@ function RushOrderCard({
 
   const laneAccent =
     order.status === "preparando"
-      ? "from-neon-cyan/30 to-neon-cyan/5 border-neon-cyan/40"
+      ? "border-neon-cyan/25 before:bg-neon-cyan"
       : order.status === "saiu_para_entrega"
-      ? "from-neon-pink/30 to-neon-pink/5 border-neon-pink/40"
+      ? "border-neon-pink/25 before:bg-neon-pink"
       : order.status === "entregue"
-      ? "from-emerald-400/20 to-emerald-400/5 border-emerald-400/30"
+      ? "border-emerald-400/25 before:bg-emerald-400"
       : order.status === "cancelado"
-      ? "from-red-500/20 to-red-500/5 border-red-500/30"
-      : "from-neon-yellow/30 to-neon-yellow/5 border-neon-yellow/40";
+      ? "border-red-500/25 before:bg-red-500"
+      : "border-neon-yellow/25 before:bg-neon-yellow";
+
 
   const itemsCount = order.order_items.reduce((s, i) => s + (i.quantity || 1), 0);
   const wa = digitsOnly(order.phone);
