@@ -3953,29 +3953,6 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
         </div>
         </>)}
 
-        {/* Mobile section chips */}
-        <div className="-mx-1 flex gap-1.5 overflow-x-auto pb-1 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {sections.map((sec) => {
-            const active = section === sec.id;
-            return (
-              <button
-                key={sec.id}
-                onClick={() => setSection(sec.id)}
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold transition",
-                  active
-                    ? "bg-neon-pink text-white glow-pink"
-                    : "border border-white/10 bg-white/[0.03] text-white/70",
-                )}
-              >
-                <sec.icon className="h-3.5 w-3.5" />
-                {sec.label}
-              </button>
-            );
-          })}
-        </div>
-        </>)}
-
 
 
         {/* Content panel */}
