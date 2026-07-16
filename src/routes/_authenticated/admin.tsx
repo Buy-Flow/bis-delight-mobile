@@ -3614,7 +3614,7 @@ type SettingsSection =
   | "contact"
   | "hours"
   | "delivery"
-  | "payment"
+  
   | "social"
   | "announcement"
   | "popup"
@@ -3983,13 +3983,6 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
       done: s.acceptsDelivery || s.acceptsPickup,
     },
     {
-      id: "payment",
-      label: "Pagamento",
-      icon: CreditCard,
-      hint: "PIX e métodos aceitos",
-      done: Boolean(s.pixKey?.trim()) || (s.paymentMethods?.length ?? 0) > 0,
-    },
-    {
       id: "social",
       label: "Redes sociais",
       icon: Globe,
@@ -4123,7 +4116,7 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
             {section === "contact" && <ContactSection s={s} set={set} />}
             {section === "hours" && <HoursSection s={s} set={set} />}
             {section === "delivery" && <DeliverySection s={s} set={set} />}
-            {section === "payment" && <PaymentSection s={s} set={set} />}
+            
             {section === "social" && <SocialSection s={s} set={set} />}
             {section === "announcement" && <AnnouncementSection s={s} set={set} />}
             {section === "popup" && <PopupsSection />}
