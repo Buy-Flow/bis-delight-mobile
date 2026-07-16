@@ -312,16 +312,16 @@ function AvaliarPage() {
 
   if (loading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#0e0a1a] text-white">
+      <div className="grid min-h-screen place-items-center bg-background text-white">
         <Loader2 className="h-6 w-6 animate-spin text-neon-pink" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0a1a] pb-32 text-white">
+    <div className="min-h-screen bg-background pb-32 text-white">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/5 bg-[#0e0a1a]/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <Link
             to="/conta"

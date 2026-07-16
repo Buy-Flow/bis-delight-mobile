@@ -253,7 +253,7 @@ function DeliveriesPage() {
   return (
     <div className="min-h-screen bg-transparent pb-16">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0d0322]/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 text-white shadow-lg">
@@ -570,7 +570,7 @@ function OrderCard({
   return (
     <div
       className={cn(
-        "rounded-xl border bg-[#170428] p-2.5 text-white shadow-sm",
+        "rounded-xl border bg-card p-2.5 text-white shadow-sm",
         needsCourier ? "border-amber-400/40" : "border-white/10",
       )}
     >
@@ -625,7 +625,7 @@ function OrderCard({
           value={o.courier_id ?? ""}
           onChange={(e) => onAssign(o.id, e.target.value || null)}
           className={cn(
-            "w-full rounded-lg border bg-[#0d0322] px-2 py-1.5 text-[11px] text-white focus:outline-none",
+            "w-full rounded-lg border bg-background px-2 py-1.5 text-[11px] text-white focus:outline-none",
             needsCourier
               ? "border-amber-400/50 ring-1 ring-amber-400/30"
               : "border-white/10",
@@ -818,7 +818,7 @@ function MapView({
       </div>
       <div
         ref={mapEl}
-        className="relative isolate h-[520px] w-full overflow-hidden rounded-xl border border-white/10 [&_.leaflet-bottom]:!z-[1] [&_.leaflet-container]:bg-[#0d0322] [&_.leaflet-control]:!z-[2] [&_.leaflet-pane]:!z-[1] [&_.leaflet-top]:!z-[2]"
+        className="relative isolate h-[520px] w-full overflow-hidden rounded-xl border border-white/10 [&_.leaflet-bottom]:!z-[1] [&_.leaflet-container]:bg-background [&_.leaflet-control]:!z-[2] [&_.leaflet-pane]:!z-[1] [&_.leaflet-top]:!z-[2]"
       />
       {(storeLat == null || storeLng == null) && (
         <p className="mt-2 text-[11px] text-amber-300">
@@ -1161,7 +1161,7 @@ function CourierDialog({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#170428] p-5 text-white shadow-2xl">
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-card p-5 text-white shadow-2xl">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-base font-black">
             {courier ? "Editar motoboy" : "Novo motoboy"}

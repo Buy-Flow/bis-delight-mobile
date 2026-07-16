@@ -4773,7 +4773,7 @@ const SOCIAL_NETWORKS = [
     placeholder: "@seuinsta ou URL completa",
     accent: "from-[#f09433] via-[#e6683c] to-[#bc1888]",
     ring: "ring-[#e6683c]/40",
-    text: "text-[#f5a97b]",
+    text: "text-neon-yellow",
     baseUrl: "https://instagram.com/",
     resolve: (v: string) =>
       v.startsWith("http") ? v : `https://instagram.com/${v.replace(/^@/, "")}`,
@@ -4785,7 +4785,7 @@ const SOCIAL_NETWORKS = [
     placeholder: "URL da página",
     accent: "from-[#1877f2] to-[#0a58ca]",
     ring: "ring-[#1877f2]/40",
-    text: "text-[#7cb0ff]",
+    text: "text-neon-cyan",
     baseUrl: "https://facebook.com/",
     resolve: (v: string) =>
       v.startsWith("http") ? v : `https://facebook.com/${v.replace(/^@/, "")}`,
@@ -4795,9 +4795,9 @@ const SOCIAL_NETWORKS = [
     label: "TikTok",
     icon: Music2,
     placeholder: "@seutiktok ou URL",
-    accent: "from-[#25f4ee] via-[#0d0d0d] to-[#fe2c55]",
+    accent: "from-[#25f4ee] via-background to-[#fe2c55]",
     ring: "ring-[#fe2c55]/40",
-    text: "text-[#ff7a95]",
+    text: "text-neon-pink",
     baseUrl: "https://tiktok.com/@",
     resolve: (v: string) =>
       v.startsWith("http")
@@ -6979,7 +6979,7 @@ function HeroImagesSection({
           Preview real da tela inicial
         </div>
         <div
-          className="relative mx-auto overflow-hidden rounded-3xl border border-white/10 bg-[#1a0538] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]"
+          className="relative mx-auto overflow-hidden rounded-3xl border border-white/10 bg-card shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]"
           style={{ width: 293, height: 495 /* 390 x ~660 scaled by 0.75 */ }}
         >
           <div

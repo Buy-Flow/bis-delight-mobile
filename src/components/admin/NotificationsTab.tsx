@@ -825,7 +825,7 @@ function ComposeSection({ totalSubs, onSent }: { totalSubs: number | null; onSen
               Prévia
             </p>
             <div className="flex gap-3 rounded-2xl bg-white/95 p-3 text-black shadow-2xl">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#2a1240] to-[#4a1a5a]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-muted to-muted">
                 <BellRing className="h-5 w-5 text-neon-yellow" />
               </div>
               <div className="min-w-0 flex-1">

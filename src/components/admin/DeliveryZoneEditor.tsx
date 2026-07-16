@@ -326,7 +326,7 @@ export function DeliveryZoneEditor({
 
         <div
           ref={mapEl}
-          className="h-[320px] w-full overflow-hidden rounded-xl border border-white/10 [&_.leaflet-container]:bg-[#0d0322]"
+          className="h-[320px] w-full overflow-hidden rounded-xl border border-white/10 [&_.leaflet-container]:bg-background"
           style={{ background: "#0d0322" }}
         />
 

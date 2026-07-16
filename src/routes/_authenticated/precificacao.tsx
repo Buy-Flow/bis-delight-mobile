@@ -389,7 +389,7 @@ function PrecificacaoPage() {
   /* ---------------- Render ---------------- */
 
   return (
-    <div className="min-h-full bg-[#0e0a1a] pb-24 text-white">
+    <div className="min-h-full bg-background pb-24 text-white">
       <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
         {/* Header */}
         <header className="mb-5 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
@@ -1197,7 +1197,7 @@ function DetailDialog({
   const target = n(product.target_margin_pct, 60);
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg border-white/10 bg-[#120a24] text-white">
+      <DialogContent className="max-w-lg border-white/10 bg-card text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Calculator className="h-4 w-4 text-neon-pink" />

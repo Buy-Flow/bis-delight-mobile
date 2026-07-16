@@ -555,7 +555,7 @@ function OptimizeResultPanel({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div ref={mapRef} className="h-[380px] rounded-xl overflow-hidden border border-white/10 [&_.leaflet-container]:bg-[#0d0322]" />
+        <div ref={mapRef} className="h-[380px] rounded-xl overflow-hidden border border-white/10 [&_.leaflet-container]:bg-background" />
 
         <div className="space-y-2">
           {result.stops.map((s, i) => (

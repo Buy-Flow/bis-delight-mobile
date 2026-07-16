@@ -352,7 +352,7 @@ function EstoquePage() {
         </div>
 
         {/* TABS + FILTROS */}
-        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-[#0b0518]/85 backdrop-blur supports-[backdrop-filter]:bg-[#0b0518]/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0 space-y-2">
+        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 md:mx-0 md:px-0 md:py-0 md:static bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:bg-transparent md:backdrop-blur-0 border-b border-white/5 md:border-0 space-y-2">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
             <div className="grid grid-cols-3 gap-1 bg-white/5 border border-white/10 rounded-xl p-1 shrink-0 w-full md:flex md:w-auto">
               {(
@@ -1003,7 +1003,7 @@ function IngredientDialog({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg rounded-2xl bg-[#150829] border border-white/10 p-5 shadow-2xl"
+        className="w-full max-w-lg rounded-2xl bg-card border border-white/10 p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -1176,7 +1176,7 @@ function MovementDialog({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-2xl bg-[#150829] border border-white/10 p-5 shadow-2xl"
+        className="w-full max-w-md rounded-2xl bg-card border border-white/10 p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">

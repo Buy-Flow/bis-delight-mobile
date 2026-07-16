@@ -212,16 +212,16 @@ function CopilotoPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0b0518] via-[#120826] to-[#0b0518] text-white">
+    <div className="min-h-screen bg-gradient-to-b from-background via-card to-background text-white">
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 flex items-center gap-2 border-b border-white/10 bg-[#0b0518]/85 px-3 py-2 backdrop-blur md:hidden">
+      <div className="sticky top-0 z-30 flex items-center gap-2 border-b border-white/10 bg-background/85 px-3 py-2 backdrop-blur md:hidden">
         <Sheet open={threadsOpen} onOpenChange={setThreadsOpen}>
           <SheetTrigger asChild>
             <button className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white/90">
               <MessageSquare className="h-3.5 w-3.5" /> Conversas
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[85vw] max-w-sm border-purple-500/20 bg-[#0b0518] text-white sm:max-w-sm">
+          <SheetContent side="left" className="w-[85vw] max-w-sm border-purple-500/20 bg-background text-white sm:max-w-sm">
             <SheetHeader>
               <SheetTitle className="text-white">Conversas</SheetTitle>
             </SheetHeader>
@@ -247,7 +247,7 @@ function CopilotoPage() {
               )}
             </button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[85vw] max-w-sm border-purple-500/20 bg-[#0b0518] text-white sm:max-w-sm">
+          <SheetContent side="right" className="w-[85vw] max-w-sm border-purple-500/20 bg-background text-white sm:max-w-sm">
             <SheetHeader>
               <SheetTitle className="text-white">Ações executadas</SheetTitle>
             </SheetHeader>
@@ -292,7 +292,7 @@ function CopilotoPage() {
 
       {/* Delete dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <DialogContent className="border-purple-500/30 bg-[#120826] text-white">
+        <DialogContent className="border-purple-500/30 bg-card text-white">
           <DialogHeader>
             <DialogTitle className="text-white">Apagar conversa</DialogTitle>
             <DialogDescription className="text-white/60">
