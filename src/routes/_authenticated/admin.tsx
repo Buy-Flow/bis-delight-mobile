@@ -343,9 +343,12 @@ function DashboardTab() {
   const [lowStockCount, setLowStockCount] = useState<number | null>(null);
   const [pendingReviewsCount, setPendingReviewsCount] = useState<number | null>(null);
 
+  const reloadRef = useRef<() => void>(() => {});
+  const [pulse, setPulse] = useState(0);
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
+    let debounce: ReturnType<typeof setTimeout> | null = null;
+    const run = async () => {
       const now = new Date();
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const startOfYesterday = new Date(startOfDay.getTime() - 24 * 60 * 60 * 1000);
@@ -564,9 +567,26 @@ function DashboardTab() {
         })),
       });
       setLoading(false);
-    })();
+      setPulse((n) => n + 1);
+    };
+    reloadRef.current = run;
+    void run();
+    const scheduleReload = () => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        if (!cancelled) void run();
+      }, 800);
+    };
+    const channel = supabase
+      .channel("admin-dashboard-orders")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, scheduleReload)
+      .subscribe();
+    const interval = setInterval(scheduleReload, 60_000);
     return () => {
       cancelled = true;
+      if (debounce) clearTimeout(debounce);
+      clearInterval(interval);
+      void supabase.removeChannel(channel);
     };
   }, [categories]);
 
@@ -601,6 +621,17 @@ function DashboardTab() {
               style={barlow}
             >
               Painel em <span className="text-neon-pink">tempo real</span>
+              <span
+                key={pulse}
+                className="ml-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-widest text-emerald-300"
+                title={`Atualizado ${new Date().toLocaleTimeString("pt-BR")}`}
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                ao vivo
+              </span>
             </h1>
             <p className="mt-2 text-sm text-white/60">
               <Calendar className="inline h-4 w-4 -mt-0.5 text-neon-cyan" />{" "}
