@@ -499,17 +499,45 @@ function RushPage() {
       order.mode === "entrega" &&
       !order.courier_id
     ) {
-      const { error: offerErr } = await supabase.from("delivery_offers").insert({
-        order_id: order.id,
-        broadcast: true,
-        status: "pending",
-        fee: order.delivery_fee ?? null,
-        distance_km: (order as any).distance_km ?? null,
-      });
+      // Avoid duplicates: reuse an existing pending offer for this order.
+      const { data: existing } = await supabase
+        .from("delivery_offers")
+        .select("id")
+        .eq("order_id", order.id)
+        .eq("status", "pending")
+        .limit(1)
+        .maybeSingle();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      let offerErr: { message: string } | null = null;
+      if (existing?.id) {
+        const { error } = await supabase
+          .from("delivery_offers")
+          .update({ expires_at: expiresAt, broadcast: true, status: "pending" })
+          .eq("id", existing.id);
+        offerErr = error;
+      } else {
+        const { error } = await supabase.from("delivery_offers").insert({
+          order_id: order.id,
+          broadcast: true,
+          status: "pending",
+          fee: order.delivery_fee ?? null,
+          distance_km: (order as any).distance_km ?? null,
+          expires_at: expiresAt,
+        });
+        offerErr = error;
+      }
+      // Count couriers with a valid login who could receive this
+      const { count: reachable } = await supabase
+        .from("couriers")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true)
+        .not("user_id", "is", null);
       if (offerErr) {
         toast.warning("Pedido em rota, mas não consegui avisar os motoboys: " + offerErr.message);
+      } else if (!reachable) {
+        toast.warning("Pedido em rota, mas nenhum motoboy tem login vinculado. Cadastre em Usuários & Permissões.");
       } else {
-        toast.success("Motoboys notificados — aguardando aceitar.");
+        toast.success(`Motoboys notificados (${reachable} com login) — aguardando aceitar.`);
       }
     }
   };
