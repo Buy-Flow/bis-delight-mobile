@@ -89,6 +89,7 @@ type NavItem = {
   label: string;
   icon: LucideIcon;
   soon?: boolean;
+  activePaths?: string[];
 };
 
 type NavGroup = { id: string; label: string; items: NavItem[]; defaultOpen?: boolean };
@@ -116,7 +117,7 @@ const groups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { to: "/admin", tab: "products", label: "Produtos", icon: Package },
-      { to: "/admin", tab: "categories", label: "Organizar cardápio", icon: Tag },
+      { to: "/admin", tab: "categories", label: "Organizar cardápio", icon: Tag, activePaths: ["/selos"] },
       { to: "/admin", tab: "promos", label: "Promos & Combos", icon: Ticket },
       { to: "/admin", tab: "coupons", label: "Cupons", icon: Ticket },
       { to: "/estoque", label: "Estoque", icon: Archive },
@@ -192,6 +193,7 @@ function isItemActive(
   pathname: string,
   currentTab: string | undefined,
 ) {
+  if (it.activePaths?.includes(pathname)) return true;
   if (!it.to) return false;
   if (it.to !== pathname) return false;
   if (it.tab) return currentTab === it.tab;
