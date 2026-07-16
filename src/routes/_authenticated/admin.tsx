@@ -3979,7 +3979,22 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
             {section === "news" && <NewsSection s={s} set={set} />}
             {section === "coupons" && <CouponsSection />}
             {section === "appearance" && (
-              <AppearanceSection s={s} set={set} onTexture={uploadTexture} textureBusy={textureBusy} />
+              <div className="space-y-5">
+                <SectionTitle icon={Palette} title="Aparência" sub="A customização visual do painel foi movida para a página dedicada." />
+                <Link
+                  to="/personalizar-painel"
+                  className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-neon-cyan/10 via-white/[0.03] to-neon-pink/10 p-5 transition hover:border-neon-cyan/40"
+                >
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-neon-cyan/20 text-neon-cyan ring-1 ring-neon-cyan/40">
+                    <Palette className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display text-sm font-black text-white">Personalizar painel</div>
+                    <div className="text-[11.5px] text-white/60">Cores, tipografia, textura e temas — tudo em um lugar só.</div>
+                  </div>
+                  <span className="text-lg text-white/40 transition group-hover:translate-x-1 group-hover:text-neon-cyan">→</span>
+                </Link>
+              </div>
             )}
           </div>
         </section>
