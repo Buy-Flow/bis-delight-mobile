@@ -4,12 +4,18 @@ import { toast } from "sonner";
 import { uploadProductImage } from "@/lib/menu-data";
 import {
   Award,
+  BarChart3,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Clock,
+  Download,
   Image as ImageIcon,
   Loader2,
   Plus,
   Save,
+  Search,
+  Ticket,
   Trash2,
   Upload,
   X,
