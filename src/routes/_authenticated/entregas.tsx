@@ -1027,6 +1027,7 @@ function CouriersTab({
             setCreating(false);
             await reload();
           }}
+          reload={reload}
         />
       )}
     </>
@@ -1037,10 +1038,12 @@ function CourierDialog({
   courier,
   onClose,
   onSaved,
+  reload,
 }: {
   courier: Courier | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
+  reload: () => Promise<void>;
 }) {
   const [form, setForm] = useState({
     name: courier?.name ?? "",
