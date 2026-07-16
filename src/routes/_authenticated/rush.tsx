@@ -1218,6 +1218,24 @@ function RushOrderCard({
 
       {/* actions */}
       <div className="mt-3 flex flex-wrap items-stretch gap-2">
+        {!done && (order.status === "preparando" || order.status === "saiu_para_entrega" || order.status === "pago") && (
+          <button
+            type="button"
+            onClick={onRevert}
+            disabled={busy}
+            className="grid w-12 shrink-0 place-items-center rounded-2xl border border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
+            aria-label="Voltar etapa"
+            title={
+              order.status === "saiu_para_entrega"
+                ? "Voltar para cozinha"
+                : order.status === "preparando"
+                ? "Voltar para pago"
+                : "Voltar para pendente"
+            }
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+        )}
         {!done && primaryLabel && (
           <button
             type="button"
