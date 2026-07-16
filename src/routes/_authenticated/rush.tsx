@@ -1088,9 +1088,10 @@ function RushOrderCard({
   return (
     <article
       className={cn(
-        "relative overflow-hidden rounded-3xl border bg-gradient-to-br p-3 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)]",
+        "relative overflow-hidden rounded-2xl border bg-[oklch(0.18_0.03_305)] p-3.5 shadow-sm",
+        "before:absolute before:inset-y-0 before:left-0 before:w-1",
         laneAccent,
-        critical && "ring-1 ring-red-500/60 shadow-[0_0_30px_-10px_theme(colors.red.500)]",
+        critical && "ring-1 ring-red-500/50",
       )}
     >
       {/* header row */}
