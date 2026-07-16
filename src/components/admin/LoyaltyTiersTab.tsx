@@ -698,3 +698,394 @@ function Num({
     </label>
   );
 }
+
+// ============================================================
+// Auditoria de Fidelidade (sanfona)
+// ============================================================
+
+type CouponRow = {
+  id: string;
+  user_id: string;
+  code: string;
+  discount_value: number;
+  used_at: string | null;
+  created_at: string;
+};
+
+type LoyaltyRow = {
+  user_id: string;
+  stamps: number;
+  lifetime_stamps: number;
+  total_redeemed: number;
+  updated_at: string;
+};
+
+type ProfileRow = { id: string; full_name: string | null; phone: string | null };
+
+type AuditUserRow = {
+  user_id: string;
+  name: string;
+  phone: string;
+  tier: string;
+  tier_color: string;
+  stamps: number;
+  lifetime: number;
+  issued: number;
+  redeemed: number;
+  discount: number;
+  last_activity: string | null;
+};
+
+const PERIODS = [
+  { key: "7", label: "7 dias" },
+  { key: "30", label: "30 dias" },
+  { key: "90", label: "90 dias" },
+  { key: "all", label: "Tudo" },
+] as const;
+
+function LoyaltyAuditPanel({ rows: tiers }: { rows: TierRow[] }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [period, setPeriod] = useState<(typeof PERIODS)[number]["key"]>("30");
+  const [q, setQ] = useState("");
+  const [coupons, setCoupons] = useState<CouponRow[]>([]);
+  const [loyalty, setLoyalty] = useState<LoyaltyRow[]>([]);
+  const [profiles, setProfiles] = useState<Map<string, ProfileRow>>(new Map());
+
+  async function load() {
+    setLoading(true);
+    try {
+      let coupQ = supabase.from("loyalty_coupons").select("*").order("created_at", { ascending: false }).limit(2000);
+      if (period !== "all") {
+        const since = new Date(Date.now() - Number(period) * 86400_000).toISOString();
+        coupQ = coupQ.gte("created_at", since);
+      }
+      const [{ data: cData, error: cErr }, { data: lData, error: lErr }] = await Promise.all([
+        coupQ,
+        supabase.from("loyalty").select("user_id,stamps,lifetime_stamps,total_redeemed,updated_at").limit(2000),
+      ]);
+      if (cErr) throw cErr;
+      if (lErr) throw lErr;
+      const c = (cData ?? []) as CouponRow[];
+      const l = (lData ?? []) as LoyaltyRow[];
+      const ids = Array.from(new Set([...c.map((x) => x.user_id), ...l.map((x) => x.user_id)]));
+      let pMap = new Map<string, ProfileRow>();
+      if (ids.length) {
+        const { data: pData } = await supabase
+          .from("profiles")
+          .select("id,full_name,phone")
+          .in("id", ids);
+        pMap = new Map((pData ?? []).map((p: any) => [p.id, p]));
+      }
+      setCoupons(c);
+      setLoyalty(l);
+      setProfiles(pMap);
+    } catch (e: any) {
+      toast.error("Erro ao carregar auditoria", { description: e?.message });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (open) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, period]);
+
+  const tierByLifetime = useMemo(() => {
+    const sorted = [...tiers].sort((a, b) => a.min_lifetime - b.min_lifetime);
+    return (lifetime: number) => {
+      let match = sorted[0];
+      for (const t of sorted) if (lifetime >= t.min_lifetime) match = t;
+      return match;
+    };
+  }, [tiers]);
+
+  const kpis = useMemo(() => {
+    const issued = coupons.length;
+    const redeemed = coupons.filter((c) => c.used_at).length;
+    const discountRedeemed = coupons
+      .filter((c) => c.used_at)
+      .reduce((s, c) => s + Number(c.discount_value || 0), 0);
+    const discountPending = coupons
+      .filter((c) => !c.used_at)
+      .reduce((s, c) => s + Number(c.discount_value || 0), 0);
+    const totalStamps = loyalty.reduce((s, l) => s + Number(l.lifetime_stamps || 0), 0);
+    return { issued, redeemed, discountRedeemed, discountPending, totalStamps };
+  }, [coupons, loyalty]);
+
+  const byUser: AuditUserRow[] = useMemo(() => {
+    const map = new Map<string, AuditUserRow>();
+    const ensure = (uid: string): AuditUserRow => {
+      let row = map.get(uid);
+      if (!row) {
+        const p = profiles.get(uid);
+        row = {
+          user_id: uid,
+          name: p?.full_name || "—",
+          phone: p?.phone || "",
+          tier: "",
+          tier_color: "#facc15",
+          stamps: 0,
+          lifetime: 0,
+          issued: 0,
+          redeemed: 0,
+          discount: 0,
+          last_activity: null,
+        };
+        map.set(uid, row);
+      }
+      return row;
+    };
+    for (const l of loyalty) {
+      const r = ensure(l.user_id);
+      r.stamps = l.stamps;
+      r.lifetime = l.lifetime_stamps;
+      const t = tierByLifetime(l.lifetime_stamps);
+      if (t) { r.tier = t.label; r.tier_color = t.color || "#facc15"; }
+      if (!r.last_activity || l.updated_at > r.last_activity) r.last_activity = l.updated_at;
+    }
+    for (const c of coupons) {
+      const r = ensure(c.user_id);
+      r.issued += 1;
+      if (c.used_at) {
+        r.redeemed += 1;
+        r.discount += Number(c.discount_value || 0);
+      }
+      const ts = c.used_at || c.created_at;
+      if (!r.last_activity || ts > r.last_activity) r.last_activity = ts;
+    }
+    let list = Array.from(map.values());
+    const term = q.trim().toLowerCase();
+    if (term) {
+      list = list.filter((r) =>
+        r.name.toLowerCase().includes(term) ||
+        r.phone.toLowerCase().includes(term) ||
+        r.user_id.toLowerCase().includes(term),
+      );
+    }
+    list.sort((a, b) => b.discount - a.discount || b.issued - a.issued);
+    return list;
+  }, [loyalty, coupons, profiles, q, tierByLifetime]);
+
+  function exportCSV() {
+    const header = [
+      "cliente","telefone","nivel","selos_atuais","selos_totais",
+      "cupons_emitidos","cupons_resgatados","desconto_resgatado_brl","ultima_atividade",
+    ];
+    const lines = [header.join(";")];
+    for (const r of byUser) {
+      lines.push([
+        JSON.stringify(r.name), JSON.stringify(r.phone), JSON.stringify(r.tier),
+        r.stamps, r.lifetime, r.issued, r.redeemed,
+        r.discount.toFixed(2).replace(".", ","),
+        r.last_activity ? new Date(r.last_activity).toISOString() : "",
+      ].join(";"));
+    }
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `auditoria-fidelidade-${period}d-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <details
+      open={open}
+      onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}
+      className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] transition-colors open:border-white/20 open:bg-white/[0.04]"
+    >
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 hover:bg-white/[0.04] [&::-webkit-details-marker]:hidden">
+        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 to-cyan-500 text-black">
+          <BarChart3 className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-white">Auditoria de benefícios</p>
+          <p className="text-[11px] text-white/60">
+            Selos concedidos, cupons emitidos e resgatados por cliente e período.
+          </p>
+        </div>
+        <ChevronDown className="h-4 w-4 shrink-0 text-white/50 transition-transform group-open:rotate-180" />
+      </summary>
+
+      <div className="border-t border-white/5 p-4 space-y-4">
+        {/* Filtros */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-2xl border border-white/10 bg-white/[0.03] p-1">
+            {PERIODS.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
+                className={
+                  "rounded-xl px-3 py-1 text-xs font-bold transition " +
+                  (period === p.key ? "bg-neon-yellow text-black" : "text-white/60 hover:text-white")
+                }
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <label className="relative flex-1 min-w-[180px]">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/40" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar por nome ou telefone…"
+              className="w-full rounded-2xl border border-white/10 bg-white/5 py-1.5 pl-8 pr-3 text-xs text-white outline-none focus:border-neon-yellow"
+            />
+          </label>
+          <button
+            onClick={exportCSV}
+            disabled={!byUser.length}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/10 disabled:opacity-40"
+          >
+            <Download className="h-3.5 w-3.5" /> CSV
+          </button>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Kpi icon={Award} tint="from-amber-400/30 to-amber-600/10" label="Selos concedidos" value={kpis.totalStamps.toLocaleString("pt-BR")} hint="Histórico total" />
+          <Kpi icon={Ticket} tint="from-fuchsia-400/30 to-fuchsia-600/10" label="Cupons emitidos" value={kpis.issued.toLocaleString("pt-BR")} hint={period === "all" ? "Todo período" : `Últimos ${period}d`} />
+          <Kpi icon={CheckCircle2} tint="from-emerald-400/30 to-emerald-600/10" label="Cupons resgatados" value={kpis.redeemed.toLocaleString("pt-BR")} hint={`${kpis.issued ? Math.round((kpis.redeemed / kpis.issued) * 100) : 0}% de conversão`} />
+          <Kpi icon={Clock} tint="from-sky-400/30 to-sky-600/10" label="Desconto (R$)" value={BRL(kpis.discountRedeemed)} hint={`Pendente: ${BRL(kpis.discountPending)}`} />
+        </div>
+
+        {/* Tabela por cliente */}
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+          <div className="max-h-[420px] overflow-auto">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-black/60 text-left uppercase tracking-widest text-white/50 backdrop-blur">
+                <tr>
+                  <th className="px-3 py-2">Cliente</th>
+                  <th className="px-3 py-2">Nível</th>
+                  <th className="px-3 py-2 text-right">Selos</th>
+                  <th className="px-3 py-2 text-right">Emitidos</th>
+                  <th className="px-3 py-2 text-right">Resgatados</th>
+                  <th className="px-3 py-2 text-right">Desconto</th>
+                  <th className="px-3 py-2">Última ativ.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading && (
+                  <tr>
+                    <td colSpan={7} className="px-3 py-6 text-center text-white/50">
+                      <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                    </td>
+                  </tr>
+                )}
+                {!loading && byUser.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-3 py-8 text-center text-white/50">
+                      Nenhum registro no período.
+                    </td>
+                  </tr>
+                )}
+                {!loading && byUser.map((r) => (
+                  <tr key={r.user_id} className="border-t border-white/5 hover:bg-white/[0.03]">
+                    <td className="px-3 py-2">
+                      <div className="font-semibold text-white">{r.name}</div>
+                      <div className="text-[10px] text-white/40">{r.phone || r.user_id.slice(0, 8)}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      {r.tier ? (
+                        <span
+                          className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold"
+                          style={{ background: `${r.tier_color}22`, color: r.tier_color }}
+                        >
+                          {r.tier}
+                        </span>
+                      ) : (
+                        <span className="text-white/30">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono">
+                      {r.stamps}<span className="text-white/30">/{r.lifetime}</span>
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono">{r.issued}</td>
+                    <td className="px-3 py-2 text-right font-mono text-emerald-300">{r.redeemed}</td>
+                    <td className="px-3 py-2 text-right font-mono font-bold text-white">{BRL(r.discount)}</td>
+                    <td className="px-3 py-2 text-white/50">
+                      {r.last_activity ? new Date(r.last_activity).toLocaleDateString("pt-BR") : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Últimos cupons */}
+        <details className="rounded-2xl border border-white/10 bg-white/[0.02]">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-xs font-bold text-white/80 [&::-webkit-details-marker]:hidden">
+            <span>Últimos cupons</span>
+            <ChevronDown className="h-3.5 w-3.5 text-white/50 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="max-h-64 overflow-auto border-t border-white/5">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-black/60 text-left uppercase tracking-widest text-white/50">
+                <tr>
+                  <th className="px-3 py-2">Código</th>
+                  <th className="px-3 py-2">Cliente</th>
+                  <th className="px-3 py-2 text-right">Valor</th>
+                  <th className="px-3 py-2">Emitido</th>
+                  <th className="px-3 py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coupons.slice(0, 100).map((c) => {
+                  const p = profiles.get(c.user_id);
+                  return (
+                    <tr key={c.id} className="border-t border-white/5">
+                      <td className="px-3 py-1.5 font-mono text-neon-yellow">{c.code}</td>
+                      <td className="px-3 py-1.5 text-white/80">{p?.full_name || c.user_id.slice(0, 8)}</td>
+                      <td className="px-3 py-1.5 text-right font-mono">{BRL(Number(c.discount_value))}</td>
+                      <td className="px-3 py-1.5 text-white/50">{new Date(c.created_at).toLocaleDateString("pt-BR")}</td>
+                      <td className="px-3 py-1.5">
+                        {c.used_at ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                            <CheckCircle2 className="h-3 w-3" /> Resgatado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                            <Clock className="h-3 w-3" /> Pendente
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </details>
+  );
+}
+
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  tint,
+}: {
+  icon: typeof Award;
+  label: string;
+  value: string;
+  hint?: string;
+  tint: string;
+}) {
+  return (
+    <div className={`rounded-2xl border border-white/10 bg-gradient-to-br ${tint} p-3`}>
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/60">
+        <Icon className="h-3.5 w-3.5" /> {label}
+      </div>
+      <div className="mt-1 text-lg font-black text-white">{value}</div>
+      {hint && <div className="text-[10px] text-white/50">{hint}</div>}
+    </div>
+  );
+}
