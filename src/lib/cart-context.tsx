@@ -166,43 +166,112 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  // Cross-device cart hydration: quando o usuário loga em um novo dispositivo
-  // e o carrinho local está vazio, puxa o carrinho salvo em abandoned_carts
-  // (mesma conta = mesmo carrinho). Nunca sobrescreve carrinho local não-vazio
-  // para não apagar itens que o usuário acabou de adicionar antes de logar.
-  const pulledForUserRef = useRef<string | null>(null);
+  // Cross-device cart hydration + realtime sync.
+  // - No login: puxa carrinho salvo da conta. Se local também tem itens, escolhe
+  //   o mais recente (por updated_at). Local vazio + remoto com itens = adota remoto.
+  // - Realtime: escuta mudanças em abandoned_carts (mesmo user_id) e adota
+  //   automaticamente quando outro dispositivo altera o carrinho.
+  const lastSyncStampRef = useRef<number>(0); // marca quando NÓS gravamos, para ignorar o eco realtime
+  const remoteRevRef = useRef<string | null>(null); // updated_at remoto conhecido
+
+  const applyRemote = (remote: CartItem[], toastLabel = "Carrinho sincronizado") => {
+    // Só adota se realmente diferente do estado atual — evita re-render em loop.
+    const current = JSON.stringify(items);
+    const next = JSON.stringify(remote);
+    if (current === next) return;
+    skipPersistRef.current = false; // persiste no localStorage também
+    setItems(remote);
+    if (remote.length > 0) {
+      const total = remote.reduce((s, i) => s + i.quantity, 0);
+      toast.success(toastLabel, {
+        description: `${total} ${total === 1 ? "item sincronizado" : "itens sincronizados"} da sua conta.`,
+        id: "cart-cross-device",
+      });
+    }
+  };
+
+  // Pull inicial ao logar / trocar de dispositivo.
   useEffect(() => {
     if (!hydrated || !userId) return;
-    if (pulledForUserRef.current === userId) return;
-    pulledForUserRef.current = userId;
-    if (items.length > 0) return; // respeita carrinho local em uso
+    let cancelled = false;
     (async () => {
       try {
         const { data, error } = await supabase
           .from("abandoned_carts")
-          .select("items")
+          .select("items, updated_at")
           .eq("user_id", userId)
           .maybeSingle();
         if (error) throw error;
+        if (cancelled) return;
         const remote = (data?.items as unknown as CartItem[] | null) ?? [];
-        if (!Array.isArray(remote) || remote.length === 0) return;
-        skipPersistRef.current = false; // deixa persistir localmente
-        setItems(remote);
-        const total = remote.reduce((s, i) => s + i.quantity, 0);
-        toast.success("Carrinho sincronizado", {
-          description: `${total} ${total === 1 ? "item recuperado" : "itens recuperados"} da sua sessão anterior.`,
-          id: "cart-cross-device",
-        });
+        remoteRevRef.current = data?.updated_at ?? null;
+        if (!Array.isArray(remote)) return;
+
+        if (items.length === 0 && remote.length > 0) {
+          applyRemote(remote, "Carrinho recuperado");
+          return;
+        }
+        // Conflito: local e remoto têm itens. Se o remoto for mais novo do que
+        // a última gravação local conhecida, adota remoto. Caso contrário,
+        // a próxima sync (efeito abaixo) empurra o local para o remoto.
+        if (items.length > 0 && remote.length > 0 && data?.updated_at) {
+          const remoteTime = new Date(data.updated_at).getTime();
+          if (remoteTime > lastSyncStampRef.current + 2000) {
+            applyRemote(remote, "Carrinho atualizado em outro dispositivo");
+          }
+        }
       } catch (e) {
         logSilent("cart:cross-device-pull", e);
       }
     })();
-  }, [userId, hydrated, items.length]);
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, hydrated]);
 
-  // Sync abandoned cart to Supabase (debounced) when logged in.
-  // Serializado entre abas via Web Locks e sempre lê o snapshot fresco de
-  // localStorage dentro do lock — assim a última gravação reflete o estado
-  // efetivamente compartilhado, não o snapshot capturado no closure.
+  // Realtime: outro dispositivo alterou o carrinho → adota imediatamente.
+  useEffect(() => {
+    if (!hydrated || !userId) return;
+    const channel = supabase
+      .channel(`cart-sync:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "abandoned_carts",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          try {
+            const row = (payload.new ?? payload.old) as {
+              items?: CartItem[] | null;
+              updated_at?: string | null;
+            } | null;
+            const updatedAt = row?.updated_at ? new Date(row.updated_at).getTime() : Date.now();
+            // Ignora o eco da nossa própria gravação (últimos 2s).
+            if (updatedAt <= lastSyncStampRef.current + 2000) return;
+            if (payload.eventType === "DELETE") {
+              applyRemote([], "");
+              return;
+            }
+            const remote = Array.isArray(row?.items) ? (row!.items as CartItem[]) : [];
+            remoteRevRef.current = row?.updated_at ?? null;
+            applyRemote(remote, "Carrinho atualizado em outro dispositivo");
+          } catch (e) {
+            logSilent("cart:realtime", e);
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, hydrated]);
+
+  // Push do carrinho local para o remoto (debounced). Marca lastSyncStamp para
+  // que o eco realtime desta gravação não sobrescreva o estado local.
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!hydrated || !userId) return;
@@ -213,6 +282,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const subtotal = fresh.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
         const count = fresh.reduce((s, i) => s + i.quantity, 0);
         try {
+          lastSyncStampRef.current = Date.now();
           if (fresh.length === 0) {
             const { error } = await supabase
               .from("abandoned_carts")
@@ -246,11 +316,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } else {
         void doSync();
       }
-    }, 1500);
+    }, 1200);
     return () => {
       if (syncTimer.current) clearTimeout(syncTimer.current);
     };
   }, [items, hydrated, userId]);
+
 
 
   const value = useMemo<CartCtx>(() => {
