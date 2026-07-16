@@ -692,13 +692,13 @@ function IngredientsTable({
 }) {
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] px-4 py-2.5 bg-white/5 text-[11px] uppercase tracking-wide text-white/50 font-medium">
+      <div className="hidden md:grid grid-cols-[1.5fr,1fr,200px,110px,110px,130px,130px] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
         <div>Insumo</div>
         <div>Fornecedor</div>
         <div>Estoque</div>
         <div>Alerta</div>
-        <div>Custo</div>
-        <div>Valor total</div>
+        <div className="text-right">Custo</div>
+        <div className="text-right">Valor total</div>
         <div className="text-right">Ações</div>
       </div>
       {ingredients.length === 0 && (
@@ -706,53 +706,64 @@ function IngredientsTable({
           Nenhum insumo cadastrado. Clique em <span className="font-semibold text-yellow-300">Novo insumo</span> pra começar.
         </div>
       )}
-      {ingredients.map((i) => {
+      {ingredients.map((i, idx) => {
         const s = statusFor(i.stock, i.low_stock_threshold);
         return (
-          <div key={i.id} className="border-t border-white/5 hover:bg-white/[0.03]">
+          <div
+            key={i.id}
+            className={cn(
+              "border-t border-white/5 transition-colors hover:bg-yellow-400/[0.04]",
+              idx % 2 === 1 && "md:bg-white/[0.015]",
+              !i.active && "opacity-60",
+            )}
+          >
             {/* MOBILE CARD */}
-            <div className="md:hidden p-3 space-y-2">
+            <div className="md:hidden p-3 space-y-2.5">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold truncate">{i.name}</div>
+                  <div className="text-sm font-semibold truncate flex items-center gap-1.5">
+                    {i.name}
+                    {!i.active && <span className="text-[9px] px-1 rounded bg-white/10 text-white/50">inativo</span>}
+                  </div>
                   <div className="text-[11px] text-white/50 truncate">
                     {i.category ? i.category + " · " : ""}{i.unit}
                     {i.sku ? " · SKU " + i.sku : ""}
                   </div>
                 </div>
-                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0", s.className)}>{s.label}</span>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0 font-medium", s.className)}>{s.label}</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-[11px]">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-bold tabular-nums">{fmtQty(i.stock, i.unit)}</span>
+                <span className="text-[11px] text-white/40">/ alerta {fmtQty(i.low_stock_threshold, i.unit)}</span>
+              </div>
+              <StockBar stock={i.stock} threshold={i.low_stock_threshold} tone={s.tone} />
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
-                  <div className="text-white/40">Estoque</div>
-                  <div className="text-sm font-bold text-white truncate">{fmtQty(i.stock, i.unit)}</div>
+                  <div className="text-white/40">Custo unitário</div>
+                  <div className="text-sm font-semibold text-white/90 tabular-nums truncate">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
                 </div>
                 <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
-                  <div className="text-white/40">Alerta</div>
-                  <div className="text-sm font-semibold text-white/80 truncate">{fmtQty(i.low_stock_threshold, i.unit)}</div>
-                </div>
-                <div className="rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
-                  <div className="text-white/40">Valor</div>
-                  <div className="text-sm font-semibold text-white/80 truncate">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+                  <div className="text-white/40">Valor total</div>
+                  <div className="text-sm font-semibold text-emerald-300 tabular-nums truncate">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
                 </div>
               </div>
               {i.supplier && (
-                <div className="flex items-center gap-2 text-[11px] text-white/60">
-                  <Truck className="w-3 h-3 shrink-0" />
+                <div className="flex items-center gap-2 text-[11px] text-white/60 rounded-lg bg-white/[0.03] border border-white/5 px-2 py-1.5">
+                  <Truck className="w-3.5 h-3.5 shrink-0 text-white/40" />
                   <span className="truncate">{i.supplier}</span>
                   {i.supplier_phone && (
-                    <a href={`tel:${i.supplier_phone}`} className="ml-auto flex items-center gap-1 text-white/50 shrink-0">
+                    <a href={`tel:${i.supplier_phone}`} className="ml-auto flex items-center gap-1 text-yellow-300 shrink-0 font-medium">
                       <Phone className="w-3 h-3" /> {i.supplier_phone}
                     </a>
                   )}
                 </div>
               )}
-              <div className="flex gap-1.5 pt-1">
+              <div className="flex gap-1.5">
                 <button
                   onClick={() => onOpenMovement(i)}
-                  className="flex-1 px-3 py-2 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-medium hover:bg-yellow-400/30"
+                  className="flex-1 px-3 py-2 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30"
                 >
-                  Movimento
+                  + Movimento
                 </button>
                 <button
                   onClick={() => onEdit(i)}
@@ -772,20 +783,23 @@ function IngredientsTable({
             </div>
 
             {/* DESKTOP ROW */}
-            <div className="hidden md:grid md:grid-cols-[1.5fr,1fr,120px,120px,120px,140px,140px] items-center px-4 py-3">
+            <div className="hidden md:grid md:grid-cols-[1.5fr,1fr,200px,110px,110px,130px,130px] items-center px-4 py-3 gap-2">
               <div className="min-w-0">
-                <div className="text-sm font-medium truncate">{i.name}</div>
+                <div className="text-sm font-medium truncate flex items-center gap-1.5">
+                  {i.name}
+                  {!i.active && <span className="text-[9px] px-1 rounded bg-white/10 text-white/50">inativo</span>}
+                </div>
                 <div className="text-[11px] text-white/50 truncate">
                   {i.category ? i.category + " · " : ""}{i.unit}
                   {i.sku ? " · SKU " + i.sku : ""}
                 </div>
               </div>
-              <div className="text-xs text-white/60 truncate">
+              <div className="text-xs text-white/60 truncate min-w-0">
                 {i.supplier ? (
                   <>
-                    <div className="flex items-center gap-1"><Truck className="w-3 h-3" /> {i.supplier}</div>
+                    <div className="flex items-center gap-1 truncate"><Truck className="w-3 h-3 shrink-0" /> <span className="truncate">{i.supplier}</span></div>
                     {i.supplier_phone && (
-                      <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-white/70 mt-0.5">
+                      <a href={`tel:${i.supplier_phone}`} className="flex items-center gap-1 text-white/40 hover:text-yellow-300 mt-0.5 tabular-nums">
                         <Phone className="w-3 h-3" /> {i.supplier_phone}
                       </a>
                     )}
@@ -794,30 +808,33 @@ function IngredientsTable({
                   <span className="text-white/30">—</span>
                 )}
               </div>
-              <div className="text-sm font-semibold">
-                {fmtQty(i.stock, i.unit)}
-                <div className={cn("mt-1 text-[10px] inline-block px-1.5 py-0.5 rounded border", s.className)}>{s.label}</div>
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold tabular-nums">{fmtQty(i.stock, i.unit)}</span>
+                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded border font-medium", s.className)}>{s.label}</span>
+                </div>
+                <StockBar stock={i.stock} threshold={i.low_stock_threshold} tone={s.tone} />
               </div>
-              <div className="text-xs text-white/60">{fmtQty(i.low_stock_threshold, i.unit)}</div>
-              <div className="text-xs text-white/60">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
-              <div className="text-xs text-white/80">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
-              <div className="flex justify-end gap-1 flex-wrap">
+              <div className="text-xs text-white/60 tabular-nums">{fmtQty(i.low_stock_threshold, i.unit)}</div>
+              <div className="text-xs text-white/60 tabular-nums text-right">{i.cost_per_unit ? fmtBRL(i.cost_per_unit) : "—"}</div>
+              <div className="text-xs text-emerald-300/90 tabular-nums text-right font-medium">{fmtBRL(i.stock * (i.cost_per_unit ?? 0))}</div>
+              <div className="flex justify-end gap-1">
                 <button
                   onClick={() => onOpenMovement(i)}
-                  className="px-2 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs hover:bg-yellow-400/30"
+                  className="px-2.5 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30"
                 >
                   Movimento
                 </button>
                 <button
                   onClick={() => onEdit(i)}
-                  className="p-1.5 rounded bg-white/5 border border-white/10 hover:bg-white/10"
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10"
                   aria-label="Editar"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => onDelete(i.id)}
-                  className="p-1.5 rounded bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
+                  className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-300"
                   aria-label="Excluir"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -831,6 +848,7 @@ function IngredientsTable({
     </div>
   );
 }
+
 
 function MovementsTable({
   movements,
