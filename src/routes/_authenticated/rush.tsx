@@ -984,6 +984,7 @@ function RushOrderCard({
   onCancel,
   onConfirmPayment,
   onRestore,
+  onRevert,
 }: {
   order: Order;
   tick: number;
@@ -996,6 +997,7 @@ function RushOrderCard({
   onCancel: () => void;
   onConfirmPayment: () => void;
   onRestore: () => void;
+  onRevert: () => void;
 }) {
   const min = ageMinutes(order.created_at);
   const hot = min >= 15;
