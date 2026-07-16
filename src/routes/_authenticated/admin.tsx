@@ -6913,6 +6913,15 @@ function HeroImagesSection({
   set: <K extends keyof SiteSettings>(k: K, v: SiteSettings[K]) => void;
 }) {
   const heroImages = s.heroImages ?? DEFAULT_HERO_IMAGES;
+  const previewScale = 0.75;
+  const dragRef = useRef<{
+    side: "left" | "right";
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startOffsetX: number;
+    startOffsetY: number;
+  } | null>(null);
 
   const updateSide = (side: "left" | "right", patch: Partial<HeroImageConfig>) => {
     set("heroImages", {
@@ -6921,13 +6930,46 @@ function HeroImagesSection({
     } as HeroImagesConfig);
   };
 
+  const clampHeroOffset = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+  const startDrag = (side: "left" | "right", event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const target = event.currentTarget;
+    target.setPointerCapture(event.pointerId);
+    dragRef.current = {
+      side,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startOffsetX: heroImages[side].offsetX,
+      startOffsetY: heroImages[side].offsetY,
+    };
+  };
+
+  const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const deltaX = (event.clientX - drag.startX) / previewScale;
+    const deltaY = (event.clientY - drag.startY) / previewScale;
+    updateSide(drag.side, {
+      offsetX: clampHeroOffset(Math.round(drag.startOffsetX + (drag.side === "left" ? deltaX : -deltaX)), -600, 300),
+      offsetY: clampHeroOffset(Math.round(drag.startOffsetY + deltaY), -300, 300),
+    });
+  };
+
+  const stopDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (drag?.pointerId === event.pointerId) {
+      dragRef.current = null;
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div>
         <h3 className="font-display text-lg font-black">Imagens da Tela Inicial</h3>
         <p className="text-xs text-white/50">
-          Ajuste as duas imagens que aparecem nos cantos do hero. Você pode trocar a foto,
-          mover para dentro/fora, subir/descer e mudar o tamanho.
+          Ajuste as imagens dos cantos do hero. Arraste direto na prévia e use os controles finos abaixo.
         </p>
       </div>
 
@@ -6942,9 +6984,13 @@ function HeroImagesSection({
         >
           <div
             className="pointer-events-none absolute left-0 top-0"
-            style={{ width: 390, transform: "scale(0.75)", transformOrigin: "top left" }}
+            style={{ width: 390, transform: `scale(${previewScale})`, transformOrigin: "top left" }}
           >
             <Hero onScrollMenu={() => {}} heroImagesOverride={heroImages} />
+          </div>
+          <div className="absolute inset-0 z-40 grid grid-cols-2">
+            <HeroDragHandle side="left" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} />
+            <HeroDragHandle side="right" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} />
           </div>
         </div>
       </div>
@@ -6971,6 +7017,40 @@ function HeroImagesSection({
       >
         Restaurar imagens padrão
       </button>
+    </div>
+  );
+}
+
+function HeroDragHandle({
+  side,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+}: {
+  side: "left" | "right";
+  onPointerDown: (side: "left" | "right", event: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => void;
+}) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={side === "left" ? "Arrastar imagem da esquerda" : "Arrastar imagem da direita"}
+      className="group relative cursor-grab touch-none select-none active:cursor-grabbing"
+      onPointerDown={(event) => onPointerDown(side, event)}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    >
+      <span
+        className={cn(
+          "pointer-events-none absolute bottom-3 rounded-full border border-white/15 bg-black/55 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white/80 opacity-0 shadow-lg transition group-hover:opacity-100 group-active:opacity-100",
+          side === "left" ? "left-3" : "right-3",
+        )}
+      >
+        Arrastar
+      </span>
     </div>
   );
 }
