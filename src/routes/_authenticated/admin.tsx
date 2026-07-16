@@ -3614,7 +3614,7 @@ type SettingsSection =
   | "contact"
   | "hours"
   | "delivery"
-  | "payment"
+  
   | "social"
   | "announcement"
   | "popup"
@@ -3983,13 +3983,6 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
       done: s.acceptsDelivery || s.acceptsPickup,
     },
     {
-      id: "payment",
-      label: "Pagamento",
-      icon: CreditCard,
-      hint: "PIX e métodos aceitos",
-      done: Boolean(s.pixKey?.trim()) || (s.paymentMethods?.length ?? 0) > 0,
-    },
-    {
       id: "social",
       label: "Redes sociais",
       icon: Globe,
@@ -4123,7 +4116,7 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
             {section === "contact" && <ContactSection s={s} set={set} />}
             {section === "hours" && <HoursSection s={s} set={set} />}
             {section === "delivery" && <DeliverySection s={s} set={set} />}
-            {section === "payment" && <PaymentSection s={s} set={set} />}
+            
             {section === "social" && <SocialSection s={s} set={set} />}
             {section === "announcement" && <AnnouncementSection s={s} set={set} />}
             {section === "popup" && <PopupsSection />}
@@ -4772,171 +4765,6 @@ function DeliverySection({ s, set }: { s: SiteSettings; set: SetFn }) {
               </li>
             ))}
           </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const QUICK_PAYMENT_METHODS = ["Pix", "Dinheiro", "Cartão de crédito", "Cartão de débito", "Vale-refeição"];
-
-function detectPixKeyType(key: string): { label: string; tone: string } | null {
-  const k = key.trim();
-  if (!k) return null;
-  if (/^\d{11}$/.test(k.replace(/\D/g, "")) && k.replace(/\D/g, "").length === 11)
-    return { label: "CPF", tone: "text-neon-cyan" };
-  if (/^\d{14}$/.test(k.replace(/\D/g, ""))) return { label: "CNPJ", tone: "text-neon-cyan" };
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(k)) return { label: "E-mail", tone: "text-neon-yellow" };
-  if (/^\+?\d{10,13}$/.test(k.replace(/\D/g, ""))) return { label: "Telefone", tone: "text-neon-pink" };
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(k))
-    return { label: "Chave aleatória", tone: "text-emerald-300" };
-  return { label: "Chave personalizada", tone: "text-white/60" };
-}
-
-function PaymentSection({ s, set }: { s: SiteSettings; set: SetFn }) {
-  const [copied, setCopied] = useState(false);
-  const copyPix = () => {
-    if (!s.pixKey) return;
-    navigator.clipboard.writeText(s.pixKey);
-    setCopied(true);
-    toast.success("Chave Pix copiada");
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  const addMethod = (m: string) => {
-    if (s.paymentMethods.includes(m)) return;
-    set("paymentMethods", [...s.paymentMethods, m]);
-  };
-  const missingQuick = QUICK_PAYMENT_METHODS.filter((m) => !s.paymentMethods.includes(m));
-  const pixType = detectPixKeyType(s.pixKey || "");
-
-  return (
-    <div className="space-y-5">
-      <SectionTitle icon={CreditCard} title="Pagamento" sub="Como o cliente pode pagar o pedido." />
-
-      {/* Pix */}
-      <div className="relative overflow-hidden rounded-2xl border border-neon-cyan/30 bg-gradient-to-br from-neon-cyan/15 via-neon-cyan/5 to-transparent p-4">
-        <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-neon-cyan/20 blur-3xl" />
-        <div className="relative mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neon-cyan/25 text-neon-cyan">
-              <CreditCard className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-[13px] font-bold text-white">Chave Pix</div>
-              <div className="text-[10.5px] text-white/50">Aparece no checkout para o cliente copiar.</div>
-            </div>
-          </div>
-          {pixType && (
-            <span
-              className={cn(
-                "rounded-full border border-white/10 bg-black/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                pixType.tone,
-              )}
-            >
-              {pixType.label}
-            </span>
-          )}
-        </div>
-        <div className="relative">
-          <input
-            className={cn(inputCls, "pr-24")}
-            placeholder="CPF, telefone, e-mail ou chave aleatória"
-            value={s.pixKey}
-            onChange={(e) => set("pixKey", e.target.value)}
-          />
-          <button
-            type="button"
-            onClick={copyPix}
-            disabled={!s.pixKey}
-            className={cn(
-              "absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition",
-              s.pixKey
-                ? "bg-neon-cyan text-[oklch(0.18_0.11_305)] hover:brightness-110"
-                : "bg-white/5 text-white/30",
-            )}
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {copied ? "Copiado" : "Copiar"}
-          </button>
-        </div>
-        {!s.pixKey && (
-          <div className="mt-2 flex items-start gap-1.5 text-[10.5px] text-white/50">
-            <Info className="mt-[1px] h-3 w-3 shrink-0" />
-            <span>Sem chave, o cliente não conseguirá pagar por Pix no checkout.</span>
-          </div>
-        )}
-      </div>
-
-      {/* Formas de pagamento */}
-      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-white/60">
-            <Check className="h-3.5 w-3.5 text-neon-yellow" /> Formas aceitas
-          </div>
-          <span className="text-[10px] text-white/40">
-            {s.paymentMethods.length} ativa{s.paymentMethods.length === 1 ? "" : "s"}
-          </span>
-        </div>
-
-        <ChipInput
-          values={s.paymentMethods}
-          onChange={(v) => set("paymentMethods", v)}
-          placeholder="Digite e Enter (ex.: Cartão de crédito)"
-        />
-
-        {missingQuick.length > 0 && (
-          <div className="mt-3">
-            <div className="mb-1.5 text-[10.5px] uppercase tracking-wider text-white/40">
-              Adicionar rapidamente
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {missingQuick.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => addMethod(m)}
-                  className="inline-flex items-center gap-1 rounded-full border border-dashed border-white/20 bg-white/5 px-2.5 py-1 text-[11px] text-white/70 transition hover:border-neon-cyan hover:bg-neon-cyan/10 hover:text-neon-cyan"
-                >
-                  <Plus className="h-3 w-3" /> {m}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {s.paymentMethods.length === 0 && (
-          <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-[11px] text-red-300">
-            <Info className="mt-[1px] h-3.5 w-3.5 shrink-0" />
-            <span>Sem formas de pagamento, o cliente não consegue finalizar o pedido.</span>
-          </div>
-        )}
-      </div>
-
-      {/* Prévia */}
-      {(s.paymentMethods.length > 0 || s.pixKey) && (
-        <div className="rounded-2xl border border-neon-yellow/25 bg-gradient-to-br from-neon-yellow/10 to-transparent p-4">
-          <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neon-yellow/90">
-            <Sparkles className="h-3.5 w-3.5" /> Como o cliente vê
-          </div>
-          {s.paymentMethods.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {s.paymentMethods.map((m) => (
-                <span
-                  key={m}
-                  className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11.5px] font-semibold text-white/90"
-                >
-                  <Check className="h-3 w-3 text-neon-yellow" /> {m}
-                </span>
-              ))}
-            </div>
-          )}
-          {s.pixKey && (
-            <div className="mt-2 text-[11.5px] text-white/70">
-              Pix disponível — chave{" "}
-              <span className="font-mono text-white/90">{s.pixKey}</span>
-            </div>
-          )}
         </div>
       )}
     </div>
