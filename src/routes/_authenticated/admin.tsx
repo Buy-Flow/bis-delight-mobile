@@ -3856,6 +3856,10 @@ function SettingsTab({ initialSection = "identity", hideNav = false }: { initial
 
   return (
     <div className="pb-28">
+      {!hideNav && (
+        <LojaOverview s={s} completion={completion} doneCount={doneCount} totalCount={totalCount} />
+      )}
+
 
       {/* Two-column layout */}
       <div className={cn("grid gap-5", !hideNav && "lg:grid-cols-[260px_1fr]")}>
