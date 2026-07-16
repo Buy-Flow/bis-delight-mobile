@@ -16,13 +16,13 @@ export function Hero({
   const heroImages = heroImagesOverride ?? settings?.heroImages ?? DEFAULT_HERO_IMAGES;
 
   return (
-    <section className="relative overflow-hidden px-4 pb-0 pt-2">
+    <section className="relative overflow-x-clip px-4 pb-0 pt-2">
       <AdminEditButton tab="settings" label="Editar hero na loja" className="absolute right-4 top-3 z-30" />
 
       {/* Desktop breakout layer — spans full viewport so glows/images bleed into the page background */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden lg:left-1/2 lg:right-auto lg:w-screen lg:-translate-x-1/2"
+        className="pointer-events-none absolute inset-0 z-0 overflow-x-clip lg:left-1/2 lg:right-auto lg:w-screen lg:-translate-x-1/2"
       >
         {/* Pink/magenta glow behind hero images — matches the bg tone */}
         <div
@@ -84,15 +84,9 @@ export function Hero({
           />
         )}
 
-        {/* Bottom fade — knits the hero glow smoothly into the page background,
-            removing the visible seam between the hero and the section below. */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent 0%, var(--background) 100%)",
-          }}
-        />
+        {/* No bottom fade — the hero glow bleeds naturally into the page
+            background so the whole surface reads as one continuous purple. */}
+
       </div>
 
 
