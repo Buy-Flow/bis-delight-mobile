@@ -1,0 +1,1 @@
+ALTER TABLE public.delivery_offers ALTER COLUMN expires_at SET DEFAULT (now() + interval '15 minutes');
