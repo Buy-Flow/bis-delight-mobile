@@ -334,7 +334,7 @@ function RushPage() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id,user_id,mode,customer_name,phone,address,reference,note,subtotal,delivery_fee,total,status,payment_method,paid_at,created_at,preparing_at,dispatched_at,delivered_at,delivery_lat,delivery_lng,order_items(id,name,quantity,size,flavor,extras,removed,note,unit_price)",
+          "id,user_id,mode,customer_name,phone,address,reference,note,subtotal,delivery_fee,total,status,payment_method,paid_at,created_at,preparing_at,dispatched_at,delivered_at,delivery_lat,delivery_lng,distance_km,courier_id,order_items(id,name,quantity,size,flavor,extras,removed,note,unit_price)",
         )
         .order("created_at", { ascending: false })
         .limit(200);
