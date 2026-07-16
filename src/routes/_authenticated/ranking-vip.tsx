@@ -353,66 +353,107 @@ function TiersEditor({ tiers, onChange }: { tiers: Tier[]; onChange: (t: Tier[])
           <Plus className="h-4 w-4" /> Novo nível
         </Button>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {tiers.map((t, i) => (
-          <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <div className="grid gap-3 md:grid-cols-[auto_1fr_1fr_1fr_1fr_auto]">
-              <div className="flex flex-col justify-center gap-1">
-                <button onClick={() => move(i, -1)} className="rounded p-1 text-white/40 hover:bg-white/5" disabled={i === 0}>
-                  <GripVertical className="h-4 w-4 rotate-90" />
+          <details
+            key={i}
+            open={i === 0}
+            className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors open:border-white/20 open:bg-white/[0.05]"
+          >
+            <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 hover:bg-white/[0.04] [&::-webkit-details-marker]:hidden">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); move(i, -1); }}
+                  className="rounded p-1 text-white/40 hover:bg-white/10 disabled:opacity-30"
+                  disabled={i === 0}
+                  title="Subir"
+                >
+                  <GripVertical className="h-3.5 w-3.5 -rotate-90" />
                 </button>
-                <div className="text-center text-[10px] font-bold text-white/40">#{i + 1}</div>
-                <button onClick={() => move(i, 1)} className="rounded p-1 text-white/40 hover:bg-white/5" disabled={i === tiers.length - 1}>
-                  <GripVertical className="h-4 w-4 rotate-90" />
-                </button>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Nome</Label>
-                <Input value={t.name} onChange={(e) => update(i, { name: e.target.value })} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Emoji</Label>
-                <Input value={t.emoji ?? ""} onChange={(e) => update(i, { emoji: e.target.value })} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Mín. LTV (R$)</Label>
-                <Input type="number" min={0} value={t.min_ltv ?? 0} onChange={(e) => update(i, { min_ltv: parseFloat(e.target.value || "0") })} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Mín. pedidos</Label>
-                <Input type="number" min={0} value={t.min_orders ?? 0} onChange={(e) => update(i, { min_orders: parseInt(e.target.value || "0") })} />
-              </div>
-              <div className="flex items-start justify-end pt-6">
-                <button onClick={() => remove(i)} className="rounded-lg p-2 text-rose-400 hover:bg-rose-500/10" title="Remover">
-                  <Trash2 className="h-4 w-4" />
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); move(i, 1); }}
+                  className="rounded p-1 text-white/40 hover:bg-white/10 disabled:opacity-30"
+                  disabled={i === tiers.length - 1}
+                  title="Descer"
+                >
+                  <GripVertical className="h-3.5 w-3.5 rotate-90" />
                 </button>
               </div>
-            </div>
-            <div className="mt-3 grid gap-3 md:grid-cols-[1fr_2fr]">
-              <div className="space-y-1">
-                <Label className="text-xs">Cor (hex)</Label>
+              <span
+                className="grid h-9 w-9 place-items-center rounded-xl text-lg font-black ring-1 ring-white/10"
+                style={{ background: `${t.color ?? "#facc15"}22`, color: t.color ?? "#facc15" }}
+              >
+                {t.emoji || "⭐"}
+              </span>
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={t.color ?? "#facc15"}
-                    onChange={(e) => update(i, { color: e.target.value })}
-                    className="h-9 w-14 cursor-pointer rounded border border-white/10"
-                  />
-                  <Input value={t.color ?? ""} onChange={(e) => update(i, { color: e.target.value })} />
+                  <span className="text-[10px] font-mono text-white/40">#{i + 1}</span>
+                  <span className="truncate font-bold text-white">{t.name || "Sem nome"}</span>
+                </div>
+                <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-white/60">
+                  <span className="rounded-full bg-white/5 px-2 py-0.5 font-mono">LTV ≥ {BRL(t.min_ltv ?? 0)}</span>
+                  <span className="rounded-full bg-white/5 px-2 py-0.5 font-mono">{t.min_orders ?? 0} pedidos</span>
+                  {t.perks ? <span className="truncate text-white/50">· {t.perks}</span> : null}
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Benefícios exibidos ao cliente</Label>
-                <Input
-                  value={t.perks ?? ""}
-                  placeholder="Ex.: Frete grátis + brinde mensal"
-                  onChange={(e) => update(i, { perks: e.target.value })}
-                />
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); remove(i); }}
+                className="rounded-lg p-2 text-rose-400 hover:bg-rose-500/10"
+                title="Remover"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+              <svg
+                className="h-4 w-4 shrink-0 text-white/50 transition-transform duration-200 group-open:rotate-180"
+                viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
+              >
+                <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </summary>
+            <div className="border-t border-white/10 bg-black/20 px-4 py-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Nome</Label>
+                  <Input value={t.name} onChange={(e) => update(i, { name: e.target.value })} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Emoji</Label>
+                  <Input value={t.emoji ?? ""} onChange={(e) => update(i, { emoji: e.target.value })} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Mín. LTV (R$)</Label>
+                  <Input type="number" min={0} value={t.min_ltv ?? 0} onChange={(e) => update(i, { min_ltv: parseFloat(e.target.value || "0") })} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Mín. pedidos</Label>
+                  <Input type="number" min={0} value={t.min_orders ?? 0} onChange={(e) => update(i, { min_orders: parseInt(e.target.value || "0") })} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Cor</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={t.color ?? "#facc15"}
+                      onChange={(e) => update(i, { color: e.target.value })}
+                      className="h-9 w-14 cursor-pointer rounded border border-white/10"
+                    />
+                    <Input value={t.color ?? ""} onChange={(e) => update(i, { color: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-1 md:col-span-1">
+                  <Label className="text-xs">Benefícios exibidos ao cliente</Label>
+                  <Input
+                    value={t.perks ?? ""}
+                    placeholder="Ex.: Frete grátis + brinde mensal"
+                    onChange={(e) => update(i, { perks: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          </details>
         ))}
       </div>
+
     </div>
   );
 }
