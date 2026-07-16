@@ -8,8 +8,12 @@ export const Route = createFileRoute("/api/public/daily-insights-cron")({
     handlers: {
       POST: async ({ request }) => {
         const expected = process.env.CRON_SHARED_SECRET;
-        const provided = request.headers.get("x-cron-secret") ?? request.headers.get("x-cron-key");
-        if (!expected || !provided || provided !== expected) {
+        const anon = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const providedSecret = request.headers.get("x-cron-secret") ?? request.headers.get("x-cron-key");
+        const providedApiKey = request.headers.get("apikey");
+        const okSecret = !!expected && !!providedSecret && providedSecret === expected;
+        const okApiKey = !!anon && !!providedApiKey && providedApiKey === anon;
+        if (!okSecret && !okApiKey) {
           return new Response("Unauthorized", { status: 401 });
         }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

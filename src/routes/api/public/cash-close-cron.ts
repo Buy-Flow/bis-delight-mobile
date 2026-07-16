@@ -9,11 +9,16 @@ export const Route = createFileRoute("/api/public/cash-close-cron")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Require the private CRON_SHARED_SECRET (server-only). The publishable
-        // anon key is NOT a secret, so we cannot use it to authenticate callers.
+        // Accept either the shared cron secret (x-cron-secret) OR the
+        // Supabase anon/publishable key via the standard `apikey` header —
+        // the pattern pg_cron uses by default.
         const expected = process.env.CRON_SHARED_SECRET;
-        const provided = request.headers.get("x-cron-secret") ?? request.headers.get("x-cron-key");
-        if (!expected || !provided || provided !== expected) {
+        const anon = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const providedSecret = request.headers.get("x-cron-secret") ?? request.headers.get("x-cron-key");
+        const providedApiKey = request.headers.get("apikey");
+        const okSecret = !!expected && !!providedSecret && providedSecret === expected;
+        const okApiKey = !!anon && !!providedApiKey && providedApiKey === anon;
+        if (!okSecret && !okApiKey) {
           return new Response("Unauthorized", { status: 401 });
         }
 
