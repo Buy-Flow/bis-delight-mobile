@@ -92,29 +92,27 @@ function zonedWallToUtc(
   minute: number,
   tz: string = STORE_TIMEZONE,
 ): Date {
-  const guessMs = Date.UTC(year, month - 1, day, hour, minute);
-  const firstParts = getZonedParts(new Date(guessMs), tz);
-  const firstZonedMs = Date.UTC(
-    firstParts.year,
-    firstParts.month - 1,
-    firstParts.day,
-    firstParts.hour,
-    firstParts.minute,
-  );
-  const offset = guessMs - firstZonedMs;
-  const correctedMs = guessMs + offset;
-  // Segunda passada — cobre a transição de DST (que a maior parte do Brasil
-  // não usa mais, mas mantemos a robustez para outros fusos configuráveis).
-  const secondParts = getZonedParts(new Date(correctedMs), tz);
-  const secondZonedMs = Date.UTC(
-    secondParts.year,
-    secondParts.month - 1,
-    secondParts.day,
-    secondParts.hour,
-    secondParts.minute,
-  );
-  const drift = correctedMs - secondZonedMs;
-  return new Date(correctedMs + drift - offset + offset); // == correctedMs + drift
+  const targetMs = Date.UTC(year, month - 1, day, hour, minute);
+  let instantMs = targetMs;
+
+  // Corrige até o instante UTC cujo horário de parede no fuso da loja bate
+  // exatamente com o alvo. Antes isso aplicava o offset duas vezes e 11:00
+  // virava 17:00 no aviso de reabertura.
+  for (let i = 0; i < 3; i++) {
+    const parts = getZonedParts(new Date(instantMs), tz);
+    const wallMs = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+    );
+    const delta = targetMs - wallMs;
+    if (delta === 0) break;
+    instantMs += delta;
+  }
+
+  return new Date(instantMs);
 }
 
 /**
