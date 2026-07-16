@@ -1027,6 +1027,7 @@ function CouriersTab({
             setCreating(false);
             await reload();
           }}
+          reload={reload}
         />
       )}
     </>
@@ -1037,10 +1038,12 @@ function CourierDialog({
   courier,
   onClose,
   onSaved,
+  reload,
 }: {
   courier: Courier | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
+  reload: () => Promise<void>;
 }) {
   const [form, setForm] = useState({
     name: courier?.name ?? "",
@@ -1115,17 +1118,45 @@ function CourierDialog({
       note: form.note.trim() || null,
       avatar_url: form.avatar_url.trim() || null,
     };
-    const q = courier
-      ? supabase.from("couriers").update(payload).eq("id", courier.id)
-      : supabase.from("couriers").insert(payload);
-    const { error } = await q;
-    setSaving(false);
-    if (error) {
-      toast.error("Falha ao salvar: " + error.message);
+    if (courier) {
+      const { error } = await supabase.from("couriers").update(payload).eq("id", courier.id);
+      setSaving(false);
+      if (error) {
+        toast.error("Falha ao salvar: " + error.message);
+        return;
+      }
+      toast.success("Motoboy atualizado");
+      await onSaved();
       return;
     }
-    toast.success(courier ? "Motoboy atualizado" : "Motoboy cadastrado");
-    await onSaved();
+
+    // Novo motoboy: cria registro + já provisiona login/senha e papel `delivery`
+    // para que ele apareça automaticamente em Usuários & Permissões.
+    const { data: inserted, error: insErr } = await supabase
+      .from("couriers")
+      .insert(payload)
+      .select("id")
+      .single();
+    if (insErr || !inserted?.id) {
+      setSaving(false);
+      toast.error("Falha ao salvar: " + (insErr?.message ?? "desconhecido"));
+      return;
+    }
+    try {
+      const { createCourierLogin } = await import("@/lib/courier.functions");
+      const res = await createCourierLogin({ data: { courierId: inserted.id } });
+      setCredentials({ email: res.email, password: res.password });
+      toast.success("Motoboy cadastrado com acesso ao portal — anote os dados abaixo.");
+    } catch (e) {
+      toast.warning(
+        "Motoboy cadastrado, mas não consegui criar o acesso automático: " +
+          (e as Error).message +
+          ". Reabra e clique em 'Criar acesso agora'.",
+      );
+    }
+    setSaving(false);
+    // Não fecha o diálogo: mantém aberto para exibir as credenciais recém-criadas.
+    await reload();
   };
 
   return (
@@ -1218,7 +1249,7 @@ function CourierDialog({
             Ativo (disponível para receber entregas)
           </label>
 
-          {courier && (
+          {(courier || credentials) && (
             <div className="mt-2 rounded-xl border border-fuchsia-500/20 bg-fuchsia-500/5 p-3">
               <div className="text-[11px] font-black uppercase tracking-wider text-fuchsia-300">
                 Acesso ao portal do motoboy
@@ -1308,19 +1339,30 @@ function CourierDialog({
 
 
         <div className="mt-4 flex gap-2">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={() => void save()}
-            disabled={saving}
-            className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 py-2 text-sm font-bold text-white shadow-md hover:brightness-110 disabled:opacity-50"
-          >
-            {saving ? "Salvando..." : "Salvar"}
-          </button>
+          {credentials && !courier ? (
+            <button
+              onClick={() => void onSaved()}
+              className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-2 text-sm font-bold text-white shadow-md hover:brightness-110"
+            >
+              Concluir
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={onClose}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => void save()}
+                disabled={saving}
+                className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 py-2 text-sm font-bold text-white shadow-md hover:brightness-110 disabled:opacity-50"
+              >
+                {saving ? "Salvando..." : "Salvar"}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
