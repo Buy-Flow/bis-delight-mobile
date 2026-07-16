@@ -548,69 +548,77 @@ function ProductsTable({
   const untracked = products.filter((p) => p.stock === null);
   return (
     <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="hidden md:grid grid-cols-[1fr,120px,140px,120px,120px,120px] px-4 py-2.5 bg-white/5 text-[11px] uppercase tracking-wide text-white/50 font-medium">
+      <div className="hidden md:grid grid-cols-[1fr,140px,180px,110px,120px,110px] px-4 py-2.5 bg-white/[0.06] text-[11px] uppercase tracking-wide text-white/50 font-semibold sticky top-0 backdrop-blur">
         <div>Produto</div>
         <div>Categoria</div>
         <div>Estoque</div>
-        <div>Alerta</div>
-        <div>Valor</div>
+        <div>Alerta ≤</div>
+        <div className="text-right">Valor</div>
         <div className="text-right">Ações</div>
       </div>
       {tracked.length === 0 && (
-        <div className="p-6 text-center text-sm text-white/50">
+        <div className="p-8 text-center text-sm text-white/50">
           Nenhum produto rastreando estoque. Marque um produto com estoque no cadastro pra começar.
         </div>
       )}
-      {tracked.map((p) => {
+      {tracked.map((p, idx) => {
         const s = statusFor(p.stock ?? 0, p.low_stock_threshold);
         return (
           <div
             key={p.id}
-            className="border-t border-white/5 hover:bg-white/[0.03]"
+            className={cn(
+              "border-t border-white/5 transition-colors hover:bg-yellow-400/[0.04]",
+              idx % 2 === 1 && "md:bg-white/[0.015]",
+            )}
           >
             {/* MOBILE CARD */}
-            <div className="md:hidden p-3 flex gap-3">
-              {p.image_url ? (
-                <img src={p.image_url} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
-              ) : (
-                <div className="w-14 h-14 rounded-xl bg-white/10 grid place-items-center shrink-0">
-                  <Package className="w-6 h-6 text-white/40" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">{p.name}</div>
-                    <div className="text-[11px] text-white/50 truncate">{p.category}</div>
+            <div className="md:hidden p-3 space-y-2">
+              <div className="flex gap-3">
+                {p.image_url ? (
+                  <img src={p.image_url} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" loading="lazy" />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-white/10 grid place-items-center shrink-0">
+                    <Package className="w-6 h-6 text-white/40" />
                   </div>
-                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0", s.className)}>{s.label}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <div className="text-xs text-white/60">
-                    <span className="text-base font-bold text-white">{p.stock ?? 0}</span>
-                    <span className="ml-1">un</span>
-                    <span className="mx-2 text-white/30">·</span>
-                    <span>Alerta ≤</span>
-                    <input
-                      type="number"
-                      min={0}
-                      defaultValue={p.low_stock_threshold}
-                      onBlur={(e) => {
-                        const v = Math.max(0, Number(e.target.value) || 0);
-                        if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
-                      }}
-                      className="ml-1 w-12 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-xs"
-                    />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate">{p.name}</div>
+                      <div className="text-[11px] text-white/50 truncate">{p.category}</div>
+                    </div>
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded border shrink-0 font-medium", s.className)}>{s.label}</span>
                   </div>
-                  <button
-                    onClick={() => onOpenMovement(p)}
-                    className="px-3 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-medium hover:bg-yellow-400/30 shrink-0"
-                  >
-                    Movimento
-                  </button>
+                  <div className="mt-1.5 flex items-baseline gap-1.5">
+                    <span className="text-xl font-bold text-white tabular-nums">{p.stock ?? 0}</span>
+                    <span className="text-[11px] text-white/50">un no estoque</span>
+                  </div>
                 </div>
               </div>
+              <StockBar stock={p.stock ?? 0} threshold={p.low_stock_threshold} tone={s.tone} />
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                <label className="flex items-center gap-1.5 text-[11px] text-white/50">
+                  Alerta ≤
+                  <input
+                    type="number"
+                    min={0}
+                    defaultValue={p.low_stock_threshold}
+                    onBlur={(e) => {
+                      const v = Math.max(0, Number(e.target.value) || 0);
+                      if (v !== p.low_stock_threshold) onUpdateThreshold(p.id, v);
+                    }}
+                    className="w-14 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs tabular-nums"
+                  />
+                </label>
+                <button
+                  onClick={() => onOpenMovement(p)}
+                  className="px-3 py-1.5 rounded-lg bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 text-xs font-semibold hover:bg-yellow-400/30 shrink-0"
+                >
+                  + Movimento
+                </button>
+              </div>
             </div>
+
 
             {/* DESKTOP ROW */}
             <div className="hidden md:grid md:grid-cols-[1fr,120px,140px,120px,120px,120px] items-center px-4 py-3">
