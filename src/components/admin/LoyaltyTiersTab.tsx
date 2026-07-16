@@ -312,6 +312,8 @@ export function LoyaltyTiersTab() {
         💡 As mudanças valem para novos pedidos. Selos e cupons já emitidos não
         são reprocessados.
       </div>
+
+      <LoyaltyAuditPanel rows={rows} />
     </div>
   );
 }
