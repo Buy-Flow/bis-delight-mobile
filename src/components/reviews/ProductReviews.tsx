@@ -192,9 +192,9 @@ export function ProductReviews({ productId }: { productId: string }) {
   if (loading) {
     return <div className="mt-6 h-20 animate-pulse rounded-2xl bg-white/5" />;
   }
-  if (!stats || stats.total < settings.min_reviews_to_display) return null;
+  if (!stats || stats.total < Math.max(1, settings.min_reviews_to_display)) return null;
 
-  const isEmpty = stats.total === 0;
+  const isEmpty = false;
 
   return (
     <section className="mt-8 space-y-5">
