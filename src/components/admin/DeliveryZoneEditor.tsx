@@ -430,40 +430,48 @@ export function DeliveryZoneEditor({
               </div>
             )}
             {zone.tiers.map((t, i) => (
-              <div key={i} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-2">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-white/40">
-                  Faixa {i + 1}
+              <div
+                key={i}
+                className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-2"
+              >
+                <div className="shrink-0 text-[10px] font-bold uppercase leading-tight tracking-wider text-white/40">
+                  Faixa<br />{i + 1}
                 </div>
-                <div className="flex flex-1 items-center gap-2">
-                  <span className="text-[11px] text-white/60">até</span>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    value={t.upToKm}
-                    onChange={(e) => updateTier(i, { upToKm: Number(e.target.value) || 0 })}
-                    className="w-20 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-right text-[12px] font-mono text-white outline-none focus:border-neon-yellow"
-                  />
-                  <span className="text-[11px] text-white/60">km →</span>
-                  <span className="text-[11px] text-white/60">R$</span>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    value={t.fee}
-                    onChange={(e) => updateTier(i, { fee: Number(e.target.value) || 0 })}
-                    className="w-20 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-right text-[12px] font-mono text-white outline-none focus:border-neon-yellow"
-                  />
+                <div className="grid min-w-0 grid-cols-2 items-center gap-2">
+                  <label className="flex min-w-0 items-center gap-1.5">
+                    <span className="shrink-0 text-[11px] text-white/60">até</span>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={t.upToKm}
+                      onChange={(e) => updateTier(i, { upToKm: Number(e.target.value) || 0 })}
+                      className="w-full min-w-0 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-right text-[12px] font-mono text-white outline-none focus:border-neon-yellow"
+                    />
+                    <span className="shrink-0 text-[11px] text-white/60">km</span>
+                  </label>
+                  <label className="flex min-w-0 items-center gap-1.5">
+                    <span className="shrink-0 text-[11px] text-white/60">R$</span>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={t.fee}
+                      onChange={(e) => updateTier(i, { fee: Number(e.target.value) || 0 })}
+                      className="w-full min-w-0 rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-right text-[12px] font-mono text-white outline-none focus:border-neon-yellow"
+                    />
+                  </label>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeTier(i)}
-                  className="grid h-7 w-7 place-items-center rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-red-500/15 text-red-300 hover:bg-red-500/25"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
             ))}
+
             <button
               type="button"
               onClick={addTier}
