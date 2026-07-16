@@ -166,6 +166,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Cross-device cart hydration: quando o usuário loga em um novo dispositivo
+  // e o carrinho local está vazio, puxa o carrinho salvo em abandoned_carts
+  // (mesma conta = mesmo carrinho). Nunca sobrescreve carrinho local não-vazio
+  // para não apagar itens que o usuário acabou de adicionar antes de logar.
+  const pulledForUserRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!hydrated || !userId) return;
+    if (pulledForUserRef.current === userId) return;
+    pulledForUserRef.current = userId;
+    if (items.length > 0) return; // respeita carrinho local em uso
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("abandoned_carts")
+          .select("items")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (error) throw error;
+        const remote = (data?.items as unknown as CartItem[] | null) ?? [];
+        if (!Array.isArray(remote) || remote.length === 0) return;
+        skipPersistRef.current = false; // deixa persistir localmente
+        setItems(remote);
+        const total = remote.reduce((s, i) => s + i.quantity, 0);
+        toast.success("Carrinho sincronizado", {
+          description: `${total} ${total === 1 ? "item recuperado" : "itens recuperados"} da sua sessão anterior.`,
+          id: "cart-cross-device",
+        });
+      } catch (e) {
+        logSilent("cart:cross-device-pull", e);
+      }
+    })();
+  }, [userId, hydrated, items.length]);
+
   // Sync abandoned cart to Supabase (debounced) when logged in.
   // Serializado entre abas via Web Locks e sempre lê o snapshot fresco de
   // localStorage dentro do lock — assim a última gravação reflete o estado
